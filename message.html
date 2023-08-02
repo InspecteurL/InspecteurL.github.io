@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat en Direct</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🕳️</div>
+        <ul class="nav-links">
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="journal.html">Journal</a></li>
+          <li><a href="trueprofil.html">Profil</a></li>
+          <li><a href="profil.html">Rechercher</a></li>
+          <li><a href="message.html">Suggestions</a></li>
+        </ul>
+      </nav>
+    <div class="chat-container">
+        <div class="username-input">
+            <input type="text" id="username" placeholder="Choisissez un pseudo...">
+            <button onclick="setUsername()">Valider</button>
+        </div>
+        <div id="chat-messages"></div>
+        <div class="chat-input">
+            <input type="text" id="message-input" placeholder="Tapez votre message..." disabled>
+            <button onclick="sendMessage()" disabled>Envoyer</button>
+        </div>
+        <button class="delete-btn" onclick="deleteMessages()">Supprimer les messages</button>
+    </div>
+    <script src="script.js"></script>
+
+
+    <style>
+        body {
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+}
+
+/* Votre code CSS reste inchangé */
+.chat-container {
+    position: relative;
+     /* Ajout d'une position relative pour permettre le positionnement absolu du bouton */
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  background-color: #333;
+  color: white;
+  padding: 10px;
+}
+
+.navbar .nav-links {
+  list-style: none;
+  display: flex;
+}
+
+.navbar .nav-links li {
+  margin-left: 20px;
+}
+
+.navbar .nav-links li a {
+  color: white;
+  text-decoration: none;
+}
+
+.delete-btn {
+    position: absolute;
+    bottom: -550px;
+    right: px;
+    padding: 5px 10px;
+    background-color: #ff0000;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+.chat-container {
+    width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#chat-messages {
+    height: 200px;
+    overflow-y: scroll;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    padding: 5px;
+    color: white;
+    background-color: #333;
+}
+
+.chat-input {
+    display: flex;
+}
+
+.chat-input input[type="text"] {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px 0 0 5px;
+}
+
+.chat-input button {
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+}
+
+    </style>
+
+    <script>
+     let username = null;
+let messages = [];
+
+function setUsername() {
+    const usernameInput = document.getElementById('username');
+    const usernameValue = usernameInput.value.trim();
+
+    if (usernameValue !== '') {
+        // Enregistrez le pseudo choisi par l'utilisateur
+        username = usernameValue;
+        
+        // Désactivez le champ de saisie du pseudo et le bouton pour le changer
+        usernameInput.disabled = true;
+        document.querySelector('.username-input button').disabled = true;
+
+        // Activez le champ de saisie du message et le bouton d'envoi du message
+        document.getElementById('message-input').disabled = false;
+        document.querySelector('.chat-input button').disabled = false;
+    }
+}
+
+function sendMessage() {
+    const messageInput = document.getElementById('message-input');
+    const message = messageInput.value.trim();
+
+    if (message !== '') {
+        if (username) {
+            // Enregistrez le message avec le pseudo de l'utilisateur
+            const fullMessage = `${username}: ${message}`;
+            messages.push(fullMessage);
+
+            // Sauvegarder les messages dans le sessionStorage
+            sessionStorage.setItem('chat_messages', JSON.stringify(messages));
+
+            displayMessages();
+
+            // Effacer le champ de saisie après l'envoi du message
+            messageInput.value = '';
+        }
+    }
+}
+
+function deleteMessages() {
+    // Supprimer tous les messages du tableau
+    messages = [];
+    // Effacer les messages du sessionStorage
+    sessionStorage.removeItem('chat_messages');
+
+    // Mettre à jour l'affichage du chat
+    displayMessages();
+}
+
+function displayMessages() {
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.innerHTML = '';
+
+    messages.forEach(message => {
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = message;
+
+        // Ajouter une barre de séparation après chaque message
+        const separator = document.createElement('hr');
+        chatMessages.appendChild(messageDiv);
+        chatMessages.appendChild(separator);
+    });
+}
+
+// Charger les messages depuis le sessionStorage au chargement de la page
+function loadMessages() {
+    const storedMessages = sessionStorage.getItem('chat_messages');
+    if (storedMessages) {
+        messages = JSON.parse(storedMessages);
+    }
+}
+
+// Afficher les messages et charger les messages au chargement de la page
+displayMessages();
+loadMessages();
+
+
+
+    </script>
+</body>
+</html>
