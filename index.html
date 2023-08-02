@@ -1,0 +1,483 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>Bunker Zata</title>
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="logo">🕳️</div>
+    <ul class="nav-links">
+      <li><a href="#accueil">Accueil</a></li>
+      <li><a href="journal.html">Journal</a></li>
+      <li><a href="trueprofil.html">Profil</a></li>
+      <li><a href="profil.html">Rechercher</a></li>
+    </ul>
+  </nav>
+
+  <section id="accueil" class="anime-du-moment">
+    <!-- Insérez ici les informations sur l'anime du moment -->
+    <div class="anime-info">
+      <img src="https://a.storyblok.com/f/178900/2000x3000/8863dbd7c8/jujutsu-kaisen-season-2-key-art.png/m/2000x3000/filters:quality(100)" alt="Anime du moment">
+      <h2>Jujutsu Kaisen</h2>
+      <b><p>Yūji Itadori, un lycéen lambda doté d'une force surhumaine et membre du club de spiritisme, 
+         un jour dans l'abri météo de son lycée une relique de rang S protégée par un sceau.
+          et Iguchi, ses amis du club, restent le soir au lycée pour inspecter la relique tandis que Yūji est à l'hôpital où son grand-père vient
+          tout juste de décéder.
+          La relique qu'ils ont trouvée est un des doigts de Ryōmen Sukuna, le plus puissant des fléaux. Ainsi, en libérant le doigt du sceau, 
+           Sasaki et Iguchi se font attaquer par de nombreux fléaux. 
+           Yūji, apprenant l'existence de ces derniers, retourne le plus vite possible au lycée en compagnie d'un exorciste pour sauver ses amis
+            des griffes des fléaux. Lors d'un affrontement contre l'un d'eux,
+            il décide d'ingurgiter la relique pour devenir plus puissant et ainsi sauver ses amis.
+            n avalant cette relique Ryōmen Sukuna prend possession du corps de Yūji, mais cela n'est que de courte durée car ce dernier arrive étonnamment à reprendre le contrôle sur Sukuna. Les exorcistes décident dans un premier temps de condamner à mort Yūji mais, grâce à l'intervention du plus puissant des exorcistes, Satoru Gojo, ils décident finalement d'utiliser Yūji comme réceptacle de Sukuna et de le tuer le jour où il aura avalé tous ses doigts. En effet, cela est la seule façon d'éliminer Sukuna une bonne fois pour toutes.
+
+            De là, démarre une aventure qui mènera Yūji à devenir un puissant exorciste pour sauver les innocents d'une mort indigne et à éliminer les fléaux de ce monde pour préserver l'humanité. 
+          </p></b>
+          <button onclick="infosupl.style.display = 'flex'" class="voir-btn">Voir</button></b>
+          <div class="infosupl" id="infosupl">
+            <ul>
+              <li>
+                <h2>
+                  Type : TV
+                  </h2>
+            </li>
+            <li>
+              <h2>Episodes : 47</h2>
+            </li>
+            <li>
+              <h2>Saison : 2</h2>
+            </li>
+<li><h2>Durée : 23 minutes par épisodes</h2></li>
+<li><h2>Copyright : MAPPA</h2></li>
+
+
+
+          </ul>
+           
+            
+          </div>
+      <b>
+      
+        <div class="rating">
+          <span onpointerenter="star.style.color = 'yellow';" onclick="star.style.color = 'yellow'; starcinq.style.color = 'gray'; starquatre.style.color = 'gray'; startrois.style.color = 'gray'; stardeux.style.color = 'gray'; " id="star" class="star" data-rating="1">&#9733;
+          </span>
+        
+          <span onpointerenter="stardeux.style.color = 'yellow'; star.style.color = 'yellow' " onclick="stardeux.style.color = 'yellow'; star.style.color = 'yellow' ; starcinq.style.color = 'gray'; starquatre.style.color = 'gray'; startrois.style.color = 'gray'; " class="star" id="stardeux" data-rating="2">&#9733;
+          </span>
+          <span onpointerenter="startrois.style.color = 'yellow'; stardeux.style.color = 'yellow'; star.style.color = 'yellow'"  onclick="startrois.style.color = 'yellow'; stardeux.style.color = 'yellow'; star.style.color = 'yellow' ; starcinq.style.color = 'gray'; starquatre.style.color = 'gray'; " class="star" id="startrois" data-rating="3">&#9733;
+          </span>
+          <span onpointerenter="starquatre.style.color = 'yellow'; startrois.style.color = 'yellow'; stardeux.style.color = 'yellow'; star.style.color = 'yellow';" onclick="starquatre.style.color = 'yellow'; startrois.style.color = 'yellow'; stardeux.style.color = 'yellow'; star.style.color = 'yellow'; starcinq.style.color = 'gray';" class="star" id="starquatre" data-rating="4">&#9733;
+          </span>
+          <span onpointerenter="starcinq.style.color = 'yellow'; starquatre.style.color = 'yellow'; startrois.style.color = 'yellow'; stardeux.style.color = 'yellow'; star.style.color = 'yellow'" onclick="starcinq.style.color = 'yellow'; starquatre.style.color = 'yellow'; startrois.style.color = 'yellow'; stardeux.style.color = 'yellow'; star.style.color = 'yellow';" class="star" id="starcinq" data-rating="5">&#9733;
+          </span>
+        </div>
+        
+      
+  </section>
+
+  <section id="classement" class="cl">
+    <div class="cl">
+    <div class="classement-animes">
+      <h3>Classement des 10 animes les plus aimés</h3>
+      <!-- Insérez ici la liste des 10 mangas les plus aimés avec leurs noms et photos -->
+
+      <li class="manga-item">
+        <img src="https://pbs.twimg.com/media/FsYpau4XsAIMyvU?format=jpg&name=4096x4096" alt="Manga 1">
+        <div class="manga-info">
+          <h4>1 - My Hero Academia</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://fr.web.img5.acsta.net/pictures/19/08/09/14/53/1842996.jpg" alt="Manga 2">
+        <div class="manga-info">
+          <h4>2 - One Piece</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://fr.web.img6.acsta.net/pictures/20/12/28/10/24/5603983.jpg" alt="Manga 3">
+        <div class="manga-info">
+          <h4>3 - L'Attaque des Titans</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://fr.web.img2.acsta.net/pictures/19/08/02/15/12/4423178.jpg" alt="Manga 4">
+        <div class="manga-info">
+          <h4>4 - Naruto</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://m.media-amazon.com/images/I/71ZBtlrNRcL._AC_UF894,1000_QL80_.jpg" alt="Manga 5">
+        <div class="manga-info">
+          <h4>5 - One Punch Man</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://static.wikia.nocookie.net/clubanime/images/d/d7/Death_Note.jpg/revision/latest?cb=20110103174001&path-prefix=es" alt="Manga 6">
+        <div class="manga-info">
+          <h4>6 - Death Note</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://fr.web.img6.acsta.net/pictures/19/09/18/13/46/0198270.jpg" alt="Manga 6">
+        <div class="manga-info">
+          <h4>7 - Demon Slayer</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://fr.web.img5.acsta.net/pictures/19/08/01/09/52/4803203.jpg" alt="Manga 7">
+        <div class="manga-info">
+          <h4>8 - Hunter X Hunter</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://fr.web.img6.acsta.net/pictures/20/10/07/11/40/1139915.jpg" alt="Manga 8">
+        <div class="manga-info">
+          <h4>9 - Great Teacher Onizuka</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://www.nautiljon.com/images/more/02/76/238367.webp" alt="Manga 9">
+        <div class="manga-info">
+          <h4>10 - Tokyo Revengers</h4>
+        </div>
+      </li>
+      
+    </div>
+
+    <div class="classement-mangas">
+      <h3>Classement des 10 mangas les plus aimés</h3>
+      <li class="manga-item">
+        <img src="https://www.glenat.com/sites/default/files/images/livres/couv/9782723488525-T.jpg" alt="Manga 1">
+        <div class="manga-info">
+          <h4>1 - One Piece</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://m.media-amazon.com/images/I/51NKV96MJKL._AC_UF1000,1000_QL80_.jpg" alt="Manga 2">
+        <div class="manga-info">
+          <h4>2 - Golgo 13</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://m.media-amazon.com/images/I/71OCG7ILxAL._AC_UF1000,1000_QL80_.jpg" alt="Manga 3">
+        <div class="manga-info">
+          <h4>3 - Dragon Ball</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://m.media-amazon.com/images/I/71gwzyXnaNL._AC_UF1000,1000_QL80_.jpg" alt="Manga 4">
+        <div class="manga-info">
+          <h4>4 - Naruto</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://www.bedetheque.com/media/Couvertures/DetectiveConan1a_08122004.jpg" alt="Manga 5">
+        <div class="manga-info">
+          <h4>5 - Detective Conan</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://m.media-amazon.com/images/I/81jLaojdiyL._AC_UF1000,1000_QL80_.jpg" alt="Manga 6">
+        <div class="manga-info">
+          <h4>6 - Demon Slayer</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://m.media-amazon.com/images/I/71iPhxzPaoL._AC_UF1000,1000_QL80_.jpg" alt="Manga 6">
+        <div class="manga-info">
+          <h4>7 - Pokemon</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://m.media-amazon.com/images/I/917WFqQD1mL._AC_UF1000,1000_QL80_.jpg" alt="Manga 7">
+        <div class="manga-info">
+          <h4>8 - Steel Ball Run</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://m.media-amazon.com/images/I/91pVDY+1DEL._AC_UF1000,1000_QL80_.jpg" alt="Manga 8">
+        <div class="manga-info">
+          <h4>9 - Oishinbo</h4>
+        </div>
+      </li>
+      <li class="manga-item">
+        <img src="https://japanresell.fr/cdn/shop/products/bleach-tome-1-precommande-961202_316x500.jpg?v=1678786402" alt="Manga 9">
+        <div class="manga-info">
+          <h4>10 - Bleach</h4>
+        </div>
+      </li>
+     
+      <!-- Insérez ici la liste des 10 animes les plus aimés avec leurs noms et photos -->
+    </div>
+    </div>
+  </section>
+
+
+
+  <script src="script.js">
+    // Récupérer les éléments étoile et le div de notation
+    const stars = document.querySelectorAll('.star');
+const selectedRating = document.querySelector('.selected-rating');
+
+let rating = 0;
+
+// Ajouter les événements pour le survol et le clic sur les étoiles
+stars.forEach(star => {
+  star.addEventListener('mouseover', function() {
+    const ratingValue = this.getAttribute('data-rating');
+    highlightStars(ratingValue);
+  });
+
+  star.addEventListener('click', function() {
+    rating = this.getAttribute('data-rating');
+    selectedRating.textContent = rating + ' étoiles';
+  });
+
+  star.addEventListener('mouseout', function() {
+    highlightStars(rating);
+  });
+});
+
+// Fonction pour mettre en évidence les étoiles jusqu'à la valeur passée en argument
+function highlightStars(starsCount) {
+  stars.forEach(star => {
+    if (star.getAttribute('data-rating') <= starsCount) {
+      star.style.color = 'yellow'; // Mettre l'étoile en jaune si elle est sélectionnée
+    } else {
+      star.style.color = 'black'; // Sinon, laisser l'étoile vide
+    }
+  });
+}
+  </script>
+  
+</body>
+
+</html>
+
+    <style>
+
+
+       body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Ajoutez ici le style pour le fond similaire à MyUtaku */
+body {
+  background-color: #f0f0f0;
+}
+
+button{
+  border-radius: 10px;
+  background: linear-gradient(to right, #0066ff 0%, #9999ff 100%);
+  border: 2px solid blue;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  width: 100px;
+  height: auto;
+  margin-right: 850px;
+  
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  background-color: #333;
+  color: white;
+  padding: 10px;
+}
+
+.navbar .nav-links {
+  list-style: none;
+  display: flex;
+}
+
+.navbar .nav-links li {
+  margin-left: 20px;
+}
+
+.navbar .nav-links li a {
+  color: white;
+  text-decoration: none;
+}
+
+.anime-du-moment {
+  text-align: center;
+  padding: 20px;
+}
+
+.anime-info img {
+  max-width: 100%;
+  height: auto;
+}
+
+.classement-mangas,
+.classement-animes {
+  text-align: center;
+  margin: 30px;
+}
+
+.classement-mangas h3,
+.classement-animes h3 {
+  margin-bottom: 10px;
+  color: white;
+}
+
+.classement-animes{
+    background-color: #333;
+    margin-right: 800px;
+    float: left;
+}
+
+.classement-mangas{
+    background-color: #333;
+    margin-left: 800px;
+   position: absolute;
+}
+
+body{
+  background-color: #212f3d;
+}
+
+.classement-mangas img{
+  width: 91.3px;
+}
+
+.classement-animes,
+.classement-mangas h4{
+    color: white;
+}
+
+img{
+    width: 100px;
+}
+
+
+.cl{
+  margin-left: 48px;
+}
+
+.cl li{
+  border: 5px solid gainsboro;
+  
+}
+
+.cl .classement-animes,
+.classement-mangas{
+  border-radius: 10px;
+  border: 5px solid gainsboro;
+}
+
+li{
+    list-style-type: none;
+}
+
+.anime-info{
+    background-color: #333;
+    width: 1403px;
+}
+
+.anime-info img{
+width: 350px;
+margin-right: 850px;
+}
+
+.anime-info p{
+    color: white;
+    margin-left: 460px;
+    position: absolute;
+    top: 100px;
+    
+    
+
+}
+
+
+.infosupl{
+  border: 15px solid #0066ff;
+  margin-left: 300px;
+  display: none;
+  background-color: #141d25;
+ 
+  
+}
+.anime-info h2{
+    color: white;
+    margin-right: 800px;
+}
+
+.rating {
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.star {
+  display: inline-block;
+  color: gray;
+  
+  
+}
+
+.star:hover{
+  display: inline-block;
+  color: yellow;
+}
+.selected-rating {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+
+    </style>
+
+<script type="module">
+
+  // Import the functions you need from the SDKs you need
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-analytics.js";
+
+  // TODO: Add SDKs for Firebase products that you want to use
+
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+
+  // Your web app's Firebase configuration
+
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
+  const firebaseConfig = {
+
+    apiKey: "AIzaSyBTpUN4jEqMFV3y0xxx38KqjF1VNx2eUeo",
+
+    authDomain: "manganimotaku.firebaseapp.com",
+
+    projectId: "manganimotaku",
+
+    storageBucket: "manganimotaku.appspot.com",
+
+    messagingSenderId: "894452195709",
+
+    appId: "1:894452195709:web:badc84f8ab331e514d2c14",
+
+    measurementId: "G-Q2D6N5PQ95"
+
+  };
+
+
+  // Initialize Firebase
+
+  const app = initializeApp(firebaseConfig);
+
+  const analytics = getAnalytics(app);
+
+</script>
+    
+</body>
+</html>

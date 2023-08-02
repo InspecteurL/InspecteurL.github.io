@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Page de Profil</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🕳️</div>
+        <ul class="nav-links">
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="journal.html">Journal</a></li>
+          <li><a href="#profil">Profil</a></li>
+          <li><a href="profil.html">Rechercher</a></li>
+        </ul>
+      </nav>
+    <div class="profile">
+        <label for="banner-image">Bannière de Profil :</label>
+            <input type="file" id="banner-image" accept="image/*"><br>
+            <img id="banner-image-preview" src="#" alt="Aperçu de la bannière de profil" style="display: none;"><br>
+
+        
+            <label for="profile-picture">Photo de Profil :</label>
+            <input type="file" id="profile-picture" accept="image/*"><br>
+            <img id="profile-picture-preview" src="#" alt="Aperçu de la photo de profil" style="display: none;"><br>
+
+            <h1>Mon Profil</h1>
+        <form id="profile-form">
+            <label for="username">Pseudo :</label>
+            <input type="text" id="username" name="username" required><br>
+
+
+            <button type="submit">Enregistrer</button>
+        </form>
+    </div>
+    <script src="script.js"></script>
+
+    <style>
+        .navbar {
+  display: flex;
+  justify-content: space-between;
+  background-color: #333;
+  color: white;
+  padding: 10px;
+}
+
+.navbar .nav-links {
+  list-style: none;
+  display: flex;
+}
+
+.navbar .nav-links li {
+  margin-left: 20px;
+}
+
+.navbar .nav-links li a {
+  color: white;
+  text-decoration: none;
+}
+
+body{
+    background-color: darkslateblue;
+}
+
+label{
+    color: white;
+}
+
+
+    </style>
+</body>
+</html>
