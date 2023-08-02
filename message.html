@@ -120,7 +120,7 @@
     </style>
 
     <script>
-     let username = null;
+   let username = null;
 let messages = [];
 
 function setUsername() {
@@ -138,6 +138,9 @@ function setUsername() {
         // Activez le champ de saisie du message et le bouton d'envoi du message
         document.getElementById('message-input').disabled = false;
         document.querySelector('.chat-input button').disabled = false;
+
+        // Établir la connexion WebSocket après avoir choisi le pseudo
+        establishWebSocketConnection();
     }
 }
 
@@ -151,25 +154,47 @@ function sendMessage() {
             const fullMessage = `${username}: ${message}`;
             messages.push(fullMessage);
 
-            // Sauvegarder les messages dans le sessionStorage
-            sessionStorage.setItem('chat_messages', JSON.stringify(messages));
-
+            // Afficher le message sur l'écran
             displayMessages();
 
             // Effacer le champ de saisie après l'envoi du message
             messageInput.value = '';
+
+            // Envoyer le message via WebSocket
+            sendWebSocketMessage(fullMessage);
         }
     }
 }
 
-function deleteMessages() {
-    // Supprimer tous les messages du tableau
-    messages = [];
-    // Effacer les messages du sessionStorage
-    sessionStorage.removeItem('chat_messages');
+function establishWebSocketConnection() {
+    // Remplacez l'URL ci-dessous par l'URL de votre serveur WebSocket
+    const webSocketURL = 'ws://votre_serveur_websocket';
 
-    // Mettre à jour l'affichage du chat
-    displayMessages();
+    const socket = new WebSocket(webSocketURL);
+
+    // Événement de connexion WebSocket
+    socket.onopen = (event) => {
+        console.log('Connexion WebSocket établie');
+    };
+
+    // Événement de réception de message WebSocket
+    socket.onmessage = (event) => {
+        const receivedMessage = event.data;
+        messages.push(receivedMessage);
+        displayMessages();
+    };
+
+    // Gérer les erreurs WebSocket
+    socket.onerror = (event) => {
+        console.error('Erreur WebSocket:', event);
+    };
+}
+
+function sendWebSocketMessage(message) {
+    const socket = new WebSocket(webSocketURL);
+    if (socket.readyState === WebSocket.OPEN) {
+        socket.send(message);
+    }
 }
 
 function displayMessages() {
@@ -186,20 +211,6 @@ function displayMessages() {
         chatMessages.appendChild(separator);
     });
 }
-
-// Charger les messages depuis le sessionStorage au chargement de la page
-function loadMessages() {
-    const storedMessages = sessionStorage.getItem('chat_messages');
-    if (storedMessages) {
-        messages = JSON.parse(storedMessages);
-    }
-}
-
-// Afficher les messages et charger les messages au chargement de la page
-displayMessages();
-loadMessages();
-
-
 
     </script>
 </body>
