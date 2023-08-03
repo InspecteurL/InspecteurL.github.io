@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Messages</title>
+</head>
+<body>
+    <div id="messages-container"></div>
+    <style>
+        #messages-container{
+            background-color: #333;
+            color: white;
+        }
+    </style>
+
+    <script>
+        function displayMessages() {
+            const messagesContainer = document.getElementById('messages-container');
+            messagesContainer.innerHTML = '';
+
+            // Charger les messages depuis le localStorage
+            const storedMessages = localStorage.getItem('chat_messages');
+            if (storedMessages) {
+                const messages = JSON.parse(storedMessages);
+                messages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.textContent = message;
+                    messagesContainer.appendChild(messageDiv);
+                    
+                });
+            }
+        }
+
+        // Afficher les messages au chargement de la page
+        displayMessages();
+
+        // Écouter les messages provenant des autres onglets
+        const broadcastChannel = new BroadcastChannel('chat_channel');
+        broadcastChannel.onmessage = (event) => {
+            if (event.data.type === 'message') {
+                displayMessages();
+            }
+        };
+    </script>
+</body>
+</html>
