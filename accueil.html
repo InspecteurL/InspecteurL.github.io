@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr"> 
+    <link rel="icon" href=
+    "https://o.remove.bg/downloads/c77a350a-4165-43b8-9cc6-afe80fff5571/sticker-luffy-removebg-preview.png" type="image/x-icon">
+	<head> 
+
+		<meta charset="utf-8">
+		<title>Feuilleter</title>
+	</head> 
+
+	<body> 
+        <div class="container">
+            <button class="btn" id="myBtn">Essayer</button>
+
+            <div id="episodePopup" class="modal">
+                <div class="modal-content">
+                    <span class="close" id="closeBtn">&times;</span>
+                    <!-- Contenu de l'épisode -->
+                    <h1>Episode 1</h1>
+                    <video id="myVideo" src="https://pink.vido.lol/wcbzofqbmkrz4fib4rbekpaoydrc6uthhl7q7mw2egouosnnxc7b437esfsa/n.mp4" controls poster="https://criticalhits.com.br/wp-content/uploads/2021/04/poltrona-jojos-bizarre-adventures-netflix-1.jpg"></video>
+
+
+                </div>
+            </div>
+            
+            
+            
+            
+            <h1 class="BigText">Jojo's Bizarre Adventure</h1>
+            
+
+            <ul>
+                <li><a class="active" href="#Home">Home</a></li>
+                <li><a  href="#Movies">Journal</a></li>
+                <li><a  href="#Coming">Découvrir</a></li>
+                <li><a  href="#About">Profil</a></li>
+            </ul>
+	                <img class ="arcaneimg "src="https://wallpapersmug.com/download/3840x2160/307fff/anime-boys-Jojos-Bizarre-Adventure.jpg" alt="">
+            <section class="moviesection">
+                <h2>Nos Recommandations Mangas</h2>
+                <hr class="rounded">
+                <div class="moviecontainer" id="movies">
+                    <div class="movieimg">
+                        <div class="myimages">
+                            <a href="dbs.html"><img src="https://www.db-z.com/wp-content/uploads/2020/04/Dragon-Ball-Super-Tome-1-Full-Color-Page-02.jpg" alt="sucidesquad"></a>
+                        </div>
+                        <h2>Dragon Ball Super</h2>
+                        <span>Shonen</span>
+                    </div>
+                    <div class="movieimg">
+                        <div class="myimages">
+                            <a href="era.html"><img src="https://tutopiaplace.com.ar/wp-content/uploads/2017/05/7987-MANGA-Erased.jpg" alt="venom"></a>
+                        </div>
+                        <h2>Erased</h2>
+                        <span>Seinen</span>
+                    </div>
+                    <div class="movieimg">
+                        <div class="myimages">
+                            <a href="tr.html"><img src="https://www.glenat.com/sites/default/files/images/livres/couv/9782344035290-001-T.jpeg" alt="logan"></a>
+                        </div>
+                        <h2>Tokyo Revengers</h2>
+                        <span>Shonen</span>
+                    </div>
+                    <div class="movieimg">
+                        <div class="myimages">
+                            <a href="death.html"><img src="https://m.media-amazon.com/images/W/MEDIAX_792452-T2/images/I/812k3BWrksL._AC_UF1000,1000_QL80_.jpg" alt="sucidesquad"></a>
+                        </div>
+                        <h2>Death Note</h2>
+                        <span>Shonen</span>
+                    </div>
+                    <br><div class="movieimg">
+                        <div class="myimages">
+                            <a href="mha.html"><img src="https://www.nippongo.fr/6155-large_default/my-hero-academia-tome-01-manga-vo.jpg" alt="sucidesquad"></a>
+                        </div>
+                        <h2>My Hero Academia</h2>
+                        <span>Shonen</span>
+                    </div>
+                    <div class="movieimg">
+                        <div class="myimages">
+                            <a href="opm.html"><img src="https://www.manga-news.com/public/images/series/.one-punch-man-1-kurokawa_large.jpg" alt="sucidesquad"></a>
+                        </div>
+                        <h2>One Punch Man</h2>
+                        <span>Shonen</span>
+                    </div>
+                    <div class="movieimg">
+                        <div class="myimages">
+                            <a href="plat.html"><img src="https://www.canalbd.net/img/couvpage/41/9782820332417_cg.jpg" alt="sucidesquad"></a>
+                        </div>
+                        <h2>Platinum End</h2>
+                        <span>Shonen</span>
+                    </div>
+                    <div class="movieimg">
+                        <div class="myimages">
+                            <a href="gto.html"><img src="https://m.media-amazon.com/images/W/MEDIAX_792452-T2/images/I/81VDeAyH1GL._AC_UF1000,1000_QL80_.jpg" alt="sucidesquad"></a>
+                        </div>
+                        <h2>GTO</h2>
+                        <span>Shonen</span>
+                    </div>
+                   
+                </div>
+            </section>
+            
+        </div>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+            body{
+                font-family: 'Poppins', sans-serif;
+                background-color: black;
+    
+            }
+
+      
+
+
+
+.gradient-box {
+    width: 1100px;
+    height: 600px;
+    margin-top: 20px;
+    border: 1px solid #000;
+    border-radius: 10px;
+}
+
+/* Style pour le dégradé violet-orange (Vo) */
+.gradient-vo {
+    background: linear-gradient(to bottom right, violet, orange);
+}
+
+/* Style pour le dégradé vert-bleu (VF) */
+.gradient-vf {
+    background: linear-gradient(to bottom right, green, blue);
+}
+
+.modal-content h1{
+    color: white;
+}
+
+            /* Style de la fenêtre contextuelle */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+  padding-top: 60px;
+}
+
+/* Contenu de la fenêtre contextuelle */
+.modal-content {
+  background-color: #fefefe;
+  margin: 5% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  align-items: center;
+  text-align: center;
+}
+
+/* Bouton pour fermer la fenêtre contextuelle */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#episodePopup{
+    background: rgb(34,7,54);
+background: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+background: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); 
+}
+
+.modal-content{
+    background: rgb(34,7,54);
+background: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+background: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); 
+border: rgb(34,7,54);
+border: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+border: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+border: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); ;
+}
+
+            body {
+    overflow-x: hidden;
+}
+
+
+            .btn{
+                position: absolute;
+                top: 65%;
+                left: 10%;
+                background-color: red;
+                color: white;
+                font-size: 16px;
+                padding: 16px 30px;
+                border: none;
+                cursor: pointer;
+                border-radius: 10px;
+                text-align: center;
+            }
+            .btn2{
+                position: absolute;
+                top: 1%;
+                left: 90%;
+                background-color: red;
+                color: white;
+                font-size: 16px;
+                padding: 16px 30px;
+                border: none;
+                cursor: pointer;
+                border-radius: 10px;
+                text-align: center;
+    
+            }
+    
+            .BigText{
+                position: absolute;
+                top: 30%;
+                left: 10%;
+                width: 30%;
+                font-size: 300%;
+                color: white;
+            }
+            
+            ul{
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background-color: transparent;
+            }
+            li{
+                float: left;
+            }
+            li a{
+                display: block;
+                color: white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+            li a:hover{
+                background-color: red;
+                border-radius: 10px;
+            }
+                    .arcaneimg{
+                width: 1850px;
+                height: 1000px;
+            }
+            .moviesection{
+                max-width: 900px;
+                text-transform: uppercase;
+                padding-left: 10%;
+                color: white;
+            }
+            hr.rounded{
+                border-top: 3px solid red;
+                border-radius: 5px;
+            }
+            .movieimg .myimages{
+                height: 500px;
+                width: 280px;
+            }
+            .movieimg .myimages img{
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 5px;
+            }
+            .movieimg{
+                float: left;
+                width: 30%;
+                padding: 15px;
+                max-width: max-content;
+                padding-left: 5px;
+            }
+            .moviecontainer::after{
+                content: "";
+                clear: both;
+                display: table;
+            }
+            .moviecontainer{
+                height: max-content;
+                width: max-content;
+            }
+    
+            
+        </style>
+
+        <script>
+
+
+
+
+function watchEpisode() {
+    var episodePopup = document.getElementById("episodePopup");
+    var modal = document.getElementById("myModal");
+
+    // Affichez la pop-up de l'épisode
+    episodePopup.style.display = "block";
+
+    // Masquez la fenêtre contextuelle principale
+    modal.style.display = "none";
+}
+
+function closeEpisodePopup() {
+    var episodePopup = document.getElementById("episodePopup");
+
+    // Masquez la pop-up de l'épisode
+    episodePopup.style.display = "none";
+}
+
+
+        </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var modal = document.getElementById("episodePopup");
+                var closeBtn = document.getElementById("closeBtn");
+            
+                // Affichez la fenêtre contextuelle lorsque le bouton est cliqué
+                document.getElementById("myBtn").onclick = function() {
+                    modal.style.display = "block";
+                };
+            
+                // Fermez la fenêtre contextuelle lorsque le span de fermeture est cliqué
+                closeBtn.onclick = function() {
+                    modal.style.display = "none";
+                };
+            
+                // Fermez la fenêtre contextuelle lorsque l'utilisateur clique en dehors de celle-ci
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                };
+            });
+
+            function closeEpisodePopup() {
+    var episodePopup = document.getElementById("episodePopup");
+    var video = document.getElementById("myVideo");
+
+    // Mettez la pop-up de l'épisode en mode invisible
+    episodePopup.style.display = "none";
+
+    // Mettez la vidéo en pause
+    video.pause();
+}
+
+            </script>
+             <script>
+                var btn = document.getElementById("myBtn");
+                var episodePopup = document.getElementById("episodePopup");
+                var closeBtn = document.getElementById("closeBtn");
+                var video = document.getElementById("myVideo");
+        
+                btn.onclick = function() {
+                    episodePopup.style.display = "block";
+                };
+        
+                closeBtn.onclick = function() {
+                    episodePopup.style.display = "none";
+                    // Mettez la vidéo en pause lorsque la pop-up se ferme
+                    video.pause();
+                };
+            </script>
+	</body>
+</html>
