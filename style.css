@@ -330,6 +330,7 @@ h1{
             background-repeat: no-repeat;
             background-attachment: fixed;
             background-size: 100% 100%;
+            text-align: center;
 
 
         }
@@ -369,6 +370,8 @@ h1{
 
 
         }
+
+
 
         .BigText{
             position: absolute;
@@ -740,4 +743,4 @@ video {
     position: center;
 }
 
-{"version":3,"sourceRoot":"","sources":[],"names":[],"mappings":"","file:"style.css"}
+
