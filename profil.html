@@ -10,6 +10,7 @@
     
     <header>
         <h1>Bunker Zata</h1>
+        <h2>Nos coups de coeur</h2>
         <nav>
             <!-- Liens de navigation vers différentes sections du site -->
             <a href="index.html">Accueil</a>
@@ -31,7 +32,7 @@
        
         <section id="popular-animes">
            <div class="coup-coeur" id="coup-coeur">
-            <h2>Nos coups de coeur</h2>
+            
             <div class="anime-card" onmouseover="changeBackground()" onmouseout="restoreBackground()">
                 <img src="https://dondon.media/wp-content/uploads/2023/04/my-hero-academia-mha-age-taille-date-de-naissance-personnage.jpg" alt="Anime 1">
                 <div class="rating">
@@ -146,9 +147,7 @@
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2023 Bunker Zata - Tous droits réservés.</p>
-    </footer>
+  
 
     <script>
          var originalBackgroundImage = document.body.style.backgroundColor;
@@ -225,7 +224,114 @@
     </script>
 
     <style>
-      
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+}
+
+nav a {
+    margin: 0 10px;
+    color: #fff;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: #555;
+}
+
+nav a:hover {
+    background-color: #777;
+}
+
+/* ... (Autres styles) ... */
+
+.anime-card {
+    display: flex;
+    align-items: center;
+    background: rgb(34,7,54);
+background: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+background: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); 
+    padding: 20px; /* Ajustement pour l'espace intérieur des cartes */
+    margin: 20px 0; /* Ajustement pour l'espace entre les cartes */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.anime-card img {
+    width: 150px;
+    height: auto;
+    border-radius: 5px;
+    margin-right: 20px; /* Ajout d'un espace entre l'image et le texte */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ... (Autres styles) ... */
+
+.anime-card h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: white; /* Augmentation de la marge inférieure pour créer de l'espace entre le titre et le paragraphe */
+}
+
+.anime-card p {
+    margin: 0;
+    color: white;
+    padding: 20px;
+    
+}
+
+/* ... (Autres styles) ... */
+
+
+.anime-card:hover{
+    background: transparent;
+}
+
+/* ... (Autres styles) ... */
+
+
+/* ... (Autres styles) ... */
+
+
+.rating {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    color: yellow;
+}
+
+.rating .star {
+    margin-right: 5px;
+}
+
+footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1;
+}
+
+.background-image-container {
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Ajoutez ici d'autres styles spécifiques si nécessaire */
+
     </style>
     
 </body>
