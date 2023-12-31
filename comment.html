@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page avec commentaires</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="comment-section">
+    <h2>Commentaires</h2>
+    
+    <!-- Zone de commentaire -->
+    <div class="comment-form">
+        <textarea id="comment-text" placeholder="Écrivez votre commentaire ici..."></textarea>
+        <button onclick="addComment()">Ajouter un commentaire</button>
+    </div>
+
+    <!-- Liste des commentaires -->
+    <div id="comment-list">
+        <!-- Les commentaires seront ajoutés ici -->
+    </div>
+</div>
+<style>
+    .comment-section {
+    width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.comment-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.comment-form button {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.comment {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+}
+
+.notification {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 123, 255, 0.9);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    z-index: 9999;
+}
+
+</style>
+
+<script src="script.js"></script>
+<script>
+// Fonction pour ajouter un commentaire
+function addComment() {
+    const commentText = document.getElementById('comment-text').value;
+    if (!commentText) {
+        alert('Veuillez écrire un commentaire avant de soumettre.');
+        return;
+    }
+
+    // Créer une clé unique pour chaque commentaire basée sur le timestamp actuel
+    const commentId = Date.now();
+
+    // Créer un objet commentaire
+    const comment = {
+        id: commentId,
+        text: commentText,
+        timestamp: new Date().toLocaleString()
+    };
+
+    // Stocker le commentaire dans le localStorage
+    let comments = JSON.parse(localStorage.getItem('comments') || '[]');
+    comments.push(comment);
+    localStorage.setItem('comments', JSON.stringify(comments));
+
+    // Ajouter le commentaire à la liste
+    displayComment(comment);
+
+    // Réinitialiser le champ de texte
+    document.getElementById('comment-text').value = '';
+
+    // Afficher une notification
+    showNotification("Nouveau commentaire ajouté !");
+}
+
+// Fonction pour afficher un commentaire
+function displayComment(comment) {
+    const commentList = document.getElementById('comment-list');
+    const commentDiv = document.createElement('div');
+    commentDiv.className = 'comment';
+    commentDiv.innerHTML = `<p><strong>Le ${comment.timestamp} :</strong> ${comment.text}</p>`;
+    commentList.appendChild(commentDiv);
+}
+
+// Fonction pour afficher une notification
+function showNotification(message) {
+    const notificationDiv = document.createElement('div');
+    notificationDiv.className = 'notification';
+    notificationDiv.textContent = message;
+    document.body.appendChild(notificationDiv);
+
+    // Supprimer la notification après 3 secondes
+    setTimeout(() => {
+        notificationDiv.remove();
+    }, 3000);
+}
+
+// Chargement des commentaires au chargement de la page
+window.onload = function() {
+    const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+    comments.forEach(comment => {
+        displayComment(comment);
+    });
+}
+
+
+</script>
+
+</body>
+</html>
