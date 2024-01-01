@@ -203,6 +203,48 @@ document.getElementById('profile-picture').addEventListener('change', function(e
     reader.readAsDataURL(file);
 });
 
+        // Sauvegarder les données du profil
+function saveProfileData() {
+    const username = document.getElementById('username').value;
+    const bannerImageSrc = document.getElementById('banner-image-preview').src;
+    const profileImageSrc = document.getElementById('profile-picture-preview').src;
+
+    localStorage.setItem('username', username);
+    localStorage.setItem('bannerImageSrc', bannerImageSrc);
+    localStorage.setItem('profileImageSrc', profileImageSrc);
+}
+// Charger les données du profil
+function loadProfileData() {
+    const username = localStorage.getItem('username');
+    const bannerImageSrc = localStorage.getItem('bannerImageSrc');
+    const profileImageSrc = localStorage.getItem('profileImageSrc');
+
+    if (username) {
+        document.getElementById('username').value = username;
+    }
+    if (bannerImageSrc && bannerImageSrc !== 'null') {
+        document.getElementById('banner-image-preview').src = bannerImageSrc;
+        document.getElementById('banner-image-preview').style.display = 'block';
+    }
+    if (profileImageSrc && profileImageSrc !== 'null') {
+        document.getElementById('profile-picture-preview').src = profileImageSrc;
+        document.getElementById('profile-picture-preview').style.display = 'block';
+    }
+}
+
+// Charger les données du profil lors du chargement de la page
+window.addEventListener('load', loadProfileData);
+
+        // Écouter l'événement de soumission du formulaire
+document.getElementById('profile-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Empêcher l'envoi du formulaire
+
+    saveProfileData(); // Sauvegarder les données du profil
+
+    // Ajoutez ici le code pour envoyer les données au serveur si nécessaire
+});
+
+
     </script>
 </body>
 </html>
