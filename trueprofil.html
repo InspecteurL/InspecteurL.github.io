@@ -178,5 +178,31 @@ label {
 
 
     </style>
+    <script>
+        document.getElementById('banner-image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+        document.getElementById('banner-image-preview').src = event.target.result;
+        document.getElementById('banner-image-preview').style.display = 'block';
+    }
+
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('profile-picture').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+        document.getElementById('profile-picture-preview').src = event.target.result;
+        document.getElementById('profile-picture-preview').style.display = 'block';
+    }
+
+    reader.readAsDataURL(file);
+});
+
+    </script>
 </body>
 </html>
