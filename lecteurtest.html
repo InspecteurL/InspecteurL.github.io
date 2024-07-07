@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Suggestions</title>
+
+    <ul>
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a  href="journal.html">Journal</a></li>
+        <li><a  href="profil.html">Découvrir</a></li>
+        <li><a  href="trueprofil.html">Profil</a></li>
+        <li><a  href="accueil.html">Feuilleter</a></li>
+        
+    </ul>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: rgb(63,94,251);
+background: -moz-radial-gradient(circle, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
+background: -webkit-radial-gradient(circle, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
+background: radial-gradient(circle, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#3f5efb",endColorstr="#fc466b",GradientType=1); 
+color: white;
+        }
+
+        ul{
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background-color: black;
+            }
+            li{
+                float: left;
+            }
+            li a{
+                display: block;
+                color: white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+            li a:hover{
+                background-color: red;
+                border-radius: 10px;
+            }
+                    .arcaneimg{
+                width: 1850px;
+                height: 1000px;
+            }
+
+        #suggestions {
+            margin-top: 20px;
+        }
+        .suggestion {
+            border: 1px solid #000;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #65407e; /* Couleur par défaut */
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="text"], textarea, input[type="password"] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="submit"], button {
+            width: 100%;
+            background-color:blue;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover, button:hover {
+            background-color: #45a049;
+        }
+        #loginForm {
+            display: none;
+        }
+        .edit-buttons {
+            display: none;
+        }
+        .status-label {
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+        }
+        .planifiée { background-color: #4CAF50; }
+        .En-cours { background-color: #2196F3; }
+        .Refusée { background-color: #f44336; }
+        .En-réflexion { background-color: #FFC107; }
+    </style>
+</head>
+<body>
+    <div id="submit">
+        <h1>Soumettre une suggestion</h1>
+        <form id="suggestionForm">
+            <label for="username">Pseudo:</label><br>
+            <input type="text" id="username" name="username" required><br>
+            <label for="title">Titre:</label><br>
+            <input type="text" id="title" name="title" required><br>
+            <label for="content">Contenu:</label><br>
+            <textarea id="content" name="content" required></textarea><br>
+            <input type="submit" value="Soumettre">
+        </form>
+    </div>
+
+    <div id="login">
+        <button id="editButton">Modifier</button>
+        <form id="loginForm">
+            <label for="loginUsername">Nom d'utilisateur:</label><br>
+            <input type="text" id="loginUsername" name="loginUsername" required><br>
+            <label for="loginPassword">Mot de passe:</label><br>
+            <input type="password" id="loginPassword" name="loginPassword" required><br>
+            <input type="submit" value="Se connecter">
+        </form>
+        <button id="logoutButton" style="display:none;">Se déconnecter</button>
+    </div>
+
+    <div id="suggestions">
+        <h2>Toutes les suggestions</h2>
+    </div>
+
+    <script>
+        document.getElementById('suggestionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var username = document.getElementById('username').value;
+            var title = document.getElementById('title').value;
+            var content = document.getElementById('content').value;
+
+            var suggestion = {username: username, title: title, content: content, status: 'planifiée'};
+            var suggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
+            suggestions.push(suggestion);
+            localStorage.setItem('suggestions', JSON.stringify(suggestions));
+
+            displaySuggestion(suggestion);
+
+            document.getElementById('username').value = '';
+            document.getElementById('title').value = '';
+            document.getElementById('content').value = '';
+        });
+
+        document.getElementById('editButton').addEventListener('click', function() {
+            document.getElementById('loginForm').style.display = 'block';
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var loginUsername = document.getElementById('loginUsername').value;
+            var loginPassword = document.getElementById('loginPassword').value;
+
+            if (loginUsername === 'Lolovp' && loginPassword === 'Vanille41') {
+                document.querySelectorAll('.edit-buttons').forEach(function(button) {
+                    button.style.display = 'block';
+                });
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('logoutButton').style.display = 'block';
+            } else {
+                alert('Nom d\'utilisateur ou mot de passe incorrect');
+            }
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', function() {
+            document.querySelectorAll('.edit-buttons').forEach(function(button) {
+                button.style.display = 'none';
+            });
+            document.getElementById('logoutButton').style.display = 'none';
+        });
+
+        function displaySuggestion(suggestion) {
+            var suggestionElement = document.createElement('div');
+            suggestionElement.classList.add('suggestion');
+            suggestionElement.classList.add(suggestion.status.replace(' ', '-'));
+            suggestionElement.innerHTML = '<h3>' + suggestion.title + '</h3><p>' + suggestion.content + '</p><p>Par ' + suggestion.username + '</p>' +
+                                          '<div class="edit-buttons">' +
+                                          '<button onclick="editSuggestion(this)">Modifier</button>' +
+                                          '<button onclick="deleteSuggestion(this)">Supprimer</button>' +
+                                          '<select onchange="updateStatus(this)">' +
+                                          '<option value="planifiée" class="planifiée">Planifiée</option>' +
+                                          '<option value="En cours" class="En-cours">En cours</option>' +
+                                          '<option value="Refusée" class="Refusée">Refusée</option>' +
+                                          '<option value="En réflexion" class="En-réflexion">En réflexion</option>' +
+                                          '</select>' +
+                                          '</div>';
+
+            document.getElementById('suggestions').appendChild(suggestionElement);
+        }
+
+        function editSuggestion(button) {
+            var suggestionElement = button.parentElement.parentElement;
+            var title = prompt('Modifier le titre:', suggestionElement.querySelector('h3').innerText);
+            var content = prompt('Modifier le contenu:', suggestionElement.querySelector('p').innerText);
+
+            if (title !== null) suggestionElement.querySelector('h3').innerText = title;
+            if (content !== null) suggestionElement.querySelector('p').innerText = content;
+
+            updateLocalStorage();
+        }
+
+        function deleteSuggestion(button) {
+            var suggestionElement = button.parentElement.parentElement;
+            suggestionElement.remove();
+            updateLocalStorage();
+        }
+
+        function updateStatus(select) {
+            var suggestionElement = select.parentElement.parentElement;
+            suggestionElement.classList.remove('planifiée', 'En-cours', 'Refusée', 'En-réflexion');
+            suggestionElement.classList.add(select.value.replace(' ', '-'));
+            suggestionElement.setAttribute('data-status', select.value);
+            updateLocalStorage();
+        }
+
+        function updateLocalStorage() {
+            var suggestions = [];
+            document.querySelectorAll('.suggestion').forEach(function(suggestionElement) {
+                var suggestion = {
+                    username: suggestionElement.querySelector('p').innerText.split('Par ')[1],
+                    title: suggestionElement.querySelector('h3').innerText,
+                    content: suggestionElement.querySelector('p').innerText,
+                    status: suggestionElement.getAttribute('data-status')
+                };
+                suggestions.push(suggestion);
+            });
+            localStorage.setItem('suggestions', JSON.stringify(suggestions));
+        }
+
+        // Afficher les suggestions précédentes à partir de localStorage
+        var storedSuggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
+        for (var i = 0; i < storedSuggestions.length; i++) {
+            displaySuggestion(storedSuggestions[i]);
+        }
+    </script>
+</body>
+</html>
