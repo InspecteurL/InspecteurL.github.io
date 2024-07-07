@@ -2,52 +2,10 @@
 <html>
 <head>
     <title>Suggestions</title>
-
-    <ul>
-        <li><a class="active" href="index.html">Home</a></li>
-        <li><a  href="journal.html">Journal</a></li>
-        <li><a  href="profil.html">Découvrir</a></li>
-        <li><a  href="trueprofil.html">Profil</a></li>
-        <li><a  href="accueil.html">Feuilleter</a></li>
-        
-    </ul>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: rgb(63,94,251);
-background: -moz-radial-gradient(circle, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
-background: -webkit-radial-gradient(circle, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
-background: radial-gradient(circle, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#3f5efb",endColorstr="#fc466b",GradientType=1); 
-color: white;
         }
-
-        ul{
-                list-style-type: none;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-                background-color: black;
-            }
-            li{
-                float: left;
-            }
-            li a{
-                display: block;
-                color: white;
-                text-align: center;
-                padding: 14px 16px;
-                text-decoration: none;
-            }
-            li a:hover{
-                background-color: red;
-                border-radius: 10px;
-            }
-                    .arcaneimg{
-                width: 1850px;
-                height: 1000px;
-            }
-
         #suggestions {
             margin-top: 20px;
         }
@@ -72,7 +30,7 @@ color: white;
         }
         input[type="submit"], button {
             width: 100%;
-            background-color:blue;
+            background-color: #4CAF50;
             color: white;
             padding: 14px 20px;
             margin: 8px 0;
@@ -131,7 +89,35 @@ color: white;
         <h2>Toutes les suggestions</h2>
     </div>
 
+    <!-- Ajouter le script de configuration Firebase ici -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-analytics.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+    
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyAEnilCiGrf-DgXDqikSP_tCeLVkXC3IQ8",
+        authDomain: "suggestions-3f2b1.firebaseapp.com",
+        projectId: "suggestions-3f2b1",
+        storageBucket: "suggestions-3f2b1.appspot.com",
+        messagingSenderId: "884977032348",
+        appId: "1:884977032348:web:a8b071ce7eda6598236159",
+        measurementId: "G-EL5JNK5E7Q"
+      };
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+    </script>
+
     <script>
+
         document.getElementById('suggestionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var username = document.getElementById('username').value;
@@ -139,9 +125,10 @@ color: white;
             var content = document.getElementById('content').value;
 
             var suggestion = {username: username, title: title, content: content, status: 'planifiée'};
-            var suggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
-            suggestions.push(suggestion);
-            localStorage.setItem('suggestions', JSON.stringify(suggestions));
+            var newSuggestionKey = database.ref().child('suggestions').push().key;
+            var updates = {};
+            updates['/suggestions/' + newSuggestionKey] = suggestion;
+            database.ref().update(updates);
 
             displaySuggestion(suggestion);
 
@@ -232,14 +219,4 @@ color: white;
                 };
                 suggestions.push(suggestion);
             });
-            localStorage.setItem('suggestions', JSON.stringify(suggestions));
-        }
-
-        // Afficher les suggestions précédentes à partir de localStorage
-        var storedSuggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
-        for (var i = 0; i < storedSuggestions.length; i++) {
-            displaySuggestion(storedSuggestions[i]);
-        }
-    </script>
-</body>
-</html>
+            localStorage.setItem('suggestions', JSON.stringify(suggestions));}
