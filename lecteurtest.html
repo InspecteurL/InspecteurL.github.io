@@ -267,6 +267,54 @@ color: white;
         for (var i = 0; i < storedSuggestions.length; i++) {
             displaySuggestion(storedSuggestions[i]);
         }
+
+        var database = firebase.database();
+var suggestionsRef = database.ref('suggestions');
+var newSuggestionRef = suggestionsRef.push();
+newSuggestionRef.set({
+    username: username,
+    title: title,
+    content: content,
+    status: 'planifiée'
+});
+
+suggestionsRef.on('value', function(snapshot) {
+    snapshot.forEach(function(childSnapshot) {
+        var childData = childSnapshot.val();
+        displaySuggestion(childData);
+    });
+});
+
+// Ajouter une suggestion à Firebase
+function addSuggestionToFirebase(suggestion) {
+    var suggestionsRef = firebase.database().ref('suggestions');
+    var newSuggestionRef = suggestionsRef.push();
+    newSuggestionRef.set(suggestion);
+}
+
+// Récupérer les suggestions de Firebase
+function getSuggestionsFromFirebase() {
+    var suggestionsRef = firebase.database().ref('suggestions');
+    suggestionsRef.on('value', function(snapshot) {
+        snapshot.forEach(function(childSnapshot) {
+            var childData = childSnapshot.val();
+            displaySuggestion(childData);
+        });
+    });
+}
+
+// Modifier une suggestion dans Firebase
+function editSuggestionInFirebase(id, suggestion) {
+    var suggestionRef = firebase.database().ref('suggestions/' + id);
+    suggestionRef.update(suggestion);
+}
+
+// Supprimer une suggestion de Firebase
+function deleteSuggestionFromFirebase(id) {
+    var suggestionRef = firebase.database().ref('suggestions/' + id);
+    suggestionRef.remove();
+}
+
     </script>
 </body>
 </html>
