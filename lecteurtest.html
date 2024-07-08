@@ -172,13 +172,21 @@ color: white;
  <script>
 // Initialiser Firebase
 var firebaseConfig = {
-  apiKey: "votre clé API",
-  authDomain: "votre domaine d'authentification",
-  databaseURL: "votre URL de base de données",
-  projectId: "votre ID de projet",
-  storageBucket: "votre bucket de stockage",
-  messagingSenderId: "votre ID d'expéditeur de messages",
-  appId: "votre ID d'application"
+    
+const firebaseConfig = {
+  apiKey: "AIzaSyAEnilCiGrf-DgXDqikSP_tCeLVkXC3IQ8",
+  authDomain: "suggestions-3f2b1.firebaseapp.com",
+  databaseURL: "https://suggestions-3f2b1-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "suggestions-3f2b1",
+  storageBucket: "suggestions-3f2b1.appspot.com",
+  messagingSenderId: "884977032348",
+  appId: "1:884977032348:web:a8b071ce7eda6598236159",
+  measurementId: "G-EL5JNK5E7Q"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 };
 firebase.initializeApp(firebaseConfig);
 
