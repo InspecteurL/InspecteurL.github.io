@@ -102,34 +102,34 @@ color: white;
     </style>
 </head>
 <body>
-    <div id="submit">
-        <h1>Soumettre une suggestion</h1>
-        <form id="suggestionForm">
-            <label for="username">Pseudo:</label><br>
-            <input type="text" id="username" name="username" required><br>
-            <label for="title">Titre:</label><br>
-            <input type="text" id="title" name="title" required><br>
-            <label for="content">Contenu:</label><br>
-            <textarea id="content" name="content" required></textarea><br>
-            <input type="submit" value="Soumettre">
-        </form>
-    </div>
+  <div id="submit">
+    <h1>Soumettre une suggestion</h1>
+    <form id="suggestionForm">
+        <label for="username">Pseudo:</label><br>
+        <input type="text" id="username" name="username" required><br>
+        <label for="title">Titre:</label><br>
+        <input type="text" id="title" name="title" required><br>
+        <label for="content">Contenu:</label><br>
+        <textarea id="content" name="content" required></textarea><br>
+        <input type="submit" value="Soumettre">
+    </form>
+</div>
 
-    <div id="login">
-        <button id="editButton">Modifier</button>
-        <form id="loginForm">
-            <label for="loginUsername">Nom d'utilisateur:</label><br>
-            <input type="text" id="loginUsername" name="loginUsername" required><br>
-            <label for="loginPassword">Mot de passe:</label><br>
-            <input type="password" id="loginPassword" name="loginPassword" required><br>
-            <input type="submit" value="Se connecter">
-        </form>
-        <button id="logoutButton" style="display:none;">Se déconnecter</button>
-    </div>
+<div id="login">
+    <button id="editButton">Modifier</button>
+    <form id="loginForm">
+        <label for="loginUsername">Nom d'utilisateur:</label><br>
+        <input type="text" id="loginUsername" name="loginUsername" required><br>
+        <label for="loginPassword">Mot de passe:</label><br>
+        <input type="password" id="loginPassword" name="loginPassword" required><br>
+        <input type="submit" value="Se connecter">
+    </form>
+    <button id="logoutButton" style="display:none;">Se déconnecter</button>
+</div>
 
-    <div id="suggestions">
-        <h2>Toutes les suggestions</h2>
-    </div>
+<div id="suggestions">
+    <h2>Toutes les suggestions</h2>
+</div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
@@ -169,164 +169,130 @@ color: white;
   gtag('config', 'G-EL5JNK5E7Q');
 </script>
 
-    <script>
-        
-        document.getElementById('suggestionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var username = document.getElementById('username').value;
-            var title = document.getElementById('title').value;
-            var content = document.getElementById('content').value;
+ <script>
+// Initialiser Firebase
+var firebaseConfig = {
+  apiKey: "votre clé API",
+  authDomain: "votre domaine d'authentification",
+  databaseURL: "votre URL de base de données",
+  projectId: "votre ID de projet",
+  storageBucket: "votre bucket de stockage",
+  messagingSenderId: "votre ID d'expéditeur de messages",
+  appId: "votre ID d'application"
+};
+firebase.initializeApp(firebaseConfig);
 
-            var suggestion = {username: username, title: title, content: content, status: 'planifiée'};
-            var suggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
-            suggestions.push(suggestion);
-            localStorage.setItem('suggestions', JSON.stringify(suggestions));
+var db = firebase.database();
 
-            displaySuggestion(suggestion);
+document.getElementById('suggestionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var username = document.getElementById('username').value;
+    var title = document.getElementById('title').value;
+    var content = document.getElementById('content').value;
 
-            document.getElementById('username').value = '';
-            document.getElementById('title').value = '';
-            document.getElementById('content').value = '';
-        });
+    var suggestion = {username: username, title: title, content: content, status: 'planifiée'};
 
-        document.getElementById('editButton').addEventListener('click', function() {
-            document.getElementById('loginForm').style.display = 'block';
-        });
+    // Écrivez la suggestion dans la base de données
+    db.ref('suggestions/').push(suggestion);
 
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var loginUsername = document.getElementById('loginUsername').value;
-            var loginPassword = document.getElementById('loginPassword').value;
+    displaySuggestion(suggestion);
 
-            if (loginUsername === 'Lolovp' && loginPassword === 'Vanille41') {
-                document.querySelectorAll('.edit-buttons').forEach(function(button) {
-                    button.style.display = 'block';
-                });
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('logoutButton').style.display = 'block';
-            } else {
-                alert('Nom d\'utilisateur ou mot de passe incorrect');
-            }
-        });
-
-        document.getElementById('logoutButton').addEventListener('click', function() {
-            document.querySelectorAll('.edit-buttons').forEach(function(button) {
-                button.style.display = 'none';
-            });
-            document.getElementById('logoutButton').style.display = 'none';
-        });
-
-        function displaySuggestion(suggestion) {
-            var suggestionElement = document.createElement('div');
-            suggestionElement.classList.add('suggestion');
-            suggestionElement.classList.add(suggestion.status.replace(' ', '-'));
-            suggestionElement.innerHTML = '<h3>' + suggestion.title + '</h3><p>' + suggestion.content + '</p><p>Par ' + suggestion.username + '</p>' +
-                                          '<div class="edit-buttons">' +
-                                          '<button onclick="editSuggestion(this)">Modifier</button>' +
-                                          '<button onclick="deleteSuggestion(this)">Supprimer</button>' +
-                                          '<select onchange="updateStatus(this)">' +
-                                          '<option value="planifiée" class="planifiée">Planifiée</option>' +
-                                          '<option value="En cours" class="En-cours">En cours</option>' +
-                                          '<option value="Refusée" class="Refusée">Refusée</option>' +
-                                          '<option value="En réflexion" class="En-réflexion">En réflexion</option>' +
-                                          '</select>' +
-                                          '</div>';
-
-            document.getElementById('suggestions').appendChild(suggestionElement);
-        }
-
-        function editSuggestion(button) {
-            var suggestionElement = button.parentElement.parentElement;
-            var title = prompt('Modifier le titre:', suggestionElement.querySelector('h3').innerText);
-            var content = prompt('Modifier le contenu:', suggestionElement.querySelector('p').innerText);
-
-            if (title !== null) suggestionElement.querySelector('h3').innerText = title;
-            if (content !== null) suggestionElement.querySelector('p').innerText = content;
-
-            updateLocalStorage();
-        }
-
-        function deleteSuggestion(button) {
-            var suggestionElement = button.parentElement.parentElement;
-            suggestionElement.remove();
-            updateLocalStorage();
-        }
-
-        function updateStatus(select) {
-            var suggestionElement = select.parentElement.parentElement;
-            suggestionElement.classList.remove('planifiée', 'En-cours', 'Refusée', 'En-réflexion');
-            suggestionElement.classList.add(select.value.replace(' ', '-'));
-            suggestionElement.setAttribute('data-status', select.value);
-            updateLocalStorage();
-        }
-
-        function updateLocalStorage() {
-            var suggestions = [];
-            document.querySelectorAll('.suggestion').forEach(function(suggestionElement) {
-                var suggestion = {
-                    username: suggestionElement.querySelector('p').innerText.split('Par ')[1],
-                    title: suggestionElement.querySelector('h3').innerText,
-                    content: suggestionElement.querySelector('p').innerText,
-                    status: suggestionElement.getAttribute('data-status')
-                };
-                suggestions.push(suggestion);
-            });
-            localStorage.setItem('suggestions', JSON.stringify(suggestions));
-        }
-
-        // Afficher les suggestions précédentes à partir de localStorage
-        var storedSuggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
-        for (var i = 0; i < storedSuggestions.length; i++) {
-            displaySuggestion(storedSuggestions[i]);
-        }
-
-        var database = firebase.database();
-var suggestionsRef = database.ref('suggestions');
-var newSuggestionRef = suggestionsRef.push();
-newSuggestionRef.set({
-    username: username,
-    title: title,
-    content: content,
-    status: 'planifiée'
+    document.getElementById('username').value = '';
+    document.getElementById('title').value = '';
+    document.getElementById('content').value = '';
 });
 
-suggestionsRef.on('value', function(snapshot) {
-    snapshot.forEach(function(childSnapshot) {
-        var childData = childSnapshot.val();
-        displaySuggestion(childData);
-    });
+document.getElementById('editButton').addEventListener('click', function() {
+    document.getElementById('loginForm').style.display = 'block';
 });
 
-// Ajouter une suggestion à Firebase
-function addSuggestionToFirebase(suggestion) {
-    var suggestionsRef = firebase.database().ref('suggestions');
-    var newSuggestionRef = suggestionsRef.push();
-    newSuggestionRef.set(suggestion);
-}
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var loginUsername = document.getElementById('loginUsername').value;
+    var loginPassword = document.getElementById('loginPassword').value;
 
-// Récupérer les suggestions de Firebase
-function getSuggestionsFromFirebase() {
-    var suggestionsRef = firebase.database().ref('suggestions');
-    suggestionsRef.on('value', function(snapshot) {
-        snapshot.forEach(function(childSnapshot) {
-            var childData = childSnapshot.val();
-            displaySuggestion(childData);
+    if (loginUsername === 'Lolovp' && loginPassword === 'Vanille41') {
+        document.querySelectorAll('.edit-buttons').forEach(function(button) {
+            button.style.display = 'block';
         });
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('logoutButton').style.display = 'block';
+    } else {
+        alert('Nom d\'utilisateur ou mot de passe incorrect');
+    }
+});
+
+document.getElementById('logoutButton').addEventListener('click', function() {
+    document.querySelectorAll('.edit-buttons').forEach(function(button) {
+        button.style.display = 'none';
     });
+    document.getElementById('logoutButton').style.display = 'none';
+});
+
+function displaySuggestion(suggestion) {
+    var suggestionElement = document.createElement('div');
+    suggestionElement.classList.add('suggestion');
+    suggestionElement.classList.add(suggestion.status.replace(' ', '-'));
+    suggestionElement.innerHTML = '<h3>' + suggestion.title + '</h3><p>' + suggestion.content + '</p><p>Par ' + suggestion.username + '</p>' +
+                                  '<div class="edit-buttons">' +
+                                  '<button onclick="editSuggestion(this)">Modifier</button>' +
+                                  '<button onclick="deleteSuggestion(this)">Supprimer</button>' +
+                                  '<select onchange="updateStatus(this)">' +
+                                  '<option value="planifiée" class="planifiée">Planifiée</option>' +
+                                  '<option value="En cours" class="En-cours">En cours</option>' +
+                                  '<option value="Refusée" class="Refusée">Refusée</option>' +
+                                  '<option value="En réflexion" class="En-réflexion">En réflexion</option>' +
+                                  '</select>' +
+                                  '</div>';
+
+    document.getElementById('suggestions').appendChild(suggestionElement);
 }
 
-// Modifier une suggestion dans Firebase
-function editSuggestionInFirebase(id, suggestion) {
-    var suggestionRef = firebase.database().ref('suggestions/' + id);
-    suggestionRef.update(suggestion);
+function editSuggestion(button) {
+    var suggestionElement = button.parentElement.parentElement;
+    var title = prompt('Modifier le titre:', suggestionElement.querySelector('h3').innerText);
+    var content = prompt('Modifier le contenu:', suggestionElement.querySelector('p').innerText);
+
+    if (title !== null) suggestionElement.querySelector('h3').innerText = title;
+    if (content !== null) suggestionElement.querySelector('p').innerText = content;
+
+    updateLocalStorage();
 }
 
-// Supprimer une suggestion de Firebase
-function deleteSuggestionFromFirebase(id) {
-    var suggestionRef = firebase.database().ref('suggestions/' + id);
-    suggestionRef.remove();
+function deleteSuggestion(button) {
+    var suggestionElement = button.parentElement.parentElement;
+    suggestionElement.remove();
+    updateLocalStorage();
 }
 
-    </script>
+function updateStatus(select) {
+    var suggestionElement = select.parentElement.parentElement;
+    suggestionElement.classList.remove('planifiée', 'En-cours', 'Refusée', 'En-réflexion');
+    suggestionElement.classList.add(select.value.replace(' ', '-'));
+    suggestionElement.setAttribute('data-status', select.value);
+    updateLocalStorage();
+}
+
+function updateLocalStorage() {
+    var suggestions = [];
+    document.querySelectorAll('.suggestion').forEach(function(suggestionElement) {
+        var suggestion = {
+            username: suggestionElement.querySelector('p').innerText.split('Par ')[1],
+            title: suggestionElement.querySelector('h3').innerText,
+            content: suggestionElement.querySelector('p').innerText,
+            status: suggestionElement.getAttribute('data-status')
+        };
+        suggestions.push(suggestion);
+    });
+    localStorage.setItem('suggestions', JSON.stringify(suggestions));
+}
+
+// Afficher les suggestions précédentes à partir de localStorage
+var storedSuggestions = JSON.parse(localStorage.getItem('suggestions')) || [];
+for (var i = 0; i < storedSuggestions.length; i++) {
+    displaySuggestion(storedSuggestions[i]);
+}
+
+</script>
 </body>
 </html>
