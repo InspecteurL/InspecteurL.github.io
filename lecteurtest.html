@@ -7,49 +7,45 @@
 <body>
     <h1>Profil</h1>
     <ul>
-                <li><a class="active" href="index.html">Home</a></li>
-                <li><a  href="journal.html">Journal</a></li>
-                <li><a  href="profil.html">Découvrir</a></li>
-                <li><a  href="accueil.html">Feuilleter</a></li>
-                <li><a  href="trueprofil.html">Profil</a></li>
-                
-            </ul>
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="journal.html">Journal</a></li>
+        <li><a href="profil.html">Découvrir</a></li>
+        <li><a href="accueil.html">Feuilleter</a></li>
+        <li><a href="trueprofil.html">Profil</a></li>
+    </ul>
     <div id="En cours"><h2>En cours</h2></div>
     <div id="Terminé"><h2>Terminé</h2></div>
     <div id="En Pause"><h2>En Pause</h2></div>
     <div id="Abandonné"><h2>Abandonné</h2></div>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        const animeData = JSON.parse(localStorage.getItem(key));
-        
-        if (animeData && animeData.status && animeData.img && animeData.title && animeData.genre) {
-            const section = document.getElementById(animeData.status);
-            if (section) {
-                const animeDiv = document.createElement('div');
-                animeDiv.classList.add('movieimg');
-                animeDiv.dataset.title = animeData.title;
-                animeDiv.dataset.genre = animeData.genre;
-                animeDiv.innerHTML = `
+        const animes = JSON.parse(localStorage.getItem('animes')) || [];
+        for (let i = 0; i < animes.length; i++) {
+            const animeData = animes[i];
+            if (animeData && animeData.status && animeData.img && animeData.title && animeData.genre) {
+                const section = document.getElementById(animeData.status);
+                if (section) {
+                    const animeDiv = document.createElement('div');
+                    animeDiv.classList.add('movieimg');
+                    animeDiv.dataset.title = animeData.title;
+                    animeDiv.dataset.genre = animeData.genre;
+                    animeDiv.innerHTML = `
 <div class="myimages">
     <img src="${animeData.img}" alt="${animeData.title}">
 </div>
-<h2>${animeData.title}</h2>  <!-- Utilisez animeData.title ici -->
-<span>${animeData.genre}</span>  <!-- Utilisez animeData.genre ici -->
+<h2>${animeData.title}</h2>
+<span>${animeData.genre}</span>
 `;
-                // Ajoutez cette ligne pour ajouter l'élément 'div' à la section
-                section.appendChild(animeDiv);
+                    section.appendChild(animeDiv);
+                } else {
+                    console.error(`Section with ID ${animeData.status} not found`);
+                }
             } else {
-                console.error(`Section with ID ${animeData.status} not found`);
+                console.error(`Invalid animeData or status for key ${i}`);
+                console.log(`Index: ${i}, Value: ${JSON.stringify(animeData)}`);
             }
-        } else if (key !== 'suggestions' || animeData.length !== 0) {
-            console.error(`Invalid animeData or status for key ${key}`);
-            console.log(`Key: ${key}, Value: ${localStorage.getItem(key)}`);
         }
-    }
-});
-
+    });
     </script>
             <style>
             @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
@@ -139,9 +135,7 @@ box-shadow:  15px 15px 100px #660000,
 
 
 
-h2{
-    color: white
-}
+
 
     
 
