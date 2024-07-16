@@ -13,17 +13,26 @@
         <li><a href="accueil.html">Feuilleter</a></li>
         <li><a href="trueprofil.html">Profil</a></li>
     </ul>
-    <div id="En cours"><h2>En cours</h2>
+    <div id="En cours">
+        <h2>En cours</h2>
+        <div class="anime-container"></div>
     </div>
-   <div id="Terminé"><h2>Terminé</h2>
-
-   </div>
-    <div id="En Pause"><h2>En Pause</h2>
+    <div id="Terminé">
+        <h2>Terminé</h2>
+        <div class="anime-container"></div>
     </div>
-   <div id="Abandonné"><h2>Abandonné</h2>
-   </div>
-   <div id="Envie de voir"><h2>Envie de voir</h2>
-   </div>
+    <div id="En Pause">
+        <h2>En Pause</h2>
+        <div class="anime-container"></div>
+    </div>
+    <div id="Abandonné">
+        <h2>Abandonné</h2>
+        <div class="anime-container"></div>
+    </div>
+    <div id="Envie de voir">
+        <h2>Envie de voir</h2>
+        <div class="anime-container"></div>
+    </div>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const animes = JSON.parse(localStorage.getItem('animes')) || [];
@@ -43,7 +52,7 @@
 <h2>${animeData.title}</h2>
 <span>${animeData.genre}</span>
 `;
-                    section.appendChild(animeDiv);
+                    section.querySelector('.anime-container').appendChild(animeDiv);
 
                     // Ajoutez un gestionnaire d'événements pour le clic droit
                     animeDiv.addEventListener('contextmenu', function(e) {
@@ -78,13 +87,14 @@
                 color: white;
     
             }
-           #En\ cours, #Terminé, #En\ Pause, #Abandonné, #Envie\ de\ voir {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    justify-content: start;
-}
-
+     #En\ cours, #Terminé, #En\ Pause, #Abandonné, #Envie\ de\ voir {
+            display: flex;
+            flex-direction: column;
+        }
+        .anime-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
         .movieimg {
             margin: 10px;
         }
