@@ -1,1 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Profil</title>
+</head>
+<body>
+    <h1>Profil</h1>
+    <ul>
+                <li><a class="active" href="index.html">Home</a></li>
+                <li><a  href="journal.html">Journal</a></li>
+                <li><a  href="profil.html">Découvrir</a></li>
+                <li><a  href="trueprofil.html">Profil</a></li>
+                
+            </ul>
+    <div id="En cours"><h2>En cours</h2></div>
+    <div id="Terminé"><h2>Terminé</h2></div>
+    <div id="En Pause"><h2>En Pause</h2></div>
+    <div id="Abandonné"><h2>Abandonné</h2></div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const animeData = JSON.parse(localStorage.getItem(key));
+        
+        if (animeData && animeData.status && animeData.img && animeData.title && animeData.genre) {
+            const section = document.getElementById(animeData.status);
+            if (section) {
+                const animeDiv = document.createElement('div');
+                animeDiv.classList.add('movieimg');
+                animeDiv.dataset.title = animeData.title;
+                animeDiv.dataset.genre = animeData.genre;
+                animeDiv.innerHTML = `
+<div class="myimages">
+    <img src="${animeData.img}" alt="${animeData.title}">
+</div>
+<h2>${animeData.title}</h2>  <!-- Utilisez animeData.title ici -->
+<span>${animeData.genre}</span>  <!-- Utilisez animeData.genre ici -->
+`;
+                // Ajoutez cette ligne pour ajouter l'élément 'div' à la section
+                section.appendChild(animeDiv);
+            } else {
+                console.error(`Section with ID ${animeData.status} not found`);
+            }
+        } else if (key !== 'suggestions' || animeData.length !== 0) {
+            console.error(`Invalid animeData or status for key ${key}`);
+            console.log(`Key: ${key}, Value: ${localStorage.getItem(key)}`);
+        }
+    }
+});
+
+    </script>
+            <style>
+            @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+            body{
+                font-family: 'Poppins', sans-serif;
+                background-color: black;
+    
+            }
+
+            .card:hover {
+            /* Styles pour les cartes au survol */
+            /* Par exemple : */
+            transform: scale(1.05);
+        }
+            .bgBlue {
+    background-color: #0385fe;
+} 
+
+.context-menu { display: none; position: absolute; background: #fff; border: 1px solid #ccc; }
+        .context-menu-item { padding: 8px; cursor: pointer; }
+        .context-menu-item:hover { background: #eee; }
+
+
+.moviesection{
+    max-width: 900px;
+    text-transform: uppercase;
+    padding-left: 5%;
+    color: white;
+}
+hr.rounded{
+    border-top: 3px solid red;
+    border-radius: 5px;
+}
+.movieimg .myimages{
+    height: auto; /* Change ici pour permettre aux images de s'adapter à leur conteneur */
+    width: 100%; /* Change ici pour permettre aux images de s'adapter à leur conteneur */
+}
+.movieimg .myimages img{
+    width: 300px; /* Définissez une largeur spécifique ici */
+    height: 450px; /* Définissez une hauteur spécifique ici */
+    object-fit: cover; 
+    border-radius: 5px;
+   
+}
+
+
+
+.movieimg .myimages img:hover {
+  border: 5px #0385fe solid;
+  border-radius: 23px;
+background: #ff0000;
+box-shadow:  15px 15px 100px #660000,
+             -15px -15px 100px #ff0000;
+}
+
+
+
+.movieimg{
+    padding: 0px;
+    max-width: max-content;
+    padding-left: 10px;
+}
+.moviecontainer::after{
+    content: "";
+    clear: both;
+    display: table;
+}
+.moviecontainer{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-gap: 15px;
+    height: max-content;
+    width: max-content;
+    margin: auto; /* Ajoutez cette ligne pour centrer le conteneur */
+}
+
+
+.moviecontainer{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Fixez un nombre spécifique de colonnes ici */
+    grid-gap: 0px;
+    height: max-content;
+    width: max-content;
+}
+
+
+
+
+
+
+
+    
+
+.cardBlue {
+    background-color: darkblue;
+}
+
+.center {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+}
+
+.wrapper {
+  display: flex;
+  grid-gap: 1em;
+  overflow: hidden;
+  width: 70em; /* Adjusted to fit 4 cards */
+}
+
+.wrapper .inner {
+  display: flex;
+  grid-gap: 1em;
+  transition: all 1s ease-in-out;
+  width: calc(17.5em * 12); /* Adjust to number of cards */
+}
+
+.card {
+  border-radius: 0.5em;
+  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+  background-color: navy;
+  width: 17.5em; /* Fixed width */
+  height: 25em; /* Fixed height */
+  overflow: hidden; /* Hide overflow for images */
+}
+
+.card img {
+  border-top-right-radius: inherit;
+  border-top-left-radius: inherit;
+  display: block;
+  width: 100%; /* Make the image take the full width of the card */
+  height: 75%; /* Increased height for images */
+  object-fit: cover; /* Ensures the image covers the area without stretching */
+}
+
+.card .content {
+  background: cardBlue;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  padding: 1em;
+  text-align: center;
+  height: 25%; /* Adjust content height to fill the card */
+}
+
+.card .content h1,
+.card .content h3 {
+  margin: 0.35em 0;
+}
+
+.card .content h1 {
+  color: #fff;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.card .content h3 {
+  color: #ccc;
+  font-size: 0.9rem;
+  font-weight: 300;
+}
+
+.map {
+  display: flex;
+  justify-content: center;
+  margin-top: 1em;
+}
+
+.map button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+}
+
+.map button:hover {
+    background-color: white; 
+    color: black; 
+    border: 2px solid #4CAF50;
+}
+
+
+.map button.active {
+  background: red;
+}
+
+.map button.active:after {
+  content: "";
+  left: 50%;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 50%;
+}
+
+
+
+.gradient-box {
+    width: 1100px;
+    height: 600px;
+    margin-top: 20px;
+    border: 1px solid #000;
+    border-radius: 10px;
+}
+
+/* Style pour le dégradé violet-orange (Vo) */
+.gradient-vo {
+    background: linear-gradient(to bottom right, violet, orange);
+}
+
+/* Style pour le dégradé vert-bleu (VF) */
+.gradient-vf {
+    background: linear-gradient(to bottom right, green, blue);
+}
+
+.modal-content h1{
+    color: white;
+}
+
+            /* Style de la fenêtre contextuelle */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+  padding-top: 60px;
+}
+
+/* Contenu de la fenêtre contextuelle */
+.modal-content {
+  background-color: #fefefe;
+  margin: 5% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  align-items: center;
+  text-align: center;
+}
+
+/* Bouton pour fermer la fenêtre contextuelle */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#episodePopup{
+    background: rgb(34,7,54);
+background: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+background: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); 
+}
+
+.modal-content{
+    background: rgb(34,7,54);
+background: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+background: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); 
+border: rgb(34,7,54);
+border: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+border: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+border: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); ;
+}
+
+            body {
+    overflow-x: hidden;
+}
+
+
+            .btn{
+                position: absolute;
+                top: 65%;
+                left: 10%;
+                background-color: red;
+                color: white;
+                font-size: 16px;
+                padding: 16px 30px;
+                border: none;
+                cursor: pointer;
+                border-radius: 10px;
+                text-align: center;
+                display: block;
+            }
+            .btn2{
+                position: absolute;
+                top: 1%;
+                left: 90%;
+                background-color: red;
+                color: white;
+                font-size: 16px;
+                padding: 16px 30px;
+                border: none;
+                cursor: pointer;
+                border-radius: 10px;
+                text-align: center;
+    
+            }
+    
+            .BigText{
+                position: absolute;
+                top: 30%;
+                left: 10%;
+                width: 30%;
+                font-size: 300%;
+                color: white;
+            }
+            
+            ul{
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background-color: transparent;
+            }
+            li{
+                float: left;
+            }
+            li a{
+                display: block;
+                color: white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+            li a:hover{
+                background-color: red;
+                border-radius: 10px;
+            }
+                    .arcaneimg{
+                width: 1850px;
+                height: 1000px;
+            }
+            
+            hr.rounded{
+                border-top: 3px solid red;
+                border-radius: 5px;
+            }
+            
+    @media screen and (max-width: 600px) {
+      .arcaneimg{
+        width: 100%;
+
+      }
+      
+      ul{
+        width: 100%;
+      }
+
+     
+    }
+
+    @media screen and (max-width: 600px) {
+  .card {
+    width: 100%;
+  }
+  .movieimg {
+    width: 100%;
+  }
+}
+
+            
+        </style>
+  </style>
+</body>
+</html>
 
