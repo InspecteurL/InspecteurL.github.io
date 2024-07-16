@@ -81,7 +81,6 @@
                 <li><a  href="journal.html">Journal</a></li>
                 <li><a  href="profil.html">Découvrir</a></li>
                 <li><a  href="trueprofil.html">Profil</a></li>
-		<li><a href="lecteurtest.html">Suggestions</a></li>
                 
             </ul>
 	                <img class ="arcaneimg "src="https://media.senscritique.com/media/000017982733/0/berserk.jpg" alt="">
@@ -274,6 +273,13 @@
               </div>
           </section>
           
+
+          <div class="context-menu" id="context-menu">
+            <div class="context-menu-item" data-status="En cours">En cours</div>
+            <div class="context-menu-item" data-status="Terminé">Terminé</div>
+            <div class="context-menu-item" data-status="En Pause">En Pause</div>
+            <div class="context-menu-item" data-status="Abandonné">Abandonné</div>
+        </div>
             
         </div>
         <style>
@@ -293,7 +299,9 @@
     background-color: #0385fe;
 } 
 
-
+.context-menu { display: none; position: absolute; background: #fff; border: 1px solid #ccc; }
+        .context-menu-item { padding: 8px; cursor: pointer; }
+        .context-menu-item:hover { background: #eee; }
 
 
 .moviesection{
@@ -782,7 +790,44 @@ function closeEpisodePopup() {
         </script>
 
         <script>
-          
+          document.addEventListener('click', function() {
+    const menu = document.getElementById('context-menu');
+    menu.style.display = 'none';
+    // Réinitialiser les données du menu
+    menu.dataset.title = '';
+    menu.dataset.genre = '';
+    menu.dataset.img = '';
+});
+
+      document.querySelectorAll('.movieimg').forEach(anime => {
+    anime.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        const menu = document.getElementById('context-menu');
+        menu.style.display = 'block';
+        menu.style.left = `${e.pageX}px`;
+        menu.style.top = `${e.pageY}px`;
+        menu.dataset.title = this.dataset.title;
+        menu.dataset.genre = this.dataset.genre;
+        menu.dataset.img = this.querySelector('img').src;
+    });
+});
+
+document.querySelectorAll('.context-menu-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const title = document.getElementById('context-menu').dataset.title;
+        const genre = document.getElementById('context-menu').dataset.genre;
+        const img = document.getElementById('context-menu').dataset.img;
+        const status = this.dataset.status;
+        const animeData = { title, genre, img, status };
+        localStorage.setItem(title, JSON.stringify(animeData));
+        document.getElementById('context-menu').style.display = 'none';
+    });
+});
+
+document.addEventListener('click', function() {
+    document.getElementById('context-menu').style.display = 'none';
+});
+
         </script>
         <script>
             document.addEventListener("DOMContentLoaded", function() {
@@ -867,3 +912,4 @@ buttonsWrapper.addEventListener("click", e => {
             
 	</body>
 </html>
+
