@@ -37,6 +37,22 @@
 <span>${animeData.genre}</span>
 `;
                     section.appendChild(animeDiv);
+
+                    // Ajoutez un gestionnaire d'événements pour le clic droit
+                    animeDiv.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        if (confirm('Voulez-vous supprimer cet anime ?')) {
+                            // Supprimez l'anime du tableau 'animes'
+                            const index = animes.findIndex(anime => anime.title === animeData.title);
+                            if (index !== -1) {
+                                animes.splice(index, 1);
+                                localStorage.setItem('animes', JSON.stringify(animes));
+                            }
+
+                            // Supprimez l'anime de la page
+                            this.remove();
+                        }
+                    });
                 } else {
                     console.error(`Section with ID ${animeData.status} not found`);
                 }
