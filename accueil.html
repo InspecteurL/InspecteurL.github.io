@@ -790,15 +790,7 @@ function closeEpisodePopup() {
         </script>
 
         <script>
-          document.addEventListener('click', function() {
-    const menu = document.getElementById('context-menu');
-    menu.style.display = 'none';
-    // Réinitialiser les données du menu
-    menu.dataset.title = '';
-    menu.dataset.genre = '';
-    menu.dataset.img = '';
-});
-
+         
       document.querySelectorAll('.movieimg').forEach(anime => {
     anime.addEventListener('contextmenu', function(e) {
         e.preventDefault();
