@@ -814,15 +814,22 @@ document.querySelectorAll('.context-menu-item').forEach(item => {
         const status = this.dataset.status;
         const animeData = { title, genre, img, status };
 
-        animes.push(animeData);
+        // Recherchez l'anime dans le tableau 'animes'
+        const animeIndex = animes.findIndex(anime => anime.title === title);
+
+        if (animeIndex !== -1) {
+            // Si l'anime existe déjà, mettez à jour son statut
+            animes[animeIndex].status = status;
+        } else {
+            // Sinon, ajoutez l'anime au tableau
+            animes.push(animeData);
+        }
+
         localStorage.setItem('animes', JSON.stringify(animes));
         document.getElementById('context-menu').style.display = 'none';
     });
 });
 
-document.addEventListener('click', function() {
-    document.getElementById('context-menu').style.display = 'none';
-});
 
         </script>
         <script>
