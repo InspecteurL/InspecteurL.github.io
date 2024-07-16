@@ -791,7 +791,7 @@ function closeEpisodePopup() {
 
         <script>
          
-      document.querySelectorAll('.movieimg').forEach(anime => {
+         document.querySelectorAll('.movieimg').forEach(anime => {
     anime.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         const menu = document.getElementById('context-menu');
@@ -804,6 +804,8 @@ function closeEpisodePopup() {
     });
 });
 
+let animes = JSON.parse(localStorage.getItem('animes')) || [];
+
 document.querySelectorAll('.context-menu-item').forEach(item => {
     item.addEventListener('click', function() {
         const title = document.getElementById('context-menu').dataset.title;
@@ -811,7 +813,9 @@ document.querySelectorAll('.context-menu-item').forEach(item => {
         const img = document.getElementById('context-menu').dataset.img;
         const status = this.dataset.status;
         const animeData = { title, genre, img, status };
-        localStorage.setItem(title, JSON.stringify(animeData));
+
+        animes.push(animeData);
+        localStorage.setItem('animes', JSON.stringify(animes));
         document.getElementById('context-menu').style.display = 'none';
     });
 });
@@ -904,4 +908,3 @@ buttonsWrapper.addEventListener("click", e => {
             
 	</body>
 </html>
-
