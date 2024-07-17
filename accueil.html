@@ -83,7 +83,7 @@
                 <li><a  href="lecteurtest.html">Profil</a></li>
                 
             </ul>
-	                <img class ="arcaneimg "src="https://media.senscritique.com/media/000017982733/0/berserk.jpg" alt="">
+	                <img id="berserkimage" src="https://wallpapersmug.com/download/1920x1080/8996c2/dark--red-gut-berserk.jpg" alt="">
             <section class="moviesection">
                 <h2>A voir absolument</h2>
                 <hr class="rounded">
@@ -295,6 +295,13 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#19224d",endCo
     
             }
 
+            #berserkimage{
+              height: 620px;
+              width: 1920px;
+              
+            }
+            
+          
             .card:hover {
             /* Styles pour les cartes au survol */
             /* Par exemple : */
@@ -342,10 +349,7 @@ box-shadow:  15px 15px 100px #660000,
              -15px -15px 100px #ff0000;
 }
 
-.arcaneimg {
-    height: 150px;  /* Ajustez cette valeur selon vos besoins */
-    width: auto;  /* Cela permet de maintenir les proportions de l'image */
-}
+
 
 
 .movieimg{
@@ -584,6 +588,9 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endCo
 }
 
 
+
+
+
             .btn{
                 position: absolute;
                 top: 65%;
@@ -643,18 +650,15 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endCo
                 background-color: red;
                 border-radius: 10px;
             }
-                    .arcaneimg{
-                width: 1850px;
-                height: 1000px;
-            }
+                
             
             hr.rounded{
                 border-top: 3px solid red;
                 border-radius: 5px;
             }
             
-    @media screen and (max-width: 600px) {
-      .arcaneimg{
+    @media screen and (max-width: 1000px) {
+      #berserkimage{
         width: 100%;
 
       }
