@@ -4,98 +4,148 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="style.css">
-  <script type="text/javascript"></script>
+  <script type="text/javascript" src="script.js"></script>
   <title>TSF - Death Parade</title>
 </head>
 <body>
-  <li><a class="active" href="index.html">Home</a></li>
-  <li><a  href="journal.html">Journal</a></li>
-  <li><a  href="profil.html">Découvrir</a></li>
-  <li><a  href="trueprofil.html">Profil</a></li>
-  <li><a  href="accueil.html">Feuilleter</a></li>
-</ul>
+  <ul>
+    <li><a class="active" href="index.html">Home</a></li>
+    <li><a href="journal.html">Journal</a></li>
+    <li><a href="profil.html">Découvrir</a></li>
+    <li><a href="trueprofil.html">Profil</a></li>
+    <li><a href="accueil.html">Feuilleter</a></li>
+  </ul>
 
-<br><br>
-  <img src="https://cdn141.picsart.com/333381930111211.png
-  " width="50%">
+  <br><br>
+  <img src="https://cdn141.picsart.com/333381930111211.png" width="50%">
 
-  <h1>Saison 1 - Episode 1</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943191&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 2</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943193&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 3</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943196&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 4</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943198&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 5</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943201&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 6</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943203&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 7</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943207&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 8</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943210&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 9</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943212&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 10</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943215&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 11</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943216&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 12</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4943219&share=1 allowfullscreen></iframe><br><br>
-  
+  <h1 id="episode-title">Saison 1 - Episode 1</h1>
+  <iframe id="episode-video" width=640 height=360 src="https://video.sibnet.ru/shell.php?videoid=4943191&share=1" allowfullscreen></iframe><br><br>
 
+  <button onclick="previousEpisode()">Épisode précédent</button>
+  <button onclick="nextEpisode()">Épisode suivant</button>
+  <select id="episode-selector" onchange="selectEpisode()">
+    <!-- Les options seront générées dynamiquement par le script JavaScript -->
+  </select>
+  <button onclick="lastEpisode()">Dernier épisode</button>
 
+  <br><br>
 
-<style>
+  <style>
+    body{
+      background-color: #2e2b2b;
+    }
 
-  body{
-    background-color: #2e2b2b;
+    button{
+      width: 122px;
+      color: white;
+      background-color: blue;
+      height: 100px;
+      border: 35px;
+      border: blue;
+      font-size: 24px;
+    }
+
+    ul{
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: transparent;
+    }
+
+    li{
+      float: left;
+    }
+
+    li a{
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 30px;
+    }
+
+    select {
+    width: 200px;
+    height: 30px;
+    background-color: #f8f9fa;
+    border: none;
+    padding: 5px;
+    font-size: 16px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  }
+
+  select:focus {
+    outline: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  }
+
+    li a:hover{
+      background-color: red;
+      border-radius: 10px;
+    }
+  </style>
+  <script>
+   var currentEpisode = 1;
+var totalEpisodes = 12;
+var episodeLinks = [
+  "https://video.sibnet.ru/shell.php?videoid=4943191&share=1",
+  "https://video.sibnet.ru/shell.php?videoid=4943193&share=1",
+  "https://video.sibnet.ru/shell.php?videoid=4943196&share=1",
+  "https://video.sibnet.ru/shell.php?videoid=4943198&share=1",
+  "https://video.sibnet.ru/shell.php?videoid=4943201&share=1",
+  "https://video.sibnet.ru/shell.php?videoid=4943203&share=1",
+  "https://video.sibnet.ru/shell.php?videoid=4943207&share=1",
+  "https://video.sibnet.ru/shell.php?videoid=4943210&share=1",
+  "https://video.sibnet.ru/shell.php?videoid=4943212&share=1",
+  "https://video.sibnet.ru/shell.php?videoid=4943215&share=1",
+  "https://video.sibnet.ru/shell.php?videoid=4943216&share=1",
+  "https://video.sibnet.ru/shell.php?videoid=4943219&share=1"
+];
+
+window.onload = function() {
+  // Générer les options pour le sélecteur d'épisodes
+  var selector = document.getElementById("episode-selector");
+  for (var i = 1; i <= totalEpisodes; i++) {
+    var option = document.createElement("option");
+    option.value = i;
+    option.text = "Saison 1 - Episode " + i;
+    selector.add(option);
+  }
 }
 
-ul{
-                list-style-type: none;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-                background-color: transparent;
-            }
-            li{
-                float: left;
-            }
-            li a{
-                display: block;
-                color: white;
-                text-align: center;
-                padding: 14px 16px;
-                text-decoration: none;
-                font-size: 30px;
-            }
-            li a:hover{
-                background-color: red;
-                border-radius: 10px;
-            }
-                    .arcaneimg{
-                width: 1850px;
-                height: 1000px;
-            }
+function previousEpisode() {
+  if (currentEpisode > 1) {
+    currentEpisode--;
+    updateEpisode();
+  }
+}
 
+function nextEpisode() {
+  if (currentEpisode < totalEpisodes) {
+    currentEpisode++;
+    updateEpisode();
+  }
+}
 
+function selectEpisode() {
+  currentEpisode = document.getElementById("episode-selector").value;
+  updateEpisode();
+}
 
-</style>
+function lastEpisode() {
+  currentEpisode = totalEpisodes;
+  updateEpisode();
+}
 
-
-
+function updateEpisode() {
+  document.getElementById("episode-title").innerText = "Saison 1 - Episode " + currentEpisode;
+  document.getElementById("episode-video").src = episodeLinks[currentEpisode - 1];
+  document.getElementById("episode-selector").value = currentEpisode;
+}
+  </script>
 </body>
 </html>
