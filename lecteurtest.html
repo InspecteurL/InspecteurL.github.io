@@ -560,15 +560,6 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endCo
         padding-left: 10px;
     }
 
-    .progress-bar {
-        height: 10px;
-        border-radius: 5px;
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-    }
-
     .movieimg .myimages {
         height: auto;
         width: 100%;
@@ -586,6 +577,28 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endCo
         border-radius: 23px;
         background: #ff0000;
         box-shadow: 15px 15px 100px #660000, -15px -15px 100px #ff0000;
+    }
+
+    .progress-bar {
+        height: 10px;
+        border-radius: 5px;
+        position: absolute;
+        bottom: 50px; /* Adjust as needed */
+        left: 0;
+        right: 0;
+        background-color: #0385fe; /* Color of the progress bar */
+    }
+
+    .movieimg .content {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+    }
+
+    .movieimg .title {
+        margin-top: 10px;
+        text-align: center;
     }
 
     .moviecontainer::after {
