@@ -117,71 +117,57 @@ var episodeLinks = [
   "https://video.sibnet.ru/shell.php?videoid=3466371&share=1",
   "https://video.sibnet.ru/shell.php?videoid=3466372&share=1"
 ];
-
-window.onload = function() {
-  // Générer les options pour le sélecteur d'épisodes
-  var selector = document.getElementById("episode-selector");
-  for (var i = 1; i <= totalEpisodes; i++) {
-    var option = document.createElement("option");
-    option.value = i;
-    option.text = "Saison 1 - Episode " + i;
-    selector.add(option);
-  }
-}
-
-function previousEpisode() {
-  if (currentEpisode > 1) {
-    currentEpisode--;
-    updateEpisode();
-  }
-}
-
-function nextEpisode() {
-  if (currentEpisode < totalEpisodes) {
-    currentEpisode++;
-    updateEpisode();
-  }
-}
-
-function selectEpisode() {
-  currentEpisode = document.getElementById("episode-selector").value;
-  updateEpisode();
-}
-
-function lastEpisode() {
-  currentEpisode = totalEpisodes;
-  updateEpisode();
-}
-
-function updateEpisode() {
-  document.getElementById("episode-title").innerText = "Saison 1 - Episode " + currentEpisode;
-  document.getElementById("episode-video").src = episodeLinks[currentEpisode - 1];
-  document.getElementById("episode-selector").value = currentEpisode;
-}
-
-// Code JavaScript sur la page de streaming
-
-// Liste des épisodes et état de visionnage
-var totalEpisodes = 23;
-
-// Ajoute un écouteur d'événement sur l'iframe pour mettre à jour les épisodes vus
-document.getElementById('episode-video').addEventListener('load', function() {
-  var currentEpisode = getCurrentEpisodeFromIframe(); // Remplace par une fonction pour obtenir l'épisode courant
-
-  if (currentEpisode) {
-    var viewedEpisodes = JSON.parse(localStorage.getItem('viewedEpisodes')) || [];
-    if (!viewedEpisodes.includes(currentEpisode)) {
-      viewedEpisodes.push(currentEpisode);
-      localStorage.setItem('viewedEpisodes', JSON.stringify(viewedEpisodes));
+    window.onload = function() {
+      var selector = document.getElementById("episode-selector");
+      for (var i = 1; i <= totalEpisodes; i++) {
+        var option = document.createElement("option");
+        option.value = i;
+        option.text = "Saison 1 - Episode " + i;
+        selector.add(option);
+      }
+      updateEpisode();
     }
-  }
-});
 
-function getCurrentEpisodeFromIframe() {
-  // Implémente la logique pour obtenir l'épisode courant basé sur l'iframe, par exemple :
-  var iframeSrc = document.getElementById('episode-video').src;
-  return episodeLinks.findIndex(link => iframeSrc === link) + 1; // Renvoie l'épisode courant
-}
+    function previousEpisode() {
+      if (currentEpisode > 1) {
+        currentEpisode--;
+        updateEpisode();
+      }
+    }
+
+    function nextEpisode() {
+      if (currentEpisode < totalEpisodes) {
+        currentEpisode++;
+        updateEpisode();
+      }
+    }
+
+    function selectEpisode() {
+      currentEpisode = document.getElementById("episode-selector").value;
+      updateEpisode();
+    }
+
+    function lastEpisode() {
+      currentEpisode = totalEpisodes;
+      updateEpisode();
+    }
+
+    function updateEpisode() {
+      document.getElementById("episode-title").innerText = "Saison 1 - Episode " + currentEpisode;
+      document.getElementById("episode-video").src = episodeLinks[currentEpisode - 1];
+      document.getElementById("episode-selector").value = currentEpisode;
+
+      // Mettre à jour les épisodes vus
+      markEpisodeAsViewed(currentEpisode);
+    }
+
+    function markEpisodeAsViewed(episode) {
+      var viewedEpisodes = JSON.parse(localStorage.getItem('viewedEpisodes')) || [];
+      if (!viewedEpisodes.includes(episode)) {
+        viewedEpisodes.push(episode);
+        localStorage.setItem('viewedEpisodes', JSON.stringify(viewedEpisodes));
+      }
+    }
 
   </script>
 </body>
