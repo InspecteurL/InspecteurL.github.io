@@ -13,63 +13,25 @@
         <div class="container">
             <button class="btn" id="myBtn">Essayer</button>
 
-            <div id="episodePopup" class="modal">
-                <div class="modal-content">
-                    <span class="close" id="closeBtn">&times;</span>
-                    <!-- Contenu de l'épisode -->
-                    <h1>Episode 1</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4906990&share=1 allowfullscreen></iframe>
-                    <h1>Episode 2</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4906993&share=1 allowfullscreen></iframe>
-                    <h1>Episode 3</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4906996&share=1 allowfullscreen></iframe>
-                    <h1>Episode 4</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907001&share=1 allowfullscreen></iframe>
-                    <h1>Episode 5</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907002&share=1 allowfullscreen></iframe>
-                    <h1>Episode 6</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907007&share=1 allowfullscreen></iframe>
-                    <h1>Episode 7</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907009&share=1 allowfullscreen></iframe>
-                    <h1>Episode 8</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907013&share=1 allowfullscreen></iframe>
-                    <h1>Episode 9</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907016&share=1 allowfullscreen></iframe>
-                    <h1>Episode 10</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907019&share=1 allowfullscreen></iframe>
-                    <h1>Episode 11</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907023&share=1 allowfullscreen></iframe>
-                    <h1>Episode 12</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907030&share=1 allowfullscreen></iframe>
-                    <h1>Episode 13</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907033&share=1 allowfullscreen></iframe>
-                    <h1>Episode 14</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907038&share=1 allowfullscreen></iframe>
-                    <h1>Episode 15</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907043&share=1 allowfullscreen></iframe>
-                    <h1>Episode 16</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907046&share=1 allowfullscreen></iframe>
-                    <h1>Episode 17</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907049&share=1 allowfullscreen></iframe>
-                    <h1>Episode 18</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907053&share=1 allowfullscreen></iframe>
-                    <h1>Episode 19</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907057&share=1 allowfullscreen></iframe>
-                    <h1>Episode 20</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907062&share=1 allowfullscreen></iframe>
-                    <h1>Episode 21</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907064&share=1 allowfullscreen></iframe>
-                    <h1>Episode 22</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907070&share=1 allowfullscreen></iframe>
-                    <h1>Episode 23</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907073&share=1 allowfullscreen></iframe>
-                    <h1>Episode 24</h1>
-                    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4907077&share=1 allowfullscreen></iframe>
-
-
-                </div>
-            </div>
-            
+            <body onload="generateOptions(); loadEpisode(0)">
+    <div id="episodePopup" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeBtn">&times;</span>
+            <!-- Contenu de l'épisode -->
+            <h1 id="episodeTitle">Épisode 1</h1>
+            <iframe id="videoPlayer" src="https://video.sibnet.ru/shell.php?videoid=4906990&share=1" allowfullscreen></iframe>
+            <button onclick="previousEpisode()">Épisode précédent</button> 
+            <button onclick="nextEpisode()">Épisode suivant</button>
+            <select id="episodeSelector" onchange="loadEpisode(this.value)">
+                <!-- Les options seront générées dynamiquement -->
+                <script>
+                    for (var i = 0; i < episodes.length; i++) {
+                        document.write('<option value="' + i + '">Épisode ' + (i + 1) + '</option>');
+                    }
+                </script>
+            </select>
+        </div>
+    </div>
             
             
             
@@ -924,6 +886,97 @@ buttonsWrapper.addEventListener("click", e => {
 
 
 
+</script>
+
+<style>
+   #videoPlayer {
+            width: 640px;
+            height: 360px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+        select {
+            width: 200px;
+            height: 50px;
+            font-size: 16px;
+        }
+        .controls {
+            text-align: center;
+        }
+</style>
+<script>
+  var episodes = [
+      'https://video.sibnet.ru/shell.php?videoid=4906990&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4906993&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4906996&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907001&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907002&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907007&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907009&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907013&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907016&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907019&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907023&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907030&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907033&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907038&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907043&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907046&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907049&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907053&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907057&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907062&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907064&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907070&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907073&share=1',
+      'https://video.sibnet.ru/shell.php?videoid=4907077&share=1'
+  ];
+  var currentEpisode = 0;
+
+  function loadEpisode(index) {
+    document.getElementById('videoPlayer').src = episodes[index];
+    document.getElementById('episodeTitle').innerText = 'Épisode ' + (parseInt(index) + 1);
+    document.getElementById('episodeSelector').value = index;
+    currentEpisode = index;
+}
+
+
+function nextEpisode() {
+    if (currentEpisode < episodes.length - 1) {
+        loadEpisode(currentEpisode + 1);
+    }
+}
+
+function previousEpisode() {
+    if (currentEpisode > 0) {
+        loadEpisode(currentEpisode - 1);
+    }
+}
+
+function generateOptions() {
+    // Générer les options du sélecteur
+    var selector = document.getElementById('episodeSelector');
+    selector.innerHTML = ''; // Effacer les options existantes
+    for (var i = 0; i < episodes.length; i++) {
+        var option = document.createElement('option');
+        option.value = i;
+        option.text = 'Épisode ' + (i + 1);
+        selector.add(option);
+    }
+}
 </script>
 
             
