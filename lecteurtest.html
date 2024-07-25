@@ -32,68 +32,99 @@
         <strong><h2>Envie de voir</h2></strong>
         <div class="anime-container"></div>
     </div>
-    <script>
-   document.addEventListener('DOMContentLoaded', function() {
-    const animes = JSON.parse(localStorage.getItem('animes')) || [];
-    const categories = ['En cours', 'Terminé', 'En Pause', 'Abandonné', 'Envie de voir'];
-    const categoryHasAnime = {};
+     <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const animes = JSON.parse(localStorage.getItem('animes')) || [];
+        const categories = ['En cours', 'Terminé', 'En Pause', 'Abandonné', 'Envie de voir'];
+        const categoryHasAnime = {};
 
-    // Initialisez categoryHasAnime avec false pour chaque catégorie
-    categories.forEach(category => {
-        categoryHasAnime[category] = false;
-    });
+        // Initialisez categoryHasAnime avec false pour chaque catégorie
+        categories.forEach(category => {
+            categoryHasAnime[category] = false;
+        });
 
-    for (let i = 0; i < animes.length; i++) {
-        const animeData = animes[i];
-        if (animeData && animeData.status && animeData.img && animeData.title && animeData.genre) {
-            const section = document.getElementById(animeData.status);
-            if (section) {
-                const animeDiv = document.createElement('div');
-                animeDiv.classList.add('movieimg');
-                animeDiv.dataset.title = animeData.title;
-                animeDiv.dataset.genre = animeData.genre;
-                animeDiv.innerHTML = `
-<div class="myimages">
-    <img src="${animeData.img}" alt="${animeData.title}">
-</div>
-<h2>${animeData.title}</h2>
-<span>${animeData.genre}</span>
-`;
-                section.querySelector('.anime-container').appendChild(animeDiv);
-                categoryHasAnime[animeData.status] = true;
+        for (let i = 0; i < animes.length; i++) {
+            const animeData = animes[i];
+            if (animeData && animeData.status && animeData.img && animeData.title && animeData.genre) {
+                const section = document.getElementById(animeData.status);
+                if (section) {
+                    const animeDiv = document.createElement('div');
+                    animeDiv.classList.add('movieimg');
+                    animeDiv.dataset.title = animeData.title;
+                    animeDiv.dataset.genre = animeData.genre;
+                    animeDiv.innerHTML = `
+                    <div class="myimages">
+                        <img src="${animeData.img}" alt="${animeData.title}">
+                    </div>
+                    <h2>${animeData.title}</h2>
+                    <span>${animeData.genre}</span>
+                    <div class="progress-bar" data-status="${animeData.status}"></div>
+                    `;
+                    section.querySelector('.anime-container').appendChild(animeDiv);
+                    categoryHasAnime[animeData.status] = true;
 
-                // Ajoutez un gestionnaire d'événements pour le clic droit
-                animeDiv.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    if (confirm('Voulez-vous supprimer cet anime ?')) {
-                        // Supprimez l'anime du tableau 'animes'
-                        const index = animes.findIndex(anime => anime.title === animeData.title);
-                        if (index !== -1) {
-                            animes.splice(index, 1);
-                            localStorage.setItem('animes', JSON.stringify(animes));
+                    // Ajoutez un gestionnaire d'événements pour le clic droit
+                    animeDiv.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        if (confirm('Voulez-vous supprimer cet anime ?')) {
+                            // Supprimez l'anime du tableau 'animes'
+                            const index = animes.findIndex(anime => anime.title === animeData.title);
+                            if (index !== -1) {
+                                animes.splice(index, 1);
+                                localStorage.setItem('animes', JSON.stringify(animes));
+                            }
+
+                            // Supprimez l'anime de la page
+                            this.remove();
                         }
-
-                        // Supprimez l'anime de la page
-                        this.remove();
-                    }
-                });
+                    });
+                } else {
+                    console.error(`Section with ID ${animeData.status} not found`);
+                }
             } else {
-                console.error(`Section with ID ${animeData.status} not found`);
+                console.error(`Invalid animeData or status for key ${i}`);
+                console.log(`Index: ${i}, Value: ${JSON.stringify(animeData)}`);
             }
-        } else {
-            console.error(`Invalid animeData or status for key ${i}`);
-            console.log(`Index: ${i}, Value: ${JSON.stringify(animeData)}`);
         }
-    }
 
-    // Cachez les titres des catégories qui n'ont pas d'anime
-    categories.forEach(category => {
-        if (!categoryHasAnime[category]) {
-            document.getElementById(category).style.display = 'none';
-        }
+        // Cachez les titres des catégories qui n'ont pas d'anime
+        categories.forEach(category => {
+            if (!categoryHasAnime[category]) {
+                document.getElementById(category).style.display = 'none';
+            }
+        });
+
+        // Ajouter des barres de progression en fonction du statut de l'anime
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const status = bar.dataset.status;
+            switch (status) {
+                case 'En cours':
+                    bar.style.width = '50%';
+                    bar.style.backgroundColor = 'blue';
+                    break;
+                case 'Terminé':
+                    bar.style.width = '100%';
+                    bar.style.backgroundColor = 'green';
+                    break;
+                case 'En Pause':
+                    bar.style.width = '30%';
+                    bar.style.backgroundColor = 'orange';
+                    break;
+                case 'Abandonné':
+                    bar.style.width = '20%';
+                    bar.style.backgroundColor = 'red';
+                    break;
+                case 'Envie de voir':
+                    bar.style.width = '10%';
+                    bar.style.backgroundColor = 'purple';
+                    break;
+                default:
+                    bar.style.width = '0';
+                    break;
+            }
+        });
     });
-});
-
     </script>
             <style>
             @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
