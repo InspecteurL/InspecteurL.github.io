@@ -977,6 +977,17 @@ function generateOptions() {
         selector.add(option);
     }
 }
+
+	 window.onload = function() {
+      updateProgressBar();
+    }
+
+    function updateProgressBar() {
+      var totalEpisodes = 23;
+      var viewedEpisodes = JSON.parse(localStorage.getItem('viewedEpisodes')) || [];
+      var percentage = (viewedEpisodes.length / totalEpisodes) * 100;
+      document.getElementById("progress-bar").style.width = percentage + '%';
+    }
 </script>
 
             
