@@ -111,10 +111,14 @@
             bar.style.background = 'linear-gradient(90deg, rgba(0,153,255,1) 0%, rgba(0,204,255,1) 50%, rgba(0,102,255,1) 100%)';
             bar.style.filter = 'progid:DXImageTransform.Microsoft.gradient(startColorstr="#0099ff",endColorstr="#0066ff",GradientType=1)';
             break;
-                case 'En Pause':
-                    bar.style.width = '30%';
-                    bar.style.backgroundColor = 'orange';
-                    break;
+               case 'En Pause':
+            bar.style.width = '30%';
+            bar.style.background = 'rgb(255,153,0)';
+            bar.style.background = '-moz-linear-gradient(90deg, rgba(255,153,0,1) 0%, rgba(255,187,51,1) 50%, rgba(255,102,0,1) 100%)';
+            bar.style.background = '-webkit-linear-gradient(90deg, rgba(255,153,0,1) 0%, rgba(255,187,51,1) 50%, rgba(255,102,0,1) 100%)';
+            bar.style.background = 'linear-gradient(90deg, rgba(255,153,0,1) 0%, rgba(255,187,51,1) 50%, rgba(255,102,0,1) 100%)';
+            bar.style.filter = 'progid:DXImageTransform.Microsoft.gradient(startColorstr="#ff9900",endColorstr="#ff6600",GradientType=1)';
+            break;
                 case 'Abandonné':
                     bar.style.width = '20%';
                     bar.style.backgroundColor = 'red';
