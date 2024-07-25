@@ -159,6 +159,29 @@ function updateEpisode() {
   document.getElementById("episode-selector").value = currentEpisode;
 }
 
+// Code JavaScript sur la page de streaming
+
+// Liste des épisodes et état de visionnage
+var totalEpisodes = 23;
+
+// Ajoute un écouteur d'événement sur l'iframe pour mettre à jour les épisodes vus
+document.getElementById('episode-video').addEventListener('load', function() {
+  var currentEpisode = getCurrentEpisodeFromIframe(); // Remplace par une fonction pour obtenir l'épisode courant
+
+  if (currentEpisode) {
+    var viewedEpisodes = JSON.parse(localStorage.getItem('viewedEpisodes')) || [];
+    if (!viewedEpisodes.includes(currentEpisode)) {
+      viewedEpisodes.push(currentEpisode);
+      localStorage.setItem('viewedEpisodes', JSON.stringify(viewedEpisodes));
+    }
+  }
+});
+
+function getCurrentEpisodeFromIframe() {
+  // Implémente la logique pour obtenir l'épisode courant basé sur l'iframe, par exemple :
+  var iframeSrc = document.getElementById('episode-video').src;
+  return episodeLinks.findIndex(link => iframeSrc === link) + 1; // Renvoie l'épisode courant
+}
 
   </script>
 </body>
