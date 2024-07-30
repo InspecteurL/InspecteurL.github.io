@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css">
   <title>Bunker Zata</title>
 </head>
-
 <body>
   <nav class="navbar">
     <div class="logo">🕳️</div>
@@ -25,26 +23,16 @@
       <img src="https://a.storyblok.com/f/178900/2000x3000/8863dbd7c8/jujutsu-kaisen-season-2-key-art.png/m/2000x3000/filters:quality(100)" alt="Anime du moment">
       <h2>Jujutsu Kaisen</h2>
       <p>
-        Yūji Itadori, un lycéen lambda doté d'une force surhumaine et membre du club de spiritisme, 
-        un jour dans l'abri météo de son lycée une relique de rang S protégée par un sceau.
-        et Iguchi, ses amis du club, restent le soir au lycée pour inspecter la relique tandis que Yūji est à l'hôpital où son grand-père vient
-        tout juste de décéder.
-        La relique qu'ils ont trouvée est un des doigts de Ryōmen Sukuna, le plus puissant des fléaux. Ainsi, en libérant le doigt du sceau, 
-        Sasaki et Iguchi se font attaquer par de nombreux fléaux. 
-        Yūji, apprenant l'existence de ces derniers, retourne le plus vite possible au lycée en compagnie d'un exorciste pour sauver ses amis
-        des griffes des fléaux. Lors d'un affrontement contre l'un d'eux,
-        il décide d'ingurgiter la relique pour devenir plus puissant et ainsi sauver ses amis.
-        En avalant cette relique Ryōmen Sukuna prend possession du corps de Yūji, mais cela n'est que de courte durée car ce dernier arrive étonnamment à reprendre le contrôle sur Sukuna. Les exorcistes décident dans un premier temps de condamner à mort Yūji mais, grâce à l'intervention du plus puissant des exorcistes, Satoru Gojo, ils décident finalement d'utiliser Yūji comme réceptacle de Sukuna et de le tuer le jour où il aura avalé tous ses doigts. En effet, cela est la seule façon d'éliminer Sukuna une bonne fois pour toutes.
-        De là, démarre une aventure qui mènera Yūji à devenir un puissant exorciste pour sauver les innocents d'une mort indigne et à éliminer les fléaux de ce monde pour préserver l'humanité.
+        Yūji Itadori, un lycéen lambda doté d'une force surhumaine et membre du club de spiritisme...
       </p>
-      <button onclick="document.getElementById('infosupl').style.display = 'flex'" class="voir-btn">Voir</button>
+      <button onclick="document.getElementById('infosupl').style.display = 'flex'" class="voir-btn">Voir plus</button>
       <div class="infosupl" id="infosupl">
         <ul>
-          <li><h2>Type : TV</h2></li>
-          <li><h2>Episodes : 47</h2></li>
-          <li><h2>Saison : 2</h2></li>
-          <li><h2>Durée : 23 minutes par épisodes</h2></li>
-          <li><h2>Copyright : MAPPA</h2></li>
+          <li><h3>Type : TV</h3></li>
+          <li><h3>Episodes : 47</h3></li>
+          <li><h3>Saison : 2</h3></li>
+          <li><h3>Durée : 23 minutes par épisode</h3></li>
+          <li><h3>Copyright : MAPPA</h3></li>
         </ul>
       </div>
       <div class="rating">
@@ -67,7 +55,7 @@
             <h4>1 - My Hero Academia</h4>
           </div>
         </li>
-        <li class="manga-item">
+         <li class="manga-item">
           <img src="https://fr.web.img5.acsta.net/pictures/19/08/09/14/53/1842996.jpg" alt="Manga 2">
           <div class="manga-info">
             <h4>2 - One Piece</h4>
@@ -121,6 +109,12 @@
             <h4>10 - Tokyo Revengers</h4>
           </div>
         </li>
+      </ul>
+    </div>
+
+  
+
+        <!-- Les autres items de manga ici -->
       </ul>
     </div>
 
@@ -190,21 +184,27 @@
       </ul>
     </div>
   </section>
+        <!-- Les autres items de manga ici -->
+      </ul>
+    </div>
+  </section>
+
   <style>
     body {
-  font-family: Arial, sans-serif;
+  font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
+  background-color: #f4f4f9;
+  color: #333;
 }
 
 .navbar {
   background-color: #333;
-  overflow: hidden;
+  padding: 10px 20px;
 }
 
 .navbar .logo {
   display: inline-block;
-  padding: 14px 20px;
   color: white;
   font-size: 24px;
 }
@@ -218,54 +218,60 @@
 }
 
 .navbar .nav-links li {
-  display: inline;
+  margin: 0 15px;
 }
 
 .navbar .nav-links li a {
-  display: inline-block;
   color: white;
-  text-align: center;
-  padding: 14px 20px;
   text-decoration: none;
+  padding: 10px 15px;
+  display: block;
 }
 
 .navbar .nav-links li a:hover {
-  background-color: #ddd;
-  color: black;
+  background-color: #575757;
+  border-radius: 4px;
 }
 
 .anime-du-moment {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  text-align: center;
   padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+  border-radius: 8px;
 }
 
 .anime-du-moment img {
   max-width: 100%;
   height: auto;
+  border-radius: 8px;
 }
 
 .anime-du-moment h2 {
-  margin: 10px 0;
+  margin: 20px 0;
+  font-size: 24px;
 }
 
 .anime-du-moment p {
   max-width: 600px;
+  margin: 0 auto 20px;
   text-align: justify;
+  line-height: 1.6;
 }
 
 .anime-du-moment .voir-btn {
-  margin-top: 10px;
-  padding: 10px 20px;
   background-color: #333;
   color: white;
   border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
 .anime-du-moment .voir-btn:hover {
-  background-color: #555;
+  background-color: #575757;
 }
 
 .infosupl {
@@ -278,6 +284,7 @@
 .infosupl ul {
   list-style-type: none;
   padding: 0;
+  margin: 0;
 }
 
 .infosupl li {
@@ -285,13 +292,14 @@
 }
 
 .rating {
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .rating .star {
   font-size: 24px;
   color: #ccc;
   cursor: pointer;
+  transition: color 0.3s;
 }
 
 .rating .star:hover,
@@ -306,6 +314,7 @@
 .classement h3 {
   text-align: center;
   margin-bottom: 20px;
+  font-size: 24px;
 }
 
 .classement ul {
@@ -328,10 +337,13 @@
 .classement .manga-item img {
   max-width: 100%;
   height: auto;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .classement .manga-info {
   text-align: center;
+  margin-top: 10px;
 }
 
 @media (max-width: 768px) {
@@ -351,6 +363,7 @@
   </style>
 
   <script src="scripts.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
   const stars = document.querySelectorAll('.star');
@@ -364,5 +377,4 @@
 
   </script>
 </body>
-
 </html>
