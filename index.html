@@ -24,7 +24,7 @@
         <div class="banner-content">
             <h1>Bienvenue sur Bunker Zata</h1>
             <p>Regardez vos films et séries préférés en ligne.</p>
-            <a href="accueil.html"<button class="btn-watch">Entrez maintenant</button></a>
+            <a href="accueil.html"><button class="btn-watch">Entrez maintenant</button></a>
         </div>
     </section>
 
@@ -49,109 +49,116 @@
             </div>
         </div>
     </section>
-  <style>
-    body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #141414;
-    color: #ffffff;
-}
 
-header {
-    background-color: #141414;
-    padding: 10px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #141414;
+            color: #ffffff;
+        }
 
-.nav-links {
-    list-style: none;
-    padding: 0;
-    display: flex;
-    gap: 20px;
-}
+        header {
+            background-color: #141414;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.nav-links li {
-    display: inline;
-}
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
 
-.nav-links a {
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: bold;
-}
+        .nav-links li {
+            display: inline;
+        }
 
-.banner {
-    background-image: url('banner.jpg');
-    background-size: cover;
-    background-position: center;
-    height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: #ffffff;
-}
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+        }
 
-.banner-content {
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 20px;
-    border-radius: 10px;
-}
+        .banner {
+            background-image: url('banner.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #ffffff;
+        }
 
-.btn-watch {
-    padding: 10px 20px;
-    background-color: #e50914;
-    border: none;
-    color: #ffffff;
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 16px;
-}
+        .banner-content {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+        }
 
-.movies {
-    padding: 20px;
-}
+        .btn-watch {
+            padding: 10px 20px;
+            background-color: #e50914;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
 
-.movies h2 {
-    margin-bottom: 20px;
-}
+        .movies {
+            padding: 20px;
+        }
 
-.movies-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 20px;
-}
+        .movies h2 {
+            margin-bottom: 20px;
+        }
 
-.movie-card {
-    background-color: #333333;
-    padding: 10px;
-    border-radius: 10px;
-    text-align: center;
-}
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
 
-.movie-card img {
-    width: 100%;
-    border-radius: 10px;
-}
+        .movie-card {
+            background-color: #333333;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
 
-.movie-card h3 {
-    margin-top: 10px;
-    font-size: 16px;
-}
+        .movie-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
 
-  </style>
+        .movie-card img {
+            width: 100%;
+            height: 300px; /* Set a fixed height for all images */
+            object-fit: cover; /* Ensure images cover the entire area */
+            border-radius: 10px;
+        }
+
+        .movie-card h3 {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+    </style>
 
     <script src="scripts.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-    const btnWatch = document.querySelector('.btn-watch');
-    btnWatch.addEventListener('click', () => {
-        alert('Commencez à regarder maintenant!');
-    });
-});
-
-  </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnWatch = document.querySelector('.btn-watch');
+            btnWatch.addEventListener('click', () => {
+                alert('Commencez à regarder maintenant!');
+            });
+        });
+    </script>
 </body>
 </html>
