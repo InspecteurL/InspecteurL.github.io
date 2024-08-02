@@ -150,58 +150,85 @@
             }
         }
 
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            z-index: 1000;
-            width: 80%;
-            max-width: 600px;
-            color: white;
-        }
+    .popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 1000;
+    width: 80%;
+    max-width: 600px;
+    color: white;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease-in-out;
+}
 
-        .popup h2 {
-            margin-top: 0;
-        }
+.popup h2 {
+    margin-top: 0;
+    font-size: 1.5em;
+    border-bottom: 2px solid #0385fe;
+    padding-bottom: 10px;
+}
 
-        .popup .close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
-            font-size: 1.5em;
-        }
+.popup .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 1.5em;
+    color: #ff0000;
+}
 
-        .popup .episodes {
-            list-style: none;
-            padding: 0;
-        }
+.popup .episodes {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
 
-        .popup .episodes li {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
+.popup .episodes li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
 
-        .popup .episodes li input {
-            margin-right: 10px;
-        }
+.popup .episodes li:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
 
-        .popup-background {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
+.popup .episodes li input {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+.popup-background {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
     </style>
 </head>
 
@@ -404,6 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelector('.popup-background').style.display = 'none';
     });
 });
+
 
     </script>
 </body>
