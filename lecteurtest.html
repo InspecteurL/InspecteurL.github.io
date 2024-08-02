@@ -242,7 +242,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+              document.addEventListener('DOMContentLoaded', function () {
             const animes = JSON.parse(localStorage.getItem('animes')) || [];
             const categories = ['En cours', 'Terminé', 'En Pause', 'Abandonné', 'Envie de voir'];
             const categoryHasAnime = {};
@@ -280,6 +280,7 @@
                             }
                         });
 
+                        // Nouveau code pour gérer l'affichage des détails de l'anime et la mise à jour des épisodes vus
                         animeDiv.addEventListener('click', function () {
                             const popup = document.querySelector('.popup');
                             const popupBackground = document.querySelector('.popup-background');
@@ -288,18 +289,32 @@
 
                             popupTitle.textContent = animeData.title;
                             episodesList.innerHTML = '';
-                                                        for (let i = 1; i <= animeDiv.dataset.episodes; i++) {
+                            for (let i = 1; i <= animeDiv.dataset.episodes; i++) {
                                 const episodeItem = document.createElement('li');
-                                const isChecked = animeData.status === 'Terminé' ? 'checked' : '';
+                                const isChecked = animeData.watchedEpisodes && animeData.watchedEpisodes.includes(i) ? 'checked' : '';
                                 episodeItem.innerHTML = `<input type="checkbox" ${isChecked}> Épisode ${i}`;
                                 episodesList.appendChild(episodeItem);
 
                                 episodeItem.querySelector('input').addEventListener('change', function () {
+                                    if (this.checked) {
+                                        if (!animeData.watchedEpisodes) {
+                                            animeData.watchedEpisodes = [];
+                                        }
+                                        animeData.watchedEpisodes.push(i);
+                                    } else {
+                                        animeData.watchedEpisodes = animeData.watchedEpisodes.filter(ep => ep !== i);
+                                    }
+                                    localStorage.setItem('animes', JSON.stringify(animes));
+
                                     if (this.checked && i > 1 && !episodesList.children[i - 2].querySelector('input').checked) {
                                         if (confirm('Voulez-vous cocher tous les épisodes précédents comme vus ?')) {
                                             for (let j = 0; j < i; j++) {
                                                 episodesList.children[j].querySelector('input').checked = true;
+                                                if (!animeData.watchedEpisodes.includes(j + 1)) {
+                                                    animeData.watchedEpisodes.push(j + 1);
+                                                }
                                             }
+                                            localStorage.setItem('animes', JSON.stringify(animes));
                                         }
                                     }
 
