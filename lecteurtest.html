@@ -242,151 +242,169 @@
     </div>
 
     <script>
-              document.addEventListener('DOMContentLoaded', function () {
-            const animes = JSON.parse(localStorage.getItem('animes')) || [];
-            const categories = ['En cours', 'Terminé', 'En Pause', 'Abandonné', 'Envie de voir'];
-            const categoryHasAnime = {};
+document.addEventListener('DOMContentLoaded', function () {
+    const animes = JSON.parse(localStorage.getItem('animes')) || [];
+    const categories = ['En cours', 'Terminé', 'En Pause', 'Abandonné', 'Envie de voir'];
+    const categoryHasAnime = {};
 
-            categories.forEach(category => categoryHasAnime[category] = false);
+    // Définir le nombre d'épisodes pour chaque anime
+    const episodesCount = {
+        'Erased': 12,
+        'Steins;Gate': 24,
+        'Steins;Gate 0': 23,
+        'Call of the Night': 13,
+        'Cyberpunk: Edgerunners': 10,
+        'Death Note': 37,
+        'Chibi Revengers': 11,
+        'Hell’s Paradise': 13,
+        'Platinum End': 24,
+        'Oshi no Ko': 11,
+        'Death Parade': 12,
+        'Blue Period': 12,
+        'Jujutsu Kaisen': 45
+    };
 
-            animes.forEach(animeData => {
-                if (animeData?.status && animeData?.img && animeData?.title && animeData?.genre) {
-                    const section = document.getElementById(animeData.status);
-                    if (section) {
-                        const animeDiv = document.createElement('div');
-                        animeDiv.classList.add('movieimg');
-                        animeDiv.dataset.title = animeData.title;
-                        animeDiv.dataset.genre = animeData.genre;
-                        animeDiv.dataset.episodes = animeData.episodes || 12; // Default to 12 episodes if not specified
-                        animeDiv.innerHTML = `
-                            <div class="myimages">
-                                <img src="${animeData.img}" alt="${animeData.title}">
-                            </div>
-                            <h2>${animeData.title}</h2>
-                            <span>${animeData.genre}</span>
-                            <div class="progress-bar" data-status="${animeData.status}"></div>`;
-                        section.querySelector('.anime-container').appendChild(animeDiv);
-                        categoryHasAnime[animeData.status] = true;
+    categories.forEach(category => categoryHasAnime[category] = false);
 
-                        animeDiv.addEventListener('contextmenu', function (e) {
-                            e.preventDefault();
-                            if (confirm('Voulez-vous supprimer cet anime ?')) {
-                                const index = animes.findIndex(anime => anime.title === animeData.title);
-                                if (index !== -1) {
-                                    animes.splice(index, 1);
+    animes.forEach(animeData => {
+        if (animeData?.status && animeData?.img && animeData?.title && animeData?.genre) {
+            const section = document.getElementById(animeData.status);
+            if (section) {
+                const animeDiv = document.createElement('div');
+                animeDiv.classList.add('movieimg');
+                animeDiv.dataset.title = animeData.title;
+                animeDiv.dataset.genre = animeData.genre;
+                animeDiv.dataset.episodes = episodesCount[animeData.title] || 12; // Utiliser le nombre d'épisodes défini ou 12 par défaut
+                animeDiv.innerHTML = `
+                    <div class="myimages">
+                        <img src="${animeData.img}" alt="${animeData.title}">
+                    </div>
+                    <h2>${animeData.title}</h2>
+                    <span>${animeData.genre}</span>
+                    <div class="progress-bar" data-status="${animeData.status}"></div>`;
+                section.querySelector('.anime-container').appendChild(animeDiv);
+                categoryHasAnime[animeData.status] = true;
+
+                animeDiv.addEventListener('contextmenu', function (e) {
+                    e.preventDefault();
+                    if (confirm('Voulez-vous supprimer cet anime ?')) {
+                        const index = animes.findIndex(anime => anime.title === animeData.title);
+                        if (index !== -1) {
+                            animes.splice(index, 1);
+                            localStorage.setItem('animes', JSON.stringify(animes));
+                            this.remove();
+                        }
+                    }
+                });
+
+                // Nouveau code pour gérer l'affichage des détails de l'anime et la mise à jour des épisodes vus
+                animeDiv.addEventListener('click', function () {
+                    const popup = document.querySelector('.popup');
+                    const popupBackground = document.querySelector('.popup-background');
+                    const popupTitle = document.getElementById('popup-title');
+                    const episodesList = document.querySelector('.episodes');
+
+                    popupTitle.textContent = animeData.title;
+                    episodesList.innerHTML = '';
+                    for (let i = 1; i <= animeDiv.dataset.episodes; i++) {
+                        const episodeItem = document.createElement('li');
+                        const isChecked = animeData.watchedEpisodes && animeData.watchedEpisodes.includes(i) ? 'checked' : '';
+                        episodeItem.innerHTML = `<input type="checkbox" ${isChecked}> Épisode ${i}`;
+                        episodesList.appendChild(episodeItem);
+
+                        episodeItem.querySelector('input').addEventListener('change', function () {
+                            if (this.checked) {
+                                if (!animeData.watchedEpisodes) {
+                                    animeData.watchedEpisodes = [];
+                                }
+                                animeData.watchedEpisodes.push(i);
+                            } else {
+                                animeData.watchedEpisodes = animeData.watchedEpisodes.filter(ep => ep !== i);
+                            }
+                            localStorage.setItem('animes', JSON.stringify(animes));
+
+                            if (this.checked && i > 1 && !episodesList.children[i - 2].querySelector('input').checked) {
+                                if (confirm('Voulez-vous cocher tous les épisodes précédents comme vus ?')) {
+                                    for (let j = 0; j < i; j++) {
+                                        episodesList.children[j].querySelector('input').checked = true;
+                                        if (!animeData.watchedEpisodes.includes(j + 1)) {
+                                            animeData.watchedEpisodes.push(j + 1);
+                                        }
+                                    }
                                     localStorage.setItem('animes', JSON.stringify(animes));
-                                    this.remove();
                                 }
                             }
-                        });
 
-                        // Nouveau code pour gérer l'affichage des détails de l'anime et la mise à jour des épisodes vus
-                        animeDiv.addEventListener('click', function () {
-                            const popup = document.querySelector('.popup');
-                            const popupBackground = document.querySelector('.popup-background');
-                            const popupTitle = document.getElementById('popup-title');
-                            const episodesList = document.querySelector('.episodes');
-
-                            popupTitle.textContent = animeData.title;
-                            episodesList.innerHTML = '';
-                            for (let i = 1; i <= animeDiv.dataset.episodes; i++) {
-                                const episodeItem = document.createElement('li');
-                                const isChecked = animeData.watchedEpisodes && animeData.watchedEpisodes.includes(i) ? 'checked' : '';
-                                episodeItem.innerHTML = `<input type="checkbox" ${isChecked}> Épisode ${i}`;
-                                episodesList.appendChild(episodeItem);
-
-                                episodeItem.querySelector('input').addEventListener('change', function () {
-                                    if (this.checked) {
-                                        if (!animeData.watchedEpisodes) {
-                                            animeData.watchedEpisodes = [];
-                                        }
-                                        animeData.watchedEpisodes.push(i);
-                                    } else {
-                                        animeData.watchedEpisodes = animeData.watchedEpisodes.filter(ep => ep !== i);
-                                    }
-                                    localStorage.setItem('animes', JSON.stringify(animes));
-
-                                    if (this.checked && i > 1 && !episodesList.children[i - 2].querySelector('input').checked) {
-                                        if (confirm('Voulez-vous cocher tous les épisodes précédents comme vus ?')) {
-                                            for (let j = 0; j < i; j++) {
-                                                episodesList.children[j].querySelector('input').checked = true;
-                                                if (!animeData.watchedEpisodes.includes(j + 1)) {
-                                                    animeData.watchedEpisodes.push(j + 1);
-                                                }
-                                            }
-                                            localStorage.setItem('animes', JSON.stringify(animes));
-                                        }
-                                    }
-
-                                    const allChecked = Array.from(episodesList.children).every(item => item.querySelector('input').checked);
-                                    if (allChecked) {
-                                        animeData.status = 'Terminé';
-                                        section.querySelector('.anime-container').removeChild(animeDiv);
-                                        document.getElementById('Terminé').querySelector('.anime-container').appendChild(animeDiv);
-                                        localStorage.setItem('animes', JSON.stringify(animes));
-                                    }
-
-                                    if (animeData.status === 'En cours') {
-                                        const checkedCount = Array.from(episodesList.children).filter(item => item.querySelector('input').checked).length;
-                                        const progress = (checkedCount / animeDiv.dataset.episodes) * 100;
-                                        animeDiv.querySelector('.progress-bar').style.width = `${progress}%`;
-                                    }
-                                });
+                            const allChecked = Array.from(episodesList.children).every(item => item.querySelector('input').checked);
+                            if (allChecked) {
+                                animeData.status = 'Terminé';
+                                section.querySelector('.anime-container').removeChild(animeDiv);
+                                document.getElementById('Terminé').querySelector('.anime-container').appendChild(animeDiv);
+                                localStorage.setItem('animes', JSON.stringify(animes));
                             }
 
-                            popup.style.display = 'block';
-                            popupBackground.style.display = 'block';
+                            if (animeData.status === 'En cours') {
+                                const checkedCount = Array.from(episodesList.children).filter(item => item.querySelector('input').checked).length;
+                                const progress = (checkedCount / animeDiv.dataset.episodes) * 100;
+                                animeDiv.querySelector('.progress-bar').style.width = `${progress}%`;
+                            }
                         });
-                    } else {
-                        console.error(`Section with ID ${animeData.status} not found`);
                     }
-                } else {
-                    console.error(`Invalid animeData or status for key`);
-                    console.log(`Value: ${JSON.stringify(animeData)}`);
-                }
-            });
 
-            categories.forEach(category => {
-                if (!categoryHasAnime[category]) {
-                    document.getElementById(category).style.display = 'none';
-                }
-            });
+                    popup.style.display = 'block';
+                    popupBackground.style.display = 'block';
+                });
+            } else {
+                console.error(`Section with ID ${animeData.status} not found`);
+            }
+        } else {
+            console.error(`Invalid animeData or status for key`);
+            console.log(`Value: ${JSON.stringify(animeData)}`);
+        }
+    });
 
-            document.querySelectorAll('.progress-bar').forEach(bar => {
-                switch (bar.dataset.status) {
-                    case 'En cours':
-                        bar.style.width = '0%';
-                        bar.style.backgroundColor = 'blue';
-                        break;
-                    case 'Terminé':
-                        bar.style.width = '100%';
-                        bar.style.background = 'linear-gradient(90deg, rgba(0,153,255,1) 0%, rgba(0,204,255,1) 50%, rgba(0,102,255,1) 100%)';
-                        break;
-                    case 'En Pause':
-                        bar.style.width = '0%';
-                        bar.style.background = 'linear-gradient(90deg, rgba(255,153,0,1) 0%, rgba(255,187,51,1) 50%, rgba(255,102,0,1) 100%)';
-                        break;
-                    case 'Abandonné':
-                        bar.style.width = '0%';
-                        bar.style.background = 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,51,51,1) 50%, rgba(204,0,0,1) 100%)';
-                        break;
-                    case 'Envie de voir':
-                        bar.style.width = '0%';
-                        bar.style.background = 'linear-gradient(90deg, rgba(0,255,0,1) 0%, rgba(51,255,51,1) 50%, rgba(0,204,0,1) 100%)';
-                        break;
-                }
-            });
+    categories.forEach(category => {
+        if (!categoryHasAnime[category]) {
+            document.getElementById(category).style.display = 'none';
+        }
+    });
 
-            document.querySelector('.popup .close').addEventListener('click', function () {
-                document.querySelector('.popup').style.display = 'none';
-                document.querySelector('.popup-background').style.display = 'none';
-            });
+    document.querySelectorAll('.progress-bar').forEach(bar => {
+        switch (bar.dataset.status) {
+            case 'En cours':
+                bar.style.width = '0%';
+                bar.style.backgroundColor = 'blue';
+                break;
+            case 'Terminé':
+                bar.style.width = '100%';
+                bar.style.background = 'linear-gradient(90deg, rgba(0,153,255,1) 0%, rgba(0,204,255,1) 50%, rgba(0,102,255,1) 100%)';
+                break;
+            case 'En Pause':
+                bar.style.width = '0%';
+                bar.style.background = 'linear-gradient(90deg, rgba(255,153,0,1) 0%, rgba(255,187,51,1) 50%, rgba(255,102,0,1) 100%)';
+                break;
+            case 'Abandonné':
+                bar.style.width = '0%';
+                bar.style.background = 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,51,51,1) 50%, rgba(204,0,0,1) 100%)';
+                break;
+            case 'Envie de voir':
+                bar.style.width = '0%';
+                bar.style.background = 'linear-gradient(90deg, rgba(0,255,0,1) 0%, rgba(51,255,51,1) 50%, rgba(0,204,0,1) 100%)';
+                break;
+        }
+    });
 
-            document.querySelector('.popup-background').addEventListener('click', function () {
-                document.querySelector('.popup').style.display = 'none';
-                document.querySelector('.popup-background').style.display = 'none';
-            });
-        });
+    document.querySelector('.popup .close').addEventListener('click', function () {
+        document.querySelector('.popup').style.display = 'none';
+        document.querySelector('.popup-background').style.display = 'none';
+    });
+
+    document.querySelector('.popup-background').addEventListener('click', function () {
+        document.querySelector('.popup').style.display = 'none';
+        document.querySelector('.popup-background').style.display = 'none';
+    });
+});
+
     </script>
 </body>
 
