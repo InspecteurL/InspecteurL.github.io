@@ -42,9 +42,11 @@
             height: 450px;
             object-fit: cover;
             border-radius: 5px;
+            transition: transform 0.3s ease;
         }
 
         .movieimg .myimages img:hover {
+            transform: scale(1.05);
             border: 5px #0385fe solid;
             border-radius: 23px;
             background: #ff0000;
@@ -286,11 +288,35 @@
 
                             popupTitle.textContent = animeData.title;
                             episodesList.innerHTML = '';
-                            for (let i = 1; i <= animeDiv.dataset.episodes; i++) {
+                                                        for (let i = 1; i <= animeDiv.dataset.episodes; i++) {
                                 const episodeItem = document.createElement('li');
                                 const isChecked = animeData.status === 'Terminé' ? 'checked' : '';
                                 episodeItem.innerHTML = `<input type="checkbox" ${isChecked}> Épisode ${i}`;
                                 episodesList.appendChild(episodeItem);
+
+                                episodeItem.querySelector('input').addEventListener('change', function () {
+                                    if (this.checked && i > 1 && !episodesList.children[i - 2].querySelector('input').checked) {
+                                        if (confirm('Voulez-vous cocher tous les épisodes précédents comme vus ?')) {
+                                            for (let j = 0; j < i; j++) {
+                                                episodesList.children[j].querySelector('input').checked = true;
+                                            }
+                                        }
+                                    }
+
+                                    const allChecked = Array.from(episodesList.children).every(item => item.querySelector('input').checked);
+                                    if (allChecked) {
+                                        animeData.status = 'Terminé';
+                                        section.querySelector('.anime-container').removeChild(animeDiv);
+                                        document.getElementById('Terminé').querySelector('.anime-container').appendChild(animeDiv);
+                                        localStorage.setItem('animes', JSON.stringify(animes));
+                                    }
+
+                                    if (animeData.status === 'En cours') {
+                                        const checkedCount = Array.from(episodesList.children).filter(item => item.querySelector('input').checked).length;
+                                        const progress = (checkedCount / animeDiv.dataset.episodes) * 100;
+                                        animeDiv.querySelector('.progress-bar').style.width = `${progress}%`;
+                                    }
+                                });
                             }
 
                             popup.style.display = 'block';
@@ -350,5 +376,3 @@
 </body>
 
 </html>
-
-
