@@ -29,6 +29,7 @@
             position: relative;
             padding: 0px 0px 0px 10px;
             max-width: max-content;
+            cursor: pointer;
         }
 
         .movieimg .myimages {
@@ -146,6 +147,59 @@
                 width: 100%;
             }
         }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            width: 80%;
+            max-width: 600px;
+            color: white;
+        }
+
+        .popup h2 {
+            margin-top: 0;
+        }
+
+        .popup .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 1.5em;
+        }
+
+        .popup .episodes {
+            list-style: none;
+            padding: 0;
+        }
+
+        .popup .episodes li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .popup .episodes li input {
+            margin-right: 10px;
+        }
+
+        .popup-background {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
     </style>
 </head>
 
@@ -177,6 +231,14 @@
         <h2>Envie de voir</h2>
         <div class="anime-container"></div>
     </div>
+
+    <div class="popup-background"></div>
+    <div class="popup">
+        <span class="close">×</span>
+        <h2 id="popup-title"></h2>
+        <ul class="episodes"></ul>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const animes = JSON.parse(localStorage.getItem('animes')) || [];
@@ -193,6 +255,7 @@
                         animeDiv.classList.add('movieimg');
                         animeDiv.dataset.title = animeData.title;
                         animeDiv.dataset.genre = animeData.genre;
+                        animeDiv.dataset.episodes = animeData.episodes || 12; // Default to 12 episodes if not specified
                         animeDiv.innerHTML = `
                             <div class="myimages">
                                 <img src="${animeData.img}" alt="${animeData.title}">
@@ -213,6 +276,25 @@
                                     this.remove();
                                 }
                             }
+                        });
+
+                        animeDiv.addEventListener('click', function () {
+                            const popup = document.querySelector('.popup');
+                            const popupBackground = document.querySelector('.popup-background');
+                            const popupTitle = document.getElementById('popup-title');
+                            const episodesList = document.querySelector('.episodes');
+
+                            popupTitle.textContent = animeData.title;
+                            episodesList.innerHTML = '';
+                            for (let i = 1; i <= animeDiv.dataset.episodes; i++) {
+                                const episodeItem = document.createElement('li');
+                                const isChecked = animeData.status === 'Terminé' ? 'checked' : '';
+                                episodeItem.innerHTML = `<input type="checkbox" ${isChecked}> Épisode ${i}`;
+                                episodesList.appendChild(episodeItem);
+                            }
+
+                            popup.style.display = 'block';
+                            popupBackground.style.display = 'block';
                         });
                     } else {
                         console.error(`Section with ID ${animeData.status} not found`);
@@ -245,19 +327,28 @@
                         break;
                     case 'Abandonné':
                         bar.style.width = '0%';
-                        bar.style.background = 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,102,102,1) 50%, rgba(204,0,0,1) 100%)';
+                        bar.style.background = 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,51,51,1) 50%, rgba(204,0,0,1) 100%)';
                         break;
                     case 'Envie de voir':
                         bar.style.width = '0%';
-                        bar.style.backgroundColor = 'purple';
-                        break;
-                    default:
-                        bar.style.width = '0';
+                        bar.style.background = 'linear-gradient(90deg, rgba(0,255,0,1) 0%, rgba(51,255,51,1) 50%, rgba(0,204,0,1) 100%)';
                         break;
                 }
+            });
+
+            document.querySelector('.popup .close').addEventListener('click', function () {
+                document.querySelector('.popup').style.display = 'none';
+                document.querySelector('.popup-background').style.display = 'none';
+            });
+
+            document.querySelector('.popup-background').addEventListener('click', function () {
+                document.querySelector('.popup').style.display = 'none';
+                document.querySelector('.popup-background').style.display = 'none';
             });
         });
     </script>
 </body>
 
 </html>
+
+
