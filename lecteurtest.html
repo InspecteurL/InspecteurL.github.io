@@ -3,6 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <title>Profil</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: rgb(25,34,77);
+            background: radial-gradient(circle, rgba(25,34,77,1) 0%, rgba(0,0,0,1) 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        #En\ cours, #Terminé, #En\ Pause, #Abandonné, #Envie\ de\ voir {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .anime-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .movieimg {
+            margin: 10px;
+            position: relative;
+            padding: 0px;
+            max-width: max-content;
+            padding-left: 10px;
+        }
+
+        .movieimg .myimages {
+            height: auto;
+            width: 100%;
+        }
+
+        .movieimg .myimages img {
+            width: 300px;
+            height: 450px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .movieimg .myimages img:hover {
+            border: 5px #0385fe solid;
+            border-radius: 23px;
+            background: #ff0000;
+            box-shadow: 15px 15px 100px #660000, -15px -15px 100px #ff0000;
+        }
+
+        .progress-bar {
+            height: 10px;
+            border-radius: 70px;
+            position: absolute;
+            bottom: 100px;
+            left: 0;
+            right: 0;
+            background-color: #0385fe;
+        }
+
+        .movieimg .content {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .movieimg .title {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .moviecontainer::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .moviecontainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-gap: 15px;
+            height: max-content;
+            width: max-content;
+            margin: auto;
+        }
+
+        .card {
+            border-radius: 0.5em;
+            box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+            background-color: navy;
+            width: 17.5em;
+            height: 25em;
+            overflow: hidden;
+            transition: all 1s ease-in-out;
+        }
+
+        .card img {
+            border-top-right-radius: inherit;
+            border-top-left-radius: inherit;
+            display: block;
+            width: 100%;
+            height: 75%;
+            object-fit: cover;
+        }
+
+        .card .content {
+            background-color: darkblue;
+            border-bottom-left-radius: inherit;
+            border-bottom-right-radius: inherit;
+            padding: 1em;
+            text-align: center;
+            height: 25%;
+        }
+
+        .card .content h1,
+        .card .content h3 {
+            margin: 0.35em 0;
+        }
+
+        .card .content h1 {
+            color: #fff;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+        .card .content h3 {
+            color: #ccc;
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .center {
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: center;
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: transparent;
+        }
+
+        li {
+            float: left;
+        }
+
+        li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        li a:hover {
+            background-color: red;
+            border-radius: 10px;
+        }
+
+        @media screen and (max-width: 600px) {
+            .movieimg,
+            .card {
+                width: 100%;
+            }
+        }
+
+        /* Style de la fenêtre contextuelle */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        /* Contenu de la fenêtre contextuelle */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Bouton pour fermer la fenêtre contextuelle */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #episodePopup {
+            background: rgb(34,7,54);
+            background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); 
+        }
+
+        .modal-content {
+            background: rgb(34,7,54);
+            background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+            border: rgb(34,7,54);
+        }
+
+        .modal-content h1 {
+            color: white;
+        }
+
+        .modal-content .episodes {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+
+        .modal-content .episodes li {
+            margin: 5px 0;
+        }
+
+        .modal-content .episodes input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+    </style>
 </head>
 <body>
     <ul>
@@ -32,688 +279,97 @@
         <strong><h2>Envie de voir</h2></strong>
         <div class="anime-container"></div>
     </div>
-     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const animes = JSON.parse(localStorage.getItem('animes')) || [];
-        const categories = ['En cours', 'Terminé', 'En Pause', 'Abandonné', 'Envie de voir'];
-        const categoryHasAnime = {};
 
-        // Initialisez categoryHasAnime avec false pour chaque catégorie
-        categories.forEach(category => {
-            categoryHasAnime[category] = false;
-        });
+    <!-- Fenêtre contextuelle pour les épisodes -->
+    <div id="episodePopup" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h1 id="animeTitle"></h1>
+            <ul class="episodes" id="episodesList"></ul>
+        </div>
+    </div>
 
-        for (let i = 0; i < animes.length; i++) {
-            const animeData = animes[i];
-            if (animeData && animeData.status && animeData.img && animeData.title && animeData.genre) {
-                const section = document.getElementById(animeData.status);
-                if (section) {
-                    const animeDiv = document.createElement('div');
-                    animeDiv.classList.add('movieimg');
-                    animeDiv.dataset.title = animeData.title;
-                    animeDiv.dataset.genre = animeData.genre;
-                    animeDiv.innerHTML = `
-                    <div class="myimages">
-                        <img src="${animeData.img}" alt="${animeData.title}">
-                    </div>
-                    <h2>${animeData.title}</h2>
-                    <span>${animeData.genre}</span>
-                    <div class="progress-bar" data-status="${animeData.status}"></div>
-                    `;
-                    section.querySelector('.anime-container').appendChild(animeDiv);
-                    categoryHasAnime[animeData.status] = true;
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const animes = JSON.parse(localStorage.getItem('animes')) || [];
+            const categories = ['En cours', 'Terminé', 'En Pause', 'Abandonné', 'Envie de voir'];
+            const categoryHasAnime = {};
 
-                    // Ajoutez un gestionnaire d'événements pour le clic droit
-                    animeDiv.addEventListener('contextmenu', function(e) {
-                        e.preventDefault();
-                        if (confirm('Voulez-vous supprimer cet anime ?')) {
-                            // Supprimez l'anime du tableau 'animes'
-                            const index = animes.findIndex(anime => anime.title === animeData.title);
-                            if (index !== -1) {
-                                animes.splice(index, 1);
-                                localStorage.setItem('animes', JSON.stringify(animes));
-                            }
+            // Initialisez categoryHasAnime avec false pour chaque catégorie
+            categories.forEach(category => {
+                categoryHasAnime[category] = false;
+            });
 
-                            // Supprimez l'anime de la page
-                            this.remove();
-                        }
-                    });
-                } else {
-                    console.error(`Section with ID ${animeData.status} not found`);
+            for (let i = 0; i < animes.length; i++) {
+                const animeData = animes[i];
+                const category = animeData.category;
+
+                if (categoryHasAnime[category] === false) {
+                    const div = document.getElementById(category);
+                    const animeContainer = div.querySelector('.anime-container');
+                    categoryHasAnime[category] = true;
                 }
-            } else {
-                console.error(`Invalid animeData or status for key ${i}`);
-                console.log(`Index: ${i}, Value: ${JSON.stringify(animeData)}`);
-            }
-        }
 
-        // Cachez les titres des catégories qui n'ont pas d'anime
-        categories.forEach(category => {
-            if (!categoryHasAnime[category]) {
-                document.getElementById(category).style.display = 'none';
+                const animeDiv = createAnimeDiv(animeData);
+                document.querySelector(`#${category} .anime-container`).appendChild(animeDiv);
+            }
+
+            // Ajoutez une fonction pour créer les éléments div pour chaque anime
+            function createAnimeDiv(anime) {
+                const animeDiv = document.createElement('div');
+                animeDiv.className = 'anime';
+
+                animeDiv.innerHTML = `
+                    <div class="movieimg">
+                        <div class="myimages">
+                            <img src="${anime.image}" alt="${anime.title}">
+                            <div class="progress-bar"></div>
+                        </div>
+                        <div class="content">
+                            <div class="title">${anime.title}</div>
+                        </div>
+                    </div>
+                `;
+
+                animeDiv.addEventListener('click', function() {
+                    openEpisodePopup(anime);
+                });
+
+                return animeDiv;
+            }
+
+            // Fonction pour ouvrir la fenêtre contextuelle
+            function openEpisodePopup(anime) {
+                const modal = document.getElementById("episodePopup");
+                const span = document.getElementsByClassName("close")[0];
+                const episodesList = document.getElementById("episodesList");
+                const animeTitle = document.getElementById("animeTitle");
+
+                animeTitle.textContent = anime.title;
+
+                episodesList.innerHTML = '';
+                for (let i = 1; i <= anime.totalEpisodes; i++) {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <input type="checkbox" id="episode${i}" name="episode${i}">
+                        <label for="episode${i}">Épisode ${i}</label>
+                    `;
+                    episodesList.appendChild(listItem);
+                }
+
+                modal.style.display = "block";
+
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function(event) {
+                    if (event.target === modal) {
+                        modal.style.display = "none";
+                    }
+                }
             }
         });
-
-        // Ajouter des barres de progression en fonction du statut de l'anime
-        const progressBars = document.querySelectorAll('.progress-bar');
-        progressBars.forEach(bar => {
-            const status = bar.dataset.status;
-            switch (status) {
-                case 'En cours':
-                    bar.style.width = '0%';
-                    bar.style.backgroundColor = 'blue';
-                    break;
-                case 'Terminé':
-            bar.style.width = '100%';
-            bar.style.background = 'rgb(0,153,255)';
-            bar.style.background = '-moz-linear-gradient(90deg, rgba(0,153,255,1) 0%, rgba(0,204,255,1) 50%, rgba(0,102,255,1) 100%)';
-            bar.style.background = '-webkit-linear-gradient(90deg, rgba(0,153,255,1) 0%, rgba(0,204,255,1) 50%, rgba(0,102,255,1) 100%)';
-            bar.style.background = 'linear-gradient(90deg, rgba(0,153,255,1) 0%, rgba(0,204,255,1) 50%, rgba(0,102,255,1) 100%)';
-            bar.style.filter = 'progid:DXImageTransform.Microsoft.gradient(startColorstr="#0099ff",endColorstr="#0066ff",GradientType=1)';
-            break;
-               case 'En Pause':
-            bar.style.width = '0%';
-            bar.style.background = 'rgb(255,153,0)';
-            bar.style.background = '-moz-linear-gradient(90deg, rgba(255,153,0,1) 0%, rgba(255,187,51,1) 50%, rgba(255,102,0,1) 100%)';
-            bar.style.background = '-webkit-linear-gradient(90deg, rgba(255,153,0,1) 0%, rgba(255,187,51,1) 50%, rgba(255,102,0,1) 100%)';
-            bar.style.background = 'linear-gradient(90deg, rgba(255,153,0,1) 0%, rgba(255,187,51,1) 50%, rgba(255,102,0,1) 100%)';
-            bar.style.filter = 'progid:DXImageTransform.Microsoft.gradient(startColorstr="#ff9900",endColorstr="#ff6600",GradientType=1)';
-            break;
-               case 'Abandonné':
-            bar.style.width = '0%';
-            bar.style.background = 'rgb(255,0,0)';
-            bar.style.background = '-moz-linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,102,102,1) 50%, rgba(204,0,0,1) 100%)';
-            bar.style.background = '-webkit-linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,102,102,1) 50%, rgba(204,0,0,1) 100%)';
-            bar.style.background = 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,102,102,1) 50%, rgba(204,0,0,1) 100%)';
-            bar.style.filter = 'progid:DXImageTransform.Microsoft.gradient(startColorstr="#ff0000",endColorstr="#cc0000",GradientType=1)';
-            break;
-                case 'Envie de voir':
-                    bar.style.width = '0%';
-                    bar.style.backgroundColor = 'purple';
-                    break;
-                default:
-                    bar.style.width = '0';
-                    break;
-            }
-        });
-    });
     </script>
-            <style>
-            @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-            body{
-                font-family: 'Poppins', sans-serif;
-                background: rgb(25,34,77);
-background: -moz-radial-gradient(circle, rgba(25,34,77,1) 0%, rgba(0,0,0,1) 100%);
-background: -webkit-radial-gradient(circle, rgba(25,34,77,1) 0%, rgba(0,0,0,1) 100%);
-background: radial-gradient(circle, rgba(25,34,77,1) 0%, rgba(0,0,0,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#19224d",endColorstr="#000000",GradientType=1); 
-                color: white;
-    
-            }
-     #En\ cours, #Terminé, #En\ Pause, #Abandonné, #Envie\ de\ voir {
-            display: flex;
-            flex-direction: column;
-        }
-        .anime-container {
-            display: flex;
-            flex-wrap: wrap;
-        }
-        .movieimg {
-            margin: 10px;
-        }
-
-            .card:hover {
-            /* Styles pour les cartes au survol */
-            /* Par exemple : */
-            transform: scale(1.05);
-        }
-            .bgBlue {
-    background-color: #0385fe;
-} 
-
-.context-menu { display: none; position: absolute; background: #fff; border: 1px solid #ccc; }
-        .context-menu-item { padding: 8px; cursor: pointer; }
-        .context-menu-item:hover { background: #eee; }
-
-
-.moviesection{
-    max-width: 900px;
-    text-transform: uppercase;
-    padding-left: 5%;
-    color: white;
-}
-hr.rounded{
-    border-top: 3px solid red;
-    border-radius: 5px;
-}
-.movieimg .myimages{
-    height: auto; /* Change ici pour permettre aux images de s'adapter à leur conteneur */
-    width: 100%; /* Change ici pour permettre aux images de s'adapter à leur conteneur */
-}
-.movieimg .myimages img{
-    width: 300px; /* Définissez une largeur spécifique ici */
-    height: 450px; /* Définissez une hauteur spécifique ici */
-    object-fit: cover; 
-    border-radius: 5px;
-   
-}
-
-
-
-.movieimg .myimages img:hover {
-  border: 5px #0385fe solid;
-  border-radius: 23px;
-background: #ff0000;
-box-shadow:  15px 15px 100px #660000,
-             -15px -15px 100px #ff0000;
-}
-
-
-
-.movieimg{
-    padding: 0px;
-    max-width: max-content;
-    padding-left: 10px;
-}
-.moviecontainer::after{
-    content: "";
-    clear: both;
-    display: table;
-}
-.moviecontainer{
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    grid-gap: 15px;
-    height: max-content;
-    width: max-content;
-    margin: auto; /* Ajoutez cette ligne pour centrer le conteneur */
-}
-
-
-.moviecontainer{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Fixez un nombre spécifique de colonnes ici */
-    grid-gap: 0px;
-    height: max-content;
-    width: max-content;
-}
-
-
-
-
-
-
-
-    
-
-.cardBlue {
-    background-color: darkblue;
-}
-
-.center {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  justify-content: center;
-}
-
-.wrapper {
-  display: flex;
-  grid-gap: 1em;
-  overflow: hidden;
-  width: 70em; /* Adjusted to fit 4 cards */
-}
-
-.wrapper .inner {
-  display: flex;
-  grid-gap: 1em;
-  transition: all 1s ease-in-out;
-  width: calc(17.5em * 12); /* Adjust to number of cards */
-}
-
-.card {
-  border-radius: 0.5em;
-  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
-  background-color: navy;
-  width: 17.5em; /* Fixed width */
-  height: 25em; /* Fixed height */
-  overflow: hidden; /* Hide overflow for images */
-}
-
-.card img {
-  border-top-right-radius: inherit;
-  border-top-left-radius: inherit;
-  display: block;
-  width: 100%; /* Make the image take the full width of the card */
-  height: 75%; /* Increased height for images */
-  object-fit: cover; /* Ensures the image covers the area without stretching */
-}
-
-.card .content {
-  background: cardBlue;
-  border-bottom-left-radius: inherit;
-  border-bottom-right-radius: inherit;
-  padding: 1em;
-  text-align: center;
-  height: 25%; /* Adjust content height to fill the card */
-}
-
-.card .content h1,
-.card .content h3 {
-  margin: 0.35em 0;
-}
-
-.card .content h1 {
-  color: #fff;
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.card .content h3 {
-  color: #ccc;
-  font-size: 0.9rem;
-  font-weight: 300;
-}
-
-.map {
-  display: flex;
-  justify-content: center;
-  margin-top: 1em;
-}
-
-.map button {
-    background-color: #4CAF50; /* Green */
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    transition-duration: 0.4s;
-    cursor: pointer;
-}
-
-.map button:hover {
-    background-color: white; 
-    color: black; 
-    border: 2px solid #4CAF50;
-}
-
-
-.map button.active {
-  background: red;
-}
-
-.map button.active:after {
-  content: "";
-  left: 50%;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  top: 50%;
-}
-
-
-
-.gradient-box {
-    width: 1100px;
-    height: 600px;
-    margin-top: 20px;
-    border: 1px solid #000;
-    border-radius: 10px;
-}
-
-/* Style pour le dégradé violet-orange (Vo) */
-.gradient-vo {
-    background: linear-gradient(to bottom right, violet, orange);
-}
-
-/* Style pour le dégradé vert-bleu (VF) */
-.gradient-vf {
-    background: linear-gradient(to bottom right, green, blue);
-}
-
-.modal-content h1{
-    color: white;
-}
-
-            /* Style de la fenêtre contextuelle */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgb(0,0,0);
-  background-color: rgba(0,0,0,0.4);
-  padding-top: 60px;
-}
-
-/* Contenu de la fenêtre contextuelle */
-.modal-content {
-  background-color: #fefefe;
-  margin: 5% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  align-items: center;
-  text-align: center;
-}
-
-/* Bouton pour fermer la fenêtre contextuelle */
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-#episodePopup{
-    background: rgb(34,7,54);
-background: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-background: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); 
-}
-
-.modal-content{
-    background: rgb(34,7,54);
-background: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-background: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); 
-border: rgb(34,7,54);
-border: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-border: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-border: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); ;
-}
-
-            body {
-    overflow-x: hidden;
-}
-
-
-            .btn{
-                position: absolute;
-                top: 65%;
-                left: 10%;
-                background-color: red;
-                color: white;
-                font-size: 16px;
-                padding: 16px 30px;
-                border: none;
-                cursor: pointer;
-                border-radius: 10px;
-                text-align: center;
-                display: block;
-            }
-            .btn2{
-                position: absolute;
-                top: 1%;
-                left: 90%;
-                background-color: red;
-                color: white;
-                font-size: 16px;
-                padding: 16px 30px;
-                border: none;
-                cursor: pointer;
-                border-radius: 10px;
-                text-align: center;
-    
-            }
-    
-            .BigText{
-                position: absolute;
-                top: 30%;
-                left: 10%;
-                width: 30%;
-                font-size: 300%;
-                color: white;
-            }
-            
-            ul{
-                list-style-type: none;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-                background-color: transparent;
-            }
-            li{
-                float: left;
-            }
-            li a{
-                display: block;
-                color: white;
-                text-align: center;
-                padding: 14px 16px;
-                text-decoration: none;
-            }
-            li a:hover{
-                background-color: red;
-                border-radius: 10px;
-            }
-                    .arcaneimg{
-                width: 1850px;
-                height: 1000px;
-            }
-            
-            hr.rounded{
-                border-top: 3px solid red;
-                border-radius: 5px;
-            }
-            
-    @media screen and (max-width: 600px) {
-      .arcaneimg{
-        width: 100%;
-
-      }
-      
-      ul{
-        width: 100%;
-      }
-
-     
-    }
-
-    @media screen and (max-width: 600px) {
-  .card {
-    width: 100%;
-  }
-  .movieimg {
-    width: 100%;
-  }
-}
-
-            
-        </style>
-  </style>
 </body>
 </html>
-
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-    
-    body {
-        font-family: 'Poppins', sans-serif;
-        background: rgb(25,34,77);
-        background: radial-gradient(circle, rgba(25,34,77,1) 0%, rgba(0,0,0,1) 100%);
-        color: white;
-        overflow-x: hidden;
-    }
-
-    #En\ cours, #Terminé, #En\ Pause, #Abandonné, #Envie\ de\ voir {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .anime-container {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .movieimg {
-        margin: 10px;
-        position: relative;
-        padding: 0px;
-        max-width: max-content;
-        padding-left: 10px;
-    }
-
-    .movieimg .myimages {
-        height: auto;
-        width: 100%;
-    }
-
-    .movieimg .myimages img {
-        width: 300px;
-        height: 450px;
-        object-fit: cover;
-        border-radius: 5px;
-    }
-
-    .movieimg .myimages img:hover {
-        border: 5px #0385fe solid;
-        border-radius: 23px;
-        background: #ff0000;
-        box-shadow: 15px 15px 100px #660000, -15px -15px 100px #ff0000;
-    }
-
-    .progress-bar {
-        height: 10px;
-        border-radius: 70px;
-        position: absolute;
-        bottom: 100px;/* Adjust as needed */
-        left: 0;
-        right: 0;
-        background-color: #0385fe; /* Color of the progress bar */
-    }
-
-    .movieimg .content {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 100%;
-    }
-
-    .movieimg .title {
-        margin-top: 10px;
-        text-align: center;
-    }
-
-    .moviecontainer::after {
-        content: "";
-        clear: both;
-        display: table;
-    }
-
-    .moviecontainer {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        grid-gap: 15px;
-        height: max-content;
-        width: max-content;
-        margin: auto;
-    }
-
-    .card {
-        border-radius: 0.5em;
-        box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
-        background-color: navy;
-        width: 17.5em;
-        height: 25em;
-        overflow: hidden;
-        transition: all 1s ease-in-out;
-    }
-
-    .card img {
-        border-top-right-radius: inherit;
-        border-top-left-radius: inherit;
-        display: block;
-        width: 100%;
-        height: 75%;
-        object-fit: cover;
-    }
-
-    .card .content {
-        background-color: darkblue;
-        border-bottom-left-radius: inherit;
-        border-bottom-right-radius: inherit;
-        padding: 1em;
-        text-align: center;
-        height: 25%;
-    }
-
-    .card .content h1,
-    .card .content h3 {
-        margin: 0.35em 0;
-    }
-
-    .card .content h1 {
-        color: #fff;
-        font-size: 1.25rem;
-        line-height: 1;
-    }
-
-    .card .content h3 {
-        color: #ccc;
-        font-size: 0.9rem;
-        font-weight: 300;
-    }
-
-    .card:hover {
-        transform: scale(1.05);
-    }
-
-    .center {
-        align-items: center;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        justify-content: center;
-    }
-
-    ul {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background-color: transparent;
-    }
-
-    li {
-        float: left;
-    }
-
-    li a {
-        display: block;
-        color: white;
-        text-align: center;
-        padding: 14px 16px;
-        text-decoration: none;
-    }
-
-    li a:hover {
-        background-color: red;
-        border-radius: 10px;
-    }
-
-    @media screen and (max-width: 600px) {
-        .movieimg,
-        .card {
-            width: 100%;
-        }
-    }
-</style>
