@@ -268,7 +268,7 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', function () {
     const animes = JSON.parse(localStorage.getItem('animes')) || [];
     const categories = ['En cours', 'Terminé', 'En Pause', 'Abandonné', 'Envie de voir'];
     const categoryHasAnime = {};
@@ -300,7 +300,10 @@
                 animeDiv.classList.add('movieimg');
                 animeDiv.dataset.title = animeData.title;
                 animeDiv.dataset.genre = animeData.genre;
-                animeDiv.dataset.episodes = episodesCount[animeData.title] || 12; // Utiliser le nombre d'épisodes défini ou 12 par défaut
+                
+                // Utiliser le nombre d'épisodes défini ou 12 par défaut
+                animeDiv.dataset.episodes = episodesCount[animeData.title] || 12;
+                
                 animeDiv.innerHTML = `
                     <div class="myimages">
                         <img src="${animeData.img}" alt="${animeData.title}">
@@ -429,6 +432,7 @@
         document.querySelector('.popup-background').style.display = 'none';
     });
 });
+
 
     </script>
 </body>
