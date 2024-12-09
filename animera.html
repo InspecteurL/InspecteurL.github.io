@@ -22,7 +22,10 @@
   <img src="https://static.wikia.nocookie.net/tokyo-revengers/images/4/42/Chibi_Revengers_%28logo%29.png/revision/latest?cb=20210819184434" width="50%">
 
   <h1 id="episode-title">Saison 1 - Episode 1</h1>
-  <iframe id="episode-video" width=640 height=360 src="https://sendvid.com/embed/id7dnfs9" allowfullscreen></iframe><br><br>
+  <video id="episode-video" width="640" height="360" controls>
+    <source src="https://sendvid.com/id7dnfs9" type="video/mp4">
+    Your browser does not support the video tag.
+  </video><br><br>
 
   <button onclick="previousEpisode()">Épisode précédent</button>
   <button onclick="nextEpisode()">Épisode suivant</button>
@@ -91,63 +94,63 @@
     }
   </style>
   <script>
-   var currentEpisode = 1;
-var totalEpisodes = 12;
-var episodeLinks = [
-  "https://sendvid.com/embed/id7dnfs9",
-  "https://sendvid.com/embed/ktb4pa4z",
-  "https://sendvid.com/embed/hw2pn6ug",
-  "https://sendvid.com/embed/enq7m47f",
-  "https://sendvid.com/embed/q261seiz",
-  "https://sendvid.com/embed/07ife7vu",
-  "https://sendvid.com/embed/5kqoz3ok",
-  "https://sendvid.com/embed/91xg1iie",
-  "https://sendvid.com/embed/yk20stt9",
-  "https://sendvid.com/embed/tohawnxd",
-  "https://sendvid.com/embed/khm2vz6k",
-  "https://sendvid.com/embed/pe9thbiq"
-];
+    var currentEpisode = 1;
+    var totalEpisodes = 12;
+    var episodeLinks = [
+      "https://sendvid.com/id7dnfs9",
+      "https://sendvid.com/embed/ktb4pa4z",
+      "https://sendvid.com/embed/hw2pn6ug",
+      "https://sendvid.com/embed/enq7m47f",
+      "https://sendvid.com/embed/q261seiz",
+      "https://sendvid.com/embed/07ife7vu",
+      "https://sendvid.com/embed/5kqoz3ok",
+      "https://sendvid.com/embed/91xg1iie",
+      "https://sendvid.com/embed/yk20stt9",
+      "https://sendvid.com/embed/tohawnxd",
+      "https://sendvid.com/embed/khm2vz6k",
+      "https://sendvid.com/embed/pe9thbiq"
+    ];
 
-window.onload = function() {
-  // Générer les options pour le sélecteur d'épisodes
-  var selector = document.getElementById("episode-selector");
-  for (var i = 1; i <= totalEpisodes; i++) {
-    var option = document.createElement("option");
-    option.value = i;
-    option.text = "Saison 1 - Episode " + i;
-    selector.add(option);
-  }
-}
+    window.onload = function() {
+      // Générer les options pour le sélecteur d'épisodes
+      var selector = document.getElementById("episode-selector");
+      for (var i = 1; i <= totalEpisodes; i++) {
+        var option = document.createElement("option");
+        option.value = i;
+        option.text = "Saison 1 - Episode " + i;
+        selector.add(option);
+      }
+    }
 
-function previousEpisode() {
-  if (currentEpisode > 1) {
-    currentEpisode--;
-    updateEpisode();
-  }
-}
+    function previousEpisode() {
+      if (currentEpisode > 1) {
+        currentEpisode--;
+        updateEpisode();
+      }
+    }
 
-function nextEpisode() {
-  if (currentEpisode < totalEpisodes) {
-    currentEpisode++;
-    updateEpisode();
-  }
-}
+    function nextEpisode() {
+      if (currentEpisode < totalEpisodes) {
+        currentEpisode++;
+        updateEpisode();
+      }
+    }
 
-function selectEpisode() {
-  currentEpisode = document.getElementById("episode-selector").value;
-  updateEpisode();
-}
+    function selectEpisode() {
+      currentEpisode = document.getElementById("episode-selector").value;
+      updateEpisode();
+    }
 
-function lastEpisode() {
-  currentEpisode = totalEpisodes;
-  updateEpisode();
-}
+    function lastEpisode() {
+      currentEpisode = totalEpisodes;
+      updateEpisode();
+    }
 
-function updateEpisode() {
-  document.getElementById("episode-title").innerText = "Saison 1 - Episode " + currentEpisode;
-  document.getElementById("episode-video").src = episodeLinks[currentEpisode - 1];
-  document.getElementById("episode-selector").value = currentEpisode;
-}
+    function updateEpisode() {
+      document.getElementById("episode-title").innerText = "Saison 1 - Episode " + currentEpisode;
+      document.getElementById("episode-video").src = episodeLinks[currentEpisode - 1];
+      document.getElementById("episode-selector").value = currentEpisode;
+    }
   </script>
 </body>
 
