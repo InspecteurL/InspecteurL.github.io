@@ -124,16 +124,24 @@
   <br><br>
   <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Oshi_no_Ko_logo.png" width="50%">
 
+  <div style="text-align:center; margin: 20px;">
+    <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
+    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+      <option value="1">Saison 1</option>
+      <option value="2">Saison 2</option>
+    </select>
+  </div>
+
   <div id="episode-list"></div>
 
   <div id="video-container">
     <iframe id="episode-video" allowfullscreen></iframe>
     <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
-    <button id="next-button" onclick="nextEpisode()" style="display:none;">Episode suivant</button>
+    <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
   </div>
 
   <script>
-    const episodeData = [
+    const episodeDataS1 = [
       { title: "Épisode 1", description: "Une mère et ses enfants", image: "https://www.myutaku.com/media/episodes/421069/9207267.jpg", video: "https://vidmoly.to/embed-2v891imx7x9y.html" },
       { title: "Épisode 2", description: "La troisième option", image: "https://www.myutaku.com/media/episodes/421069/9687591.jpg", video: "https://vidmoly.to/embed-ja9dux9ihyef.html" },
       { title: "Épisode 3", description: "Une série adaptée d'un manga", image: "https://www.myutaku.com/media/episodes/421069/9687592.jpg", video: "https://vidmoly.to/embed-yh51mc31bswo.html" },
@@ -147,6 +155,23 @@
       { title: "Épisode 11", description: "Idoles", image: "https://www.myutaku.com/media/episodes/421069/9687600.jpg", video: "https://vidmoly.to/embed-l1w7ncfm2xuz.html" }
     ];
 
+    const episodeDataS2 = [
+      { title: "Épisode 1", description: "Tokyo Blade", image: "https://www.myutaku.com/media/episodes/421069/10508996.jpg", video: "https://vidmoly.to/embed-f68u61c42n3m.html" },
+      { title: "Épisode 2", description: "Game of Telephone", image: "https://www.myutaku.com/media/episodes/421069/10530178.jpg", video: "https://vidmoly.to/embed-mpqza1hxxrjz.html" },
+      { title: "Épisode 3", description: "Rewriting", image: "https://www.myutaku.com/media/episodes/421069/10530179.jpg", video: "https://vidmoly.to/embed-g1rghy3fe009.html" },
+      { title: "Épisode 4", description: "Emotional Acting", image: "https://www.myutaku.com/media/episodes/421069/10530180.jpg", video: "https://vidmoly.to/embed-2gq520ax5mzt.html" },
+      { title: "Épisode 5", description: "The Curtain Rises", image: "https://www.myutaku.com/media/episodes/421069/10530181.jpg", video: "https://vidmoly.to/embed-ennt6y2kqbdy.html" },
+      { title: "Épisode 6", description: "Growth", image: "https://www.myutaku.com/media/episodes/421069/10530182.jpg", video: "https://vidmoly.to/embed-ctijzjrgnfgw.html" },
+      { title: "Épisode 7", description: "Sun", image: "https://www.myutaku.com/media/episodes/421069/10530183.jpg", video: "https://vidmoly.to/embed-vu7dh67p9xvx.html" },
+      { title: "Épisode 8", description: "Trigger", image: "https://www.myutaku.com/media/episodes/421069/10530184.jpg", video: "https://vidmoly.to/embed-jwkk6pk5t9n3.html" },
+      { title: "Épisode 9", description: "Dream", image: "https://www.myutaku.com/media/episodes/421069/10530185.jpg", video: "https://vidmoly.to/embed-yahlw953b3qx.html" },
+      { title: "Épisode 10", description: "Liberation", image: "https://www.myutaku.com/media/episodes/421069/10530186.jpg", video: "https://vidmoly.to/embed-do3wv9dwm1qw.html" },
+      { title: "Épisode 11", description: "Freedom", image: "https://www.myutaku.com/media/episodes/421069/10530187.jpg", video: "https://vidmoly.to/embed-97qc7yl9eaw2.html" },
+      { title: "Épisode 12", description: "Reunion", image: "https://www.myutaku.com/media/episodes/421069/10530188.jpg", video: "https://vidmoly.to/embed-lk4rtduw3vgh.html" },
+      { title: "Épisode 13", description: "Wish", image: "https://www.myutaku.com/media/episodes/421069/10569952.jpg", video: "https://vidmoly.to/embed-j94dz7ebwv70.html" }
+    ];
+
+    let currentEpisodeData = episodeDataS1;
     let currentEpisodeIndex = 0;
     let timeoutId;
 
@@ -155,26 +180,28 @@
     const videoIframe = document.getElementById("episode-video");
     const backButton = document.getElementById("back-button");
     const nextButton = document.getElementById("next-button");
+    const seasonSelect = document.getElementById("season-select");
 
-    episodeData.forEach((ep, index) => {
-      const card = document.createElement("div");
-      card.className = "episode-card";
-      card.innerHTML = `
-        <img src="${ep.image}" alt="${ep.title}">
-        <h3>${ep.title}</h3>
-        <p>${ep.description}</p>
-      `;
-      card.addEventListener("click", () => {
-        currentEpisodeIndex = index;
-        playEpisode(index);
+    function renderEpisodes() {
+      episodeList.innerHTML = "";
+      currentEpisodeData.forEach((ep, index) => {
+        const card = document.createElement("div");
+        card.className = "episode-card";
+        card.innerHTML = `
+          <img src="${ep.image}" alt="${ep.title}">
+          <h3>${ep.title}</h3>
+          <p>${ep.description}</p>
+        `;
+        card.addEventListener("click", () => {
+          currentEpisodeIndex = index;
+          playEpisode(index);
+        });
+        episodeList.appendChild(card);
       });
-      episodeList.appendChild(card);
-    });
+    }
 
     function playEpisode(index) {
-      videoIframe.src = episodeData[index].video;
-
-      // Reset and trigger fade/zoom animation
+      videoIframe.src = currentEpisodeData[index].video;
       videoContainer.classList.remove("show");
       videoContainer.style.display = "flex";
       requestAnimationFrame(() => {
@@ -182,17 +209,16 @@
       });
 
       nextButton.style.display = "none";
-
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
-        if (index < episodeData.length - 1) {
+        if (index < currentEpisodeData.length - 1) {
           nextButton.style.display = "inline-block";
         }
       }, 1380000); // 23 minutes
     }
 
     function nextEpisode() {
-      if (currentEpisodeIndex < episodeData.length - 1) {
+      if (currentEpisodeIndex < currentEpisodeData.length - 1) {
         currentEpisodeIndex++;
         playEpisode(currentEpisodeIndex);
         nextButton.style.display = "none";
@@ -208,6 +234,11 @@
       nextButton.style.display = "none";
     }
 
+    seasonSelect.addEventListener("change", () => {
+      currentEpisodeData = seasonSelect.value === "2" ? episodeDataS2 : episodeDataS1;
+      renderEpisodes();
+    });
+
     document.addEventListener("fullscreenchange", () => {
       if (document.fullscreenElement) {
         backButton.classList.add("hidden");
@@ -221,6 +252,8 @@
         backButton.classList.remove("hidden");
       }
     });
+
+    renderEpisodes();
   </script>
 </body>
 </html>
