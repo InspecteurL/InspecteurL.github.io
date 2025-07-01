@@ -1,166 +1,274 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" href="style.css">
-  <script type="text/javascript" src="script.js"></script>
-  <title>TSF - Steins Gate</title>
-</head>
-
-<body>
-  <ul>
-    <li><a class="active" href="index.html">Home</a></li>
-    <li><a  href="journal.html">Journal</a></li>
-    <li><a  href="profil.html">Découvrir</a></li>
-    <li><a  href="trueprofil.html">Profil</a></li>
-    <li><a  href="accueil.html">Feuilleter</a></li>
-  </ul>
-
-  <br><br>
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Steins%3BGate.svg/1200px-Steins%3BGate.svg.png" width="50%">
-
-  <h1 id="episode-title">Saison 1 - Episode 1</h1>
-  <iframe id="episode-video" width=640 height=360 src="https://video.sibnet.ru/shell.php?videoid=4909464&share=1" allowfullscreen></iframe><br><br>
-
-  <button onclick="previousEpisode()">Épisode précédent</button>
-  <button onclick="nextEpisode()">Épisode suivant</button>
-  <select id="episode-selector" onchange="selectEpisode()">
-    <!-- Les options seront générées dynamiquement par le script JavaScript -->
-  </select>
-  <button onclick="lastEpisode()">Dernier épisode</button>
-
-  <br><br>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
+  <title>BNZ - Steins ; Gate</title>
   <style>
-    body{
-      background-color: #2e2b2b;
-    }
-
-    button{
-      width: 122px;
+    body {
+      background: linear-gradient(to bottom, #666699 0%, #000000 100%);
       color: white;
-      background-color: blue;
-      height: 100px;
-      border: 35px;
-      border: blue;
-      font-size: 24px;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
     }
 
-    ul{
+    ul {
       list-style-type: none;
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background-color: transparent;
+      background-color: #1c1c1c;
     }
 
-    li{
+    li {
       float: left;
     }
 
-    li a{
+    li a {
       display: block;
       color: white;
       text-align: center;
       padding: 14px 16px;
       text-decoration: none;
-      font-size: 30px;
+      font-size: 20px;
     }
 
-    select {
-    width: 200px;
-    height: 30px;
-    background-color: #f8f9fa;
-    border: none;
-    padding: 5px;
-    font-size: 16px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  }
-
-  select:focus {
-    outline: none;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
-  }
-
-    li a:hover{
+    li a:hover {
       background-color: red;
+      border-radius: 5px;
+    }
+
+    .episode-card {
+      width: 250px;
+      margin: 10px;
+      background: linear-gradient(to top, #3333cc 0%, #990099 100%);
+      padding: 10px;
       border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .episode-card:hover {
+      transform: scale(1.05);
+    }
+
+    .episode-card img {
+      width: 100%;
+      border-radius: 5px;
+    }
+
+    #episode-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    #video-container.show {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #episode-video {
+      width: 80%;
+      height: 60vh;
+      border: none;
+    }
+
+    #back-button, #next-button, #next-season-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: blue;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #loader {
+      color: white;
+      font-size: 20px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .episode-card {
+        width: 90%;
+      }
+
+      #episode-video {
+        width: 95%;
+        height: 40vh;
+      }
     }
   </style>
+</head>
+<body>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="journal.html">Journal</a></li>
+    <li><a href="profil.html">Découvrir</a></li>
+    <li><a href="trueprofil.html">Profil</a></li>
+    <li><a href="accueil.html">Feuilleter</a></li>
+  </ul>
+
+  <br><br>
+  <div style="text-align:center;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Steins%3BGate.svg/1024px-Steins%3BGate.svg.png" width="50%" alt="Logo Oshi no Ko">
+  </div>
+
+  <div style="text-align:center; margin: 20px;">
+    <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
+    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+      <option value="1">Saison 1</option>
+    </select>
+  </div>
+
+  <div id="episode-list"></div>
+
+  <div id="video-container">
+    <iframe id="episode-video" allowfullscreen></iframe>
+    <div id="loader" style="display:none;">Chargement de la vidéo...</div>
+    <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
+    <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
+  </div>
+
   <script>
-   var currentEpisode = 1;
-var totalEpisodes = 24;
-var episodeLinks = [
-  "https://vidmoly.to/embed-6io31mm461y1.html",
-  "https://vidmoly.to/embed-dxkng8050lgm.html",
-  "https://vidmoly.to/embed-57u0lqnguedt.html",
-  "https://vidmoly.to/embed-5k03se180ass.html",
-  "https://vidmoly.to/embed-nbyg2q7f43cc.html",
-  "https://vidmoly.to/embed-0u2r8wrcrj2g.html",
-  "https://vidmoly.to/embed-1x3jkrouopuq.html",
-  "https://vidmoly.to/embed-fmfjm2ebbmjn.html",
-  "https://vidmoly.to/embed-o90z8u2a1kbt.html",
-  "https://vidmoly.to/embed-0oitju0mp6rn.html",
-  "https://vidmoly.to/embed-02zyxgbor06r.html",
-  "https://vidmoly.to/embed-aokk7wxp9kwg.html",
-  "https://vidmoly.to/embed-a0bwh1jyjso4.html",
-  "https://vidmoly.to/embed-lx1xkcyevw68.html",
-  "https://video.sibnet.ru/shell.php?videoid=4909493&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4909495&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4909496&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4909498&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4909499&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4909501&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4909503&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4909505&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4909506&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4909509&share=1"
+const episodeDataS1 = [
+  { title: "Episode 1", description: "Prologue du commencement et de la fin", image: "https://www.myutaku.com/media/episodes/244061/3989271.jpg", video: "https://vidmoly.to/embed-6io31mm461y1.html" },
+  { title: "Episode 2", description: "Paranoïa du voyage dans le temps", image: "https://www.myutaku.com/media/episodes/244061/3989281.jpg", video: "https://vidmoly.to/embed-dxkng8050lgm.html" },
+  { title: "Episode 3", description: "Paranoïa de mondes parallèles", image: "https://www.myutaku.com/media/episodes/244061/3989291.jpg", video: "https://vidmoly.to/embed-57u0lqnguedt.html" },
+  { title: "Episode 4", description: "Rendez-vous entre collisions de théories errantes", image: "https://www.myutaku.com/media/episodes/244061/3989301.jpg", video: "https://vidmoly.to/embed-5k03se180ass.html" },
+  { title: "Episode 5", description: "Rendez-vous de collisions entre charges électriques", image: "https://www.myutaku.com/media/episodes/244061/3989311.jpg", video: "https://vidmoly.to/embed-nbyg2q7f43cc.html" },
+  { title: "Episode 6", description: "Divergence de l'effet papillon", image: "https://www.myutaku.com/media/episodes/244061/3989321.jpg", video: "https://vidmoly.to/embed-0u2r8wrcrj2g.html" },
+  { title: "Episode 7", description: "Divergence de la fracture", image: "https://www.myutaku.com/media/episodes/244061/3989331.jpg", video: "https://vidmoly.to/embed-1x3jkrouopuq.html" },
+  { title: "Episode 8", description: "Homéostasie d'une fantaisie", image: "https://www.myutaku.com/media/episodes/244061/3989341.jpg", video: "https://vidmoly.to/embed-fmfjm2ebbmjn.html" },
+  { title: "Episode 9", description: "Homéostasie d'une illusion", image: "https://www.myutaku.com/media/episodes/244061/3989351.jpg", video: "https://vidmoly.to/embed-o90z8u2a1kbt.html" },
+  { title: "Episode 10", description: "Homéostasie d'une vie commune", image: "https://www.myutaku.com/media/episodes/244061/3989361.jpg", video: "https://vidmoly.to/embed-0oitju0mp6rn.html" },
+  { title: "Episode 11", description: "Dogme de la frontière espace-temps", image: "https://www.myutaku.com/media/episodes/244061/3989371.jpg", video: "https://vidmoly.to/embed-02zyxgbor06r.html" },
+  { title: "Episode 12", description: "Dogme de la limite statique", image: "https://www.myutaku.com/media/episodes/244061/3989391.jpg", video: "https://vidmoly.to/embed-aokk7wxp9kwg.html" },
+  { title: "Episode 13", description: "Nécrose métaphysique", image: "https://www.myutaku.com/media/episodes/244061/3989401.jpg", video: "https://vidmoly.to/embed-a0bwh1jyjso4.html" },
+  { title: "Episode 14", description: "Nécrose physique", image: "https://www.myutaku.com/media/episodes/244061/3989411.jpg", video: "https://vidmoly.to/embed-lx1xkcyevw68.html" },
+  { title: "Episode 15", description: "Nécrose d'un chaînon mourant", image: "https://www.myutaku.com/media/episodes/244061/3989421.jpg", video: "https://vidmoly.to/embed-2xsxnyc5ukzm.html" },
+  { title: "Episode 16", description: "Nécrose de l'irréversibilité", image: "https://www.myutaku.com/media/episodes/244061/3989431.jpg", video: "https://vidmoly.to/embed-j5hl3871pm6j.html" },
+  { title: "Episode 17", description: "Complexe d'une image visuelle distordue", image: "https://www.myutaku.com/media/episodes/244061/3989441.jpg", video: "https://vidmoly.to/embed-nq40y4ddx12f.html" },
+  { title: "Episode 18", description: "Ressemblance androgyne", image: "https://www.myutaku.com/media/episodes/244061/3989451.jpg", video: "https://vidmoly.to/embed-uz7efcdsz23o.html" },
+  { title: "Episode 19", description: "Apoptose d'une chaîne infinie", image: "https://www.myutaku.com/media/episodes/244061/3989461.jpg", video: "https://vidmoly.to/embed-79xlhpdqb1uv.html" },
+  { title: "Episode 20", description: "Apoptose du cri de rancœur", image: "https://www.myutaku.com/media/episodes/244061/3989471.jpg", video: "https://vidmoly.to/embed-icfscdyssfkr.html" },
+  { title: "Episode 21", description: "Effondrement du principe de causalité", image: "https://www.myutaku.com/media/episodes/244061/3989481.jpg", video: "https://vidmoly.to/embed-3qi6oy76at9k.html" },
+  { title: "Episode 22", description: "Effondrement de l'existence", image: "https://www.myutaku.com/media/episodes/244061/3989491.jpg", video: "https://vidmoly.to/embed-7ok4iwftlgn2.html" },
+  { title: "Episode 23", description: "Sur la frontière du Steins;Gate", image: "https://www.myutaku.com/media/episodes/244061/3989501.jpg", video: "https://vidmoly.to/embed-7a73u4aj08f7.html" },
+  { title: "Episode 24", description: "Prologue de la fin et du commencement", image: "https://www.myutaku.com/media/episodes/244061/3989511.jpg", video: "https://vidmoly.to/embed-ebuhqmws3ov7.html" }
 ];
 
-window.onload = function() {
-  // Générer les options pour le sélecteur d'épisodes
-  var selector = document.getElementById("episode-selector");
-  for (var i = 1; i <= totalEpisodes; i++) {
-    var option = document.createElement("option");
-    option.value = i;
-    option.text = "Saison 1 - Episode " + i;
-    selector.add(option);
-  }
-}
-
-function previousEpisode() {
-  if (currentEpisode > 1) {
-    currentEpisode--;
-    updateEpisode();
-  }
-}
-
-function nextEpisode() {
-  if (currentEpisode < totalEpisodes) {
-    currentEpisode++;
-    updateEpisode();
-  }
-}
-
-function selectEpisode() {
-  currentEpisode = document.getElementById("episode-selector").value;
-  updateEpisode();
-}
-
-function lastEpisode() {
-  currentEpisode = totalEpisodes;
-  updateEpisode();
-}
-
-function updateEpisode() {
-  document.getElementById("episode-title").innerText = "Saison 1 - Episode " + currentEpisode;
-  document.getElementById("episode-video").src = episodeLinks[currentEpisode - 1];
-  document.getElementById("episode-selector").value = currentEpisode;
-}
 
 
+
+
+    let currentEpisodeData = episodeDataS1;
+    let currentEpisodeIndex = 0;
+    let timeoutId;
+
+    const episodeList = document.getElementById("episode-list");
+    const videoContainer = document.getElementById("video-container");
+    const videoIframe = document.getElementById("episode-video");
+    const backButton = document.getElementById("back-button");
+    const nextButton = document.getElementById("next-button");
+    const loader = document.getElementById("loader");
+    const seasonSelect = document.getElementById("season-select");
+
+    function renderEpisodes() {
+      episodeList.innerHTML = "";
+      currentEpisodeData.forEach((ep, index) => {
+        const card = document.createElement("div");
+        card.className = "episode-card";
+        card.innerHTML = `
+          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}">
+          <h3>${ep.title}</h3>
+          <p>${ep.description}</p>
+        `;
+        card.addEventListener("click", () => {
+          currentEpisodeIndex = index;
+          playEpisode(index);
+        });
+        episodeList.appendChild(card);
+      });
+    }
+
+    function playEpisode(index) {
+      loader.style.display = "block";
+      videoIframe.src = currentEpisodeData[index].video;
+      videoContainer.classList.remove("show");
+      videoContainer.style.display = "flex";
+      requestAnimationFrame(() => {
+        videoContainer.classList.add("show");
+      });
+
+      nextButton.style.display = "none";
+      clearTimeout(timeoutId);
+
+      timeoutId = setTimeout(() => {
+        if (index < currentEpisodeData.length - 1) {
+          nextButton.style.display = "inline-block";
+        }
+      }, 1380000); // 23 minutes
+    }
+
+    videoIframe.onload = () => {
+      loader.style.display = "none";
+    };
+
+    function nextEpisode() {
+      if (currentEpisodeIndex < currentEpisodeData.length - 1) {
+        currentEpisodeIndex++;
+        playEpisode(currentEpisodeIndex);
+      }
+    }
+
+    function exitFullscreenMode() {
+      videoContainer.classList.remove("show");
+      setTimeout(() => {
+        videoContainer.style.display = "none";
+        videoIframe.src = "";
+        nextButton.style.display = "none";
+      }, 500);
+    }
+
+    seasonSelect.addEventListener("change", (e) => {
+      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+      renderEpisodes();
+    });
+
+   
+
+    renderEpisodes();
   </script>
 </body>
 </html>
