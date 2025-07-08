@@ -1,958 +1,457 @@
 <!DOCTYPE html>
-<html lang="fr"> 
-    <link rel="icon" href=
-    "https://o.remove.bg/downloads/c77a350a-4165-43b8-9cc6-afe80fff5571/sticker-luffy-removebg-preview.png" type="image/x-icon">
-	<head> 
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Feuilleter</title>
+    <link rel="icon" href="https://o.remove.bg/downloads/c77a350a-4165-43b8-9cc6-afe80fff5571/sticker-luffy-removebg-preview.png" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body onload="generateOptions(); loadEpisode(0); updateProgressBar();">
 
-		<meta charset="utf-8">
-		<title>Feuilleter</title>
-	</head> 
+    <!-- Bouton d'ouverture de la modale -->
+    <button class="btn" id="myBtn">Essayer</button>
 
-	<body> 
-        
-        <div class="container">
-            <button class="btn" id="myBtn">Essayer</button>
-
-            <body onload="generateOptions(); loadEpisode(0)">
+    <!-- Modale de lecture d'épisode -->
     <div id="episodePopup" class="modal">
         <div class="modal-content">
             <span class="close" id="closeBtn">&times;</span>
-            <!-- Contenu de l'épisode -->
             <h1 id="episodeTitle">Épisode 1</h1>
-            <iframe id="videoPlayer" src="https://video.sibnet.ru/shell.php?videoid=4906990&share=1" allowfullscreen></iframe>
-            <button onclick="previousEpisode()">Épisode précédent</button> 
-            <button onclick="nextEpisode()">Épisode suivant</button>
-            <select id="episodeSelector" onchange="loadEpisode(this.value)">
-                <!-- Les options seront générées dynamiquement -->
-                <script>
-                    for (var i = 0; i < episodes.length; i++) {
-                        document.write('<option value="' + i + '">Épisode ' + (i + 1) + '</option>');
-                    }
-                </script>
-            </select>
+            <iframe id="videoPlayer" src="" allowfullscreen></iframe>
+            <div class="controls">
+                <button onclick="previousEpisode()">Épisode précédent</button>
+                <button onclick="nextEpisode()">Épisode suivant</button>
+                <select id="episodeSelector" onchange="loadEpisode(this.value)"></select>
+            </div>
         </div>
     </div>
-            
-            
-            
-            <h1 class="BigText">Berserk</h1>
-            
 
-            <ul>
-                <li><a class="active" href="index.html">Home</a></li>
-                <li><a  href="journal.html">Journal</a></li>
-                <li><a  href="profil.html">Découvrir</a></li>
-                <li><a  href="lecteurtest.html">Profil</a></li>
-                
-            </ul>
-	                <img id="berserkimage" src="fondberserk.jpg" alt="">
-            <section class="moviesection">
-                <h2>A voir absolument</h2>
-                <hr class="rounded">
-                <div class="moviecontainer" id="movies">
-                    <div class="center">
-                        <div class="wrapper">
-                          <div class="inner">
-                            <div class="card">
-                              <img src="https://tse4.mm.bing.net/th?id=OIG2.sqk8PuzIXt2VbgabV5lB&pid=ImgGn">
-                              <div class="content">
-                                <h1>Death Note</h1>
-                                <h3>Shonen</h3>
-                              </div>
-                            </div>
-                            <div class="card">
-                              <img src="https://i.redd.it/ca1t3il4idg71.jpg">
-                              <div class="content">
-                                <h1>Custom Website</h1>
-                                <h3>UI/UX, Design</h3>
-                              </div>
-                            </div>
-                            <div class="card">
-                              <img src="https://i.redd.it/ca1t3il4idg71.jpg">
-                              <div class="content">
-                                <h1>Digital Marketing</h1>
-                                <h3>UI/UX, Design</h3>
-                              </div>
-                            </div>
-                            <div class="card">
-                              <img src="https://i.redd.it/ca1t3il4idg71.jpg">
-                              <div class="content">
-                                <h1>Digital Marketing</h1>
-                                <h3>UI/UX, Design</h3>
-                              </div>
-                            </div>
-                            <div class="card">
-                              <img src="https://m.media-amazon.com/images/M/MV5BNGM0YTk3MWEtN2JlZC00ZmZmLWIwMDktZTMxZGE5Zjc2MGExXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_FMjpg_UX1000_.jpg">
-                              <div class="content">
-                                <h1>Digital Marketing</h1>
-                                <h3>UI/UX, Design</h3>
-                              </div>
-                            </div>
-                            <div class="card">
-                              <img src="https://colorlib.com/preview/theme/seogo/img/case_study/3.png">
-                              <div class="content">
-                                <h1>Digital Marketing</h1>
-                                <h3>UI/UX, Design</h3>
-                              </div>
-                            </div>
-                            <div class="card">
-                              <img src="https://colorlib.com/preview/theme/seogo/img/case_study/1.png">
-                              <div class="content">
-                                <h1>Digital Marketing</h1>
-                                <h3>UI/UX, Design</h3>
-                              </div>
-                            </div>
-                            <div class="card">
-                              <img src="https://colorlib.com/preview/theme/seogo/img/case_study/2.png">
-                              <div class="content">
-                                <h1>Digital Marketing</h1>
-                                <h3>UI/UX, Design</h3>
-                              </div>
-                            </div>
-                            <div class="card">
-                              <img src="https://colorlib.com/preview/theme/seogo/img/case_study/3.png">
-                              <div class="content">
-                                <h1>Digital Marketing</h1>
-                                <h3>UI/UX, Design</h3>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div class="map">
-                          <button class="active first">1</button>
-                          <button class="second">2</button>
-                          <button class="third">3</button>
-                        </div>
-                      </div>
-                      
-                    
-                   
-                </div>
-            </section>
-           <section class="moviesection">
-    <h2>Nos Recommandations Animes</h2>
-    <hr class="rounded">
-    <div class="moviecontainer" id="movies">
-        <div class="movieimg" data-title="Erased" data-genre="Seinen">
-            <div class="myimages">
-                <a href="animera.html"><img id="erased" alt="Erased"></a>
-            </div>
-            <h2>Erased</h2>
-            <span>Seinen</span>
-        </div>
-        <div class="movieimg" data-title="Steins ; Gate" data-genre="Seinen">
-            <div class="myimages">
-                <a href="steinsgate.html"><img id="steinsgate" alt="Steins ; Gate"></a>
-            </div>
-            <h2>Steins ; Gate</h2>
-            <span>Seinen</span>
-        </div>
-        <div class="movieimg" data-title="Call Of The Night" data-genre="Shonen">
-            <div class="myimages">
-                <a href="cotn.html"><img id="cotn" alt="Call Of The Night"></a>
-            </div>
-            <h2>Call Of The Night</h2>
-            <span>Shonen</span>
-        </div>
-        <div class="movieimg" data-title="Cyberpunk Edgerunners" data-genre="Seinen">
-            <div class="myimages">
-                <a href="cyber.html"><img id="cyberpunk" alt="Cyberpunk Edgerunners"></a>
-            </div>
-            <h2>Cyberpunk Edgerunners</h2>
-            <span>Seinen</span>
-        </div>
-        <div class="movieimg" data-title="Platinum End" data-genre="Shonen">
-            <div class="myimages">
-                <a href="platinum.html"><img id="platinumend" alt="Platinum End"></a>
-            </div>
-            <h2>Platinum End</h2>
-            <span>Shonen</span>
-        </div>
-        <div class="movieimg" data-title="Hell's Paradise" data-genre="Shonen">
-            <div class="myimages">
-                <a href="hell.html"><img id="hellsparadise" alt="Hell's Paradise"></a>
-            </div>
-            <h2>Hell's Paradise</h2>
-            <span>Shonen</span>
-        </div>
-        <div class="movieimg" data-title="Chibi Revengers" data-genre="Shonen">
-            <div class="myimages">
-                <a href="chbireven.html"><img id="chibirevengers" alt="Chibi Revengers"></a>
-            </div>
-            <h2>Chibi Revengers</h2>
-            <span>Shonen</span>
-        </div>
-        <div class="movieimg" data-title="Death Note" data-genre="Shonen">
-            <div class="myimages">
-                <a href="dnote.html"><img id="deathnote" alt="Death Note"></a>
-            </div>
-            <h2>Death Note</h2>
-            <span>Shonen</span>
-        </div>
-        <div class="movieimg" data-title="Oshi no Ko" data-genre="Seinen">
-            <div class="myimages">
-                <a href="oshinoko.html"><img id="oshinoko" alt="Oshi no Ko"></a>
-            </div>
-            <h2>Oshi no Ko</h2>
-            <span>Seinen</span>
-        </div>
-        <div class="movieimg" data-title="Death Parade" data-genre="Seinen">
-            <div class="myimages">
-                <a href="deathparade.html"><img id="deathparade" alt="Death Parade"></a>
-            </div>
-            <h2>Death Parade</h2>
-            <span>Seinen</span>
-        </div>
-        <div class="movieimg" data-title="Blue Period" data-genre="Shonen">
-            <div class="myimages">
-                <a href="blueperiod.html"><img id="blueperiod" alt="Blue Period"></a>
-            </div>
-            <h2>Blue Period</h2>
-            <span>Shonen</span>
-        </div>
-        <div class="movieimg" data-title="Steins ; Gate 0" data-genre="Seinen">
-            <div class="myimages">
-                <a href="steinsgatezero.html"><img id="steinsgate0" alt="Steins ; Gate 0"></a>
-            </div>
-            <h2>Steins ; Gate 0</h2>
-            <span>Seinen</span>
-        </div>
-        <div class="movieimg" data-title="Jujutsu Kaisen" data-genre="Shonen">
-            <div class="myimages">
-                <a href="jjk.html"><img id="jujutsukaisen" alt="Jujutsu Kaisen"></a>
-            </div>
-            <h2>Jujutsu Kaisen</h2>
-            <span>Shonen</span>
-        </div>
-        <div class="movieimg" data-title="Dragon Ball" data-genre="Shonen">
-            <div class="myimages">
-                <a href="db.html"><img id="dragonball" alt="Dragon Ball"></a>
-            </div>
-            <h2>Dragon Ball</h2>
-            <span>Shonen</span>
-        </div>
+    <!-- Titre principal -->
+    <h1 class="BigText">Berserk</h1>
+
+    <!-- Barre de navigation -->
+    <ul>
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="journal.html">Journal</a></li>
+        <li><a href="profil.html">Découvrir</a></li>
+        <li><a href="lecteurtest.html">Profil</a></li>
+    </ul>
+
+    <!-- Image de fond -->
+    <img id="berserkimage" src="fondberserk.jpg" alt="Fond Berserk">
+
+    <!-- Section des recommandations -->
+    <section class="moviesection">
+        <h2>Nos Recommandations Animes</h2>
+        <hr class="rounded">
+        <div class="moviecontainer" id="movies">
+            <!-- Chaque bloc d'anime -->
+            <div class="movieimg" data-title="Erased" data-genre="Seinen">
+    <div class="myimages">
+        <a href="animera.html"><img id="erased" alt="Erased"></a>
     </div>
-</section>
+    <h2>Erased</h2>
+    <span>Seinen</span>
+</div>
+<div class="movieimg" data-title="Steins ; Gate" data-genre="Seinen">
+    <div class="myimages">
+        <a href="steinsgate.html"><img id="steinsgate" alt="Steins ; Gate"></a>
+    </div>
+    <h2>Steins ; Gate</h2>
+    <span>Seinen</span>
+</div>
+<div class="movieimg" data-title="Call Of The Night" data-genre="Shonen">
+    <div class="myimages">
+        <a href="cotn.html"><img id="cotn" alt="Call Of The Night"></a>
+    </div>
+    <h2>Call Of The Night</h2>
+    <span>Shonen</span>
+</div>
+<div class="movieimg" data-title="Cyberpunk Edgerunners" data-genre="Seinen">
+    <div class="myimages">
+        <a href="cyber.html"><img id="cyberpunk" alt="Cyberpunk Edgerunners"></a>
+    </div>
+    <h2>Cyberpunk Edgerunners</h2>
+    <span>Seinen</span>
+</div>
+<div class="movieimg" data-title="Platinum End" data-genre="Shonen">
+    <div class="myimages">
+        <a href="platinum.html"><img id="platinumend" alt="Platinum End"></a>
+    </div>
+    <h2>Platinum End</h2>
+    <span>Shonen</span>
+</div>
+<div class="movieimg" data-title="Hell's Paradise" data-genre="Shonen">
+    <div class="myimages">
+        <a href="hell.html"><img id="hellsparadise" alt="Hell's Paradise"></a>
+    </div>
+    <h2>Hell's Paradise</h2>
+    <span>Shonen</span>
+</div>
+<div class="movieimg" data-title="Chibi Revengers" data-genre="Shonen">
+    <div class="myimages">
+        <a href="chbireven.html"><img id="chibirevengers" alt="Chibi Revengers"></a>
+    </div>
+    <h2>Chibi Revengers</h2>
+    <span>Shonen</span>
+</div>
+<div class="movieimg" data-title="Death Note" data-genre="Shonen">
+    <div class="myimages">
+        <a href="dnote.html"><img id="deathnote" alt="Death Note"></a>
+    </div>
+    <h2>Death Note</h2>
+    <span>Shonen</span>
+</div>
+<div class="movieimg" data-title="Oshi no Ko" data-genre="Seinen">
+    <div class="myimages">
+        <a href="oshinoko.html"><img id="oshinoko" alt="Oshi no Ko"></a>
+    </div>
+    <h2>Oshi no Ko</h2>
+    <span>Seinen</span>
+</div>
+<div class="movieimg" data-title="Death Parade" data-genre="Seinen">
+    <div class="myimages">
+        <a href="deathparade.html"><img id="deathparade" alt="Death Parade"></a>
+    </div>
+    <h2>Death Parade</h2>
+    <span>Seinen</span>
+</div>
+<div class="movieimg" data-title="Blue Period" data-genre="Shonen">
+    <div class="myimages">
+        <a href="blueperiod.html"><img id="blueperiod" alt="Blue Period"></a>
+    </div>
+    <h2>Blue Period</h2>
+    <span>Shonen</span>
+</div>
+<div class="movieimg" data-title="Steins ; Gate 0" data-genre="Seinen">
+    <div class="myimages">
+        <a href="steinsgatezero.html"><img id="steinsgate0" alt="Steins ; Gate 0"></a>
+    </div>
+    <h2>Steins ; Gate 0</h2>
+    <span>Seinen</span>
+</div>
+<div class="movieimg" data-title="Jujutsu Kaisen" data-genre="Shonen">
+    <div class="myimages">
+        <a href="jjk.html"><img id="jujutsukaisen" alt="Jujutsu Kaisen"></a>
+    </div>
+    <h2>Jujutsu Kaisen</h2>
+    <span>Shonen</span>
+</div>
+<div class="movieimg" data-title="Dragon Ball" data-genre="Shonen">
+    <div class="myimages">
+        <a href="db.html"><img id="dragonball" alt="Dragon Ball"></a>
+    </div>
+    <h2>Dragon Ball</h2>
+    <span>Shonen</span>
+</div>
 
+    </section>
+<div style="text-align: center; margin: 30px;">
+    <button onclick="exportAnimeData()">📤 Exporter mes données</button>
+</div>
 
-          <div class="context-menu" id="context-menu">
-            <div class="context-menu-item" data-status="En cours">En cours</div>
-            <div class="context-menu-item" data-status="Terminé">Terminé</div>
-            <div class="context-menu-item" data-status="En Pause">En Pause</div>
-            <div class="context-menu-item" data-status="Abandonné">Abandonné</div>
-<div class="context-menu-item" data-status="Envie de voir">Envie de voir</div>
-        </div>
-            
-        </div>
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-            body{
-                font-family: 'Poppins', sans-serif;
-                 background: rgb(25,34,77);
-background: -moz-radial-gradient(circle, rgba(25,34,77,1) 0%, rgba(0,0,0,1) 100%);
-background: -webkit-radial-gradient(circle, rgba(25,34,77,1) 0%, rgba(0,0,0,1) 100%);
-background: radial-gradient(circle, rgba(25,34,77,1) 0%, rgba(0,0,0,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#19224d",endColorstr="#000000",GradientType=1); 
-    
-            }
+    <!-- Menu contextuel personnalisé -->
+    <div class="context-menu" id="context-menu">
+        <div class="context-menu-item" onclick="handleFavorite()">⭐ Ajouter aux favoris</div>
+<div class="context-menu-item" onclick="handleRating()">📝 Noter</div>
+        <div class="context-menu-item" data-status="En cours">En cours</div>
+        <div class="context-menu-item" data-status="Terminé">Terminé</div>
+        <div class="context-menu-item" data-status="En Pause">En Pause</div>
+        <div class="context-menu-item" data-status="Abandonné">Abandonné</div>
+        <div class="context-menu-item" data-status="Envie de voir">Envie de voir</div>
+    </div>
 
-            #berserkimage{
-              height: 620px;
-              width: 1920px;
-              
-            }
-            
-          
-            .card:hover {
-            /* Styles pour les cartes au survol */
-            /* Par exemple : */
-            transform: scale(1.05);
-        }
-            .bgBlue {
-    background-color: #0385fe;
-} 
+    <!-- Barre de progression -->
+    <div style="width: 100%; background: #ccc; height: 20px; margin-top: 20px;">
+        <div id="progress-bar" style="height: 100%; width: 0%; background: red;"></div>
+    </div>
 
-.context-menu { display: none; position: absolute; background: #fff; border: 1px solid #ccc; }
-        .context-menu-item { padding: 8px; cursor: pointer; }
-        .context-menu-item:hover { background: #eee; }
+    <style>
+        /* Import de la police */
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
 
+/* 🌌 Style général */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: radial-gradient(circle, rgba(25,34,77,1) 0%, rgba(0,0,0,1) 100%);
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+}
 
-.moviesection{
-    max-width: 900px;
-    text-transform: uppercase;
-    padding-left: 5%;
+/* 🖼️ Image de fond */
+#berserkimage {
+    width: 100%;
+    height: auto;
+    max-height: 620px;
+    object-fit: cover;
+}
+
+/* 🧭 Navigation */
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: transparent;
+}
+li {
+    float: left;
+}
+li a {
+    display: block;
     color: white;
-}
-hr.rounded{
-    border-top: 3px solid red;
-    border-radius: 5px;
-}
-.movieimg .myimages{
-    height: auto; /* Change ici pour permettre aux images de s'adapter à leur conteneur */
-    width: 100%; /* Change ici pour permettre aux images de s'adapter à leur conteneur */
-}
-.movieimg .myimages img{
-    width: 300px; /* Définissez une largeur spécifique ici */
-    height: 450px; /* Définissez une hauteur spécifique ici */
-    object-fit: cover; 
-    border-radius: 5px;
-   
-}
-
-
-
-
-.movieimg .myimages img:hover {
-  border: 5px #0385fe solid;
-  border-radius: 23px;
-background: #ff0000;
-box-shadow:  15px 15px 100px #660000,
-             -15px -15px 100px #ff0000;
-}
-
-
-
-
-.movieimg{
-    padding: 0px;
-    max-width: max-content;
-    padding-left: 10px;
-}
-.moviecontainer::after{
-    content: "";
-    clear: both;
-    display: table;
-}
-.moviecontainer{
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    grid-gap: 15px;
-    height: max-content;
-    width: max-content;
-    margin: auto; /* Ajoutez cette ligne pour centrer le conteneur */
-}
-
-
-.moviecontainer{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Fixez un nombre spécifique de colonnes ici */
-    grid-gap: 0px;
-    height: max-content;
-    width: max-content;
-}
-
-
-
-
-
-
-
-    
-
-.cardBlue {
-    background-color: darkblue;
-}
-
-.center {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  justify-content: center;
-}
-
-.wrapper {
-  display: flex;
-  grid-gap: 1em;
-  overflow: hidden;
-  width: 70em; /* Adjusted to fit 4 cards */
-}
-
-.wrapper .inner {
-  display: flex;
-  grid-gap: 1em;
-  transition: all 1s ease-in-out;
-  width: calc(17.5em * 12); /* Adjust to number of cards */
-}
-
-.card {
-  border-radius: 0.5em;
-  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
-  background-color: navy;
-  width: 17.5em; /* Fixed width */
-  height: 25em; /* Fixed height */
-  overflow: hidden; /* Hide overflow for images */
-}
-
-.card img {
-  border-top-right-radius: inherit;
-  border-top-left-radius: inherit;
-  display: block;
-  width: 100%; /* Make the image take the full width of the card */
-  height: 75%; /* Increased height for images */
-  object-fit: cover; /* Ensures the image covers the area without stretching */
-}
-
-.card .content {
-  background: cardBlue;
-  border-bottom-left-radius: inherit;
-  border-bottom-right-radius: inherit;
-  padding: 1em;
-  text-align: center;
-  height: 25%; /* Adjust content height to fill the card */
-}
-
-.card .content h1,
-.card .content h3 {
-  margin: 0.35em 0;
-}
-
-.card .content h1 {
-  color: #fff;
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.card .content h3 {
-  color: #ccc;
-  font-size: 0.9rem;
-  font-weight: 300;
-}
-
-.map {
-  display: flex;
-  justify-content: center;
-  margin-top: 1em;
-}
-
-.map button {
-    background-color: #4CAF50; /* Green */
-    border: none;
-    color: white;
-    padding: 15px 32px;
     text-align: center;
+    padding: 14px 16px;
     text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    transition-duration: 0.4s;
-    cursor: pointer;
 }
-
-.map button:hover {
-    background-color: white; 
-    color: black; 
-    border: 2px solid #4CAF50;
-}
-
-
-.map button.active {
-  background: red;
-}
-
-.map button.active:after {
-  content: "";
-  left: 50%;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  top: 50%;
-}
-
-
-
-.gradient-box {
-    width: 1100px;
-    height: 600px;
-    margin-top: 20px;
-    border: 1px solid #000;
+li a:hover {
+    background-color: red;
     border-radius: 10px;
 }
 
-/* Style pour le dégradé violet-orange (Vo) */
-.gradient-vo {
-    background: linear-gradient(to bottom right, violet, orange);
+/* 🖱️ Boutons */
+.btn, .btn2 {
+    position: absolute;
+    background-color: red;
+    color: white;
+    font-size: 16px;
+    padding: 16px 30px;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    text-align: center;
+}
+.btn {
+    top: 65%;
+    left: 10%;
+}
+.btn2 {
+    top: 1%;
+    left: 90%;
 }
 
-/* Style pour le dégradé vert-bleu (VF) */
-.gradient-vf {
-    background: linear-gradient(to bottom right, green, blue);
-}
-
-.modal-content h1{
+/* 📝 Titre principal */
+.BigText {
+    position: absolute;
+    top: 30%;
+    left: 10%;
+    width: 30%;
+    font-size: 300%;
     color: white;
 }
 
-            /* Style de la fenêtre contextuelle */
+/* 🎬 Section animes */
+.moviesection {
+    max-width: 900px;
+    padding-left: 5%;
+    color: white;
+    text-transform: uppercase;
+}
+hr.rounded {
+    border-top: 3px solid red;
+    border-radius: 5px;
+}
+.moviecontainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-gap: 15px;
+    margin: auto;
+    width: max-content;
+}
+.movieimg {
+    padding-left: 10px;
+    max-width: max-content;
+}
+.movieimg .myimages img {
+    width: 300px;
+    height: 450px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+.movieimg .myimages img:hover {
+    border: 5px #0385fe solid;
+    border-radius: 23px;
+    background: #ff0000;
+    box-shadow: 15px 15px 100px #660000, -15px -15px 100px #ff0000;
+}
+
+/* 🎨 Menu contextuel */
+.context-menu {
+    display: none;
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ccc;
+    z-index: 1000;
+}
+.context-menu-item {
+    padding: 8px;
+    cursor: pointer;
+}
+.context-menu-item:hover {
+    background: #eee;
+}
+
+/* 🎥 Modale vidéo */
 .modal {
-  display: none;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgb(0,0,0);
-  background-color: rgba(0,0,0,0.4);
-  padding-top: 60px;
+    display: none;
+    position: fixed;
+    z-index: 10;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+    padding-top: 60px;
 }
-
-/* Contenu de la fenêtre contextuelle */
 .modal-content {
-  background-color: #fefefe;
-  margin: 5% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  align-items: center;
-  text-align: center;
+    background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+    margin: 5% auto;
+    padding: 20px;
+    width: 80%;
+    text-align: center;
+    color: white;
+    border-radius: 10px;
 }
-
-/* Bouton pour fermer la fenêtre contextuelle */
+.modal-content h1 {
+    color: white;
+}
 .close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
 }
-
 .close:hover,
 .close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+#videoPlayer {
+    width: 640px;
+    height: 360px;
+    display: block;
+    margin: 20px auto;
+}
+.controls {
+    text-align: center;
+}
+select {
+    width: 200px;
+    height: 50px;
+    font-size: 16px;
 }
 
-#episodePopup{
-    background: rgb(34,7,54);
-background: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-background: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); 
+/* 🧭 Carrousel (si utilisé) */
+.wrapper {
+    display: flex;
+    grid-gap: 1em;
+    overflow: hidden;
+    width: 70em;
 }
-
-.modal-content{
-    background: rgb(34,7,54);
-background: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-background: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); 
-border: rgb(34,7,54);
-border: -moz-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-border: -webkit-radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-border: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#220736",endColorstr="#4d00ac",GradientType=1); ;
+.wrapper .inner {
+    display: flex;
+    grid-gap: 1em;
+    transition: all 1s ease-in-out;
+    width: calc(17.5em * 12);
 }
-
-            body {
-    overflow-x: hidden;
+.card {
+    border-radius: 0.5em;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+    background-color: navy;
+    width: 17.5em;
+    height: 25em;
+    overflow: hidden;
 }
-
-
-
-
-
-            .btn{
-                position: absolute;
-                top: 65%;
-                left: 10%;
-                background-color: red;
-                color: white;
-                font-size: 16px;
-                padding: 16px 30px;
-                border: none;
-                cursor: pointer;
-                border-radius: 10px;
-                text-align: center;
-                display: block;
-            }
-            .btn2{
-                position: absolute;
-                top: 1%;
-                left: 90%;
-                background-color: red;
-                color: white;
-                font-size: 16px;
-                padding: 16px 30px;
-                border: none;
-                cursor: pointer;
-                border-radius: 10px;
-                text-align: center;
-    
-            }
-    
-            .BigText{
-                position: absolute;
-                top: 30%;
-                left: 10%;
-                width: 30%;
-                font-size: 300%;
-                color: white;
-            }
-            
-            ul{
-                list-style-type: none;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-                background-color: transparent;
-            }
-            li{
-                float: left;
-            }
-            li a{
-                display: block;
-                color: white;
-                text-align: center;
-                padding: 14px 16px;
-                text-decoration: none;
-            }
-            li a:hover{
-                background-color: red;
-                border-radius: 10px;
-            }
-                
-            
-            hr.rounded{
-                border-top: 3px solid red;
-                border-radius: 5px;
-            }
-            
-    @media screen and (max-width: 1000px) {
-      #berserkimage{
-        width: 100%;
-
-      }
-      
-      ul{
-        width: 100%;
-      }
-
-     
-    }
-
-    @media screen and (max-width: 600px) {
-  .card {
+.card img {
+    border-top-right-radius: inherit;
+    border-top-left-radius: inherit;
+    display: block;
     width: 100%;
-  }
-  .movieimg {
-    width: 100%;
-  }
+    height: 75%;
+    object-fit: cover;
+}
+.card .content {
+    background-color: darkblue;
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+    padding: 1em;
+    text-align: center;
+    height: 25%;
+}
+.card .content h1 {
+    color: #fff;
+    font-size: 1.25rem;
+    margin: 0.35em 0;
+}
+.card .content h3 {
+    color: #ccc;
+    font-size: 0.9rem;
+    font-weight: 300;
+    margin: 0.35em 0;
 }
 
-            
-        </style>
-
-        <script>
-
-document.addEventListener("DOMContentLoaded", function() {
-    // Tableaux d'images pour chaque anime
-    const imagesErased = [
-        "https://fr.web.img5.acsta.net/pictures/19/09/20/16/59/1993201.jpg",
-        "https://ih1.redbubble.net/image.546580566.3272/flat,750x,075,f-pad,750x1000,f8f8f8.jpg",
-        "https://m.media-amazon.com/images/I/71kAsfINhVL._AC_UF894,1000_QL80_.jpg"
-    ];
-    const imagesSteinsGate = [
-        "https://www.nautiljon.com/images/anime/00/76/steins_gate_1967.webp",
-        "https://m.media-amazon.com/images/I/71qP5EqnxXS._AC_UF1000,1000_QL80_.jpg",
-        "https://i.pinimg.com/originals/75/77/bd/7577bd0a1fbcbbb92c38c1293fd5e320.jpg"
-    ];
-    const imagesCotn = [
-        "https://fr.web.img3.acsta.net/pictures/22/07/04/14/30/5500974.jpg",
-        "https://m.media-amazon.com/images/M/MV5BMDNkM2QxNmUtYzMyZC00OWJlLTkwMmYtZDg4MzFjNjY5NGIzXkEyXkFqcGdeQXVyMzgxODM4NjM@._V1_FMjpg_UX1000_.jpg",
-        "https://pbs.twimg.com/media/Fy15mftXgAc26oz.jpg"
-    ];
-    const imagesCyberpunk = [
-        "https://fr.web.img4.acsta.net/pictures/22/06/09/09/16/1463272.jpg",
-        "https://i.ebayimg.com/images/g/2ncAAOSwqu9jRL9d/s-l1200.jpg",
-        "https://image.tmdb.org/t/p/original/7jSWOc6jWSw5hZ78HB8Hw3pJxuk.jpg"
-    ];
-    const imagesPlatinumEnd = [
-        "https://fr.web.img2.acsta.net/pictures/21/08/02/11/23/3965735.jpg",
-        "https://m.media-amazon.com/images/I/61TDQm0F7zL._AC_UF1000,1000_QL80_.jpg",
-        "https://media-cache.cinematerial.com/p/500x/8qmq6xtn/platinum-end-japanese-movie-poster.jpg?v=1645981100"
-    ];
-    const imagesHellsParadise = [
-        "https://fr.web.img2.acsta.net/pictures/23/03/22/17/10/3028192.jpg",
-        "https://static.printler.com/cache/6/0/c/f/e/b/60cfeb4c9c1a3af0edf10997ec3d7a114c4611e6.jpg",
-        "https://image.tmdb.org/t/p/original/1V9I7SvZbYoMbSvdtnlkkq9SB1k.jpg"
-    ];
-    const imagesChibiRevengers = [
-        "https://i.pinimg.com/736x/b1/85/f5/b185f504bbc6662801c4642f2d59d165.jpg",
-        "https://static.zerochan.net/Tokyo.Revengers.full.3370247.jpg",
-        "https://i0.wp.com/i.pinimg.com/originals/bf/df/3a/bfdf3a287ef6f55d3e7cbb0c8069a21e.jpg"
-    ];
-    const imagesDeathNote = [
-        "deathposterun.jpg",
-        "deathposterdeux.jpg",
-        "https://static.posters.cz/image/1300/affiches-et-posters/death-note-fate-connects-us-i206600.jpg"
-    ];
-    const imagesOshiNoKo = [
-        "https://www.nautiljon.com/images/more/04/39/364593.webp",
-        "https://fr.web.img3.acsta.net/r_1280_720/pictures/23/03/27/09/50/3692966.jpg",
-        "posteroshi.jpeg"
-    ];
-    const imagesDeathParade = [
-        "https://fr.web.img6.acsta.net/pictures/19/07/10/15/27/4695755.jpg",
-        "https://ih1.redbubble.net/image.1552907528.2553/flat,750x,075,f-pad,750x1000,f8f8f8.jpg",
-        "https://i.ebayimg.com/images/g/si8AAOSwCA5bbB~F/s-l1200.jpg"
-    ];
-    const imagesBluePeriod = [
-        "https://res.cloudinary.com/jerrick/image/upload/d_642250b563292b35f27461a7.png,f_jpg,fl_progressive,q_auto,w_1024/6316d798154b25001eb94b4c.png",
-        "https://m.media-amazon.com/images/I/61HUDQkhIyL._AC_UF1000,1000_QL80_.jpg",
-        "https://m.media-amazon.com/images/I/71c2XKLkeLL._AC_UF894,1000_QL80_.jpg"
-    ];
-    const imagesSteinsGate0 = [
-        "https://www.nautiljon.com/images/anime/00/98/steins_gate_0_4689.webp",
-        "https://image.tmdb.org/t/p/original/jbRSUeWu6saPLrBEWei4CdLrAYX.jpg",
-        "https://image.tmdb.org/t/p/original/oysiTMX6kMBCfG7iVRUgATcWiCp.jpg"
-    ];
-    const imagesJujutsuKaisen = [
-        "https://www.manga-news.com/public/images/dvd/Jujutsu-Kaisen-S2_anime.jpg",
-        "https://static.posters.cz/image/750/affiches-et-posters/jujutsu-kaisen-jujutsushi-i195602.jpg",
-        "https://m.media-amazon.com/images/I/71kBr22ahDL._AC_UF1000,1000_QL80_.jpg"
-    ];
-    const imagesDragonBall = [
-        "https://fr.web.img2.acsta.net/pictures/22/11/22/14/02/3642167.jpg",
-        "https://m.media-amazon.com/images/I/712mWgOWX+L._AC_UF1000,1000_QL80_.jpg",
-        "https://pbs.twimg.com/media/FfqAe8dagAE7fkJ.jpg"
-    ];
-
-    // Fonction pour sélectionner une image aléatoire
-    function getRandomImage(images) {
-        return images[Math.floor(Math.random() * images.length)];
+/* 📱 Responsive */
+@media screen and (max-width: 1000px) {
+    #berserkimage {
+        width: 100%;
     }
-
-    // Appliquer les images aléatoires
-    document.getElementById("erased").src = getRandomImage(imagesErased);
-    document.getElementById("steinsgate").src = getRandomImage(imagesSteinsGate);
-    document.getElementById("cotn").src = getRandomImage(imagesCotn);
-    document.getElementById("cyberpunk").src = getRandomImage(imagesCyberpunk);
-    document.getElementById("platinumend").src = getRandomImage(imagesPlatinumEnd);
-    document.getElementById("hellsparadise").src = getRandomImage(imagesHellsParadise);
-    document.getElementById("chibirevengers").src = getRandomImage(imagesChibiRevengers);
-    document.getElementById("deathnote").src = getRandomImage(imagesDeathNote);
-    document.getElementById("oshinoko").src = getRandomImage(imagesOshiNoKo);
-    document.getElementById("deathparade").src = getRandomImage(imagesDeathParade);
-    document.getElementById("blueperiod").src = getRandomImage(imagesBluePeriod);
-    document.getElementById("steinsgate0").src = getRandomImage(imagesSteinsGate0);
-    document.getElementById("jujutsukaisen").src = getRandomImage(imagesJujutsuKaisen);
-    document.getElementById("dragonball").src = getRandomImage(imagesDragonBall);
-});
-
-
-
-
-function watchEpisode() {
-    var episodePopup = document.getElementById("episodePopup");
-    var modal = document.getElementById("myModal");
-
-    // Affichez la pop-up de l'épisode
-    episodePopup.style.display = "block";
-
-    // Masquez la fenêtre contextuelle principale
-    modal.style.display = "none";
-}
-
-function closeEpisodePopup() {
-    var episodePopup = document.getElementById("episodePopup");
-
-    // Masquez la pop-up de l'épisode
-    episodePopup.style.display = "none";
-}
-
-
-        </script>
-
-        <script>
-         
-         document.querySelectorAll('.movieimg').forEach(anime => {
-    anime.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        const menu = document.getElementById('context-menu');
-        menu.style.display = 'block';
-        menu.style.left = `${e.pageX}px`;
-        menu.style.top = `${e.pageY}px`;
-        menu.dataset.title = this.dataset.title;
-        menu.dataset.genre = this.dataset.genre;
-        menu.dataset.img = this.querySelector('img').src;
-    });
-});
-
-let animes = JSON.parse(localStorage.getItem('animes')) || [];
-
-document.querySelectorAll('.context-menu-item').forEach(item => {
-    item.addEventListener('click', function() {
-        const title = document.getElementById('context-menu').dataset.title;
-        const genre = document.getElementById('context-menu').dataset.genre;
-        const img = document.getElementById('context-menu').dataset.img;
-        const status = this.dataset.status;
-        const animeData = { title, genre, img, status };
-
-        // Recherchez l'anime dans le tableau 'animes'
-        const animeIndex = animes.findIndex(anime => anime.title === title);
-
-        if (animeIndex !== -1) {
-            // Si l'anime existe déjà, mettez à jour son statut
-            animes[animeIndex].status = status;
-        } else {
-            // Sinon, ajoutez l'anime au tableau
-            animes.push(animeData);
-        }
-
-        localStorage.setItem('animes', JSON.stringify(animes));
-        document.getElementById('context-menu').style.display = 'none';
-    });
-});
-
-
-        </script>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                var modal = document.getElementById("episodePopup");
-                var closeBtn = document.getElementById("closeBtn");
-            
-                // Affichez la fenêtre contextuelle lorsque le bouton est cliqué
-                document.getElementById("myBtn").onclick = function() {
-                    modal.style.display = "block";
-                };
-            
-                // Fermez la fenêtre contextuelle lorsque le span de fermeture est cliqué
-                closeBtn.onclick = function() {
-                    modal.style.display = "none";
-                };
-            
-                // Fermez la fenêtre contextuelle lorsque l'utilisateur clique en dehors de celle-ci
-                window.onclick = function(event) {
-                    if (event.target == modal) {
-                        modal.style.display = "none";
-                    }
-                };
-            });
-
-            function closeEpisodePopup() {
-    var episodePopup = document.getElementById("episodePopup");
-    var video = document.getElementById("myVideo");
-
-    // Mettez la pop-up de l'épisode en mode invisible
-    episodePopup.style.display = "none";
-
-    // Mettez la vidéo en pause
-    video.pause();
-}
-
-            </script>
-             <script>
-                var btn = document.getElementById("myBtn");
-                var episodePopup = document.getElementById("episodePopup");
-                var closeBtn = document.getElementById("closeBtn");
-                var video = document.getElementById("myVideo");
-        
-                btn.onclick = function() {
-                    episodePopup.style.display = "block";
-                };
-        
-                closeBtn.onclick = function() {
-                    episodePopup.style.display = "none";
-                    // Mettez la vidéo en pause lorsque la pop-up se ferme
-                    video.pause();
-                };
-
-                
-            </script>
-
-            <script>
-const buttonsWrapper = document.querySelector(".map");
-const slides = document.querySelector(".inner");
-
-buttonsWrapper.addEventListener("click", e => {
-  if (e.target.nodeName === "BUTTON") {
-    Array.from(buttonsWrapper.children).forEach(item =>
-      item.classList.remove("active")
-    );
-    if (e.target.classList.contains("first")) {
-      slides.style.transform = "translateX(-0%)";
-      e.target.classList.add("active");
-    } else if (e.target.classList.contains("second")) {
-      slides.style.transform = "translateX(-25%)"; // Move 25% to show next 4 cards
-      e.target.classList.add("active");
-    } else if (e.target.classList.contains('third')){
-      slides.style.transform = 'translatex(-50%)'; // Move 50% to show next 4 cards
-      e.target.classList.add('active');
+    ul {
+        width: 100%;
     }
-  }
-});
+}
+@media screen and (max-width: 600px) {
+    .card, .movieimg {
+        width: 100%;
+    }
+    #videoPlayer {
+        width: 100%;
+        height: auto;
+    }
+}
 
+    </style>
+    <!-- Script principal -->
+    <script src="script.js" defer></script>
+    <script>
+        // 🎞️ Liste des épisodes
+const episodes = [
+    'https://video.sibnet.ru/shell.php?videoid=4906990&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4906993&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4906996&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907001&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907002&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907007&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907009&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907013&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907016&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907019&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907023&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907030&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907033&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907038&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907043&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907046&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907049&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907053&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907057&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907062&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907064&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907070&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907073&share=1',
+    'https://video.sibnet.ru/shell.php?videoid=4907077&share=1'
+];
 
+let currentEpisode = 0;
 
-</script>
-
-<style>
-   #videoPlayer {
-            width: 640px;
-            height: 360px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        button {
-            background-color: #4CAF50; /* Green */
-            border: none;
-            color: white;
-            padding: 15px 32px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-        }
-        select {
-            width: 200px;
-            height: 50px;
-            font-size: 16px;
-        }
-        .controls {
-            text-align: center;
-        }
-</style>
-<script>
-  var episodes = [
-      'https://video.sibnet.ru/shell.php?videoid=4906990&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4906993&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4906996&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907001&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907002&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907007&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907009&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907013&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907016&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907019&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907023&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907030&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907033&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907038&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907043&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907046&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907049&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907053&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907057&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907062&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907064&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907070&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907073&share=1',
-      'https://video.sibnet.ru/shell.php?videoid=4907077&share=1'
-  ];
-  var currentEpisode = 0;
-
-  function loadEpisode(index) {
-    document.getElementById('videoPlayer').src = episodes[index];
+function loadEpisode(index) {
+    const video = document.getElementById('videoPlayer');
+    video.src = episodes[index];
     document.getElementById('episodeTitle').innerText = 'Épisode ' + (parseInt(index) + 1);
     document.getElementById('episodeSelector').value = index;
-    currentEpisode = index;
+    currentEpisode = parseInt(index);
 }
-
 
 function nextEpisode() {
     if (currentEpisode < episodes.length - 1) {
@@ -967,29 +466,243 @@ function previousEpisode() {
 }
 
 function generateOptions() {
-    // Générer les options du sélecteur
-    var selector = document.getElementById('episodeSelector');
-    selector.innerHTML = ''; // Effacer les options existantes
-    for (var i = 0; i < episodes.length; i++) {
-        var option = document.createElement('option');
+    const selector = document.getElementById('episodeSelector');
+    selector.innerHTML = '';
+    for (let i = 0; i < episodes.length; i++) {
+        const option = document.createElement('option');
         option.value = i;
         option.text = 'Épisode ' + (i + 1);
-        selector.add(option);
+        selector.appendChild(option);
     }
 }
 
-	window.onload = function() {
-      updateProgressBar();
+function updateProgressBar() {
+    const totalEpisodes = episodes.length;
+    const viewedEpisodes = JSON.parse(localStorage.getItem('viewedEpisodes')) || [];
+    const percentage = (viewedEpisodes.length / totalEpisodes) * 100;
+    document.getElementById("progress-bar").style.width = percentage + '%';
+}
+
+function getRandomImage(images) {
+    return images[Math.floor(Math.random() * images.length)];
+}
+
+function loadRandomPosters() {
+    const posters = {
+        erased: [
+            "https://fr.web.img5.acsta.net/pictures/19/09/20/16/59/1993201.jpg",
+            "https://ih1.redbubble.net/image.546580566.3272/flat,750x,075,f-pad,750x1000,f8f8f8.jpg",
+            "https://m.media-amazon.com/images/I/71kAsfINhVL._AC_UF894,1000_QL80_.jpg"
+        ],
+        steinsgate: [
+            "https://www.nautiljon.com/images/anime/00/76/steins_gate_1967.webp",
+            "https://m.media-amazon.com/images/I/71qP5EqnxXS._AC_UF1000,1000_QL80_.jpg",
+            "https://i.pinimg.com/originals/75/77/bd/7577bd0a1fbcbbb92c38c1293fd5e320.jpg"
+        ],
+        cotn: [
+            "https://fr.web.img3.acsta.net/pictures/22/07/04/14/30/5500974.jpg",
+            "https://m.media-amazon.com/images/M/MV5BMDNkM2QxNmUtYzMyZC00OWJlLTkwMmYtZDg4MzFjNjY5NGIzXkEyXkFqcGdeQXVyMzgxODM4NjM@._V1_FMjpg_UX1000_.jpg",
+            "https://pbs.twimg.com/media/Fy15mftXgAc26oz.jpg"
+        ],
+        cyberpunk: [
+            "https://fr.web.img4.acsta.net/pictures/22/06/09/09/16/1463272.jpg",
+            "https://i.ebayimg.com/images/g/2ncAAOSwqu9jRL9d/s-l1200.jpg",
+            "https://image.tmdb.org/t/p/original/7jSWOc6jWSw5hZ78HB8Hw3pJxuk.jpg"
+        ],
+        platinumend: [
+            "https://fr.web.img2.acsta.net/pictures/21/08/02/11/23/3965735.jpg",
+            "https://m.media-amazon.com/images/I/61TDQm0F7zL._AC_UF1000,1000_QL80_.jpg",
+            "https://media-cache.cinematerial.com/p/500x/8qmq6xtn/platinum-end-japanese-movie-poster.jpg?v=1645981100"
+        ],
+        hellsparadise: [
+            "https://fr.web.img2.acsta.net/pictures/23/03/22/17/10/3028192.jpg",
+            "https://static.printler.com/cache/6/0/c/f/e/b/60cfeb4c9c1a3af0edf10997ec3d7a114c4611e6.jpg",
+            "https://image.tmdb.org/t/p/original/1V9I7SvZbYoMbSvdtnlkkq9SB1k.jpg"
+        ],
+        chibirevengers: [
+            "https://i.pinimg.com/736x/b1/85/f5/b185f504bbc6662801c4642f2d59d165.jpg",
+            "https://static.zerochan.net/Tokyo.Revengers.full.3370247.jpg",
+            "https://i0.wp.com/i.pinimg.com/originals/bf/df/3a/bfdf3a287ef6f55d3e7cbb0c8069a21e.jpg"
+        ],
+        deathnote: [
+            "deathposterun.jpg",
+            "deathposterdeux.jpg",
+            "https://static.posters.cz/image/1300/affiches-et-posters/death-note-fate-connects-us-i206600.jpg"
+        ],
+        oshinoko: [
+            "https://www.nautiljon.com/images/more/04/39/364593.webp",
+            "https://fr.web.img3.acsta.net/r_1280_720/pictures/23/03/27/09/50/3692966.jpg",
+            "posteroshi.jpeg"
+        ],
+        deathparade: [
+            "https://fr.web.img6.acsta.net/pictures/19/07/10/15/27/4695755.jpg",
+            "https://ih1.redbubble.net/image.1552907528.2553/flat,750x,075,f-pad,750x1000,f8f8f8.jpg",
+            "https://i.ebayimg.com/images/g/si8AAOSwCA5bbB~F/s-l1200.jpg"
+        ],
+               blueperiod: [
+            "https://res.cloudinary.com/jerrick/image/upload/d_642250b563292b35f27461a7.png,f_jpg,fl_progressive,q_auto,w_1024/6316d798154b25001eb94b4c.png",
+            "https://m.media-amazon.com/images/I/61HUDQkhIyL._AC_UF1000,1000_QL80_.jpg",
+            "https://m.media-amazon.com/images/I/71c2XKLkeLL._AC_UF894,1000_QL80_.jpg"
+        ],
+        steinsgate0: [
+            "https://www.nautiljon.com/images/anime/00/98/steins_gate_0_4689.webp",
+            "https://image.tmdb.org/t/p/original/jbRSUeWu6saPLrBEWei4CdLrAYX.jpg",
+            "https://image.tmdb.org/t/p/original/oysiTMX6kMBCfG7iVRUgATcWiCp.jpg"
+        ],
+        jujutsukaisen: [
+            "https://www.manga-news.com/public/images/dvd/Jujutsu-Kaisen-S2_anime.jpg",
+            "https://static.posters.cz/image/750/affiches-et-posters/jujutsu-kaisen-jujutsushi-i195602.jpg",
+            "https://m.media-amazon.com/images/I/71kBr22ahDL._AC_UF1000,1000_QL80_.jpg"
+        ],
+        dragonball: [
+            "https://fr.web.img2.acsta.net/pictures/22/11/22/14/02/3642167.jpg",
+            "https://m.media-amazon.com/images/I/712mWgOWX+L._AC_UF1000,1000_QL80_.jpg",
+            "https://pbs.twimg.com/media/FfqAe8dagAE7fkJ.jpg"
+        ]
+    };
+
+    for (const id in posters) {
+        const img = document.getElementById(id);
+        if (img) {
+            img.src = getRandomImage(posters[id]);
+        }
+    }
+}
+
+// 🖱️ Menu contextuel personnalisé
+function setupContextMenu() {
+    const menu = document.getElementById('context-menu');
+    let animes = JSON.parse(localStorage.getItem('animes')) || [];
+
+    document.querySelectorAll('.movieimg').forEach(anime => {
+        anime.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            menu.style.display = 'block';
+            menu.style.left = `${e.pageX}px`;
+            menu.style.top = `${e.pageY}px`;
+            menu.dataset.title = this.dataset.title;
+            menu.dataset.genre = this.dataset.genre;
+            menu.dataset.img = this.querySelector('img').src;
+        });
+    });
+
+    document.querySelectorAll('.context-menu-item').forEach(item => {
+        item.addEventListener('click', function () {
+            const title = menu.dataset.title;
+            const genre = menu.dataset.genre;
+            const img = menu.dataset.img;
+            const status = this.dataset.status;
+            const animeData = { title, genre, img, status };
+
+            const index = animes.findIndex(a => a.title === title);
+            if (index !== -1) {
+                animes[index].status = status;
+            } else {
+                animes.push(animeData);
+            }
+
+            localStorage.setItem('animes', JSON.stringify(animes));
+            menu.style.display = 'none';
+        });
+    });
+
+    window.addEventListener('click', () => {
+        menu.style.display = 'none';
+    });
+}
+
+// 🎥 Gestion de la modale vidéo
+function setupModal() {
+    const modal = document.getElementById("episodePopup");
+    const closeBtn = document.getElementById("closeBtn");
+    const video = document.getElementById("videoPlayer");
+
+    document.getElementById("myBtn").onclick = () => {
+        modal.style.display = "block";
+    };
+
+    closeBtn.onclick = () => {
+        modal.style.display = "none";
+        video.src = video.src; // Réinitialise l'iframe
+    };
+
+    window.onclick = (event) => {
+        if (event.target === modal) {
+            modal.style.display = "none";
+            video.src = video.src;
+        }
+    };
+}
+
+// 🚀 Initialisation
+document.addEventListener("DOMContentLoaded", () => {
+    generateOptions();
+    loadEpisode(0);
+    updateProgressBar();
+    loadRandomPosters();
+    setupContextMenu();
+    setupModal();
+});
+
+function toggleFavorite(title) {
+    let animes = JSON.parse(localStorage.getItem('animes')) || [];
+    const index = animes.findIndex(a => a.title === title);
+
+    if (index !== -1) {
+        animes[index].favorite = !animes[index].favorite;
+    } else {
+        animes.push({ title, favorite: true });
     }
 
-    function updateProgressBar() {
-      var totalEpisodes = 23;
-      var viewedEpisodes = JSON.parse(localStorage.getItem('viewedEpisodes')) || [];
-      var percentage = (viewedEpisodes.length / totalEpisodes) * 100;
-      document.getElementById("progress-bar").style.width = percentage + '%';
-    }
-</script>
+    localStorage.setItem('animes', JSON.stringify(animes));
+}
 
-            
-	</body>
+function rateAnime(title, rating) {
+    let animes = JSON.parse(localStorage.getItem('animes')) || [];
+    const index = animes.findIndex(a => a.title === title);
+
+    if (index !== -1) {
+        animes[index].rating = rating;
+    } else {
+        animes.push({ title, rating });
+    }
+
+    localStorage.setItem('animes', JSON.stringify(animes));
+}
+
+function exportAnimeData() {
+    const data = localStorage.getItem('animes');
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mes_animes.json';
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+function handleFavorite() {
+    const title = document.getElementById('context-menu').dataset.title;
+    toggleFavorite(title);
+    alert(`"${title}" a été ajouté/retiré des favoris.`);
+    document.getElementById('context-menu').style.display = 'none';
+}
+
+function handleRating() {
+    const title = document.getElementById('context-menu').dataset.title;
+    const rating = prompt(`Note pour "${title}" (1 à 5 étoiles) :`);
+    const stars = parseInt(rating);
+    if (stars >= 1 && stars <= 5) {
+        rateAnime(title, stars);
+        alert(`Tu as noté "${title}" avec ${stars} étoile(s).`);
+    } else {
+        alert("Note invalide. Entrez un nombre entre 1 et 5.");
+    }
+    document.getElementById('context-menu').style.display = 'none';
+}
+
+    </script>
+</body>
 </html>
