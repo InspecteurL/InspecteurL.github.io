@@ -291,15 +291,24 @@ li a:hover {
 
 /* 🎬 Section animes */
 .moviesection {
-    max-width: 900px;
-    padding-left: 5%;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 20px;
     color: white;
     text-transform: uppercase;
 }
+
 hr.rounded {
     border-top: 3px solid red;
     border-radius: 5px;
 }
+
+.movieimg h2,
+.movieimg span,
+.rating-stars {
+    text-align: center;
+}
+
 .moviecontainer {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -308,25 +317,15 @@ hr.rounded {
     max-width: 1300px;
     margin: 0 auto;
     box-sizing: border-box;
-    justify-content: center; /* centre la grille */
-    justify-items: center;   /* centre les éléments dans chaque colonne */
+    justify-content: center;
+    justify-items: center;
 }
-
-
-
-.movieimg h2,
-.movieimg span,
-.rating-stars {
-    text-align: center;
-}
-
-
 
 .movieimg {
     width: 300px;
-    height: auto;
     text-align: center;
     color: white;
+    position: relative;
 }
 
 .movieimg .myimages {
@@ -335,6 +334,7 @@ hr.rounded {
     overflow: hidden;
     border-radius: 10px;
     background-color: #000;
+    position: relative;
 }
 
 .movieimg .myimages img {
@@ -343,11 +343,6 @@ hr.rounded {
     object-fit: cover;
     border-radius: 10px;
     display: block;
-    /* Supprimer le zoom au survol */
-    transition: none;
-    transform: none;
-    border: none;
-    box-shadow: none;
 }
 
 
@@ -478,6 +473,15 @@ select {
     margin: 0.35em 0;
 }
 
+.movieimg {
+    position: relative;
+}
+
+
+.movieimg {
+    position: relative;
+}
+
 .favorite-badge {
     position: absolute;
     top: 8px;
@@ -491,23 +495,12 @@ select {
     z-index: 2;
 }
 
-.movieimg {
-    position: relative;
-}
-
-
-.movieimg {
-    position: relative;
-}
-
 .rating-stars {
     margin-top: 5px;
     font-size: 18px;
     color: gold;
     text-align: center;
 }
-
-
 @media screen and (max-width: 1000px) {
     #berserkimage {
         width: 100%;
@@ -919,6 +912,20 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRatings();
     applyFilters();
 });
+
+function injectFavoriteBadges() {
+    document.querySelectorAll('.movieimg').forEach(card => {
+        const existingBadge = card.querySelector('.favorite-badge');
+        if (!existingBadge) {
+            const badge = document.createElement('span');
+            badge.className = 'favorite-badge';
+            badge.textContent = '⭐';
+            badge.style.display = 'none';
+            card.querySelector('.myimages').appendChild(badge);
+        }
+    });
+}
+
 
     </script>
 </body>
