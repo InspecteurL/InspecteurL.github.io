@@ -337,12 +337,22 @@ hr.rounded {
     transition: transform 0.3s ease;
     transform: scale(1);
     pointer-events: auto !important; /* ← très important */
+    will-change: transform;
 }
 
 
 .movieimg:hover {
-  transform: scale(1.05);
   z-index: 1;
+}
+
+.movieimg:hover > .myimages {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px red;
+  border: 3px solid #0385fe;
+}
+
+.myimages {
+  transition: transform 0.3s ease;
 }
 
 
