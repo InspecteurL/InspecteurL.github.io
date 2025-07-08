@@ -1,166 +1,275 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" href="style.css">
-  <script type="text/javascript" src="script.js"></script>
-  <title>TSF - Steins Gate</title>
-</head>
-
-<body>
-  <ul>
-    <li><a class="active" href="index.html">Home</a></li>
-    <li><a  href="journal.html">Journal</a></li>
-    <li><a  href="profil.html">Découvrir</a></li>
-    <li><a  href="trueprofil.html">Profil</a></li>
-    <li><a  href="accueil.html">Feuilleter</a></li>
-  </ul>
-
-  <br><br>
-  <img src="https://upload.wikimedia.org/wikipedia/commons/f/f8/Platinum_End_Logo.png" width="50%">
-
-  <h1 id="episode-title">Saison 1 - Episode 1</h1>
-  <iframe id="episode-video" width=640 height=360 src="https://video.sibnet.ru/shell.php?videoid=4507079&share=1" allowfullscreen></iframe><br><br>
-
-  <button onclick="previousEpisode()">Épisode précédent</button>
-  <button onclick="nextEpisode()">Épisode suivant</button>
-  <select id="episode-selector" onchange="selectEpisode()">
-    <!-- Les options seront générées dynamiquement par le script JavaScript -->
-  </select>
-  <button onclick="lastEpisode()">Dernier épisode</button>
-
-  <br><br>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
+  <title>BNZ - Platinum End</title>
   <style>
-    body{
-      background-color: #2e2b2b;
-    }
-
-    button{
-      width: 122px;
+    body {
+      background: linear-gradient(to top, #990033 0%, #000066 100%);
       color: white;
-      background-color: blue;
-      height: 100px;
-      border: 35px;
-      border: blue;
-      font-size: 24px;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
     }
 
-    ul{
+    ul {
       list-style-type: none;
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background-color: transparent;
+      background-color: #1c1c1c;
     }
 
-    li{
+    li {
       float: left;
     }
 
-    li a{
+    li a {
       display: block;
       color: white;
       text-align: center;
       padding: 14px 16px;
       text-decoration: none;
-      font-size: 30px;
+      font-size: 20px;
     }
 
-    select {
-    width: 200px;
-    height: 30px;
-    background-color: #f8f9fa;
-    border: none;
-    padding: 5px;
-    font-size: 16px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  }
-
-  select:focus {
-    outline: none;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
-  }
-
-    li a:hover{
+    li a:hover {
       background-color: red;
+      border-radius: 5px;
+    }
+
+    .episode-card {
+      width: 250px;
+      margin: 10px;
+      background: linear-gradient(to bottom, #3399ff 0%, #cc00ff 100%);
+      padding: 10px;
       border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .episode-card:hover {
+      transform: scale(1.05);
+    }
+
+    .episode-card img {
+      width: 100%;
+      border-radius: 5px;
+    }
+
+    #episode-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    #video-container.show {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #episode-video {
+      width: 80%;
+      height: 60vh;
+      border: none;
+    }
+
+    #back-button, #next-button, #next-season-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: blue;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #loader {
+      color: white;
+      font-size: 20px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .episode-card {
+        width: 90%;
+      }
+
+      #episode-video {
+        width: 95%;
+        height: 40vh;
+      }
     }
   </style>
+</head>
+<body>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="journal.html">Journal</a></li>
+    <li><a href="profil.html">Découvrir</a></li>
+    <li><a href="trueprofil.html">Profil</a></li>
+    <li><a href="accueil.html">Feuilleter</a></li>
+  </ul>
+
+  <br><br>
+  <div style="text-align:center;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Platinum_End_%28black%29_logo.png" width="50%" alt="Logo Oshi no Ko">
+  </div>
+
+  <div style="text-align:center; margin: 20px;">
+    <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
+    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+      <option value="1">Saison 1</option>
+    </select>
+  </div>
+
+  <div id="episode-list"></div>
+
+  <div id="video-container">
+    <iframe id="episode-video" allowfullscreen></iframe>
+    <div id="loader" style="display:none;">Chargement de la vidéo...</div>
+    <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
+    <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
+  </div>
+
   <script>
-   var currentEpisode = 1;
-var totalEpisodes = 24;
-var episodeLinks = [
-  "https://video.sibnet.ru/shell.php?videoid=4507079&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4515929&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4539831&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4539832&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4546884&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4555599&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4561447&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4567900&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4575036&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4583497&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4590020&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4596426&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4607706&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4617190&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4624180&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4630900&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4639144&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4668399&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4653546&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4662989&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4673115&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4680699&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4693123&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4704019&share=1"
+const episodeDataS1 = [
+  { title: "Episode 1", description: "Cadeau d'un ange", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/84rk6ZUXiQgozG5hSazNrr1eKap.jpg", video: "https://vidmoly.to/embed-co98gxpfm3wq.html" },
+  { title: "Episode 2", description: "Héros de la justice", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dNc0ywS0oPNOzMcgSaTjyBLQkMe.jpg", video: "https://vidmoly.to/embed-ywkzwjwpdn19.html" },
+  { title: "Episode 3", description: "Celle que j'aime", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/euSmNCElVqwejRVZv0XGJqSVyMv.jpg", video: "https://vidmoly.to/embed-blgobjuiu6ww.html" },
+  { title: "Episode 4", description: "L'heure du rassemblement", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/kRD0F2y1opQUdukzLnI3bIgnNtO.jpg", video: "https://vidmoly.to/embed-kzvevg07as6g.html" },
+  { title: "Episode 5", description: "Condamnation à mort", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/k1DvCCWkntuvImI4UQmVUK7V6Og.jpg", video: "https://vidmoly.to/embed-tec0mr8ogthv.html" },
+  { title: "Episode 6", description: "Deux choix amers", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iXh27pZNEaGm85nxNerArFCCO2U.jpg", video: "https://vidmoly.to/embed-d7f1fr42ge9b.html" },
+  { title: "Episode 7", description: "La tour du cauchemard", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4rudkOn9woApCcXVUgmdfh7YE7Z.jpg", video: "https://vidmoly.to/embed-1t24sf5vp1vp.html" },
+  { title: "Episode 8", description: "Le symbole d'une promesse", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iBlhwOfOWy3mjO3oLa6QaYYVwq9.jpg", video: "https://vidmoly.to/embed-dmd2sludnlpv.html" },
+  { title: "Episode 9", description: "Le visage d’un meurtrier", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/mckGkktyuc1FFO13vZ0BFA3a0sz.jpg", video: "https://vidmoly.to/embed-75vodqbz981v.html" },
+  { title: "Episode 10", description: "Là où les larmes coulent", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/meXDbu30sJFnNd8CFIhw7flTiMI.jpg", video: "https://vidmoly.to/embed-tau8g5p13lys.html" },
+  { title: "Episode 11", description: "Sa propre valeur", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hNHA5bSHsdBfujidUc19jitGXIF.jpg", video: "https://vidmoly.to/embed-b9mkpxkt26cd.html" },
+  { title: "Episode 12", description: "Issue incertaine", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/yasw5c7QkdeM7TCpGRgqv4vWoii.jpg", video: "https://vidmoly.to/embed-snuya206324w.html" },
+  { title: "Episode 13", description: "La paix dans le monde", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/eSV3n7CZk6DJH6Q36stkB5bjcu9.jpg", video: "https://vidmoly.to/embed-3xyiorf09otk.html" },
+  { title: "Episode 14", description: "Deux lumières", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/qtvX5bb31PXJNvIxQrRWeFsVcTz.jpg", video: "https://vidmoly.to/embed-qfe1m47g20za.html" },
+  { title: "Episode 15", description: "Le pouvoir de diffusion", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/rEU8FHP9FjHazGR5PgyMkth1TEH.jpg", video: "https://vidmoly.to/embed-d05xub83q7f0.html" },
+  { title: "Episode 16", description: "L’assassin parfait", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/gI1pjwOxDeWyGBY6gnCbCNiDXZc.jpg", video: "https://vidmoly.to/embed-8p8rfrxwh8xg.html" },
+  { title: "Episode 17", description: "Les cinq autres", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/zFMXvlwiFsW8hCzaRtJljO1SHv2.jpg", video: "https://vidmoly.to/embed-a74zrlvuf0gt.html" },
+  { title: "Episode 18", description: "Le dernier repas", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wWrsUo6Uqee5w04D8xKwFngghbi.jpg", video: "https://vidmoly.to/embed-qn9vlqeiyou1.html" },
+  { title: "Episode 19", description: "L'avenir de l'humanité", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5ZLAuEyvydz499MZQlgbZO30x7W.jpg", video: "https://vidmoly.to/embed-uv54jf37c4iy.html" },
+  { title: "Episode 20", description: "La rançon du succès", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/1394LmR6eQkgLOVGmIaYFeI3Geu.jpg", video: "https://vidmoly.to/embed-z98rxkpe413f.html" },
+  { title: "Episode 21", description: "L'heure des discussions", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dIhe0wvwMCxmwbL4H8rOaNT5d63.jpg", video: "https://vidmoly.to/embed-ptadhr4wzbla.html" },
+  { title: "Episode 22", description: "Les ailes de la résignation", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dcKMcyafMlE6y5iKxic7rnx8vBG.jpg", video: "https://vidmoly.to/embed-lbncmunrqksg.html" },
+  { title: "Episode 23", description: "Réflexion mûrie", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9xwt1niOFiuXYv0L2JyBGMlDcg2.jpg", video: "https://vidmoly.to/embed-78znbl2kykfi.html" },
+  { title: "Episode 24", description: "La dernière flèche", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/qtuEnXUe1jZ7QVxNA5rcAGQVCVw.jpg", video: "https://vidmoly.to/embed-53c256tpw4it.html" }
 ];
 
-window.onload = function() {
-  // Générer les options pour le sélecteur d'épisodes
-  var selector = document.getElementById("episode-selector");
-  for (var i = 1; i <= totalEpisodes; i++) {
-    var option = document.createElement("option");
-    option.value = i;
-    option.text = "Saison 1 - Episode " + i;
-    selector.add(option);
-  }
-}
-
-function previousEpisode() {
-  if (currentEpisode > 1) {
-    currentEpisode--;
-    updateEpisode();
-  }
-}
-
-function nextEpisode() {
-  if (currentEpisode < totalEpisodes) {
-    currentEpisode++;
-    updateEpisode();
-  }
-}
-
-function selectEpisode() {
-  currentEpisode = document.getElementById("episode-selector").value;
-  updateEpisode();
-}
-
-function lastEpisode() {
-  currentEpisode = totalEpisodes;
-  updateEpisode();
-}
-
-function updateEpisode() {
-  document.getElementById("episode-title").innerText = "Saison 1 - Episode " + currentEpisode;
-  document.getElementById("episode-video").src = episodeLinks[currentEpisode - 1];
-  document.getElementById("episode-selector").value = currentEpisode;
-}
 
 
+
+
+
+    let currentEpisodeData = episodeDataS1;
+    let currentEpisodeIndex = 0;
+    let timeoutId;
+
+    const episodeList = document.getElementById("episode-list");
+    const videoContainer = document.getElementById("video-container");
+    const videoIframe = document.getElementById("episode-video");
+    const backButton = document.getElementById("back-button");
+    const nextButton = document.getElementById("next-button");
+    const loader = document.getElementById("loader");
+    const seasonSelect = document.getElementById("season-select");
+
+    function renderEpisodes() {
+      episodeList.innerHTML = "";
+      currentEpisodeData.forEach((ep, index) => {
+        const card = document.createElement("div");
+        card.className = "episode-card";
+        card.innerHTML = `
+          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}">
+          <h3>${ep.title}</h3>
+          <p>${ep.description}</p>
+        `;
+        card.addEventListener("click", () => {
+          currentEpisodeIndex = index;
+          playEpisode(index);
+        });
+        episodeList.appendChild(card);
+      });
+    }
+
+    function playEpisode(index) {
+      loader.style.display = "block";
+      videoIframe.src = currentEpisodeData[index].video;
+      videoContainer.classList.remove("show");
+      videoContainer.style.display = "flex";
+      requestAnimationFrame(() => {
+        videoContainer.classList.add("show");
+      });
+
+      nextButton.style.display = "none";
+      clearTimeout(timeoutId);
+
+      timeoutId = setTimeout(() => {
+        if (index < currentEpisodeData.length - 1) {
+          nextButton.style.display = "inline-block";
+        }
+      }, 1380000); // 23 minutes
+    }
+
+    videoIframe.onload = () => {
+      loader.style.display = "none";
+    };
+
+    function nextEpisode() {
+      if (currentEpisodeIndex < currentEpisodeData.length - 1) {
+        currentEpisodeIndex++;
+        playEpisode(currentEpisodeIndex);
+      }
+    }
+
+    function exitFullscreenMode() {
+      videoContainer.classList.remove("show");
+      setTimeout(() => {
+        videoContainer.style.display = "none";
+        videoIframe.src = "";
+        nextButton.style.display = "none";
+      }, 500);
+    }
+
+    seasonSelect.addEventListener("change", (e) => {
+      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+      renderEpisodes();
+    });
+
+   
+
+    renderEpisodes();
   </script>
 </body>
 </html>
