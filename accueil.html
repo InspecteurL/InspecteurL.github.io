@@ -586,7 +586,9 @@ function loadEpisode(index) {
   document.getElementById('episodeTitle').innerText = 'Épisode ' + (parseInt(index) + 1);
   document.getElementById('episodeSelector').value = index;
   currentEpisode = parseInt(index);
+  markEpisodeAsViewed(index); // ✅ ici !
 }
+
 
 function nextEpisode() {
   if (currentEpisode < episodes.length - 1) {
@@ -610,6 +612,15 @@ function generateOptions() {
     selector.appendChild(option);
   }
 }
+function markEpisodeAsViewed(index) {
+  let viewedEpisodes = JSON.parse(localStorage.getItem('viewedEpisodes')) || [];
+  if (!viewedEpisodes.includes(index)) {
+    viewedEpisodes.push(index);
+    localStorage.setItem('viewedEpisodes', JSON.stringify(viewedEpisodes));
+  }
+  updateProgressBar();
+}
+
 
 function updateProgressBar() {
   const totalEpisodes = episodes.length;
