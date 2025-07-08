@@ -957,6 +957,33 @@ function applySearchFilter() {
 document.getElementById('searchInput').addEventListener('input', applySearchFilter);
 
 
+document.addEventListener("DOMContentLoaded", () => {
+    const animes = JSON.parse(localStorage.getItem('animes')) || [];
+    const hasFavorites = animes.some(a => a.favorite);
+    const hasRatings = animes.some(a => a.rating);
+
+    if (!hasFavorites && !hasRatings) {
+        const index = animes.findIndex(a => a.title === "Erased");
+        if (index !== -1) {
+            animes[index].favorite = true;
+            animes[index].rating = 4;
+        } else {
+            animes.push({
+                title: "Erased",
+                genre: "Seinen",
+                img: "https://fr.web.img5.acsta.net/pictures/19/09/20/16/59/1993201.jpg",
+                favorite: true,
+                rating: 4
+            });
+        }
+        localStorage.setItem('animes', JSON.stringify(animes));
+    }
+
+    injectFavoriteBadges();
+    renderFavorites();
+    renderRatings();
+    applyFilters();
+});
 
     </script>
 </body>
