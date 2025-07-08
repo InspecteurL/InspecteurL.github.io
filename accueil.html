@@ -958,11 +958,10 @@ document.getElementById('searchInput').addEventListener('input', applySearchFilt
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    const alreadyInjected = localStorage.getItem('demoInjected');
     const animes = JSON.parse(localStorage.getItem('animes')) || [];
-    const hasFavorites = animes.some(a => a.favorite);
-    const hasRatings = animes.some(a => a.rating);
 
-    if (!hasFavorites && !hasRatings) {
+    if (!alreadyInjected) {
         const index = animes.findIndex(a => a.title === "Erased");
         if (index !== -1) {
             animes[index].favorite = true;
@@ -976,7 +975,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 rating: 4
             });
         }
+
         localStorage.setItem('animes', JSON.stringify(animes));
+        localStorage.setItem('demoInjected', 'true'); // ✅ pour ne plus le refaire
     }
 
     injectFavoriteBadges();
@@ -984,6 +985,8 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRatings();
     applyFilters();
 });
+
+
 
     </script>
 </body>
