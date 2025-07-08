@@ -306,10 +306,12 @@ hr.rounded {
     gap: 30px;
     padding: 40px 20px;
     max-width: 1300px;
-    margin: 0 auto; /* ← centre horizontalement */
+    margin: 0 auto;
     box-sizing: border-box;
-    justify-items: center; /* ← centre les éléments dans chaque colonne */
+    justify-content: center; /* centre la grille */
+    justify-items: center;   /* centre les éléments dans chaque colonne */
 }
+
 
 
 .movieimg h2,
@@ -493,11 +495,18 @@ select {
     position: relative;
 }
 
+
+.movieimg {
+    position: relative;
+}
+
 .rating-stars {
     margin-top: 5px;
     font-size: 18px;
     color: gold;
+    text-align: center;
 }
+
 
 @media screen and (max-width: 1000px) {
     #berserkimage {
@@ -829,16 +838,14 @@ function handleRating() {
 
 function renderFavorites() {
     const animes = JSON.parse(localStorage.getItem('animes')) || [];
-
     animes.forEach(anime => {
         if (anime.favorite) {
             const badge = document.querySelector(`.movieimg[data-title="${anime.title}"] .favorite-badge`);
-            if (badge) {
-                badge.style.display = 'inline';
-            }
+            if (badge) badge.style.display = 'inline';
         }
     });
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
     generateOptions();
@@ -862,6 +869,7 @@ function renderRatings() {
         }
     });
 }
+
 
 function applyFilters() {
     const genre = document.getElementById('genreFilter').value;
@@ -906,6 +914,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadRandomPosters();
     setupContextMenu();
     setupModal();
+    injectFavoriteBadges();
     renderFavorites();
     renderRatings();
     applyFilters();
