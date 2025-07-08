@@ -581,42 +581,43 @@ const episodes = [
 let currentEpisode = 0;
 
 function loadEpisode(index) {
-    const video = document.getElementById('videoPlayer');
-    video.src = episodes[index];
-    document.getElementById('episodeTitle').innerText = 'Épisode ' + (parseInt(index) + 1);
-    document.getElementById('episodeSelector').value = index;
-    currentEpisode = parseInt(index);
+  const video = document.getElementById('videoPlayer');
+  video.src = episodes[index];
+  document.getElementById('episodeTitle').innerText = 'Épisode ' + (parseInt(index) + 1);
+  document.getElementById('episodeSelector').value = index;
+  currentEpisode = parseInt(index);
 }
 
 function nextEpisode() {
-    if (currentEpisode < episodes.length - 1) {
-        loadEpisode(currentEpisode + 1);
-    }
+  if (currentEpisode < episodes.length - 1) {
+    loadEpisode(currentEpisode + 1);
+  }
 }
 
 function previousEpisode() {
-    if (currentEpisode > 0) {
-        loadEpisode(currentEpisode - 1);
-    }
+  if (currentEpisode > 0) {
+    loadEpisode(currentEpisode - 1);
+  }
 }
 
 function generateOptions() {
-    const selector = document.getElementById('episodeSelector');
-    selector.innerHTML = '';
-    for (let i = 0; i < episodes.length; i++) {
-        const option = document.createElement('option');
-        option.value = i;
-        option.text = 'Épisode ' + (i + 1);
-        selector.appendChild(option);
-    }
+  const selector = document.getElementById('episodeSelector');
+  selector.innerHTML = '';
+  for (let i = 0; i < episodes.length; i++) {
+    const option = document.createElement('option');
+    option.value = i;
+    option.text = 'Épisode ' + (i + 1);
+    selector.appendChild(option);
+  }
 }
 
 function updateProgressBar() {
-    const totalEpisodes = episodes.length;
-    const viewedEpisodes = JSON.parse(localStorage.getItem('viewedEpisodes')) || [];
-    const percentage = (viewedEpisodes.length / totalEpisodes) * 100;
-    document.getElementById("progress-bar").style.width = percentage + '%';
+  const totalEpisodes = episodes.length;
+  const viewedEpisodes = JSON.parse(localStorage.getItem('viewedEpisodes')) || [];
+  const percentage = (viewedEpisodes.length / totalEpisodes) * 100;
+  document.getElementById("progress-bar").style.width = percentage + '%';
 }
+
 
 function getRandomImage(images) {
     return images[Math.floor(Math.random() * images.length)];
@@ -704,288 +705,197 @@ function loadRandomPosters() {
     }
 }
 
-// 🖱️ Menu contextuel personnalisé
-function setupContextMenu() {
-    const menu = document.getElementById('context-menu');
-    let animes = JSON.parse(localStorage.getItem('animes')) || [];
-
-    document.querySelectorAll('.movieimg').forEach(anime => {
-        anime.addEventListener('contextmenu', function (e) {
-            e.preventDefault();
-            menu.style.display = 'block';
-            menu.style.left = `${e.pageX}px`;
-            menu.style.top = `${e.pageY}px`;
-            menu.dataset.title = this.dataset.title;
-            menu.dataset.genre = this.dataset.genre;
-            menu.dataset.img = this.querySelector('img').src;
-        });
-    });
-
-    document.querySelectorAll('.context-menu-item').forEach(item => {
-        item.addEventListener('click', function () {
-            const title = menu.dataset.title;
-            const genre = menu.dataset.genre;
-            const img = menu.dataset.img;
-            const status = this.dataset.status;
-            const animeData = { title, genre, img, status };
-
-            const index = animes.findIndex(a => a.title === title);
-            if (index !== -1) {
-                animes[index].status = status;
-            } else {
-                animes.push(animeData);
-            }
-
-            localStorage.setItem('animes', JSON.stringify(animes));
-            menu.style.display = 'none';
-        });
-    });
-
-    window.addEventListener('click', () => {
-        menu.style.display = 'none';
-    });
-}
-
-// 🎥 Gestion de la modale vidéo
-function setupModal() {
-    const modal = document.getElementById("episodePopup");
-    const closeBtn = document.getElementById("closeBtn");
-    const video = document.getElementById("videoPlayer");
-
-    document.getElementById("myBtn").onclick = () => {
-        modal.style.display = "block";
-    };
-
-    closeBtn.onclick = () => {
-        modal.style.display = "none";
-        video.src = video.src; // Réinitialise l'iframe
-    };
-
-    window.onclick = (event) => {
-        if (event.target === modal) {
-            modal.style.display = "none";
-            video.src = video.src;
-        }
-    };
-}
-
-// 🚀 Initialisation
-document.addEventListener("DOMContentLoaded", () => {
-    generateOptions();
-    loadEpisode(0);
-    updateProgressBar();
-    loadRandomPosters();
-    setupContextMenu();
-    setupModal();
-});
-
+// -------------------- FAVORIS --------------------
 function toggleFavorite(title) {
-    let animes = JSON.parse(localStorage.getItem('animes')) || [];
-    const index = animes.findIndex(a => a.title === title);
-
-    if (index !== -1) {
-        animes[index].favorite = !animes[index].favorite;
-    } else {
-        animes.push({ title, favorite: true });
-    }
-
-    localStorage.setItem('animes', JSON.stringify(animes));
-}
-
-function rateAnime(title, rating) {
-    let animes = JSON.parse(localStorage.getItem('animes')) || [];
-    const index = animes.findIndex(a => a.title === title);
-
-    if (index !== -1) {
-        animes[index].rating = rating;
-    } else {
-        animes.push({ title, rating });
-    }
-
-    localStorage.setItem('animes', JSON.stringify(animes));
-}
-
-function exportAnimeData() {
-    const data = localStorage.getItem('animes');
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'mes_animes.json';
-    a.click();
-
-    URL.revokeObjectURL(url);
-}
-
-function handleFavorite() {
-    const title = document.getElementById('context-menu').dataset.title;
-    toggleFavorite(title);
-    alert(`"${title}" a été ajouté/retiré des favoris.`);
-    document.getElementById('context-menu').style.display = 'none';
-}
-
-function handleRating() {
-    const title = document.getElementById('context-menu').dataset.title;
-    const rating = prompt(`Note pour "${title}" (1 à 5 étoiles) :`);
-    const stars = parseInt(rating);
-    if (stars >= 1 && stars <= 5) {
-        rateAnime(title, stars);
-        alert(`Tu as noté "${title}" avec ${stars} étoile(s).`);
-    } else {
-        alert("Note invalide. Entrez un nombre entre 1 et 5.");
-    }
-    document.getElementById('context-menu').style.display = 'none';
+  let animes = JSON.parse(localStorage.getItem('animes')) || [];
+  const index = animes.findIndex(a => a.title === title);
+  if (index !== -1) {
+    animes[index].favorite = !animes[index].favorite;
+  } else {
+    animes.push({ title, favorite: true });
+  }
+  localStorage.setItem('animes', JSON.stringify(animes));
+  renderFavorites();
 }
 
 function renderFavorites() {
-    const animes = JSON.parse(localStorage.getItem('animes')) || [];
-    animes.forEach(anime => {
-        if (anime.favorite) {
-            const badge = document.querySelector(`.movieimg[data-title="${anime.title}"] .favorite-badge`);
-            if (badge) badge.style.display = 'inline';
-        }
-    });
+  const animes = JSON.parse(localStorage.getItem('animes')) || [];
+  document.querySelectorAll('.favorite-badge').forEach(badge => badge.style.display = 'none');
+  animes.forEach(anime => {
+    if (anime.favorite) {
+      const badge = document.querySelector(`.movieimg[data-title="${anime.title}"] .favorite-badge`);
+      if (badge) badge.style.display = 'inline';
+    }
+  });
 }
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    generateOptions();
-    loadEpisode(0);
-    updateProgressBar();
-    loadRandomPosters();
-    setupContextMenu();
-    setupModal();
-    injectFavoriteBadges(); // ← ajoute les badges dans le DOM
-    renderFavorites();      // ← affiche ceux qui sont marqués comme favoris
-    renderRatings();        // ← si tu veux aussi afficher les notes
-    applyFilters();         // ← si tu veux filtrer par genre/statut
-});
-
-function renderRatings() {
-    const animes = JSON.parse(localStorage.getItem('animes')) || [];
-    animes.forEach(anime => {
-        const container = document.querySelector(`.movieimg[data-title="${anime.title}"] .rating-stars`);
-        if (container && anime.rating) {
-            container.innerHTML = '★'.repeat(anime.rating) + '☆'.repeat(5 - anime.rating);
-        }
-    });
-}
-
-
-function applyFilters() {
-    const genre = document.getElementById('genreFilter').value;
-    const status = document.getElementById('statusFilter').value;
-    const animes = JSON.parse(localStorage.getItem('animes')) || [];
-
-    document.querySelectorAll('.movieimg').forEach(card => {
-        const title = card.dataset.title;
-        const genreMatch = !genre || card.dataset.genre === genre;
-        const animeData = animes.find(a => a.title === title);
-        const statusMatch = !status || (animeData && animeData.status === status);
-
-        card.style.display = genreMatch && statusMatch ? 'block' : 'none';
-    });
-}
-
-document.getElementById('genreFilter').addEventListener('change', applyFilters);
-document.getElementById('statusFilter').addEventListener('change', applyFilters);
-
-document.getElementById('importFile').addEventListener('change', function () {
-    const file = this.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            localStorage.setItem('animes', JSON.stringify(data));
-            alert("Données importées avec succès !");
-            location.reload();
-        } catch (err) {
-            alert("Fichier invalide.");
-        }
-    };
-    reader.readAsText(file);
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    generateOptions();
-    loadEpisode(0);
-    updateProgressBar();
-    loadRandomPosters();
-    setupContextMenu();
-    setupModal();
-    injectFavoriteBadges();  // ← nécessaire pour voir les étoiles
-    renderFavorites();
-    renderRatings();
-    applyFilters();
-});
-;
 
 function injectFavoriteBadges() {
-    document.querySelectorAll('.movieimg').forEach(card => {
-        const existingBadge = card.querySelector('.favorite-badge');
-        if (!existingBadge) {
-            const badge = document.createElement('span');
-            badge.className = 'favorite-badge';
-            badge.textContent = '⭐';
-            badge.style.display = 'none';
-            card.querySelector('.myimages').appendChild(badge);
-        }
-    });
+  document.querySelectorAll('.movieimg').forEach(card => {
+    if (!card.querySelector('.favorite-badge')) {
+      const badge = document.createElement('span');
+      badge.className = 'favorite-badge';
+      badge.textContent = '⭐';
+      badge.style.display = 'none';
+      card.appendChild(badge);
+    }
+  });
+}
+
+// -------------------- NOTES --------------------
+function rateAnime(title, rating) {
+  let animes = JSON.parse(localStorage.getItem('animes')) || [];
+  const index = animes.findIndex(a => a.title === title);
+  if (index !== -1) {
+    animes[index].rating = rating;
+  } else {
+    animes.push({ title, rating });
+  }
+  localStorage.setItem('animes', JSON.stringify(animes));
+  renderRatings();
 }
 
 function renderRatings() {
-    const animes = JSON.parse(localStorage.getItem('animes')) || [];
-    animes.forEach(anime => {
-        const container = document.querySelector(`.movieimg[data-title=\"${anime.title}\"] .rating-stars`);
-        if (container && anime.rating) {
-            container.innerHTML = '★'.repeat(anime.rating) + '☆'.repeat(5 - anime.rating);
-        }
+  const animes = JSON.parse(localStorage.getItem('animes')) || [];
+  animes.forEach(anime => {
+    const container = document.querySelector(`.movieimg[data-title="${anime.title}"] .rating-stars`);
+    if (container && anime.rating) {
+      container.innerHTML = '★'.repeat(anime.rating) + '☆'.repeat(5 - anime.rating);
+    }
+  });
+}
+
+// -------------------- CONTEXT MENU --------------------
+function setupContextMenu() {
+  const menu = document.getElementById('context-menu');
+  document.querySelectorAll('.movieimg').forEach(anime => {
+    anime.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      menu.style.display = 'block';
+      menu.style.left = `${e.pageX}px`;
+      menu.style.top = `${e.pageY}px`;
+      menu.dataset.title = this.dataset.title;
+      menu.dataset.genre = this.dataset.genre;
+      menu.dataset.img = this.querySelector('img').src;
     });
+  });
+
+  document.querySelectorAll('.context-menu-item[data-status]').forEach(item => {
+    item.addEventListener('click', function () {
+      const animes = JSON.parse(localStorage.getItem('animes')) || [];
+      const title = menu.dataset.title;
+      const genre = menu.dataset.genre;
+      const img = menu.dataset.img;
+      const status = this.dataset.status;
+      const index = animes.findIndex(a => a.title === title);
+      if (index !== -1) {
+        animes[index].status = status;
+      } else {
+        animes.push({ title, genre, img, status });
+      }
+      localStorage.setItem('animes', JSON.stringify(animes));
+      applyFilters();
+      menu.style.display = 'none';
+    });
+  });
+
+  window.addEventListener('click', () => menu.style.display = 'none');
+}
+
+function handleFavorite() {
+  const title = document.getElementById('context-menu').dataset.title;
+  toggleFavorite(title);
+}
+
+function handleRating() {
+  const title = document.getElementById('context-menu').dataset.title;
+  const rating = parseInt(prompt(`Note pour "${title}" (1 à 5 étoiles) :`));
+  if (rating >= 1 && rating <= 5) {
+    rateAnime(title, rating);
+  } else {
+    alert("Note invalide.");
+  }
+  document.getElementById('context-menu').style.display = 'none';
+}
+
+// -------------------- FILTRES --------------------
+function applyFilters() {
+  const genre = document.getElementById('genreFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  const animes = JSON.parse(localStorage.getItem('animes')) || [];
+
+  document.querySelectorAll('.movieimg').forEach(card => {
+    const title = card.dataset.title;
+    const genreMatch = !genre || card.dataset.genre === genre;
+    const animeData = animes.find(a => a.title === title);
+    const statusMatch = !status || (animeData && animeData.status === status);
+    card.style.display = genreMatch && statusMatch ? 'block' : 'none';
+  });
 }
 
 function applySearchFilter() {
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    document.querySelectorAll('.movieimg').forEach(card => {
-        const title = card.dataset.title.toLowerCase();
-        card.style.display = title.includes(search) ? 'block' : 'none';
-    });
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('.movieimg').forEach(card => {
+    const title = card.dataset.title.toLowerCase();
+    card.style.display = title.includes(search) ? 'block' : 'none';
+  });
 }
+
+// -------------------- IMPORT / EXPORT --------------------
+function exportAnimeData() {
+  const data = localStorage.getItem('animes');
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'mes_animes.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function setupImport() {
+  const input = document.getElementById('importFile');
+  if (!input) return;
+  input.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        localStorage.setItem('animes', JSON.stringify(data));
+        alert("Import réussi !");
+        location.reload();
+      } catch {
+        alert("Fichier invalide.");
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
 
 document.getElementById('searchInput').addEventListener('input', applySearchFilter);
 
 
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
-    const alreadyInjected = localStorage.getItem('demoInjected');
-    const animes = JSON.parse(localStorage.getItem('animes')) || [];
+  injectFavoriteBadges();
+  renderFavorites();
+  renderRatings();
+  setupContextMenu();
+  setupImport();
+  applyFilters();
+  generateOptions();
+  loadEpisode(0);
+  updateProgressBar();
+  loadRandomPosters();
 
-    if (!alreadyInjected) {
-        const index = animes.findIndex(a => a.title === "Erased");
-        if (index !== -1) {
-            animes[index].favorite = true;
-            animes[index].rating = 4;
-        } else {
-            animes.push({
-                title: "Erased",
-                genre: "Seinen",
-                img: "https://fr.web.img5.acsta.net/pictures/19/09/20/16/59/1993201.jpg",
-                favorite: true,
-                rating: 4
-            });
-        }
-
-        localStorage.setItem('animes', JSON.stringify(animes));
-        localStorage.setItem('demoInjected', 'true'); // ✅ pour ne plus le refaire
-    }
-
-    injectFavoriteBadges();
-    renderFavorites();
-    renderRatings();
-    applyFilters();
+  document.getElementById('genreFilter').addEventListener('change', applyFilters);
+  document.getElementById('statusFilter').addEventListener('change', applyFilters);
+  document.getElementById('searchInput').addEventListener('input', applySearchFilter);
 });
-
 
 
     </script>
