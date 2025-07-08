@@ -47,101 +47,129 @@
             <!-- Chaque bloc d'anime -->
             <div class="movieimg" data-title="Erased" data-genre="Seinen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="animera.html"><img id="erased" alt="Erased"></a>
     </div>
     <h2>Erased</h2>
     <span>Seinen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Steins ; Gate" data-genre="Seinen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="steinsgate.html"><img id="steinsgate" alt="Steins ; Gate"></a>
     </div>
     <h2>Steins ; Gate</h2>
     <span>Seinen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Call Of The Night" data-genre="Shonen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="cotn.html"><img id="cotn" alt="Call Of The Night"></a>
     </div>
     <h2>Call Of The Night</h2>
     <span>Shonen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Cyberpunk Edgerunners" data-genre="Seinen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="cyber.html"><img id="cyberpunk" alt="Cyberpunk Edgerunners"></a>
     </div>
     <h2>Cyberpunk Edgerunners</h2>
     <span>Seinen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Platinum End" data-genre="Shonen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="platinum.html"><img id="platinumend" alt="Platinum End"></a>
     </div>
     <h2>Platinum End</h2>
     <span>Shonen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Hell's Paradise" data-genre="Shonen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="hell.html"><img id="hellsparadise" alt="Hell's Paradise"></a>
     </div>
     <h2>Hell's Paradise</h2>
     <span>Shonen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Chibi Revengers" data-genre="Shonen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="chbireven.html"><img id="chibirevengers" alt="Chibi Revengers"></a>
     </div>
     <h2>Chibi Revengers</h2>
     <span>Shonen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Death Note" data-genre="Shonen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="dnote.html"><img id="deathnote" alt="Death Note"></a>
     </div>
     <h2>Death Note</h2>
     <span>Shonen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Oshi no Ko" data-genre="Seinen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="oshinoko.html"><img id="oshinoko" alt="Oshi no Ko"></a>
     </div>
     <h2>Oshi no Ko</h2>
     <span>Seinen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Death Parade" data-genre="Seinen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="deathparade.html"><img id="deathparade" alt="Death Parade"></a>
     </div>
     <h2>Death Parade</h2>
     <span>Seinen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Blue Period" data-genre="Shonen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="blueperiod.html"><img id="blueperiod" alt="Blue Period"></a>
     </div>
     <h2>Blue Period</h2>
     <span>Shonen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Steins ; Gate 0" data-genre="Seinen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="steinsgatezero.html"><img id="steinsgate0" alt="Steins ; Gate 0"></a>
     </div>
     <h2>Steins ; Gate 0</h2>
     <span>Seinen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Jujutsu Kaisen" data-genre="Shonen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="jjk.html"><img id="jujutsukaisen" alt="Jujutsu Kaisen"></a>
     </div>
     <h2>Jujutsu Kaisen</h2>
     <span>Shonen</span>
+    <div class="rating-stars"></div>
 </div>
 <div class="movieimg" data-title="Dragon Ball" data-genre="Shonen">
     <div class="myimages">
+        <span class="favorite-badge">⭐</span>
         <a href="db.html"><img id="dragonball" alt="Dragon Ball"></a>
     </div>
     <h2>Dragon Ball</h2>
     <span>Shonen</span>
+    <div class="rating-stars"></div>
 </div>
         </div>
         
@@ -149,6 +177,10 @@
 <div style="text-align: center; margin: 30px;">
     <button onclick="exportAnimeData()">📤 Exporter mes données</button>
 </div>
+<div style="text-align: center; margin: 10px;">
+    <input type="file" id="importFile" accept=".json">
+</div>
+
 
     <!-- Menu contextuel personnalisé -->
     <div class="context-menu" id="context-menu">
@@ -165,6 +197,22 @@
     <div style="width: 100%; background: #ccc; height: 20px; margin-top: 20px;">
         <div id="progress-bar" style="height: 100%; width: 0%; background: red;"></div>
     </div>
+
+<div class="filters" style="text-align: center; margin: 20px;">
+    <select id="genreFilter">
+        <option value="">Tous les genres</option>
+        <option value="Shonen">Shonen</option>
+        <option value="Seinen">Seinen</option>
+    </select>
+    <select id="statusFilter">
+        <option value="">Tous les statuts</option>
+        <option value="En cours">En cours</option>
+        <option value="Terminé">Terminé</option>
+        <option value="En Pause">En Pause</option>
+        <option value="Abandonné">Abandonné</option>
+        <option value="Envie de voir">Envie de voir</option>
+    </select>
+</div>
 
     <style>
         /* Import de la police */
@@ -427,6 +475,30 @@ select {
     font-weight: 300;
     margin: 0.35em 0;
 }
+
+.favorite-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 24px;
+    color: gold;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    padding: 4px;
+    display: none;
+    z-index: 2;
+}
+
+.movieimg {
+    position: relative;
+}
+
+.rating-stars {
+    margin-top: 5px;
+    font-size: 18px;
+    color: gold;
+}
+
 
 @media screen and (max-width: 1000px) {
     #berserkimage {
@@ -762,6 +834,90 @@ function handleRating() {
     }
     document.getElementById('context-menu').style.display = 'none';
 }
+
+function renderFavorites() {
+    const animes = JSON.parse(localStorage.getItem('animes')) || [];
+
+    animes.forEach(anime => {
+        if (anime.favorite) {
+            const badge = document.querySelector(`.movieimg[data-title="${anime.title}"] .favorite-badge`);
+            if (badge) {
+                badge.style.display = 'inline';
+            }
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    generateOptions();
+    loadEpisode(0);
+    updateProgressBar();
+    loadRandomPosters();
+    setupContextMenu();
+    setupModal();
+    injectFavoriteBadges(); // ← ajoute les badges dans le DOM
+    renderFavorites();      // ← affiche ceux qui sont marqués comme favoris
+    renderRatings();        // ← si tu veux aussi afficher les notes
+    applyFilters();         // ← si tu veux filtrer par genre/statut
+});
+
+function renderRatings() {
+    const animes = JSON.parse(localStorage.getItem('animes')) || [];
+    animes.forEach(anime => {
+        const container = document.querySelector(`.movieimg[data-title="${anime.title}"] .rating-stars`);
+        if (container && anime.rating) {
+            container.innerHTML = '★'.repeat(anime.rating) + '☆'.repeat(5 - anime.rating);
+        }
+    });
+}
+
+function applyFilters() {
+    const genre = document.getElementById('genreFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    const animes = JSON.parse(localStorage.getItem('animes')) || [];
+
+    document.querySelectorAll('.movieimg').forEach(card => {
+        const title = card.dataset.title;
+        const genreMatch = !genre || card.dataset.genre === genre;
+        const animeData = animes.find(a => a.title === title);
+        const statusMatch = !status || (animeData && animeData.status === status);
+
+        card.style.display = genreMatch && statusMatch ? 'block' : 'none';
+    });
+}
+
+document.getElementById('genreFilter').addEventListener('change', applyFilters);
+document.getElementById('statusFilter').addEventListener('change', applyFilters);
+
+document.getElementById('importFile').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            localStorage.setItem('animes', JSON.stringify(data));
+            alert("Données importées avec succès !");
+            location.reload();
+        } catch (err) {
+            alert("Fichier invalide.");
+        }
+    };
+    reader.readAsText(file);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    generateOptions();
+    loadEpisode(0);
+    updateProgressBar();
+    loadRandomPosters();
+    setupContextMenu();
+    setupModal();
+    renderFavorites();
+    renderRatings();
+    applyFilters();
+});
 
     </script>
 </body>
