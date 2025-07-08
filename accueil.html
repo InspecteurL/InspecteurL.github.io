@@ -198,6 +198,10 @@
         <div id="progress-bar" style="height: 100%; width: 0%; background: red;"></div>
     </div>
 
+<div class="searchbar" style="text-align: center; margin: 20px;">
+    <input type="text" id="searchInput" placeholder="🔍 Rechercher un anime..." style="padding:10px; width:300px; border-radius:10px;">
+</div>
+
 <div class="filters" style="text-align: center; margin: 20px;">
     <select id="genreFilter">
         <option value="">Tous les genres</option>
@@ -213,6 +217,7 @@
         <option value="Envie de voir">Envie de voir</option>
     </select>
 </div>
+
 
     <style>
         /* Import de la police */
@@ -290,13 +295,7 @@ li a:hover {
 }
 
 /* 🎬 Section animes */
-.moviesection {
-    max-width: 1300px;
-    margin: 0 auto;
-    padding: 0 20px;
-    color: white;
-    text-transform: uppercase;
-}
+
 
 hr.rounded {
     border-top: 3px solid red;
@@ -307,6 +306,14 @@ hr.rounded {
 .movieimg span,
 .rating-stars {
     text-align: center;
+}
+
+.moviesection {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 20px;
+    color: white;
+    text-transform: uppercase;
 }
 
 .moviecontainer {
@@ -320,6 +327,7 @@ hr.rounded {
     justify-content: center;
     justify-items: center;
 }
+
 
 .movieimg {
     width: 300px;
@@ -907,11 +915,12 @@ document.addEventListener("DOMContentLoaded", () => {
     loadRandomPosters();
     setupContextMenu();
     setupModal();
-    injectFavoriteBadges();
+    injectFavoriteBadges();  // ← nécessaire pour voir les étoiles
     renderFavorites();
     renderRatings();
     applyFilters();
 });
+;
 
 function injectFavoriteBadges() {
     document.querySelectorAll('.movieimg').forEach(card => {
@@ -925,6 +934,27 @@ function injectFavoriteBadges() {
         }
     });
 }
+
+function renderRatings() {
+    const animes = JSON.parse(localStorage.getItem('animes')) || [];
+    animes.forEach(anime => {
+        const container = document.querySelector(`.movieimg[data-title=\"${anime.title}\"] .rating-stars`);
+        if (container && anime.rating) {
+            container.innerHTML = '★'.repeat(anime.rating) + '☆'.repeat(5 - anime.rating);
+        }
+    });
+}
+
+function applySearchFilter() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.movieimg').forEach(card => {
+        const title = card.dataset.title.toLowerCase();
+        card.style.display = title.includes(search) ? 'block' : 'none';
+    });
+}
+
+document.getElementById('searchInput').addEventListener('input', applySearchFilter);
+
 
 
     </script>
