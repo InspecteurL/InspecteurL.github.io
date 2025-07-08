@@ -327,6 +327,7 @@ hr.rounded {
     box-sizing: border-box;
     justify-content: center;
     justify-items: center;
+    pointer-events: none; /* désactive les hover sur les espaces vides */
 }
 
 
@@ -335,7 +336,16 @@ hr.rounded {
     text-align: center;
     color: white;
     position: relative;
+  transition: transform 0.3s ease;
+  transform: scale(1);
+  pointer-events: auto; /* réactive le hover uniquement sur les affiches */
 }
+
+.movieimg:hover {
+  transform: scale(1.05);
+  z-index: 1;
+}
+
 
 .movieimg .myimages {
     width: 100%;
@@ -356,9 +366,9 @@ hr.rounded {
 
 
 
-.movieimg .myimages img:hover {
-    box-shadow: 0 0 20px red;
-    border: 3px solid #0385fe;
+.movieimg:hover .myimages img {
+  box-shadow: 0 0 20px red;
+  border: 3px solid #0385fe;
 }
 
 
