@@ -327,19 +327,18 @@ hr.rounded {
     box-sizing: border-box;
     justify-content: center;
     justify-items: center;
-    pointer-events: none; /* désactive les hover sur les espaces vides */
+    pointer-events: none !important; /* désactive les hover sur les espaces vides */
 }
-
-
 .movieimg {
     width: 300px;
     text-align: center;
     color: white;
     position: relative;
-  transition: transform 0.3s ease;
-  transform: scale(1);
-  pointer-events: auto; /* réactive le hover uniquement sur les affiches */
+    transition: transform 0.3s ease;
+    transform: scale(1);
+    pointer-events: auto !important; /* ← très important */
 }
+
 
 .movieimg:hover {
   transform: scale(1.05);
@@ -490,15 +489,6 @@ select {
     font-size: 0.9rem;
     font-weight: 300;
     margin: 0.35em 0;
-}
-
-.movieimg {
-    position: relative;
-}
-
-
-.movieimg {
-    position: relative;
 }
 
 .favorite-badge {
