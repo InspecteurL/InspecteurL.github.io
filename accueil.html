@@ -304,12 +304,19 @@ hr.rounded {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 30px;
-    padding: 40px;
+    padding: 40px 20px;
     max-width: 1300px;
-    margin: auto;
+    margin: 0 auto; /* ← centre horizontalement */
     box-sizing: border-box;
+    justify-items: center; /* ← centre les éléments dans chaque colonne */
 }
 
+
+.movieimg h2,
+.movieimg span,
+.rating-stars {
+    text-align: center;
+}
 
 
 
