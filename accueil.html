@@ -40,7 +40,13 @@
     </ul>
 
     <!-- Image de fond -->
-    <img id="berserkimage" src="fondberserk.jpg" alt="Fond Berserk">
+    <div class="relative max-h-[620px] overflow-hidden">
+  <img id="berserkimage" src="fondberserk.jpg" alt="Berserk" />
+  <div class="absolute inset-0 z-10 bg-cover pointer-events-none"
+       style="background-image: linear-gradient(to right, rgb(31, 31, 10) calc(-510px + 50vw), rgba(31, 31, 10, 0.2) 50%, transparent 100%);">
+  </div>
+</div>
+
 
     <!-- Section des recommandations -->
     <section class="moviesection">
