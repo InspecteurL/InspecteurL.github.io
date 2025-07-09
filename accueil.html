@@ -40,12 +40,10 @@
     </ul>
 
     <!-- Image de fond -->
-    <div class="relative max-h-[620px] overflow-hidden">
-  <img id="berserkimage" src="fondberserk.jpg" alt="Berserk" />
-  <div class="absolute inset-0 z-10 bg-cover pointer-events-none"
-       style="background-image: linear-gradient(to right, rgb(31, 31, 10) calc(-510px + 50vw), rgba(31, 31, 10, 0.2) 50%, transparent 100%);">
+    <div class="image-wrapper">
+    <img id="berserkimage" src="chemin/vers/ton-image.jpg" alt="Berserk">
+    <div class="gradient-overlay"></div>
   </div>
-</div>
 
 
     <!-- Section des recommandations -->
@@ -240,12 +238,34 @@ body {
 }
 
 /* 🖼️ Image de fond */
-#berserkimage {
-    width: 100%;
-    height: auto;
-    max-height: 620px;
-    object-fit: cover;
+.image-wrapper {
+  position: relative;
+  max-height: 620px;
+  overflow: hidden;
 }
+
+#berserkimage {
+  width: 100%;
+  height: auto;
+  max-height: 620px;
+  object-fit: cover;
+  display: block;
+}
+
+.gradient-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background-image: linear-gradient(
+    to right,
+    rgb(31, 31, 10) calc(-510px + 50vw),
+    rgba(31, 31, 10, 0.2) 50%,
+    transparent 100%
+  );
+  background-size: cover;
+}
+
 
 /* 🧭 Navigation */
 ul {
