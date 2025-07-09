@@ -1,16 +1,138 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" href="style.css">
-  <script type="text/javascript"></script>
-  <title>TSF - Steins Gate</title>
-</head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
+  <title>BNZ - Cyberpunk: Edgerunners</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #000000 0%, #003300 100%);
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
 
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #1c1c1c;
+    }
+
+    li {
+      float: left;
+    }
+
+    li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 20px;
+    }
+
+    li a:hover {
+      background-color: red;
+      border-radius: 5px;
+    }
+
+    .episode-card {
+      width: 250px;
+      margin: 10px;
+      background: linear-gradient(to top, #000066 0%, #800000 100%);
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .episode-card:hover {
+      transform: scale(1.05);
+    }
+
+    .episode-card img {
+      width: 100%;
+      border-radius: 5px;
+    }
+
+    #episode-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    #video-container.show {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #episode-video {
+      width: 80%;
+      height: 60vh;
+      border: none;
+    }
+
+    #back-button, #next-button, #next-season-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: blue;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #loader {
+      color: white;
+      font-size: 20px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .episode-card {
+        width: 90%;
+      }
+
+      #episode-video {
+        width: 95%;
+        height: 40vh;
+      }
+    }
+  </style>
+</head>
 <body>
   <ul>
-    <li><a class="active" href="index.html">Home</a></li>
+    <li><a href="index.html">Home</a></li>
     <li><a href="journal.html">Journal</a></li>
     <li><a href="profil.html">Découvrir</a></li>
     <li><a href="trueprofil.html">Profil</a></li>
@@ -18,133 +140,120 @@
   </ul>
 
   <br><br>
-  <img src="https://neamedia-icons.com/wp-content/uploads/2023/09/Cyberpunk2077_Edgerunners_NetflixLogo_Light2-1.png" width="50%">
+  <div style="text-align:center;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Cyberpunk_Edgerunners_logo.png/800px-Cyberpunk_Edgerunners_logo.png?20220914210623" width="50%" alt="Logo Oshi no Ko">
+  </div>
 
-  <h1 id="episode-title">Saison 1 - Episode 1</h1>
-  <iframe id="episode-video" width=640 height=360 src="https://video.sibnet.ru/shell.php?videoid=4872758&share=1" allowfullscreen></iframe><br><br>
+  <div style="text-align:center; margin: 20px;">
+    <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
+    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+      <option value="1">Saison 1</option>
+    </select>
+  </div>
 
-  <button onclick="previousEpisode()">Épisode précédent</button>
-  <button onclick="nextEpisode()">Épisode suivant</button>
-  <select id="episode-selector" onchange="selectEpisode()">
-    <!-- Les options seront générées dynamiquement par le script JavaScript -->
-  </select>
-  <button onclick="lastEpisode()">Dernier épisode</button>
+  <div id="episode-list"></div>
 
-  <br><br>
+  <div id="video-container">
+    <iframe id="episode-video" allowfullscreen></iframe>
+    <div id="loader" style="display:none;">Chargement de la vidéo...</div>
+    <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
+    <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
+  </div>
 
-  <style>
-    body{
-      background-color: #2e2b2b;
-    }
-
-    button{
-      width: 122px;
-      color: white;
-      background-color: blue;
-      height: 100px;
-      border: 35px;
-      border: blue;
-      font-size: 24px;
-    }
-
-    ul{
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background-color: transparent;
-    }
-
-    li{
-      float: left;
-    }
-
-    li a{
-      display: block;
-      color: white;
-      text-align: center;
-      padding: 14px 16px;
-      text-decoration: none;
-      font-size: 30px;
-    }
-
-    select {
-    width: 200px;
-    height: 30px;
-    background-color: #f8f9fa;
-    border: none;
-    padding: 5px;
-    font-size: 16px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  }
-
-  select:focus {
-    outline: none;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
-  }
-
-    li a:hover{
-      background-color: red;
-      border-radius: 10px;
-    }
-  </style>
   <script>
-   var currentEpisode = 1;
-var totalEpisodes = 10;
-var episodeLinks = [
-  "https://video.sibnet.ru/shell.php?videoid=4872758&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4872759&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4872761&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4872763&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4872765&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4872766&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4872768&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4872769&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4872770&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4872771&share=1"
+const episodeDataS1 = [
+  { title: "Épisode 1", description: "Let You Down", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/egBHU73t79tMg2qrqj3aJof1ibS.jpg", video: "https://vidmoly.to/embed-sz2a9i7bs1c6.html" },
+  { title: "Épisode 2", description: "Like a Boy", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/gLlemMoIN4vbKvZvOWInWGxeQNL.jpg", video: "https://vidmoly.to/embed-p27lun7jga67.html" },
+  { title: "Épisode 3", description: "Smooth Criminal", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bfqnjIZal7sgnjnI3rQzC6GpoIL.jpg", video: "https://vidmoly.to/embed-04giuq479u59.html" },
+  { title: "Épisode 4", description: "Lucky You", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/evdHgmavUPJOJyfKh4PEclugUmn.jpg", video: "https://vidmoly.to/embed-mai9kdwfamvx.html" },
+  { title: "Épisode 5", description: "All Eyez On Me", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/Ar2jz0uKUrUVKC3r9KEaonTzOFr.jpg", video: "https://vidmoly.to/embed-mbh94hx0jgqq.html" },
+  { title: "Épisode 6", description: "Girl on Fire", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hZW2QGWUYN0LxtFxbn6YGAxsGHY.jpg", video: "https://vidmoly.to/embed-ulnfrldxxvut.html" },
+  { title: "Épisode 7", description: "Stronger", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dBU8l0esjACL5ESSdsHbQNuAmnq.jpg", video: "https://vidmoly.to/embed-pl8as7j0r30h.html" },
+  { title: "Épisode 8", description: "Stay", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/83LC8gPjcmg4gMeVkvKOegjA8gf.jpg", video: "https://vidmoly.to/embed-ik3js8hmnxzk.html" },
+  { title: "Épisode 9", description: "Humanity", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wIyh7jtDRWctOwe9kKXDr4mSwgP.jpg", video: "https://vidmoly.to/embed-3spygun95euf.html" },
+  { title: "Épisode 10", description: "My Moon My Man", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6cPT6Rm7BmqNRAn2mbnPM9VALbJ.jpg", video: "https://vidmoly.to/embed-g777l3ep254f.html" },
 ];
 
-window.onload = function() {
-  // Générer les options pour le sélecteur d'épisodes
-  var selector = document.getElementById("episode-selector");
-  for (var i = 1; i <= totalEpisodes; i++) {
-    var option = document.createElement("option");
-    option.value = i;
-    option.text = "Saison 1 - Episode " + i;
-    selector.add(option);
-  }
-}
 
-function previousEpisode() {
-  if (currentEpisode > 1) {
-    currentEpisode--;
-    updateEpisode();
-  }
-}
 
-function nextEpisode() {
-  if (currentEpisode < totalEpisodes) {
-    currentEpisode++;
-    updateEpisode();
-  }
-}
 
-function selectEpisode() {
-  currentEpisode = document.getElementById("episode-selector").value;
-  updateEpisode();
-}
+    let currentEpisodeData = episodeDataS1;
+    let currentEpisodeIndex = 0;
+    let timeoutId;
 
-function lastEpisode() {
-  currentEpisode = totalEpisodes;
-  updateEpisode();
-}
+    const episodeList = document.getElementById("episode-list");
+    const videoContainer = document.getElementById("video-container");
+    const videoIframe = document.getElementById("episode-video");
+    const backButton = document.getElementById("back-button");
+    const nextButton = document.getElementById("next-button");
+    const loader = document.getElementById("loader");
+    const seasonSelect = document.getElementById("season-select");
 
-function updateEpisode() {
-  document.getElementById("episode-title").innerText = "Saison 1 - Episode " + currentEpisode;
-  document.getElementById("episode-video").src = episodeLinks[currentEpisode - 1];
-  document.getElementById("episode-selector").value = currentEpisode;
-}
+    function renderEpisodes() {
+      episodeList.innerHTML = "";
+      currentEpisodeData.forEach((ep, index) => {
+        const card = document.createElement("div");
+        card.className = "episode-card";
+        card.innerHTML = `
+          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}">
+          <h3>${ep.title}</h3>
+          <p>${ep.description}</p>
+        `;
+        card.addEventListener("click", () => {
+          currentEpisodeIndex = index;
+          playEpisode(index);
+        });
+        episodeList.appendChild(card);
+      });
+    }
+
+    function playEpisode(index) {
+      loader.style.display = "block";
+      videoIframe.src = currentEpisodeData[index].video;
+      videoContainer.classList.remove("show");
+      videoContainer.style.display = "flex";
+      requestAnimationFrame(() => {
+        videoContainer.classList.add("show");
+      });
+
+      nextButton.style.display = "none";
+      clearTimeout(timeoutId);
+
+      timeoutId = setTimeout(() => {
+        if (index < currentEpisodeData.length - 1) {
+          nextButton.style.display = "inline-block";
+        }
+      }, 1380000); // 23 minutes
+    }
+
+    videoIframe.onload = () => {
+      loader.style.display = "none";
+    };
+
+    function nextEpisode() {
+      if (currentEpisodeIndex < currentEpisodeData.length - 1) {
+        currentEpisodeIndex++;
+        playEpisode(currentEpisodeIndex);
+      }
+    }
+
+    function exitFullscreenMode() {
+      videoContainer.classList.remove("show");
+      setTimeout(() => {
+        videoContainer.style.display = "none";
+        videoIframe.src = "";
+        nextButton.style.display = "none";
+      }, 500);
+    }
+
+    seasonSelect.addEventListener("change", (e) => {
+      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+      renderEpisodes();
+    });
+
+   
+
+    renderEpisodes();
   </script>
 </body>
 </html>
