@@ -7,9 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body onload="generateOptions(); loadEpisode(0); updateProgressBar();">
-
-    <!-- Bouton d'ouverture de la modale -->
-    <button class="btn" id="myBtn">Essayer</button>
+    
 
     <!-- Modale de lecture d'épisode -->
     <div id="episodePopup" class="modal">
@@ -25,8 +23,7 @@
         </div>
     </div>
 
-    <!-- Titre principal -->
-    <h1 class="BigText">Berserk</h1>
+
 
     <!-- Barre de navigation -->
     <ul>
@@ -35,15 +32,41 @@
         <li><a href="profil.html">Découvrir</a></li>
         <li><a href="lecteurtest.html">Profil</a></li>
         <div class="searchbar" style="text-align: center; margin: 20px;">
-    <input type="text" id="searchInput" placeholder="🔍 Rechercher un anime..." style="padding:10px; width:300px; border-radius:10px;">
+    <input type="text" id="searchInput" class="search-large" placeholder="🔍 Rechercher un anime...">
+
 </div>
     </ul>
+<div id="slider-wrapper" style="position: relative;">
+<div id="slider">  
+<div class="slides">  
+  <img src="https://a-static.besthdwallpaper.com/call-of-the-night-wallpaper-3554x1999-101681_53.jpg" width="100%" />
+ </div>
+  
+  <div class="slides">  
+  <img src="https://c4.wallpaperflare.com/wallpaper/293/1013/173/cyberpunk-edgerunners-lucy-edgerunners-cyberpunk-hd-wallpaper-preview.jpg" width="100%" />
+</div>
+  
+  <div class="slides">  
+  <img src="https://www.baltana.com/files/wallpapers-30/Death-Parade-Wallpaper-HD-108220.jpg" width="100%" />
+</div> 
+  
+   <div class="slides">  
+  <img src="https://wallpapers.com/images/featured/erased-ruo8n2tf6sfg6s23.jpg" width="100%" />
+</div> 
+  
+<div class="slides">  
+  <img src="https://www.pixelstalk.net/wp-content/uploads/images6/Steins-Gate-HD-Wallpaper-Free-download.png" width="100%" />
+</div>  
+  
+  <div id="dot"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+ </div>
+ <div id="slide-info" style="text-align: center; color: white; padding: 20px;">
+  <h2 id="slide-title"></h2>
+  <p id="slide-synopsis" style="max-width: 800px; margin: 0 auto;"></p>
+  <button id="slide-button" style="padding: 10px 20px; font-size: 16px; border-radius: 10px; background: red; color: white; border: none; cursor: pointer;"></button>
+</div>
+</div>
 
-    <!-- Image de fond -->
-    <div class="image-wrapper">
-    <img id="berserkimage" src="fondberserk.jpg" alt="Berserk">
-    <div class="gradient-overlay"></div>
-  </div>
 
 
     <!-- Section des recommandations -->
@@ -181,6 +204,8 @@
         </div>
         
     </section>
+  
+
 <div style="text-align: center; margin: 30px;">
     <button onclick="exportAnimeData()">📤 Exporter mes données</button>
 </div>
@@ -237,6 +262,113 @@ body {
     padding: 0;
 }
 
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+@keyframes fade{
+  from{
+    opacity:0.4;
+  }
+  to{
+    opacity:1;
+  }
+}
+
+#slider {
+  margin: 0 auto;
+  width: 100%;
+  overflow: hidden;
+}
+
+
+.slides{
+  overflow:hidden;
+  animation-name:fade;
+  animation-duration:1s;
+  display:none;
+}
+
+#slide-info {
+  position: absolute;
+  top: 50%; /* centré verticalement */
+  left: 5%;
+  transform: translateY(-50%);
+  z-index: 20;
+  color: white;
+  text-align: left;
+  max-width: 45%; /* un peu plus large */
+  background: rgba(0, 0, 0, 0.65);
+  padding: 40px; /* plus de padding */
+  border-radius: 20px;
+  box-shadow: 0 0 25px black;
+}
+
+#slide-info h2 {
+  font-size: 3.4em; /* +20% */
+  margin-bottom: 25px;
+  font-weight: bold;
+}
+
+#slide-info p {
+  font-size: 1.8em; /* +~30% */
+  line-height: 1.7;
+  margin-bottom: 30px;
+}
+
+#slide-button {
+  padding: 20px 40px;
+  font-size: 1.6em;
+  border-radius: 15px;
+  background: red;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#slide-button:hover {
+  background: darkred;
+}
+
+
+
+img{
+  width:100%;
+}
+
+#dot{
+  margin:0 auto;
+  text-align:center;
+}
+.dot{
+  display:inline-block;
+  border-radius:50%;
+  background:#d3d3d3;
+  padding:8px;
+  margin:10px 5px;
+}
+
+.active{
+  background:black;
+}
+
+@media (max-width:567px){
+  #slider{
+    width:100%;
+
+  }
+}
+
+#heading{
+  display:block;
+  text-align:center;
+  font-size:2em;
+  margin:10px 0px;
+
+}
+
 /* 🖼️ Image de fond */
 .image-wrapper {
   position: relative;
@@ -269,57 +401,32 @@ body {
 
 /* 🧭 Navigation */
 ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: transparent;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: transparent;
+  font-size: 1.6em; /* ← agrandit le texte */
 }
+
 li {
-    float: left;
+  float: left;
 }
+
 li a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 20px 24px; /* ← plus d'espace */
+  text-decoration: none;
+  transition: background 0.3s;
 }
+
 li a:hover {
-    background-color: red;
-    border-radius: 10px;
+  background-color: red;
+  border-radius: 10px;
 }
 
-/* 🖱️ Boutons */
-.btn, .btn2 {
-    position: absolute;
-    background-color: red;
-    color: white;
-    font-size: 16px;
-    padding: 16px 30px;
-    border: none;
-    cursor: pointer;
-    border-radius: 10px;
-    text-align: center;
-}
-.btn {
-    top: 65%;
-    left: 10%;
-}
-.btn2 {
-    top: 1%;
-    left: 90%;
-}
-
-/* 📝 Titre principal */
-.BigText {
-    position: absolute;
-    top: 30%;
-    left: 10%;
-    width: 30%;
-    font-size: 300%;
-    color: white;
-}
 
 /* 🎬 Section animes */
 
@@ -360,11 +467,19 @@ hr.rounded {
     text-align: center;
     color: white;
     position: relative;
+    transition: transform 0.3s ease;
+    transform: scale(1);
     pointer-events: auto !important; /* ← très important */
     will-change: transform;
 }
 
+
+.movieimg:hover {
+  z-index: 1;
+}
+
 .movieimg:hover > .myimages {
+  transform: scale(1.05);
   box-shadow: 0 0 20px red;
   border: 3px solid #0385fe;
 }
@@ -571,6 +686,15 @@ select {
 }
 
 
+.search-large {
+  padding: 14px 20px;
+  width: 400px;
+  font-size: 1.4em;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
 
 
 
@@ -935,6 +1059,75 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById('statusFilter').addEventListener('change', applyFilters);
   document.getElementById('searchInput').addEventListener('input', applySearchFilter);
 });
+
+const slideData = [
+  {
+    title: "Call of the Night",
+    synopsis: "Un adolescent insomniaque rencontre une vampire mystérieuse dans une ville éclairée par la nuit.",
+    button: "Découvrir Call of the Night",
+    link: "cotn.html"
+  },
+  {
+    title: "Cyberpunk Edgerunners",
+    synopsis: "Dans un futur dystopique, un jeune rebelle rejoint un groupe de mercenaires cybernétiques.",
+    button: "Explorer Cyberpunk",
+    link: "cyber.html"
+  },
+  {
+    title: "Death Parade",
+    synopsis: "Après la mort, des âmes sont envoyées dans un bar pour jouer à des jeux... qui décideront de leur sort.",
+    button: "Voir Death Parade",
+    link: "deathparade.html"
+  },
+  {
+    title: "Erased",
+    synopsis: "Un homme remonte dans le temps pour empêcher une série d'enlèvements et sauver sa mère.",
+    button: "Voyager avec Erased",
+    link: "animera.html"
+  },
+  {
+    title: "Steins;Gate",
+    synopsis: "Un scientifique excentrique découvre le voyage dans le temps à l'aide d'un micro-ondes modifié.",
+    button: "Plonger dans Steins;Gate",
+    link: "steinsgate.html"
+  }
+];
+
+var index = 0;
+var slides = document.querySelectorAll(".slides");
+var dot = document.querySelectorAll(".dot");
+
+function changeSlide(){
+  if(index < 0){
+    index = slides.length - 1;
+  }
+
+  if(index > slides.length - 1){
+    index = 0;
+  }
+
+  for(let i = 0; i < slides.length; i++){
+    slides[i].style.display = "none";
+    dot[i].classList.remove("active");
+  }
+
+  slides[index].style.display = "block";
+  dot[index].classList.add("active");
+
+  // Mettre à jour titre, synopsis et bouton
+  const data = slideData[index];
+  document.getElementById('slide-title').textContent = data.title;
+  document.getElementById('slide-synopsis').textContent = data.synopsis;
+  const btn = document.getElementById('slide-button');
+  btn.textContent = data.button;
+  btn.onclick = () => window.location.href = data.link;
+
+  index++;
+
+  setTimeout(changeSlide, 6000); // pour ralentir le carrousel
+}
+
+changeSlide();
 
 
     </script>
