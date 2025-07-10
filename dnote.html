@@ -1,189 +1,289 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" href="style.css">
-  <script type="text/javascript"></script>
-  <title>TSF - Steins Gate</title>
-</head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
+  <title>BNZ - Death Note</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #000000 0%, #0000cc 100%);
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
 
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #1c1c1c;
+    }
+
+    li {
+      float: left;
+    }
+
+    li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 20px;
+    }
+
+    li a:hover {
+      background-color: red;
+      border-radius: 5px;
+    }
+
+    .episode-card {
+      width: 250px;
+      margin: 10px;
+      background: linear-gradient(to bottom, #ff3300 0%, #660033 100%);
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .episode-card:hover {
+      transform: scale(1.05);
+    }
+
+    .episode-card img {
+      width: 100%;
+      border-radius: 5px;
+    }
+
+    #episode-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    #video-container.show {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #episode-video {
+      width: 80%;
+      height: 60vh;
+      border: none;
+    }
+
+    #back-button, #next-button, #next-season-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: blue;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #loader {
+      color: white;
+      font-size: 20px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .episode-card {
+        width: 90%;
+      }
+
+      #episode-video {
+        width: 95%;
+        height: 40vh;
+      }
+    }
+  </style>
+</head>
 <body>
   <ul>
-    <li><a class="active" href="index.html">Home</a></li>
-    <li><a  href="journal.html">Journal</a></li>
-    <li><a  href="profil.html">Découvrir</a></li>
-    <li><a  href="trueprofil.html">Profil</a></li>
-    <li><a  href="accueil.html">Feuilleter</a></li>
-</ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="journal.html">Journal</a></li>
+    <li><a href="profil.html">Découvrir</a></li>
+    <li><a href="trueprofil.html">Profil</a></li>
+    <li><a href="accueil.html">Feuilleter</a></li>
+  </ul>
 
-<br><br>
-  <img src="https://upload.wikimedia.org/wikipedia/fr/thumb/b/b2/Death_Note_Logo.svg/1280px-Death_Note_Logo.svg.png
-  " width="50%">
+  <br><br>
+  <div style="text-align:center;">
+    <img src="https://wallpapers.com/images/hd/death-note-anime-logo-f1o1xxt32a7cw9uz.jpg" width="50%" alt="Logo Oshi no Ko">
+  </div>
 
+  <div style="text-align:center; margin: 20px;">
+    <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
+    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+      <option value="1">Saison 1</option>
+    </select>
+  </div>
 
+  <div id="episode-list"></div>
 
-  <h1>Saison 1 - Episode 1</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745088&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 2</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745089&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 3</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745090&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 4</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745091&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 5</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745092&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 6</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745094&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 7</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745097&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 8</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745099&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 9</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745101&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 10</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745102&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 11</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745103&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 12</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745104&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 13</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745105&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 14</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745106&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 15</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745107&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 16</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745108&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 17</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745111&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 18</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745113&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 19</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745114&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 20</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745115&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 21</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745117&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 22</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745118&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 23</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745125&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 24</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745134&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 25</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745137&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 26</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745138&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 27</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745140&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 28</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745144&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 29</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745149&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 30</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745153&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 31</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745156&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 32</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745157&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 33</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745162&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 34</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745164&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 35</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745165&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 36</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745169&share=1 allowfullscreen></iframe><br><br>
-  
-  <h1>Saison 1 - Episode 37</h1>
-  <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=4745172&share=1 allowfullscreen></iframe><br><br>
-  
+  <div id="video-container">
+    <iframe id="episode-video" allowfullscreen></iframe>
+    <div id="loader" style="display:none;">Chargement de la vidéo...</div>
+    <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
+    <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
+  </div>
 
-<br><br>
-
-<style>
-
-  body{
-    background-color: #2e2b2b;
-}
-
-button{
-            width: 122px;
-            color: white;
-            background-color: blue;
-            height: 100px;
-            border: 35px;
-            border: blue;
-          font-size: 24px; /* Vous pouvez ajuster cette valeur selon votre besoin */
+  <script>
+const episodeDataS1 = [
+  { title: "Episode 1", description: "Renaissance", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/aB8hhRZzqXERPFqNwm7fF8GFpNy.jpg", video: "https://vidmoly.to/embed-0go0wmu0n0e1.html" },
+  { title: "Episode 2", description: "Confrontation", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/63fCP6HZf5EbP6muq2mcYh6Lvc8.jpg", video: "https://vidmoly.to/embed-q2bh5pnab55x.html" },
+  { title: "Episode 3", description: "Pacte", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/k0g0yiL74LSp8JodQVjted6YMJf.jpg", video: "https://vidmoly.to/embed-6kinjxg54hlu.html" },
+  { title: "Episode 4", description: "Poursuite", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bisms0qgIVV8Qa9vGlFnfP9briJ.jpg", video: "https://vidmoly.to/embed-ms0q0m75fehu.html" },
+  { title: "Episode 5", description: "Tactique", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/m4aiPObgEBrb3w6TPejqX5sg8Nm.jpg", video: "https://vidmoly.to/embed-n7hnc8v8hm2e.html" },
+  { title: "Episode 6", description: "Déchirure", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5J62ABo9G1OrTYbLeShozI5uBwg.jpg", video: "https://vidmoly.to/embed-ibg4wknr05ad.html" },
+  { title: "Episode 7", description: "Temps couvert", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sYCqCMvO2stQIJewetuUNP78MmG.jpg", video: "https://vidmoly.to/embed-coc0swmme205.html" },
+  { title: "Episode 8", description: "Regard", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/smXhV1fvWJrDtGB1MV8N3lIt5JY.jpg", video: "https://vidmoly.to/embed-vfimz60j6uzj.html" },
+  { title: "Episode 9", description: "Contact", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iBRK6viH6YPlD81p6kD7yZlTIrZ.jpg", video: "https://vidmoly.to/embed-lkls1aj30ay4.html" },
+  { title: "Episode 10", description: "Doute", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iaXRsMzritInUDbQGUXG3ej3sTS.jpg", video: "https://vidmoly.to/embed-i43p69t302ic.html" },
+  { title: "Episode 11", description: "Assaut", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lgNB5KSLGYHrNgZeb0dYkDseqZX.jpg", video: "https://vidmoly.to/embed-izadjvu1gvnm.html" },
+  { title: "Episode 12", description: "Amour", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/nXhKdqsD4TZb83ZVkqNyYqkRMOX.jpg", video: "https://vidmoly.to/embed-3zf7n1vioxhg.html" },
+  { title: "Episode 13", description: "Confession", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/peEBI9p36VCBgDp6XW8JRjO7Vdt.jpg", video: "https://vidmoly.to/embed-sgslp9fumnbi.html" },
+  { title: "Episode 14", description: "Ami", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ztpKA5qn2eggXEH7xVsQPI2wYCW.jpg", video: "https://vidmoly.to/embed-z37c1vbcxn8f.html" },
+  { title: "Episode 15", description: "Pari", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/haM3evWcGOKlm2vb4mMiIuOOcqs.jpg", video: "https://vidmoly.to/embed-6bjefznyoc1u.html" },
+  { title: "Episode 16", description: "Décision", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hjCoHx1bUBWefQpfCbrqGMf3OBU.jpg", video: "https://vidmoly.to/embed-utxva5ki4x6r.html" },
+  { title: "Episode 17", description: "Exécution", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/1FUuh3vBS6nHQrwyo9Mp8uJ7gSm.jpg", video: "https://vidmoly.to/embed-v90jo3ja10l8.html" },
+  { title: "Episode 18", description: "Allié", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4TKRHj64fOaPynNP9tX635rqBQq.jpg", video: "https://vidmoly.to/embed-q1ifequjcg55.html" },
+  { title: "Episode 19", description: "Matsuda", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sF4lBqyCA7XUFnw3GcNyfreTlI4.jpg", video: "https://vidmoly.to/embed-nywqb1emlmqs.html" },
+  { title: "Episode 20", description: "Expédient", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/b92CjZHibPwxHPp4ID6vvaD5WZD.jpg", video: "https://vidmoly.to/embed-czdblvnfiua9.html" },
+  { title: "Episode 21", description: "Performance", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bRPNU2tc41D44L5C3wuVRq7iYZH.jpg", video: "https://vidmoly.to/embed-raxln9v4ko05.html" },
+  { title: "Episode 22", description: "Conduite", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/k8XdLNTPvIOVpXn8OXV8pOxksw3.jpg", video: "https://vidmoly.to/embed-i2rnrw255tc7.html" },
+  { title: "Episode 23", description: "Frénésie", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9bqSbzuySON08hKYUWigkalTqfh.jpg", video: "https://vidmoly.to/embed-qa5r1e54ef95.html" },
+  { title: "Episode 24", description: "Résurrection", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/vXoBIHI5u4jn8tieqMtbIPWtu1L.jpg", video: "https://vidmoly.to/embed-8tnfkb252732.html" },
+  { title: "Episode 25", description: "Silence", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hKsiCNb6cUUmgFPfA5nbZW3Tlpq.jpg", video: "https://vidmoly.to/embed-iirea2w7coxp.html" },
+  { title: "Episode 26", description: "Reprise", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/znx2F672Ng1QqqVc3EtC5xrm9h9.jpg", video: "https://vidmoly.to/embed-8w0b5jcefgb0.html" },
+  { title: "Episode 27", description: "Enlèvement", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5Nj7ueMx7zQyIC9WjLqAGcIVygW.jpg", video: "https://vidmoly.to/embed-87iey2arkp6r.html" },
+  { title: "Episode 28", description: "Impatience", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/kDCYenlI22Fjzw7a5pR9cUy3ByI.jpg", video: "https://vidmoly.to/embed-p7ejfwz80a1n.html" },
+  { title: "Episode 29", description: "Père", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lg9llxpONn5t5GYR2pyIQNpYyPt.jpg", video: "https://vidmoly.to/embed-kvwjj97z96p3.html" },
+  { title: "Episode 30", description: "Justice", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hhNecHn6UEcvGIXaWaSqKfGOBIM.jpg", video: "https://vidmoly.to/embed-zi3gde5jgjpo.html" },
+  { title: "Episode 31", description: "Transfert", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sXEJqLQvNEAGUJNDHJzfiMK0qV4.jpg", video: "https://vidmoly.to/embed-5cmiiv1hyt3s.html" },
+  { title: "Episode 32", description: "Choix", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/A4v49zTK59PCExMM5tQJUqj0231.jpg", video: "https://vidmoly.to/embed-l3tn4ktkfn3d.html" },
+  { title: "Episode 33", description: "Arrogance", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/y7i5PSIUqHv3HjKV1iSdD6WqpQq.jpg", video: "https://vidmoly.to/embed-genp2gmd5am6.html" },
+  { title: "Episode 34", description: "Vigilance", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/xIcazNfhYAD2RqTps5aibV1rzuJ.jpg", video: "https://vidmoly.to/embed-kkyv48mhbk4o.html" },
+  { title: "Episode 35", description: "Tentative de meurtre", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/2Zb7s6RZ6uvEL8YJ4R7KhEQBCuk.jpg", video: "https://vidmoly.to/embed-b31sbke936gl.html" },
+  { title: "Episode 36", description: "28 janvier", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5jnmAdjOpeCHN4v4R5XquLICPt5.jpg", video: "https://vidmoly.to/embed-da4bnvra1pe2.html" },
+  { title: "Episode 37", description: "Le nouveau monde", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/85nG6sUrczzZVATIXP9JJvNMuSo.jpg", video: "https://vidmoly.to/embed-c5qalng4xlp3.html" }
+];
 
 
+
+
+
+
+
+    let currentEpisodeData = episodeDataS1;
+    let currentEpisodeIndex = 0;
+    let timeoutId;
+
+    const episodeList = document.getElementById("episode-list");
+    const videoContainer = document.getElementById("video-container");
+    const videoIframe = document.getElementById("episode-video");
+    const backButton = document.getElementById("back-button");
+    const nextButton = document.getElementById("next-button");
+    const loader = document.getElementById("loader");
+    const seasonSelect = document.getElementById("season-select");
+
+    function renderEpisodes() {
+      episodeList.innerHTML = "";
+      currentEpisodeData.forEach((ep, index) => {
+        const card = document.createElement("div");
+        card.className = "episode-card";
+        card.innerHTML = `
+          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}">
+          <h3>${ep.title}</h3>
+          <p>${ep.description}</p>
+        `;
+        card.addEventListener("click", () => {
+          currentEpisodeIndex = index;
+          playEpisode(index);
+        });
+        episodeList.appendChild(card);
+      });
+    }
+
+    function playEpisode(index) {
+      loader.style.display = "block";
+      videoIframe.src = currentEpisodeData[index].video;
+      videoContainer.classList.remove("show");
+      videoContainer.style.display = "flex";
+      requestAnimationFrame(() => {
+        videoContainer.classList.add("show");
+      });
+
+      nextButton.style.display = "none";
+      clearTimeout(timeoutId);
+
+      timeoutId = setTimeout(() => {
+        if (index < currentEpisodeData.length - 1) {
+          nextButton.style.display = "inline-block";
         }
-        ul{
-                list-style-type: none;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-                background-color: transparent;
-            }
-            li{
-                float: left;
-            }
-            li a{
-                display: block;
-                color: white;
-                text-align: center;
-                padding: 14px 16px;
-                text-decoration: none;
-                font-size: 30px;
-            }
-            li a:hover{
-                background-color: red;
-                border-radius: 10px;
-            }
-                    .arcaneimg{
-                width: 1850px;
-                height: 1000px;
-            }
+      }, 1380000); // 23 minutes
+    }
 
-</style>
+    videoIframe.onload = () => {
+      loader.style.display = "none";
+    };
 
+    function nextEpisode() {
+      if (currentEpisodeIndex < currentEpisodeData.length - 1) {
+        currentEpisodeIndex++;
+        playEpisode(currentEpisodeIndex);
+      }
+    }
 
+    function exitFullscreenMode() {
+      videoContainer.classList.remove("show");
+      setTimeout(() => {
+        videoContainer.style.display = "none";
+        videoIframe.src = "";
+        nextButton.style.display = "none";
+      }, 500);
+    }
 
+    seasonSelect.addEventListener("change", (e) => {
+      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+      renderEpisodes();
+    });
+
+   
+
+    renderEpisodes();
+  </script>
 </body>
 </html>
