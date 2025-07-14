@@ -1,16 +1,138 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" href="style.css">
-  <script type="text/javascript"></script>
-  <title>TSF - Blue Period</title>
-</head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
+  <title>BNZ - Blue Period</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #0066ff 0%, #ff99cc 100%);
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
 
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #1c1c1c;
+    }
+
+    li {
+      float: left;
+    }
+
+    li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 20px;
+    }
+
+    li a:hover {
+      background-color: red;
+      border-radius: 5px;
+    }
+
+    .episode-card {
+      width: 250px;
+      margin: 10px;
+      background: linear-gradient(to top, #993300 0%, #ff0000 100%);
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .episode-card:hover {
+      transform: scale(1.05);
+    }
+
+    .episode-card img {
+      width: 100%;
+      border-radius: 5px;
+    }
+
+    #episode-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    #video-container.show {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #episode-video {
+      width: 80%;
+      height: 60vh;
+      border: none;
+    }
+
+    #back-button, #next-button, #next-season-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: blue;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #loader {
+      color: white;
+      font-size: 20px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .episode-card {
+        width: 90%;
+      }
+
+      #episode-video {
+        width: 95%;
+        height: 40vh;
+      }
+    }
+  </style>
+</head>
 <body>
   <ul>
-    <li><a class="active" href="index.html">Home</a></li>
+    <li><a href="index.html">Home</a></li>
     <li><a href="journal.html">Journal</a></li>
     <li><a href="profil.html">Découvrir</a></li>
     <li><a href="trueprofil.html">Profil</a></li>
@@ -18,135 +140,122 @@
   </ul>
 
   <br><br>
-  <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Blue_Period_Logo.png" width="50%">
+  <div style="text-align:center;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Blue_Period_Logo.png" width="50%" alt="Logo Oshi no Ko">
+  </div>
 
-  <h1 id="episode-title">Saison 1 - Episode 1</h1>
-  <iframe id="episode-video" width=640 height=360 src="https://video.sibnet.ru/shell.php?videoid=4727257&share=1" allowfullscreen></iframe><br><br>
+  <div style="text-align:center; margin: 20px;">
+    <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
+    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+      <option value="1">Saison 1</option>
+    </select>
+  </div>
 
-  <button onclick="previousEpisode()">Épisode précédent</button>
-  <button onclick="nextEpisode()">Épisode suivant</button>
-  <select id="episode-selector" onchange="selectEpisode()">
-    <!-- Les options seront générées dynamiquement par le script JavaScript -->
-  </select>
-  <button onclick="lastEpisode()">Dernier épisode</button>
+  <div id="episode-list"></div>
 
-  <br><br>
+  <div id="video-container">
+    <iframe id="episode-video" allowfullscreen></iframe>
+    <div id="loader" style="display:none;">Chargement de la vidéo...</div>
+    <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
+    <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
+  </div>
 
-  <style>
-    body{
-      background-color: #2e2b2b;
-    }
-
-    button{
-      width: 122px;
-      color: white;
-      background-color: blue;
-      height: 100px;
-      border: 35px;
-      border: blue;
-      font-size: 24px;
-    }
-
-    ul{
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background-color: transparent;
-    }
-
-    li{
-      float: left;
-    }
-
-    li a{
-      display: block;
-      color: white;
-      text-align: center;
-      padding: 14px 16px;
-      text-decoration: none;
-      font-size: 30px;
-    }
-
-    select {
-    width: 200px;
-    height: 30px;
-    background-color: #f8f9fa;
-    border: none;
-    padding: 5px;
-    font-size: 16px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  }
-
-  select:focus {
-    outline: none;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
-  }
-
-    li a:hover{
-      background-color: red;
-      border-radius: 10px;
-    }
-  </style>
   <script>
-   var currentEpisode = 1;
-var totalEpisodes = 12;
-var episodeLinks = [
-  "https://video.sibnet.ru/shell.php?videoid=4727257&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4727258&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4727259&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4727260&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4727261&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4727262&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4727265&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4727266&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4727268&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4727269&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4727270&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4727271&share=1"
+const episodeDataS1 = [
+  { title: "Épisode 1", description: "J'ai succombé au plaisir de peindre", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ibpThNOSS9IVvx8dw42PkNhxCQ3.jpg", video: "https://vidmoly.to/embed-jv2fb02psfrd.html" },
+  { title: "Épisode 2", description: "Il n'a pas bronzé du tout", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/jw8RNEfJ1IhoRpb9X03ZaWpR84T.jpg", video: "https://vidmoly.to/embed-lch2bhne5064.html" },
+  { title: "Épisode 3", description: "La Prépa de la mort", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/v52BbTaJ6AXhtKtSltzNhVk5nWM.jpg", video: "https://vidmoly.to/embed-xbf5xciaijge.html" },
+  { title: "Épisode 4", description: "Vers où on va ?", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/nlJf0M5V9A1SpyUfrcrTjNQEF9C.jpg", video: "https://vidmoly.to/embed-bft8c9z3wlwf.html" },
+  { title: "Épisode 5", description: "Je comprends le sujet, mais je n'y arrive pas", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/epKcZNu75aF4d6JpgMkA2YcRg8d.jpg", video: "https://vidmoly.to/embed-r5dqgb1qjtql.html" },
+  { title: "Épisode 6", description: "Grosses dépressions nerveuses", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4P9IFhetitkvPK1ftsepCzwzeSR.jpg", video: "https://vidmoly.to/embed-y0o9x5uvj2rr.html" },
+  { title: "Épisode 7", description: "Le début du premier examen", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/vH0Tgxc4HzAkiaHNKgQvw0sqg13.jpg", video: "https://vidmoly.to/embed-bvpezedwquv4.html" },
+  { title: "Épisode 8", description: "Remue-méninges", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/cTBkrLJ4Ne9nqxarMEJPSaUzS0l.jpg", video: "https://vidmoly.to/embed-l3q6dvem2axl.html" },
+  { title: "Épisode 9", description: "Lame errante", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dthHp3NgMOgivTyPGVMB06Em5SE.jpg", video: "https://vidmoly.to/embed-ds9v0ogn3ljp.html" },
+  { title: "Épisode 10", description: "Notre couleur bleue", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/qlK8PbdG2EoMoHbkiZzoCR7CacO.jpg", video: "https://vidmoly.to/embed-reynm501nq72.html" },
+  { title: "Épisode 11", description: "Le début du deuxième examen", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/gdSODPnXgw7uN2OFEKAXZVgP4Sz.jpg", video: "https://vidmoly.to/embed-4x196tz3di2z.html" },
+  { title: "Épisode 12", description: "Le début des teintes", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/nojLibyLGbpPRvT9AhSzQeHMhqM.jpg", video: "https://vidmoly.to/embed-6fbu2dyv5z1x.html" }
 ];
 
-window.onload = function() {
-  // Générer les options pour le sélecteur d'épisodes
-  var selector = document.getElementById("episode-selector");
-  for (var i = 1; i <= totalEpisodes; i++) {
-    var option = document.createElement("option");
-    option.value = i;
-    option.text = "Saison 1 - Episode " + i;
-    selector.add(option);
-  }
-}
 
-function previousEpisode() {
-  if (currentEpisode > 1) {
-    currentEpisode--;
-    updateEpisode();
-  }
-}
 
-function nextEpisode() {
-  if (currentEpisode < totalEpisodes) {
-    currentEpisode++;
-    updateEpisode();
-  }
-}
 
-function selectEpisode() {
-  currentEpisode = document.getElementById("episode-selector").value;
-  updateEpisode();
-}
+    let currentEpisodeData = episodeDataS1;
+    let currentEpisodeIndex = 0;
+    let timeoutId;
 
-function lastEpisode() {
-  currentEpisode = totalEpisodes;
-  updateEpisode();
-}
+    const episodeList = document.getElementById("episode-list");
+    const videoContainer = document.getElementById("video-container");
+    const videoIframe = document.getElementById("episode-video");
+    const backButton = document.getElementById("back-button");
+    const nextButton = document.getElementById("next-button");
+    const loader = document.getElementById("loader");
+    const seasonSelect = document.getElementById("season-select");
 
-function updateEpisode() {
-  document.getElementById("episode-title").innerText = "Saison 1 - Episode " + currentEpisode;
-  document.getElementById("episode-video").src = episodeLinks[currentEpisode - 1];
-  document.getElementById("episode-selector").value = currentEpisode;
-}
+    function renderEpisodes() {
+      episodeList.innerHTML = "";
+      currentEpisodeData.forEach((ep, index) => {
+        const card = document.createElement("div");
+        card.className = "episode-card";
+        card.innerHTML = `
+          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}">
+          <h3>${ep.title}</h3>
+          <p>${ep.description}</p>
+        `;
+        card.addEventListener("click", () => {
+          currentEpisodeIndex = index;
+          playEpisode(index);
+        });
+        episodeList.appendChild(card);
+      });
+    }
+
+    function playEpisode(index) {
+      loader.style.display = "block";
+      videoIframe.src = currentEpisodeData[index].video;
+      videoContainer.classList.remove("show");
+      videoContainer.style.display = "flex";
+      requestAnimationFrame(() => {
+        videoContainer.classList.add("show");
+      });
+
+      nextButton.style.display = "none";
+      clearTimeout(timeoutId);
+
+      timeoutId = setTimeout(() => {
+        if (index < currentEpisodeData.length - 1) {
+          nextButton.style.display = "inline-block";
+        }
+      }, 1380000); // 23 minutes
+    }
+
+    videoIframe.onload = () => {
+      loader.style.display = "none";
+    };
+
+    function nextEpisode() {
+      if (currentEpisodeIndex < currentEpisodeData.length - 1) {
+        currentEpisodeIndex++;
+        playEpisode(currentEpisodeIndex);
+      }
+    }
+
+    function exitFullscreenMode() {
+      videoContainer.classList.remove("show");
+      setTimeout(() => {
+        videoContainer.style.display = "none";
+        videoIframe.src = "";
+        nextButton.style.display = "none";
+      }, 500);
+    }
+
+    seasonSelect.addEventListener("change", (e) => {
+      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+      renderEpisodes();
+    });
+
+   
+
+    renderEpisodes();
   </script>
 </body>
 </html>
