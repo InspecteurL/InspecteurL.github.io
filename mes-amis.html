@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mes amis</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: white;
+      padding: 20px;
+    }
+
+    .section {
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      border-bottom: 1px solid #444;
+      padding-bottom: 5px;
+    }
+
+    .friend-card {
+      background: #1e1e1e;
+      padding: 10px 20px;
+      margin: 10px 0;
+      border-radius: 10px;
+    }
+
+    .online {
+      color: #00ff88;
+    }
+
+    .offline {
+      color: #888;
+    }
+
+    button {
+      margin-top: 5px;
+      margin-right: 5px;
+      background: #e50914;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>👥 Mes amis</h1>
+
+  <div class="section">
+    <h2>Demandes reçues</h2>
+    <div id="received-requests">Chargement...</div>
+  </div>
+
+  <div class="section">
+    <h2>Amis acceptés</h2>
+    <div id="accepted-friends">Chargement...</div>
+  </div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const supabase = createClient(
+    'https://wuagahavmbugmnuzsouf.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  );
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData.session;
+
+  if (!session) {
+    document.body.innerHTML = "🔒 Vous devez être connecté.";
+    throw new Error("Non connecté.");
+  }
+
+  const userId = session.user.id;
+
+  // 📩 1. DEMANDES REÇUES
+  const { data: pendingRequests } = await supabase
+    .from("friends")
+    .select("id, requester:requester(*), status")
+    .eq("requested", userId)
+    .eq("status", "pending");
+
+  const receivedContainer = document.getElementById("received-requests");
+  receivedContainer.innerHTML = "";
+
+  if (pendingRequests.length === 0) {
+    receivedContainer.innerText = "Aucune demande pour le moment.";
+  }
+
+  for (const req of pendingRequests) {
+    const div = document.createElement("div");
+    div.className = "friend-card";
+    div.innerHTML = `
+      <div><strong>${req.requester.username || "Utilisateur"}</strong> vous a envoyé une demande.</div>
+      <button class="accept">Accepter</button>
+      <button class="reject">Refuser</button>
+    `;
+
+    div.querySelector(".accept").onclick = async () => {
+      await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
+      location.reload();
+    };
+
+    div.querySelector(".reject").onclick = async () => {
+      await supabase.from("friends").update({ status: "rejected" }).eq("id", req.id);
+      location.reload();
+    };
+
+    receivedContainer.appendChild(div);
+  }
+
+  // 👥 2. AMIS ACCEPTÉS
+  const { data: acceptedFriends } = await supabase
+    .from("friends")
+    .select("*, requester:requester(*), requested:requested(*)")
+    .or(`requester.eq.${userId},requested.eq.${userId}`)
+    .eq("status", "accepted");
+
+  const friendContainer = document.getElementById("accepted-friends");
+  friendContainer.innerHTML = "";
+
+  if (acceptedFriends.length === 0) {
+    friendContainer.innerText = "Vous n'avez pas encore d'amis.";
+  }
+
+  for (const rel of acceptedFriends) {
+    const friend =
+      rel.requester.id === userId ? rel.requested : rel.requester;
+
+    const status = friend.is_online
+      ? `<span class="online">🟢 En ligne</span>`
+      : `<span class="offline">🔴 Hors ligne</span>`;
+
+    const watching = friend.currently_watching
+      ? `<div><em>🎬 Regarde : ${friend.currently_watching}</em></div>`
+      : "";
+
+    const div = document.createElement("div");
+    div.className = "friend-card";
+    div.innerHTML = `
+      <div><strong>${friend.username}</strong> - ${status}</div>
+      ${watching}
+      <button class="remove">❌ Supprimer</button>
+      <button class="chat">💬 Chat</button>
+    `;
+
+    div.querySelector(".remove").onclick = async () => {
+      await supabase.from("friends").delete().eq("id", rel.id);
+      location.reload();
+    };
+
+    div.querySelector(".chat").onclick = () => {
+      window.location.href = `chat.html?user=${friend.id}`;
+    };
+
+    friendContainer.appendChild(div);
+  }
+
+  // 🔁 Actualiser la page toutes les 30 secondes pour voir les changements
+  setInterval(() => {
+    location.reload();
+  }, 30000);
+</script>
+
+</body>
+</html>

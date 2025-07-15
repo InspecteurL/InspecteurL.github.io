@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mes amis</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: white;
+      padding: 20px;
+    }
+
+    .user-card {
+      background: #1e1e1e;
+      padding: 10px 20px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+    }
+
+    button {
+      background: #e50914;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .online {
+      color: #00ff88;
+    }
+
+    .offline {
+      color: #888;
+    }
+
+    .watching {
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>Utilisateurs disponibles</h1>
+  <div id="user-list">Chargement...</div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://wuagahavmbugmnuzsouf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+    );
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+
+    if (!session) {
+      document.getElementById("user-list").innerText = "Veuillez vous connecter.";
+      throw new Error("Pas de session utilisateur.");
+    }
+
+    const currentUserId = session.user.id;
+
+    // Récupère tous les autres utilisateurs
+    const { data: users, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .neq("id", currentUserId);
+
+    const container = document.getElementById("user-list");
+    container.innerHTML = "";
+
+    users.forEach((user) => {
+      const userCard = document.createElement("div");
+      userCard.className = "user-card";
+
+      const onlineStatus = user.is_online ? "🟢 En ligne" : "🔴 Hors ligne";
+      const watching = user.currently_watching
+        ? `<div class="watching">🎬 Regarde : ${user.currently_watching}</div>`
+        : "";
+
+      userCard.innerHTML = `
+        <div><strong>${user.username || user.email}</strong> - 
+          <span class="${user.is_online ? 'online' : 'offline'}">${onlineStatus}</span>
+        </div>
+        ${watching}
+        <button data-id="${user.id}">Ajouter en ami</button>
+      `;
+
+      // Gère l'ajout d'ami
+      const btn = userCard.querySelector("button");
+      btn.addEventListener("click", async () => {
+        const { error } = await supabase.from("friends").insert({
+          requester: currentUserId,
+          requested: user.id,
+          status: "pending",
+        });
+        if (error) {
+          alert("Erreur : " + error.message);
+        } else {
+          alert("Demande envoyée à " + user.username);
+          btn.disabled = true;
+          btn.innerText = "Demande envoyée";
+        }
+      });
+
+      container.appendChild(userCard);
+    });
+  </script>
+</body>
+</html>
