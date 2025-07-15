@@ -166,6 +166,49 @@
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
   const supabase = createClient('https://wuagahavmbugmnuzsouf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho');
+// Register
+const { data, error } = await supabase.auth.signUp({
+  email: 'email@example.com',
+  password: 'motdepasse'
+});
+// Login
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'email@example.com',
+  password: 'motdepasse'
+});
+const { user } = await supabase.auth.getUser();
+await supabase.from('profiles').insert({
+  id: user.id,
+  username: 'MonPseudo'
+});
+await supabase.from('friends').insert({
+  requester: currentUserId,
+  requested: amiId,
+  status: 'pending'
+});
+await supabase
+  .from('friends')
+  .update({ status: 'accepted' })
+  .eq('requester', amiQuiDemande)
+  .eq('requested', moi);
+await supabase
+  .from('profiles')
+  .update({ is_online: true, last_seen: new Date() })
+  .eq('id', user.id);
+await supabase
+  .from('profiles')
+  .update({ currently_watching: "Naruto Ep. 12" })
+  .eq('id', user.id);
+await supabase
+  .from('profiles')
+  .update({ is_online: false })
+  .eq('id', user.id);
+const { data: friends } = await supabase
+  .from('friends')
+  .select('requested(*), requester(*)')
+  .or(`requester.eq.${user.id},requested.eq.${user.id}`)
+  .eq('status', 'accepted');
+   
 </script>
 
 </body>
