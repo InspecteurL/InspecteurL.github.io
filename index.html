@@ -18,6 +18,8 @@
                 <li><a href="lecteurtest.html">Profil</a></li>
                 <li><a href="profil.html">Découvrir</a></li>
                 <li><a href="index.html">Home</a></li>
+                <li><a href="amis.html">Amis</a></li>
+                <li><a href="mes-amis.html">Mes amis</a></li>
             </ul>
         </nav>
     </header>
@@ -162,54 +164,63 @@
             });
         });
     </script>
-    <script type="module">
+<script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const supabase = createClient('https://wuagahavmbugmnuzsouf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho');
-// Register
-const { data, error } = await supabase.auth.signUp({
-  email: 'email@example.com',
-  password: 'motdepasse'
-});
-// Login
-const { data, error } = await supabase.auth.signInWithPassword({
-  email: 'email@example.com',
-  password: 'motdepasse'
-});
-const { user } = await supabase.auth.getUser();
-await supabase.from('profiles').insert({
-  id: user.id,
-  username: 'MonPseudo'
-});
-await supabase.from('friends').insert({
-  requester: currentUserId,
-  requested: amiId,
-  status: 'pending'
-});
-await supabase
-  .from('friends')
-  .update({ status: 'accepted' })
-  .eq('requester', amiQuiDemande)
-  .eq('requested', moi);
-await supabase
-  .from('profiles')
-  .update({ is_online: true, last_seen: new Date() })
-  .eq('id', user.id);
-await supabase
-  .from('profiles')
-  .update({ currently_watching: "Naruto Ep. 12" })
-  .eq('id', user.id);
-await supabase
-  .from('profiles')
-  .update({ is_online: false })
-  .eq('id', user.id);
-const { data: friends } = await supabase
-  .from('friends')
-  .select('requested(*), requester(*)')
-  .or(`requester.eq.${user.id},requested.eq.${user.id}`)
-  .eq('status', 'accepted');
-   
+  const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const form = document.getElementById('auth-form');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    // 👥 Inscription ou Connexion
+    let { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    // Si l’utilisateur n'existe pas, on tente l’inscription
+    if (error) {
+      console.log('Connexion échouée, tentative d’inscription...');
+      const result = await supabase.auth.signUp({ email, password });
+      if (result.error) {
+        alert('Erreur : ' + result.error.message);
+        return;
+      } else {
+        data = result.data;
+        alert('Inscription réussie, un email de confirmation a été envoyé !');
+        return;
+      }
+    }
+
+    // Si connexion réussie
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData.user;
+    console.log('Utilisateur connecté :', user);
+
+    // 🔧 Créer le profil si non existant
+    const { error: profileError } = await supabase.from('profiles').upsert({
+      id: user.id,
+      username: user.email.split('@')[0], // nom par défaut = partie avant @
+      is_online: true,
+      last_seen: new Date()
+    });
+
+    if (profileError) {
+      console.error('Erreur création profil :', profileError.message);
+    } else {
+      alert(`Bienvenue ${user.email} ! Vous êtes maintenant connecté.`);
+    }
+  });
 </script>
+
+<form id="auth-form">
+  <input type="email" id="email" placeholder="Email" required />
+  <input type="password" id="password" placeholder="Mot de passe" required />
+  <button type="submit">Se connecter / S'inscrire</button>
+</form>
 
 </body>
 </html>
