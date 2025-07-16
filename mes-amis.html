@@ -9,24 +9,12 @@
       font-family: Arial, sans-serif;
       background: #121212;
       color: white;
-      margin: 0;
-      padding: 0;
+      padding: 20px;
     }
 
-    .banner {
-      background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1400&q=80');
-      background-size: cover;
-      background-position: center;
-      height: 200px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 2em;
-      font-weight: bold;
-      text-shadow: 2px 2px 4px #000;
+    .section {
+      margin-bottom: 40px;
     }
-
     header {
       background-color: #141414;
       padding: 10px 20px;
@@ -52,11 +40,7 @@
       font-weight: bold;
     }
 
-    .section {
-      padding: 20px;
-    }
-
-    h1, h2 {
+    h2 {
       border-bottom: 1px solid #444;
       padding-bottom: 5px;
     }
@@ -66,20 +50,6 @@
       padding: 10px 20px;
       margin: 10px 0;
       border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .friend-info {
-      flex: 1;
-    }
-
-    .avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
     }
 
     .online {
@@ -113,9 +83,8 @@
         width: 100%;
       }
 
-      .friend-card {
-        flex-direction: column;
-        align-items: flex-start;
+      .user-card, .friend-card {
+        padding: 15px;
       }
 
       button {
@@ -126,8 +95,6 @@
   </style>
 </head>
 <body>
-  <div class="banner">👥 Mes amis</div>
-
   <header>
     <nav>
       <div class="logo">BNZ</div>
@@ -143,72 +110,65 @@
       </ul>
     </nav>
   </header>
-
-  <div class="section">
+  
+  <div style="margin-top: 10px;">
     <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
-    
-    <div class="section">
-      <h2>Demandes reçues</h2>
-      <div id="received-requests">Chargement...</div>
-    </div>
-
-    <div class="section">
-      <h2>Amis acceptés</h2>
-      <div id="accepted-friends">Chargement...</div>
-    </div>
   </div>
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  <h1>👥 Mes amis</h1>
 
-  const supabase = createClient(
-    'https://wuagahavmbugmnuzsouf.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-  );
+  <div class="section">
+    <h2>Demandes reçues</h2>
+    <div id="received-requests">Chargement...</div>
+  </div>
 
-  async function manageSession() {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const session = sessionData.session;
+  <div class="section">
+    <h2>Amis acceptés</h2>
+    <div id="accepted-friends">Chargement...</div>
+  </div>
 
-    if (!session) {
-      document.body.innerHTML = "🔒 Vous devez être connecté.";
-      return;
-    }
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const userId = session.user.id;
+    const supabase = createClient(
+      'https://wuagahavmbugmnuzsouf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+    );
 
-    // 📩 Demandes reçues
-    const { data: pendingRequests, error: pendingError } = await supabase
-      .from("friends")
-      .select("id, requester(id, username, avatar), status")
-      .eq("requested", userId)
-      .eq("status", "pending");
+    // Fonction pour gérer la session utilisateur
+    async function manageSession() {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
 
-    if (pendingError) {
-      console.error("Erreur lors de la récupération des demandes reçues:", pendingError);
-    } else {
-      console.log("Demandes reçues:", pendingRequests);
-    }
+      if (!session) {
+        document.body.innerHTML = "🔒 Vous devez être connecté.";
+        return;
+      }
 
-    const receivedContainer = document.getElementById("received-requests");
-    receivedContainer.innerHTML = "";
+      const userId = session.user.id;
 
-    // Vérification si pendingRequests est valide avant de l'utiliser
-    if (!pendingRequests || pendingRequests.length === 0) {
-      receivedContainer.innerText = "Aucune demande pour le moment.";
-    } else {
-      pendingRequests.forEach(req => {
+      // 📩 1. DEMANDES REÇUES
+      const { data: pendingRequests } = await supabase
+        .from("friends")
+        .select("id, requester:requester(*), status")
+        .eq("requested", userId)
+        .eq("status", "pending");
+
+      const receivedContainer = document.getElementById("received-requests");
+      receivedContainer.innerHTML = "";
+
+      if (pendingRequests.length === 0) {
+        receivedContainer.innerText = "Aucune demande pour le moment.";
+      }
+
+      for (const req of pendingRequests) {
         const div = document.createElement("div");
         div.className = "friend-card";
-        div.innerHTML = `
-          <img class="avatar" src="${req.requester.avatar || 'default-avatar.png'}" alt="Avatar">
-          <div class="friend-info">
-            <strong>${req.requester.username}</strong> vous a envoyé une demande.
-            <br>
-            <button class="accept">Accepter</button>
-            <button class="reject">Refuser</button>
-          </div>
-        `;
+        div.innerHTML = 
+          <div><strong>${req.requester.username || "Utilisateur"}</strong> vous a envoyé une demande.</div>
+          <button class="accept">Accepter</button>
+          <button class="reject">Refuser</button>
+        ;
 
         div.querySelector(".accept").onclick = async () => {
           await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
@@ -221,50 +181,41 @@
         };
 
         receivedContainer.appendChild(div);
-      });
-    }
+      }
 
-    // 👥 Amis acceptés
-    const { data: acceptedFriends, error: acceptedError } = await supabase
-      .from("friends")
-      .select("*, requester:id, username, avatar, is_online, currently_watching, requested:id, username, avatar, is_online, currently_watching")
-      .or(`requester.eq.${userId},requested.eq.${userId}`)
-      .eq("status", "accepted");
+      // 👥 2. AMIS ACCEPTÉS
+      const { data: acceptedFriends } = await supabase
+        .from("friends")
+        .select("*, requester:requester(*), requested:requested(*)")
+        .or(requester.eq.${userId},requested.eq.${userId})
+        .eq("status", "accepted");
 
-    if (acceptedError) {
-      console.error("Erreur lors de la récupération des amis acceptés:", acceptedError);
-    } else {
-      console.log("Amis acceptés:", acceptedFriends);
-    }
+      const friendContainer = document.getElementById("accepted-friends");
+      friendContainer.innerHTML = "";
 
-    const friendContainer = document.getElementById("accepted-friends");
-    friendContainer.innerHTML = "";
+      if (acceptedFriends.length === 0) {
+        friendContainer.innerText = "Vous n'avez pas encore d'amis.";
+      }
 
-    if (!acceptedFriends || acceptedFriends.length === 0) {
-      friendContainer.innerText = "Vous n'avez pas encore d'amis.";
-    } else {
-      acceptedFriends.forEach(rel => {
+      for (const rel of acceptedFriends) {
         const friend = rel.requester.id === userId ? rel.requested : rel.requester;
 
         const status = friend.is_online
-          ? `<span class="online">🟢 En ligne</span>`
-          : `<span class="offline">🔴 Hors ligne</span>`;
+          ? <span class="online">🟢 En ligne</span>
+          : <span class="offline">🔴 Hors ligne</span>;
 
         const watching = friend.currently_watching
-          ? `<div><em>🎬 Regarde : ${friend.currently_watching}</em></div>`
+          ? <div><em>🎬 Regarde : ${friend.currently_watching}</em></div>
           : "";
 
         const div = document.createElement("div");
         div.className = "friend-card";
-        div.innerHTML = `
-          <img class="avatar" src="${friend.avatar || 'default-avatar.png'}" alt="Avatar">
-          <div class="friend-info">
-            <div><strong>${friend.username}</strong> - ${status}</div>
-            ${watching}
-            <button class="remove">❌ Supprimer</button>
-            <button class="chat">💬 Chat</button>
-          </div>
-        `;
+        div.innerHTML = 
+          <div><strong>${friend.username}</strong> - ${status}</div>
+          ${watching}
+          <button class="remove">❌ Supprimer</button>
+          <button class="chat">💬 Chat</button>
+        ;
 
         div.querySelector(".remove").onclick = async () => {
           await supabase.from("friends").delete().eq("id", rel.id);
@@ -272,37 +223,47 @@
         };
 
         div.querySelector(".chat").onclick = () => {
-          window.location.href = `chat.html?user=${friend.id}`;
+          window.location.href = chat.html?user=${friend.id};
         };
 
         friendContainer.appendChild(div);
-      });
+      }
+
+      // 🔁 Actualiser la page toutes les 30 secondes pour voir les changements
+      setInterval(() => {
+        location.reload();
+      }, 30000);
     }
 
-    // 🔁 Refresh
-    setInterval(() => location.reload(), 30000);
-  }
+    // Gestion du statut en ligne et hors ligne
+    document.addEventListener("visibilitychange", async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      if (!session) return;
 
-  document.addEventListener("visibilitychange", async () => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const session = sessionData.session;
-    if (!session) return;
-    const userId = session.user.id;
-    const isOnline = !document.hidden;
+      const userId = session.user.id;
+      const isOnline = !document.hidden;
 
-    await supabase.from("profiles").update({ is_online: isOnline }).eq("id", userId);
-  });
+      await supabase
+        .from("profiles")
+        .update({ is_online: isOnline })
+        .eq("id", userId);
+    });
 
-  window.addEventListener("beforeunload", async () => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const session = sessionData.session;
-    if (!session) return;
-    const userId = session.user.id;
-    await supabase.from("profiles").update({ is_online: false }).eq("id", userId);
-  });
+    // Gérer quand l'utilisateur ferme la page ou l'onglet
+    window.addEventListener("beforeunload", async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      if (!session) return;
 
-  manageSession();
-</script>
+      const userId = session.user.id;
+      await supabase
+        .from("profiles")
+        .update({ is_online: false })
+        .eq("id", userId);
+    });
 
+    manageSession();
+  </script>
 </body>
 </html>
