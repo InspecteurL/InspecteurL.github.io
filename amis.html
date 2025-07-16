@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mes amis</title>
   <style>
     body {
@@ -63,6 +64,29 @@
     .watching {
       font-style: italic;
     }
+  
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .user-card, .friend-card {
+    padding: 15px;
+  }
+
+  button {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -80,6 +104,10 @@
             </ul>
         </nav>
     </header>
+    <div style="margin-top: 10px;">
+  <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
+</div>
+
   <h1>Utilisateurs disponibles</h1>
   <div id="user-list">Chargement...</div>
 
@@ -120,7 +148,9 @@
         : "";
 
       userCard.innerHTML = `
-        <div><strong>${user.username || user.email}</strong> - 
+        <div>
+          <img src="${user.avatar_url || 'default.jpg'}" alt="avatar" style="width:30px; height:30px; border-radius:50%; margin-right:10px;">
+          <strong>${user.username || user.email}</strong> - 
           <span class="${user.is_online ? 'online' : 'offline'}">${onlineStatus}</span>
         </div>
         ${watching}
