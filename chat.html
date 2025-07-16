@@ -67,6 +67,10 @@
             </ul>
         </nav>
     </header>
+    <div style="margin-top: 10px;">
+  <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
+</div>
+
   <h1>💬 Chat</h1>
   <div id="messages">Chargement...</div>
   <form id="chat-form">
@@ -74,109 +78,133 @@
     <button type="submit">Envoyer</button>
   </form>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+ <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://wuagahavmbugmnuzsouf.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  const supabase = createClient(
+    'https://wuagahavmbugmnuzsouf.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  );
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData.session;
+
+  if (!session) {
+    document.body.innerHTML = "🔒 Connecte-toi pour chatter.";
+    throw new Error("Pas connecté");
+  }
+
+  const currentUserId = session.user.id;
+
+  // 🔗 Récupérer ID destinataire depuis URL : ?user=xxx
+  const urlParams = new URLSearchParams(window.location.search);
+  const receiverId = urlParams.get("user");
+
+  if (!receiverId) {
+    document.body.innerHTML = "❌ Aucun destinataire spécifié.";
+    throw new Error("Missing receiver ID");
+  }
+
+  const messageList = document.getElementById("messages");
+  const chatForm = document.getElementById("chat-form");
+
+  // 🔁 Charger les messages entre moi et receiverId
+  async function loadMessages() {
+    const { data: messages } = await supabase
+      .from("messages")
+      .select("*")
+      .or(`sender.eq.${currentUserId},receiver.eq.${currentUserId}`)
+      .order("created_at");
+
+    const filtered = messages.filter(
+      (m) =>
+        (m.sender === currentUserId && m.receiver === receiverId) ||
+        (m.sender === receiverId && m.receiver === currentUserId)
     );
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const session = sessionData.session;
+    messageList.innerHTML = "";
+    filtered.forEach((msg) => {
+      const senderLabel = msg.sender === currentUserId ? "Moi" : "Lui";
+      const date = new Date(msg.created_at).toLocaleTimeString();
 
-    if (!session) {
-      document.body.innerHTML = "🔒 Connecte-toi pour chatter.";
-      throw new Error("Pas connecté");
-    }
-
-    const currentUserId = session.user.id;
-
-    // 🔗 Récupérer ID destinataire depuis URL : ?user=xxx
-    const urlParams = new URLSearchParams(window.location.search);
-    const receiverId = urlParams.get("user");
-
-    if (!receiverId) {
-      document.body.innerHTML = "❌ Aucun destinataire spécifié.";
-      throw new Error("Missing receiver ID");
-    }
-
-    const messageList = document.getElementById("messages");
-    const chatForm = document.getElementById("chat-form");
-
-    // 🔁 Charger les messages entre moi et receiverId
-    async function loadMessages() {
-      const { data: messages } = await supabase
-        .from("messages")
-        .select("*")
-        .or(`sender.eq.${currentUserId},receiver.eq.${currentUserId}`)
-        .order("created_at");
-
-      const filtered = messages.filter(
-        (m) =>
-          (m.sender === currentUserId && m.receiver === receiverId) ||
-          (m.sender === receiverId && m.receiver === currentUserId)
-      );
-
-      messageList.innerHTML = "";
-      filtered.forEach((msg) => {
-        const senderLabel = msg.sender === currentUserId ? "Moi" : "Lui";
-        const date = new Date(msg.created_at).toLocaleTimeString();
-
-        const div = document.createElement("div");
-        div.className = "message";
-        div.innerHTML = `
-          <div><strong>${senderLabel}</strong> <small>${date}</small></div>
-          <div>${msg.content}</div>
-        `;
-        messageList.appendChild(div);
-      });
-
-      // Scroll en bas automatiquement
-      messageList.scrollTop = messageList.scrollHeight;
-    }
-
-    await loadMessages(); // au chargement
-
-    // 📨 Soumission du message
-    chatForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const content = document.getElementById("message").value;
-
-      if (!content.trim()) return;
-
-      await supabase.from("messages").insert({
-        sender: currentUserId,
-        receiver: receiverId,
-        content: content,
-      });
-
-      document.getElementById("message").value = "";
-      await loadMessages();
+      const div = document.createElement("div");
+      div.className = "message";
+      div.innerHTML = `
+        <div><strong>${senderLabel}</strong> <small>${date}</small></div>
+        <div>${msg.content}</div>
+      `;
+      messageList.appendChild(div);
     });
 
-    // 🔁 Rechargement automatique toutes les 5 secondes
-    setInterval(loadMessages, 5000);
+    // Scroll en bas automatiquement
+    messageList.scrollTop = messageList.scrollHeight;
+  }
 
-    // ⚡ Realtime : écoute des nouveaux messages entrants
-    supabase
-      .channel('chat-messages')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `receiver=eq.${currentUserId}`
-        },
-        async (payload) => {
-          const msg = payload.new;
-          if (msg.sender === receiverId || msg.receiver === receiverId) {
-            await loadMessages();
-          }
+  // 🔗 Récupérer les informations du destinataire (pseudo et avatar)
+  async function loadReceiverInfo() {
+    const { data: receiverData } = await supabase
+      .from("users") // Supposons que les utilisateurs sont stockés dans la table 'users'
+      .select("username, avatar")
+      .eq("id", receiverId)
+      .single(); // récupère un seul utilisateur (le destinataire)
+
+    if (receiverData) {
+      const header = document.querySelector("header");
+      const receiverSection = document.createElement("div");
+      receiverSection.innerHTML = `
+        <img src="${receiverData.avatar}" alt="Avatar de ${receiverData.username}" style="width: 50px; height: 50px; border-radius: 50%;">
+        <span style="font-size: 20px; margin-left: 10px;">${receiverData.username}</span>
+      `;
+      header.appendChild(receiverSection); // Ajout dans le header
+    } else {
+      console.error("Destinataire non trouvé");
+    }
+  }
+
+  await loadReceiverInfo(); // Charger l'info destinataire lors du chargement de la page
+
+  await loadMessages(); // au chargement
+
+  // 📨 Soumission du message
+  chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const content = document.getElementById("message").value;
+
+    if (!content.trim()) return;
+
+    await supabase.from("messages").insert({
+      sender: currentUserId,
+      receiver: receiverId,
+      content: content,
+    });
+
+    document.getElementById("message").value = "";
+    await loadMessages();
+  });
+
+  // 🔁 Rechargement automatique toutes les 5 secondes
+  setInterval(loadMessages, 5000);
+
+  // ⚡ Realtime : écoute des nouveaux messages entrants
+  supabase
+    .channel('chat-messages')
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `receiver=eq.${currentUserId}`
+      },
+      async (payload) => {
+        const msg = payload.new;
+        if (msg.sender === receiverId || msg.receiver === receiverId) {
+          await loadMessages();
         }
-      )
-      .subscribe();
-  </script>
+      }
+    )
+    .subscribe();
+</script>
+
 </body>
 </html>
