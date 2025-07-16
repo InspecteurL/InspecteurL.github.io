@@ -31,17 +31,34 @@
       text-decoration: none;
       font-weight: bold;
     }
+    .message-container {
+      display: flex;
+      margin: 10px 0;
+    }
+    .message-left {
+      justify-content: flex-start;
+    }
+    .message-right {
+      justify-content: flex-end;
+    }
     .message {
       background: #1e1e1e;
-      margin: 10px 0;
       padding: 10px;
       border-radius: 10px;
+      max-width: 60%;
     }
     .message strong {
       color: #00ff88;
     }
     .message small {
       color: #aaa;
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+      margin-left: 10px;
     }
     input, button {
       padding: 10px;
@@ -107,17 +124,20 @@
     const chatForm = document.getElementById("chat-form");
 
     let currentUsername = "Moi";
+    let currentAvatar = "";
     let receiverUsername = "Lui";
+    let receiverAvatar = "";
 
     async function loadCurrentUserInfo() {
       const { data: userData } = await supabase
         .from("users")
-        .select("username")
+        .select("username, avatar")
         .eq("id", currentUserId)
         .single();
 
       if (userData) {
         currentUsername = userData.username;
+        currentAvatar = userData.avatar;
       }
     }
 
@@ -130,6 +150,7 @@
 
       if (receiverData) {
         receiverUsername = receiverData.username;
+        receiverAvatar = receiverData.avatar;
         const header = document.querySelector("header");
         const receiverSection = document.createElement("div");
         receiverSection.innerHTML = `
@@ -137,8 +158,6 @@
           <span style="font-size: 20px; margin-left: 10px;">${receiverData.username}</span>
         `;
         header.appendChild(receiverSection);
-      } else {
-        console.error("Destinataire non trouvé");
       }
     }
 
@@ -157,16 +176,35 @@
 
       messageList.innerHTML = "";
       filtered.forEach((msg) => {
-        const senderLabel = msg.sender === currentUserId ? currentUsername : receiverUsername;
-        const date = new Date(msg.created_at).toLocaleTimeString();
+        const isCurrentUser = msg.sender === currentUserId;
+        const username = isCurrentUser ? currentUsername : receiverUsername;
+        const avatar = isCurrentUser ? currentAvatar : receiverAvatar;
+        const dateObj = new Date(msg.created_at);
+        const date = dateObj.toLocaleDateString("fr-FR") + " à " + dateObj.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
+        const container = document.createElement("div");
+        container.className = `message-container ${isCurrentUser ? "message-right" : "message-left"}`;
 
         const div = document.createElement("div");
         div.className = "message";
         div.innerHTML = `
-          <div><strong>${senderLabel}</strong> <small>${date}</small></div>
+          <div><strong>${username}</strong> <small>${date}</small></div>
           <div>${msg.content}</div>
         `;
-        messageList.appendChild(div);
+
+        const avatarImg = document.createElement("img");
+        avatarImg.src = avatar;
+        avatarImg.className = "avatar";
+
+        if (isCurrentUser) {
+          container.appendChild(div);
+          container.appendChild(avatarImg);
+        } else {
+          container.appendChild(avatarImg);
+          container.appendChild(div);
+        }
+
+        messageList.appendChild(container);
       });
 
       messageList.scrollTop = messageList.scrollHeight;
