@@ -124,38 +124,38 @@
     const chatForm = document.getElementById("chat-form");
 
     let currentUsername = "Moi";
-    let currentAvatar = "";
+    let currentAvatar = "default.jpg";
     let receiverUsername = "Lui";
-    let receiverAvatar = "";
+    let receiverAvatar = "default.jpg";
 
     async function loadCurrentUserInfo() {
       const { data: userData } = await supabase
-        .from("users")
-        .select("username, avatar")
+        .from("profiles")
+        .select("username, avatar_url")
         .eq("id", currentUserId)
         .single();
 
       if (userData) {
-        currentUsername = userData.username;
-        currentAvatar = userData.avatar;
+        currentUsername = userData.username || "Moi";
+        currentAvatar = userData.avatar_url || "default.jpg";
       }
     }
 
     async function loadReceiverInfo() {
       const { data: receiverData } = await supabase
-        .from("users")
-        .select("username, avatar")
+        .from("profiles")
+        .select("username, avatar_url")
         .eq("id", receiverId)
         .single();
 
       if (receiverData) {
-        receiverUsername = receiverData.username;
-        receiverAvatar = receiverData.avatar;
+        receiverUsername = receiverData.username || "Lui";
+        receiverAvatar = receiverData.avatar_url || "default.jpg";
         const header = document.querySelector("header");
         const receiverSection = document.createElement("div");
         receiverSection.innerHTML = `
-          <img src="${receiverData.avatar}" alt="Avatar de ${receiverData.username}" style="width: 50px; height: 50px; border-radius: 50%;">
-          <span style="font-size: 20px; margin-left: 10px;">${receiverData.username}</span>
+          <img src="${receiverAvatar}" alt="Avatar de ${receiverUsername}" style="width: 50px; height: 50px; border-radius: 50%; margin-left: 15px;">
+          <span style="font-size: 20px; margin-left: 10px;">${receiverUsername}</span>
         `;
         header.appendChild(receiverSection);
       }
@@ -217,7 +217,6 @@
     chatForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const content = document.getElementById("message").value;
-
       if (!content.trim()) return;
 
       await supabase.from("messages").insert({
