@@ -166,105 +166,97 @@
   <!-- Conteneur des cartes -->
   <div id="user-list" class="user-cards">Chargement...</div>
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const supabase = createClient(
-    'https://wuagahavmbugmnuzsouf.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-  );
+    const supabase = createClient(
+      'https://wuagahavmbugmnuzsouf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+    );
 
-  const { data: sessionData } = await supabase.auth.getSession();
-  const session = sessionData.session;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
 
-  if (!session) {
-    document.getElementById("user-list").innerText = "Veuillez vous connecter.";
-    throw new Error("Pas de session utilisateur.");
-  }
+    if (!session) {
+      document.getElementById("user-list").innerText = "Veuillez vous connecter.";
+      throw new Error("Pas de session utilisateur.");
+    }
 
-  const currentUserId = session.user.id;
-  console.log("Session utilisateur récupérée, ID : ", currentUserId);
+    const currentUserId = session.user.id;
 
-  // Récupère tous les autres utilisateurs
-  const { data: users, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .neq("id", currentUserId)
-    .catch((err) => {
-      console.error("Erreur de récupération des utilisateurs : ", err);
-      alert("Une erreur est survenue lors de la récupération des utilisateurs.");
-    });
-
-  if (error) {
-    console.error("Erreur lors de la récupération des utilisateurs : ", error.message);
-    document.getElementById("user-list").innerHTML = "Une erreur est survenue. Veuillez réessayer plus tard.";
-    return;
-  }
-
-  if (!users || users.length === 0) {
-    console.log("Aucun utilisateur trouvé.");
-    document.getElementById("user-list").innerHTML = "Aucun utilisateur disponible.";
-    return;
-  }
-
-  const container = document.getElementById("user-list");
-  container.innerHTML = "";
-
-  // Fonction pour afficher la liste des utilisateurs
-  function displayUsers(filteredUsers) {
-    container.innerHTML = "";
-    filteredUsers.forEach((user) => {
-      const userCard = document.createElement("div");
-      userCard.className = "user-card";
-
-      const onlineStatus = user.is_online ? "🟢 En ligne" : "🔴 Hors ligne";
-      const watching = user.currently_watching
-        ? `<div class="watching">🎬 Regarde : ${user.currently_watching}</div>`
-        : "";
-
-      userCard.innerHTML = `
-        <img src="${user.avatar_url || 'default.jpg'}" alt="avatar">
-        <div class="name">${user.username || user.email}</div>
-        <div class="status ${user.is_online ? 'online' : 'offline'}">${onlineStatus}</div>
-        ${watching}
-        <button data-id="${user.id}">Ajouter en ami</button>
-      `;
-
-      // Gère l'ajout d'ami
-      const btn = userCard.querySelector("button");
-      btn.addEventListener("click", async () => {
-        const { error } = await supabase.from("friends").insert({
-          requester: currentUserId,
-          requested: user.id,
-          status: "pending",
-        });
-        if (error) {
-          alert("Erreur : " + error.message);
-        } else {
-          alert("Demande envoyée à " + user.username);
-          btn.disabled = true;
-          btn.innerText = "Demande envoyée";
-        }
+    // Récupère tous les autres utilisateurs
+    const { data: users, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .neq("id", currentUserId)
+      .catch((err) => {
+        console.error("Erreur de récupération des utilisateurs : ", err);
+        alert("Une erreur est survenue lors de la récupération des utilisateurs.");
       });
 
-      container.appendChild(userCard);
+    if (error) {
+      console.error("Erreur lors de la récupération des utilisateurs : ", error.message);
+      document.getElementById("user-list").innerHTML = "Une erreur est survenue. Veuillez réessayer plus tard.";
+      return;
+    }
+
+    const container = document.getElementById("user-list");
+    container.innerHTML = "";
+
+    // Fonction pour afficher la liste des utilisateurs
+    function displayUsers(filteredUsers) {
+      container.innerHTML = "";
+      filteredUsers.forEach((user) => {
+        const userCard = document.createElement("div");
+        userCard.className = "user-card";
+
+        const onlineStatus = user.is_online ? "🟢 En ligne" : "🔴 Hors ligne";
+        const watching = user.currently_watching
+          ? `<div class="watching">🎬 Regarde : ${user.currently_watching}</div>`
+          : "";
+
+        userCard.innerHTML = `
+          <img src="${user.avatar_url || 'default.jpg'}" alt="avatar">
+          <div class="name">${user.username || user.email}</div>
+          <div class="status ${user.is_online ? 'online' : 'offline'}">${onlineStatus}</div>
+          ${watching}
+          <button data-id="${user.id}">Ajouter en ami</button>
+        `;
+
+        // Gère l'ajout d'ami
+        const btn = userCard.querySelector("button");
+        btn.addEventListener("click", async () => {
+          const { error } = await supabase.from("friends").insert({
+            requester: currentUserId,
+            requested: user.id,
+            status: "pending",
+          });
+          if (error) {
+            alert("Erreur : " + error.message);
+          } else {
+            alert("Demande envoyée à " + user.username);
+            btn.disabled = true;
+            btn.innerText = "Demande envoyée";
+          }
+        });
+
+        container.appendChild(userCard);
+      });
+    }
+
+    // Affiche tous les utilisateurs
+    displayUsers(users);
+
+    // Fonction de filtrage
+    const searchInput = document.getElementById("search-input");
+    searchInput.addEventListener("input", () => {
+      const searchValue = searchInput.value.toLowerCase();
+      const filteredUsers = users.filter(user =>
+        user.username.toLowerCase().includes(searchValue)
+      );
+      displayUsers(filteredUsers);
     });
-  }
 
-  // Affiche tous les utilisateurs
-  displayUsers(users);
-
-  // Fonction de filtrage
-  const searchInput = document.getElementById("search-input");
-  searchInput.addEventListener("input", () => {
-    const searchValue = searchInput.value.toLowerCase();
-    const filteredUsers = users.filter(user =>
-      user.username.toLowerCase().includes(searchValue)
-    );
-    displayUsers(filteredUsers);
-  });
-
-</script>
-
+  </script>
 </body>
 </html>
