@@ -170,7 +170,7 @@
 
 async function uploadFile(file, path) {
   const { data, error: uploadError } = await supabase.storage
-    .from('avatars')
+    .from('avatars') // Assure-toi que le bucket est correct, sinon modifie-le
     .upload(path, file, { upsert: true });
 
   if (uploadError) {
@@ -180,9 +180,9 @@ async function uploadFile(file, path) {
 
   console.log('Upload OK :', data);
 
-  const { data: urlData, error: urlError } = supabase
+  const { data: urlData, error: urlError } = await supabase
     .storage
-    .from('avatars')
+    .from('avatars') // Même remarque ici pour le bucket
     .getPublicUrl(path);
 
   if (urlError) {
@@ -194,45 +194,52 @@ async function uploadFile(file, path) {
   return urlData.publicUrl;
 }
 
-  document.getElementById('profile-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+document.getElementById('profile-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-    let avatar_url = profile.avatar_url;
-    let banner_url = profile.banner_url;
+  let avatar_url = profile.avatar_url;
+  let banner_url = profile.banner_url;
 
-    const avatarFile = document.getElementById('avatar_file').files[0];
-    if (avatarFile) {
-      avatar_url = await uploadFile(avatarFile, `${userId}/avatar.jpg`);
+  const avatarFile = document.getElementById('avatar_file').files[0];
+  if (avatarFile) {
+    avatar_url = await uploadFile(avatarFile, `${userId}/avatar.jpg`);
+    if (!avatar_url) {
+      console.error("Erreur lors de l'upload de l'avatar.");
     }
+  }
 
-    const bannerFile = document.getElementById('banner_file').files[0];
-    if (bannerFile) {
-      banner_url = await uploadFile(bannerFile, `${userId}/banner.jpg`);
+  const bannerFile = document.getElementById('banner_file').files[0];
+  if (bannerFile) {
+    banner_url = await uploadFile(bannerFile, `${userId}/banner.jpg`);
+    if (!banner_url) {
+      console.error("Erreur lors de l'upload de la bannière.");
     }
+  }
 
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({
-        username: document.getElementById('pseudo').value,
-        avatar_url,
-        banner_url
-      })
-      .eq('id', userId);
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({
+      username: document.getElementById('pseudo').value,
+      avatar_url,
+      banner_url
+    })
+    .eq('id', userId);
 
-    if (updateError) {
-      console.error('Erreur mise à jour profil :', updateError.message);
-      return;
-    }
+  if (updateError) {
+    console.error('Erreur mise à jour profil :', updateError.message);
+    return;
+  }
 
-    document.getElementById('avatar-preview').src = avatar_url || '';
-    document.getElementById('banner-preview').src = banner_url || '';
+  document.getElementById('avatar-preview').src = avatar_url || 'default-avatar.jpg';
+  document.getElementById('banner-preview').src = banner_url || 'default-banner.jpg';
 
-    const alert = document.getElementById('alert');
-    alert.style.display = 'block';
-    setTimeout(() => {
-      alert.style.display = 'none';
-    }, 3000);
-  });
+  const alert = document.getElementById('alert');
+  alert.style.display = 'block';
+  setTimeout(() => {
+    alert.style.display = 'none';
+  }, 3000);
+});
+
 </script>
 
 </body>
