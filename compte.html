@@ -131,8 +131,8 @@
     </form>
 
     <div class="profile-preview">
-      <img id="avatar-preview" src="" alt="Avatar de profil" />
-      <img id="banner-preview" class="banner-preview" src="" alt="Bannière de profil" />
+      <img id="avatar-preview" src="https://via.placeholder.com/100" alt="Avatar de profil" />
+      <img id="banner-preview" class="banner-preview" src="https://via.placeholder.com/300x100" alt="Bannière de profil" />
     </div>
 
     <div class="alert" id="alert">Profil mis à jour !</div>
@@ -164,82 +164,75 @@
     console.error('Erreur profil :', profileError.message);
   } else {
     document.getElementById('pseudo').value = profile.username || '';
-    document.getElementById('avatar-preview').src = profile.avatar_url || 'default-avatar.jpg';
-    document.getElementById('banner-preview').src = profile.banner_url || 'default-banner.jpg';
+    document.getElementById('avatar-preview').src = profile.avatar_url || 'https://via.placeholder.com/100';
+    document.getElementById('banner-preview').src = profile.banner_url || 'https://via.placeholder.com/300x100';
   }
 
-async function uploadFile(file, path) {
-  const { data, error: uploadError } = await supabase.storage
-    .from('avatars') // Assure-toi que le bucket est correct, sinon modifie-le
-    .upload(path, file, { upsert: true });
+  async function uploadFile(file, path) {
+    const { data, error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, {
+        upsert: true,
+        contentType: file.type,
+      });
 
-  if (uploadError) {
-    console.error('Erreur upload :', uploadError.message);
-    return null;
-  }
-
-  console.log('Upload OK :', data);
-
-  const { data: urlData, error: urlError } = await supabase
-    .storage
-    .from('avatars') // Même remarque ici pour le bucket
-    .getPublicUrl(path);
-
-  if (urlError) {
-    console.error('Erreur récupération URL :', urlError.message);
-    return null;
-  }
-
-  console.log('URL publique obtenue :', urlData.publicUrl);
-  return urlData.publicUrl;
-}
-
-document.getElementById('profile-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  let avatar_url = profile.avatar_url || 'default-avatar.jpg';
-  let banner_url = profile.banner_url || 'default-banner.jpg';
-
-  const avatarFile = document.getElementById('avatar_file').files[0];
-  if (avatarFile) {
-    avatar_url = await uploadFile(avatarFile, `${userId}/avatar.jpg`);
-    if (!avatar_url) {
-      console.error("Erreur lors de l'upload de l'avatar.");
+    if (uploadError) {
+      console.error('Erreur upload :', uploadError.message);
+      return null;
     }
-  }
 
-  const bannerFile = document.getElementById('banner_file').files[0];
-  if (bannerFile) {
-    banner_url = await uploadFile(bannerFile, `${userId}/banner.jpg`);
-    if (!banner_url) {
-      console.error("Erreur lors de l'upload de la bannière.");
+    const { data: urlData, error: urlError } = await supabase
+      .storage
+      .from('avatars')
+      .getPublicUrl(path);
+
+    if (urlError) {
+      console.error('Erreur URL :', urlError.message);
+      return null;
     }
+
+    return urlData.publicUrl;
   }
 
-  const { error: updateError } = await supabase
-    .from('profiles')
-    .update({
-      username: document.getElementById('pseudo').value,
-      avatar_url,
-      banner_url
-    })
-    .eq('id', userId);
+  document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  if (updateError) {
-    console.error('Erreur mise à jour profil :', updateError.message);
-    return;
-  }
+    let avatar_url = profile.avatar_url || 'https://via.placeholder.com/100';
+    let banner_url = profile.banner_url || 'https://via.placeholder.com/300x100';
 
-  document.getElementById('avatar-preview').src = avatar_url;
-  document.getElementById('banner-preview').src = banner_url;
+    const avatarFile = document.getElementById('avatar_file').files[0];
+    if (avatarFile) {
+      const uploaded = await uploadFile(avatarFile, `${userId}/avatar.jpg`);
+      if (uploaded) avatar_url = uploaded;
+    }
 
-  const alert = document.getElementById('alert');
-  alert.style.display = 'block';
-  setTimeout(() => {
-    alert.style.display = 'none';
-  }, 3000);
-});
+    const bannerFile = document.getElementById('banner_file').files[0];
+    if (bannerFile) {
+      const uploaded = await uploadFile(bannerFile, `${userId}/banner.jpg`);
+      if (uploaded) banner_url = uploaded;
+    }
 
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        username: document.getElementById('pseudo').value,
+        avatar_url,
+        banner_url
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('Erreur mise à jour profil :', updateError.message);
+      return;
+    }
+
+    document.getElementById('avatar-preview').src = avatar_url;
+    document.getElementById('banner-preview').src = banner_url;
+
+    const alert = document.getElementById('alert');
+    alert.style.display = 'block';
+    setTimeout(() => alert.style.display = 'none', 3000);
+  });
 </script>
 
 </body>
