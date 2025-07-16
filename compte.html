@@ -203,13 +203,13 @@
     const avatarFile = document.getElementById('avatar_file').files[0];
     if (avatarFile) {
       const uploaded = await uploadFile(avatarFile, `${userId}/avatar.jpg`);
-      if (uploaded) avatar_url = uploaded;
+      if (uploaded) avatar_url = uploaded + `?t=${Date.now()}`;
     }
 
     const bannerFile = document.getElementById('banner_file').files[0];
     if (bannerFile) {
       const uploaded = await uploadFile(bannerFile, `${userId}/banner.jpg`);
-      if (uploaded) banner_url = uploaded;
+      if (uploaded) banner_url = uploaded + `?t=${Date.now()}`;
     }
 
     const { error: updateError } = await supabase
@@ -234,6 +234,7 @@
     setTimeout(() => alert.style.display = 'none', 3000);
   });
 </script>
+
 
 </body>
 </html>
