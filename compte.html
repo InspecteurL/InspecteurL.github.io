@@ -164,8 +164,8 @@
     console.error('Erreur profil :', profileError.message);
   } else {
     document.getElementById('pseudo').value = profile.username || '';
-    document.getElementById('avatar-preview').src = profile.avatar_url || '';
-    document.getElementById('banner-preview').src = profile.banner_url || '';
+    document.getElementById('avatar-preview').src = profile.avatar_url || 'default-avatar.jpg';
+    document.getElementById('banner-preview').src = profile.banner_url || 'default-banner.jpg';
   }
 
 async function uploadFile(file, path) {
@@ -197,8 +197,8 @@ async function uploadFile(file, path) {
 document.getElementById('profile-form').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  let avatar_url = profile.avatar_url;
-  let banner_url = profile.banner_url;
+  let avatar_url = profile.avatar_url || 'default-avatar.jpg';
+  let banner_url = profile.banner_url || 'default-banner.jpg';
 
   const avatarFile = document.getElementById('avatar_file').files[0];
   if (avatarFile) {
@@ -230,8 +230,8 @@ document.getElementById('profile-form').addEventListener('submit', async (e) => 
     return;
   }
 
-  document.getElementById('avatar-preview').src = avatar_url || 'default-avatar.jpg';
-  document.getElementById('banner-preview').src = banner_url || 'default-banner.jpg';
+  document.getElementById('avatar-preview').src = avatar_url;
+  document.getElementById('banner-preview').src = banner_url;
 
   const alert = document.getElementById('alert');
   alert.style.display = 'block';
@@ -244,4 +244,3 @@ document.getElementById('profile-form').addEventListener('submit', async (e) => 
 
 </body>
 </html>
-
