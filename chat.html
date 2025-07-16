@@ -18,10 +18,11 @@
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 1200px; /* Largeur max pour PC */
       margin: 0 auto;
       width: 100%;
       padding: 0 15px;
+      flex-grow: 1;
     }
 
     /* Header */
@@ -98,6 +99,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      max-height: 60vh; /* Limiter la hauteur du chat */
     }
 
     .message-container {
@@ -182,6 +184,7 @@
       .nav-links {
         flex-direction: column;
         align-items: flex-start;
+        display: none;
       }
 
       .message-container {
@@ -406,7 +409,8 @@
         }
       )
       .subscribe();
-        const burgerMenu = document.getElementById("burger-menu");
+    // Gestion du menu burger pour mobile
+    const burgerMenu = document.getElementById("burger-menu");
     const navLinks = document.getElementById("nav-links");
 
     burgerMenu.addEventListener("click", () => {
