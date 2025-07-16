@@ -17,6 +17,13 @@
       height: 100vh;
     }
 
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 15px;
+    }
+
     /* Header */
     header {
       background-color: #141414;
@@ -54,6 +61,32 @@
 
     .nav-links a:hover {
       color: #00ff88;
+    }
+
+    /* Mobile Menu */
+    .burger {
+      display: none;
+      cursor: pointer;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .burger div {
+      width: 25px;
+      height: 3px;
+      background-color: white;
+    }
+
+    .nav-links.mobile {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px 0;
+      width: 100%;
+    }
+
+    .nav-links.mobile.active {
+      display: flex;
     }
 
     /* Message container */
@@ -177,13 +210,22 @@
       button {
         width: 100%;
       }
+
+      .burger {
+        display: flex;
+      }
     }
   </style>
 </head>
 <body>
   <header>
     <div class="logo">BNZ</div>
-    <ul class="nav-links">
+    <div class="burger" id="burger-menu">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <ul class="nav-links" id="nav-links">
       <li><a href="accueil.html">Accueil</a></li>
       <li><a href="journal.html">Journal</a></li>
       <li><a href="lecteurtest.html">Profil</a></li>
@@ -195,21 +237,23 @@
     </ul>
   </header>
 
-  <div style="margin-top: 15px;">
-    <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
+  <div class="container">
+    <div style="margin-top: 15px;">
+      <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
+    </div>
+
+    <h1 style="text-align: center; margin-top: 20px;">💬 Chat</h1>
+
+    <div id="messages">
+      <!-- Les messages seront chargés ici dynamiquement -->
+      Chargement...
+    </div>
+
+    <form id="chat-form">
+      <input type="text" id="message" placeholder="Votre message..." required />
+      <button type="submit">Envoyer</button>
+    </form>
   </div>
-
-  <h1 style="text-align: center; margin-top: 20px;">💬 Chat</h1>
-
-  <div id="messages">
-    <!-- Les messages seront chargés ici dynamiquement -->
-    Chargement...
-  </div>
-
-  <form id="chat-form">
-    <input type="text" id="message" placeholder="Votre message..." required />
-    <button type="submit">Envoyer</button>
-  </form>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -362,6 +406,12 @@
         }
       )
       .subscribe();
+        const burgerMenu = document.getElementById("burger-menu");
+    const navLinks = document.getElementById("nav-links");
+
+    burgerMenu.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+    });
   </script>
 </body>
 </html>
