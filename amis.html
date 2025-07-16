@@ -11,36 +11,67 @@
       color: white;
       padding: 20px;
     }
-         header {
-            background-color: #141414;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
 
-       .nav-links {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            gap: 20px;
-        }
+    header {
+      background-color: #141414;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .nav-links li {
-            display: inline;
-        }
+    .nav-links {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+    }
 
-        .nav-links a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-        }
+    .nav-links li {
+      display: inline;
+    }
+
+    .nav-links a {
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    /* Style pour la barre de recherche */
+    .search-container {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .search-container input {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: 300px;
+    }
 
     .user-card {
       background: #1e1e1e;
       padding: 10px 20px;
       margin-bottom: 10px;
       border-radius: 10px;
+      transition: transform 0.3s ease;
+    }
+
+    .user-card:hover {
+      transform: scale(1.05); /* Animation pour agrandir la carte */
+    }
+
+    .user-card img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+
+    .user-card img:hover {
+      transform: scale(1.3); /* Agrandir l'avatar au survol */
     }
 
     button {
@@ -64,52 +95,59 @@
     .watching {
       font-style: italic;
     }
-  
-@media (max-width: 768px) {
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 
-  .nav-links {
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-  }
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
 
-  .user-card, .friend-card {
-    padding: 15px;
-  }
+      .nav-links {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+      }
 
-  button {
-    width: 100%;
-    margin-top: 10px;
-  }
-}
+      .user-card, .friend-card {
+        padding: 15px;
+      }
+
+      button {
+        width: 100%;
+        margin-top: 10px;
+      }
+    }
 
   </style>
 </head>
 <body>
-      <header>
-        <nav>
-            <div class="logo">BNZ</div>
-            <ul class="nav-links">
-                <li><a href="accueil.html">Accueil</a></li>
-                <li><a href="journal.html">Journal</a></li>
-                <li><a href="lecteurtest.html">Profil</a></li>
-                <li><a href="profil.html">Découvrir</a></li>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="amis.html">Amis</a></li>
-                <li><a href="mes-amis.html">Mes amis</a></li>
-              <li><a href="compte.html">Votre Compte</a></li>
-            </ul>
-        </nav>
-    </header>
-    <div style="margin-top: 10px;">
-  <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
-</div>
+  <header>
+    <nav>
+      <div class="logo">BNZ</div>
+      <ul class="nav-links">
+        <li><a href="accueil.html">Accueil</a></li>
+        <li><a href="journal.html">Journal</a></li>
+        <li><a href="lecteurtest.html">Profil</a></li>
+        <li><a href="profil.html">Découvrir</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="amis.html">Amis</a></li>
+        <li><a href="mes-amis.html">Mes amis</a></li>
+        <li><a href="compte.html">Votre Compte</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <div style="margin-top: 10px;">
+    <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
+  </div>
 
   <h1>Utilisateurs disponibles</h1>
+
+  <!-- Barre de recherche -->
+  <div class="search-container">
+    <input type="text" id="search-input" placeholder="Rechercher un utilisateur par pseudo..." />
+  </div>
+
   <div id="user-list">Chargement...</div>
 
   <script type="module">
@@ -139,44 +177,62 @@
     const container = document.getElementById("user-list");
     container.innerHTML = "";
 
-    users.forEach((user) => {
-      const userCard = document.createElement("div");
-      userCard.className = "user-card";
+    // Fonction pour afficher la liste des utilisateurs
+    function displayUsers(filteredUsers) {
+      container.innerHTML = "";
+      filteredUsers.forEach((user) => {
+        const userCard = document.createElement("div");
+        userCard.className = "user-card";
 
-      const onlineStatus = user.is_online ? "🟢 En ligne" : "🔴 Hors ligne";
-      const watching = user.currently_watching
-        ? `<div class="watching">🎬 Regarde : ${user.currently_watching}</div>`
-        : "";
+        const onlineStatus = user.is_online ? "🟢 En ligne" : "🔴 Hors ligne";
+        const watching = user.currently_watching
+          ? `<div class="watching">🎬 Regarde : ${user.currently_watching}</div>`
+          : "";
 
-      userCard.innerHTML = `
-        <div>
-          <img src="${user.avatar_url || 'default.jpg'}" alt="avatar" style="width:30px; height:30px; border-radius:50%; margin-right:10px;">
-          <strong>${user.username || user.email}</strong> - 
-          <span class="${user.is_online ? 'online' : 'offline'}">${onlineStatus}</span>
-        </div>
-        ${watching}
-        <button data-id="${user.id}">Ajouter en ami</button>
-      `;
+        userCard.innerHTML = `
+          <div>
+            <img src="${user.avatar_url || 'default.jpg'}" alt="avatar" style="width:30px; height:30px; border-radius:50%; margin-right:10px;">
+            <strong>${user.username || user.email}</strong> - 
+            <span class="${user.is_online ? 'online' : 'offline'}">${onlineStatus}</span>
+          </div>
+          ${watching}
+          <button data-id="${user.id}">Ajouter en ami</button>
+        `;
 
-      // Gère l'ajout d'ami
-      const btn = userCard.querySelector("button");
-      btn.addEventListener("click", async () => {
-        const { error } = await supabase.from("friends").insert({
-          requester: currentUserId,
-          requested: user.id,
-          status: "pending",
+        // Gère l'ajout d'ami
+        const btn = userCard.querySelector("button");
+        btn.addEventListener("click", async () => {
+          const { error } = await supabase.from("friends").insert({
+            requester: currentUserId,
+            requested: user.id,
+            status: "pending",
+          });
+          if (error) {
+            alert("Erreur : " + error.message);
+          } else {
+            alert("Demande envoyée à " + user.username);
+            btn.disabled = true;
+            btn.innerText = "Demande envoyée";
+          }
         });
-        if (error) {
-          alert("Erreur : " + error.message);
-        } else {
-          alert("Demande envoyée à " + user.username);
-          btn.disabled = true;
-          btn.innerText = "Demande envoyée";
-        }
-      });
 
-      container.appendChild(userCard);
+        container.appendChild(userCard);
+      });
+    }
+
+    // Affiche tous les utilisateurs
+    displayUsers(users);
+
+    // Fonction de filtrage
+    const searchInput = document.getElementById("search-input");
+    searchInput.addEventListener("input", () => {
+      const searchValue = searchInput.value.toLowerCase();
+      const filteredUsers = users.filter(user =>
+        user.username.toLowerCase().includes(searchValue)
+      );
+      displayUsers(filteredUsers);
     });
+
   </script>
 </body>
 </html>
