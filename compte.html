@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>👤 Mon Profil</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f4f4f4;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #e50914;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    label {
+      font-size: 1rem;
+      color: #555;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    input[type="text"], input[type="url"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+      margin-top: 5px;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #e50914;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #c40811;
+    }
+
+    .input-label {
+      font-size: 1rem;
+      color: #555;
+    }
+
+    .profile-preview {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .profile-preview img {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border: 2px solid #e50914;
+    }
+
+    .profile-preview .banner-preview {
+      width: 300px;
+      height: 100px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .alert {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px;
+      text-align: center;
+      display: none;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h1>👤 Mon Profil</h1>
+
+  <div class="container">
+    <form id="profile-form">
+      <div class="input-label">Pseudo :</div>
+      <input type="text" id="pseudo" required />
+
+      <div class="input-label">Photo de profil :</div>
+      <input type="url" id="avatar_url" placeholder="Lien vers votre image" />
+
+      <div class="input-label">Bannière :</div>
+      <input type="url" id="banner_url" placeholder="Lien vers une bannière (optionnel)" />
+
+      <button type="submit">Mettre à jour</button>
+    </form>
+
+    <div class="profile-preview">
+      <img id="avatar-preview" src="" alt="Avatar de profil" />
+      <img id="banner-preview" class="banner-preview" src="" alt="Bannière de profil" />
+    </div>
+
+    <div class="alert" id="alert">Profil mis à jour !</div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://wuagahavmbugmnuzsouf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+    );
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userId = sessionData.session.user.id;
+
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    
+    document.getElementById('pseudo').value = profile.username;
+    document.getElementById('avatar_url').value = profile.avatar_url || '';
+    document.getElementById('banner_url').value = profile.banner_url || '';
+
+    // Prévisualiser l'avatar et la bannière
+    document.getElementById('avatar-preview').src = profile.avatar_url || '';
+    document.getElementById('banner-preview').src = profile.banner_url || '';
+
+    // Mettre à jour le profil
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      await supabase.from('profiles').update({
+        username: document.getElementById('pseudo').value,
+        avatar_url: document.getElementById('avatar_url').value,
+        banner_url: document.getElementById('banner_url').value
+      }).eq('id', userId);
+
+      // Afficher l'alerte de succès
+      const alert = document.getElementById('alert');
+      alert.style.display = 'block';
+      setTimeout(() => {
+        alert.style.display = 'none';
+      }, 3000);
+    });
+  </script>
+
+</body>
+</html>
