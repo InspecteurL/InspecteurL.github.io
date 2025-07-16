@@ -158,46 +158,46 @@
     </div>
   </div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://wuagahavmbugmnuzsouf.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-    );
+  const supabase = createClient(
+    'https://wuagahavmbugmnuzsouf.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  );
 
-    async function manageSession() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData.session;
+  async function manageSession() {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
 
-      if (!session) {
-        document.body.innerHTML = "🔒 Vous devez être connecté.";
-        return;
-      }
+    if (!session) {
+      document.body.innerHTML = "🔒 Vous devez être connecté.";
+      return;
+    }
 
-      const userId = session.user.id;
+    const userId = session.user.id;
 
-      // 📩 Demandes reçues
-      const { data: pendingRequests, error: pendingError } = await supabase
-        .from("friends")
-        .select("id, requester:requester(id, username, avatar), status")
-        .eq("requested", userId)
-        .eq("status", "pending");
+    // 📩 Demandes reçues
+    const { data: pendingRequests, error: pendingError } = await supabase
+      .from("friends")
+      .select("id, requester(id, username, avatar), status")
+      .eq("requested", userId)
+      .eq("status", "pending");
 
-      if (pendingError) {
-        console.error("Erreur lors de la récupération des demandes reçues:", pendingError);
-      } else {
-        console.log("Demandes reçues:", pendingRequests);
-      }
+    if (pendingError) {
+      console.error("Erreur lors de la récupération des demandes reçues:", pendingError);
+    } else {
+      console.log("Demandes reçues:", pendingRequests);
+    }
 
-      const receivedContainer = document.getElementById("received-requests");
-      receivedContainer.innerHTML = "";
+    const receivedContainer = document.getElementById("received-requests");
+    receivedContainer.innerHTML = "";
 
-      if (!pendingRequests.length) {
-        receivedContainer.innerText = "Aucune demande pour le moment.";
-      }
-
-      for (const req of pendingRequests) {
+    // Vérification si pendingRequests est valide avant de l'utiliser
+    if (!pendingRequests || pendingRequests.length === 0) {
+      receivedContainer.innerText = "Aucune demande pour le moment.";
+    } else {
+      pendingRequests.forEach(req => {
         const div = document.createElement("div");
         div.className = "friend-card";
         div.innerHTML = `
@@ -221,29 +221,29 @@
         };
 
         receivedContainer.appendChild(div);
-      }
+      });
+    }
 
-      // 👥 Amis acceptés
-      const { data: acceptedFriends, error: acceptedError } = await supabase
-        .from("friends")
-        .select("*, requester:requester(id, username, avatar, is_online, currently_watching), requested:requested(id, username, avatar, is_online, currently_watching)")
-        .or(`requester.eq.${userId},requested.eq.${userId}`)
-        .eq("status", "accepted");
+    // 👥 Amis acceptés
+    const { data: acceptedFriends, error: acceptedError } = await supabase
+      .from("friends")
+      .select("*, requester:id, username, avatar, is_online, currently_watching, requested:id, username, avatar, is_online, currently_watching")
+      .or(`requester.eq.${userId},requested.eq.${userId}`)
+      .eq("status", "accepted");
 
-      if (acceptedError) {
-        console.error("Erreur lors de la récupération des amis acceptés:", acceptedError);
-      } else {
-        console.log("Amis acceptés:", acceptedFriends);
-      }
+    if (acceptedError) {
+      console.error("Erreur lors de la récupération des amis acceptés:", acceptedError);
+    } else {
+      console.log("Amis acceptés:", acceptedFriends);
+    }
 
-      const friendContainer = document.getElementById("accepted-friends");
-      friendContainer.innerHTML = "";
+    const friendContainer = document.getElementById("accepted-friends");
+    friendContainer.innerHTML = "";
 
-      if (!acceptedFriends.length) {
-        friendContainer.innerText = "Vous n'avez pas encore d'amis.";
-      }
-
-      for (const rel of acceptedFriends) {
+    if (!acceptedFriends || acceptedFriends.length === 0) {
+      friendContainer.innerText = "Vous n'avez pas encore d'amis.";
+    } else {
+      acceptedFriends.forEach(rel => {
         const friend = rel.requester.id === userId ? rel.requested : rel.requester;
 
         const status = friend.is_online
@@ -276,31 +276,33 @@
         };
 
         friendContainer.appendChild(div);
-      }
-
-      // 🔁 Refresh
-      setInterval(() => location.reload(), 30000);
+      });
     }
 
-    document.addEventListener("visibilitychange", async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData.session;
-      if (!session) return;
-      const userId = session.user.id;
-      const isOnline = !document.hidden;
+    // 🔁 Refresh
+    setInterval(() => location.reload(), 30000);
+  }
 
-      await supabase.from("profiles").update({ is_online: isOnline }).eq("id", userId);
-    });
+  document.addEventListener("visibilitychange", async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+    if (!session) return;
+    const userId = session.user.id;
+    const isOnline = !document.hidden;
 
-    window.addEventListener("beforeunload", async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData.session;
-      if (!session) return;
-      const userId = session.user.id;
-      await supabase.from("profiles").update({ is_online: false }).eq("id", userId);
-    });
+    await supabase.from("profiles").update({ is_online: isOnline }).eq("id", userId);
+  });
 
-    manageSession();
-  </script>
+  window.addEventListener("beforeunload", async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+    if (!session) return;
+    const userId = session.user.id;
+    await supabase.from("profiles").update({ is_online: false }).eq("id", userId);
+  });
+
+  manageSession();
+</script>
+
 </body>
 </html>
