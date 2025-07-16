@@ -168,28 +168,31 @@
     document.getElementById('banner-preview').src = profile.banner_url || '';
   }
 
-  async function uploadFile(file, path) {
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(path, file, { upsert: true });
+async function uploadFile(file, path) {
+  const { data, error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(path, file, { upsert: true });
 
-    if (uploadError) {
-      console.error('Erreur upload :', uploadError.message);
-      return null;
-    }
-
-    const publicUrl = supabase
-      .storage
-      .from('avatars')
-      .getPublicUrl(path).data.publicUrl;
-
-    if (!publicUrl) {
-      console.error("Impossible d'obtenir l'URL publique.");
-      return null;
-    }
-
-    return publicUrl;
+  if (uploadError) {
+    console.error('Erreur upload :', uploadError.message);
+    return null;
   }
+
+  console.log('Upload OK :', data);
+
+  const { data: urlData, error: urlError } = supabase
+    .storage
+    .from('avatars')
+    .getPublicUrl(path);
+
+  if (urlError) {
+    console.error('Erreur récupération URL :', urlError.message);
+    return null;
+  }
+
+  console.log('URL publique obtenue :', urlData.publicUrl);
+  return urlData.publicUrl;
+}
 
   document.getElementById('profile-form').addEventListener('submit', async (e) => {
     e.preventDefault();
