@@ -160,13 +160,23 @@
       const { data, error } = await supabase.storage
         .from('avatars') // Assurez-vous que le bucket "avatars" existe sur Supabase
         .upload(path, file);
-      
+
       if (error) {
         console.error('Erreur de téléchargement :', error.message);
         return null;
       }
-      
-      return data?.path;
+
+      // Récupérer l'URL publique de l'image téléchargée
+      const { publicURL, error: urlError } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(data.path);
+
+      if (urlError) {
+        console.error('Erreur de récupération de l\'URL publique :', urlError.message);
+        return null;
+      }
+
+      return publicURL; // Renvoie l'URL publique de l'image
     }
 
     // Mettre à jour le profil
