@@ -48,7 +48,7 @@
       align-items: center;
     }
 
-    input[type="text"], input[type="url"] {
+    input[type="text"], input[type="url"], input[type="file"] {
       width: 100%;
       padding: 10px;
       border: 1px solid #ccc;
@@ -122,10 +122,10 @@
       <input type="text" id="pseudo" required />
 
       <div class="input-label">Photo de profil :</div>
-      <input type="url" id="avatar_url" placeholder="Lien vers votre image" />
+      <input type="file" id="avatar_file" accept="image/*" />
 
       <div class="input-label">Bannière :</div>
-      <input type="url" id="banner_url" placeholder="Lien vers une bannière (optionnel)" />
+      <input type="file" id="banner_file" accept="image/*" />
 
       <button type="submit">Mettre à jour</button>
     </form>
@@ -152,22 +152,52 @@
     const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
     
     document.getElementById('pseudo').value = profile.username;
-    document.getElementById('avatar_url').value = profile.avatar_url || '';
-    document.getElementById('banner_url').value = profile.banner_url || '';
-
-    // Prévisualiser l'avatar et la bannière
     document.getElementById('avatar-preview').src = profile.avatar_url || '';
     document.getElementById('banner-preview').src = profile.banner_url || '';
+
+    // Fonction de téléchargement de fichier
+    async function uploadFile(file, path) {
+      const { data, error } = await supabase.storage
+        .from('avatars') // Assurez-vous que le bucket "avatars" existe sur Supabase
+        .upload(path, file);
+      
+      if (error) {
+        console.error('Erreur de téléchargement :', error.message);
+        return null;
+      }
+      
+      return data?.path;
+    }
 
     // Mettre à jour le profil
     document.getElementById('profile-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      let avatar_url = profile.avatar_url;
+      let banner_url = profile.banner_url;
 
+      // Si un fichier photo de profil est sélectionné
+      const avatarFile = document.getElementById('avatar_file').files[0];
+      if (avatarFile) {
+        avatar_url = await uploadFile(avatarFile, `avatars/${userId}/avatar.jpg`);
+      }
+
+      // Si un fichier bannière est sélectionné
+      const bannerFile = document.getElementById('banner_file').files[0];
+      if (bannerFile) {
+        banner_url = await uploadFile(bannerFile, `avatars/${userId}/banner.jpg`);
+      }
+
+      // Mise à jour du profil dans la base de données
       await supabase.from('profiles').update({
         username: document.getElementById('pseudo').value,
-        avatar_url: document.getElementById('avatar_url').value,
-        banner_url: document.getElementById('banner_url').value
+        avatar_url,
+        banner_url
       }).eq('id', userId);
+
+      // Prévisualiser les nouvelles images
+      document.getElementById('avatar-preview').src = avatar_url;
+      document.getElementById('banner-preview').src = banner_url;
 
       // Afficher l'alerte de succès
       const alert = document.getElementById('alert');
