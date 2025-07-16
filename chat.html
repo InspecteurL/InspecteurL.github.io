@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Messagerie</title>
   <style>
-    /* Global Styles */
     body {
       background: #121212;
       color: white;
@@ -17,104 +16,57 @@
       height: 100vh;
     }
 
+    /* En-tête contenant juste le bouton retour */
+    header {
+      background-color: #141414;
+      padding: 15px;
+    }
+
+    .back-button {
+      color: #e50914;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    /* Zone principale centrée */
     .container {
-      max-width: 1200px; /* Largeur max pour PC */
+      max-width: 800px;
       margin: 0 auto;
       width: 100%;
-      padding: 0 15px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
       flex-grow: 1;
     }
 
-    /* Header */
-    header {
-      background-color: #141414;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
     }
 
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #00ff88;
-    }
-
-    .nav-links {
-      list-style: none;
-      padding: 0;
-      display: flex;
-      gap: 15px;
-    }
-
-    .nav-links li {
-      display: inline;
-    }
-
-    .nav-links a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .nav-links a:hover {
-      color: #00ff88;
-    }
-
-    /* Mobile Menu */
-    .burger {
-      display: none;
-      cursor: pointer;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .burger div {
-      width: 25px;
-      height: 3px;
-      background-color: white;
-    }
-
-    .nav-links.mobile {
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px 0;
-      width: 100%;
-    }
-
-    .nav-links.mobile.active {
-      display: flex;
-    }
-
-    /* Message container */
     #messages {
       flex-grow: 1;
       overflow-y: auto;
-      margin-top: 20px;
-      padding: 0 15px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      max-height: 60vh; /* Limiter la hauteur du chat */
+      gap: 16px;
+      padding: 0 20px;
+      max-height: 60vh;
     }
 
     .message-container {
       display: flex;
-      align-items: flex-start;
-      gap: 10px;
+      justify-content: center; /* CENTRE les bulles */
     }
 
-    .message-container .message {
+    .message {
       background: #1e1e1e;
-      padding: 12px;
-      border-radius: 12px;
-      max-width: 80%;
+      padding: 15px 20px;
+      border-radius: 20px;
+      max-width: 90%; /* plus large qu'avant */
       word-wrap: break-word;
-      display: inline-block;
+      position: relative;
     }
 
     .message strong {
@@ -122,49 +74,37 @@
     }
 
     .message small {
+      display: block;
+      margin-top: 8px;
+      font-size: 0.75rem;
       color: #aaa;
-      font-size: 0.8rem;
     }
 
-    .message-left .message {
-      margin-left: 10px;
-    }
-
-    .message-right .message {
-      margin-right: 10px;
-      background: #333333;
-    }
-
-    .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-    }
-
-    /* Chat Input */
+    /* Formulaire d'envoi */
     form {
       display: flex;
-      justify-content: space-between;
-      padding: 10px;
+      flex-direction: row;
+      gap: 10px;
+      padding: 10px 20px;
       border-top: 1px solid #333;
       background-color: #141414;
     }
 
     input {
-      width: 90%;
-      padding: 10px;
-      border-radius: 20px;
+      flex-grow: 1;
+      padding: 12px;
+      border-radius: 25px;
       background: #333;
       color: white;
       border: none;
-      font-size: 14px;
+      font-size: 16px;
     }
 
     button {
       background: #00ff88;
       border: none;
       padding: 12px 20px;
-      border-radius: 20px;
+      border-radius: 25px;
       color: white;
       font-size: 14px;
       cursor: pointer;
@@ -174,82 +114,45 @@
       background: #00e078;
     }
 
-    /* Responsive Styles */
+    /* Responsive : padding réduit sur mobile */
     @media (max-width: 768px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
+      .container {
+        padding: 15px;
       }
 
-      .nav-links {
-        flex-direction: column;
-        align-items: flex-start;
-        display: none;
-      }
-
-      .message-container {
-        flex-direction: column;
-      }
-
-      .message-container .message {
-        max-width: 95%;
-      }
-
-      .avatar {
-        width: 35px;
-        height: 35px;
+      .message {
+        max-width: 100%;
       }
 
       form {
         flex-direction: column;
-        gap: 10px;
       }
 
-      input {
-        width: 100%;
-        margin-bottom: 10px;
-      }
-
+      input,
       button {
         width: 100%;
-      }
-
-      .burger {
-        display: flex;
       }
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="logo">BNZ</div>
-    <div class="burger" id="burger-menu">
-      <div></div>
-      <div></div>
-      <div></div>
-    </div>
-    <ul class="nav-links" id="nav-links">
-      <li><a href="accueil.html">Accueil</a></li>
-      <li><a href="journal.html">Journal</a></li>
-      <li><a href="lecteurtest.html">Profil</a></li>
-      <li><a href="profil.html">Découvrir</a></li>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="amis.html">Amis</a></li>
-      <li><a href="mes-amis.html">Mes amis</a></li>
-      <li><a href="compte.html">Votre Compte</a></li>
-    </ul>
+    <a href="index.html" class="back-button">← Retour</a>
   </header>
 
   <div class="container">
-    <div style="margin-top: 15px;">
-      <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
-    </div>
-
-    <h1 style="text-align: center; margin-top: 20px;">💬 Chat</h1>
+    <h1>💬 Chat</h1>
 
     <div id="messages">
-      <!-- Les messages seront chargés ici dynamiquement -->
-      Chargement...
+      <!-- Exemple de message -->
+      <div class="message-container">
+        <div class="message">
+          <strong>Utilisateur</strong><br>
+          Bonjour, ça va ?<br>
+          <small>10:32</small>
+        </div>
+      </div>
+      <!-- D'autres messages apparaîtront ici -->
     </div>
 
     <form id="chat-form">
