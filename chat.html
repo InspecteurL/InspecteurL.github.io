@@ -1,229 +1,255 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Messagerie</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f5f5f5;
+      background: #121212;
+      color: white;
+      font-family: sans-serif;
+      padding: 20px;
     }
-
     header {
       background-color: #141414;
-      color: white;
-      padding: 15px;
+      padding: 10px 20px;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 15px;
     }
-
-    header img {
+    .nav-links {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+    }
+    .nav-links li {
+      display: inline;
+    }
+    .nav-links a {
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .message-container {
+      display: flex;
+      margin: 10px 0;
+    }
+    .message-left {
+      justify-content: flex-start;
+    }
+    .message-right {
+      justify-content: flex-end;
+    }
+    .message {
+      background: #1e1e1e;
+      padding: 10px;
+      border-radius: 10px;
+      max-width: 60%;
+    }
+    .message strong {
+      color: #00ff88;
+    }
+    .message small {
+      color: #aaa;
+    }
+    .avatar {
       width: 40px;
       height: 40px;
       border-radius: 50%;
+      margin-right: 10px;
+      margin-left: 10px;
     }
-
-    main {
-      padding: 20px;
-    }
-
-    .message {
-      background-color: #ffffff;
-      border-radius: 8px;
+    input, button {
       padding: 10px;
-      margin-bottom: 10px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    form {
-      display: flex;
-      gap: 10px;
-      padding: 20px;
-      background: white;
-      position: fixed;
-      bottom: 0;
+      margin: 5px 0;
       width: 100%;
-      box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      padding: 10px 20px;
-      background-color: #e50914;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #c40811;
     }
   </style>
 </head>
 <body>
+  <header>
+    <nav>
+      <div class="logo">BNZ</div>
+      <ul class="nav-links">
+        <li><a href="accueil.html">Accueil</a></li>
+        <li><a href="journal.html">Journal</a></li>
+        <li><a href="lecteurtest.html">Profil</a></li>
+        <li><a href="profil.html">Découvrir</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="amis.html">Amis</a></li>
+        <li><a href="mes-amis.html">Mes amis</a></li>
+        <li><a href="compte.html">Votre Compte</a></li>
+      </ul>
+    </nav>
+  </header>
 
-<header>
-  <h2>Messagerie</h2>
-  <!-- L'avatar et le nom du destinataire seront injectés ici dynamiquement -->
-</header>
+  <div style="margin-top: 10px;">
+    <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
+  </div>
 
-<main id="messages-container">
-  <!-- Messages apparaîtront ici -->
-</main>
+  <h1>💬 Chat</h1>
+  <div id="messages">Chargement...</div>
+  <form id="chat-form">
+    <input type="text" id="message" placeholder="Votre message..." required />
+    <button type="submit">Envoyer</button>
+  </form>
 
-<form id="message-form">
-  <input type="text" id="message-input" placeholder="Tapez votre message..." required />
-  <button type="submit">Envoyer</button>
-</form>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-  const supabase = createClient(
-    'https://wuagahavmbugmnuzsouf.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-  );
-
-  let currentUserId = null;
-  let currentUsername = "";
-  let currentAvatar = "";
-  let receiverId = ""; // À adapter dynamiquement si besoin
-  let receiverUsername = "";
-  let receiverAvatar = "";
-
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError || !sessionData.session) {
-    alert("Vous devez être connecté.");
-    throw new Error("Utilisateur non connecté.");
-  }
-  currentUserId = sessionData.session.user.id;
-
-  async function loadCurrentUserInfo() {
-    const { data: userData, error } = await supabase
-      .from("profiles")
-      .select("username, avatar_url")
-      .eq("id", currentUserId)
-      .single();
-
-    if (error) {
-      console.error("Erreur récupération utilisateur :", error.message);
-      return;
-    }
-
-    currentUsername = userData.username;
-    currentAvatar = userData.avatar_url;
-  }
-
-  async function loadReceiverInfo() {
-    // Simulé — en pratique, `receiverId` devrait être passé via URL ou context
-    receiverId = prompt("ID du destinataire :");
-
-    const { data: receiverData, error } = await supabase
-      .from("profiles")
-      .select("username, avatar_url")
-      .eq("id", receiverId)
-      .single();
-
-    if (error) {
-      console.error("Erreur destinataire :", error.message);
-      return;
-    }
-
-    receiverUsername = receiverData.username;
-    receiverAvatar = receiverData.avatar_url;
-
-    const header = document.querySelector("header");
-    const receiverSection = document.createElement("div");
-    receiverSection.style.display = "flex";
-    receiverSection.style.alignItems = "center";
-    receiverSection.innerHTML = `
-      <img src="${receiverAvatar}" alt="avatar" />
-      <span style="margin-left: 10px;">${receiverUsername}</span>
-    `;
-    header.appendChild(receiverSection);
-  }
-
-  async function loadMessages() {
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .or(`sender.eq.${currentUserId},receiver.eq.${currentUserId}`)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("Erreur chargement messages :", error.message);
-      return;
-    }
-
-    const filtered = data.filter(
-      (msg) =>
-        (msg.sender === currentUserId && msg.receiver === receiverId) ||
-        (msg.sender === receiverId && msg.receiver === currentUserId)
+    const supabase = createClient(
+      'https://wuagahavmbugmnuzsouf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
     );
 
-    const container = document.getElementById("messages-container");
-    container.innerHTML = "";
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
 
-    filtered.forEach((msg) => {
-      const div = document.createElement("div");
-      div.className = "message";
-
-      const isSender = msg.sender === currentUserId;
-      const senderLabel = isSender ? "Moi" : receiverUsername;
-      const avatarUrl = isSender ? currentAvatar : receiverAvatar;
-      const date = new Date(msg.created_at).toLocaleString();
-
-      div.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <img src="${avatarUrl}" alt="avatar" style="width: 30px; height: 30px; border-radius: 50%;">
-          <strong>${senderLabel}</strong> <small>${date}</small>
-        </div>
-        <div>${msg.content}</div>
-      `;
-      container.appendChild(div);
-    });
-
-    container.scrollTop = container.scrollHeight;
-  }
-
-  document.getElementById("message-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const input = document.getElementById("message-input");
-    const content = input.value.trim();
-    if (!content) return;
-
-    const { error } = await supabase.from("messages").insert([
-      {
-        sender: currentUserId,
-        receiver: receiverId,
-        content,
-      },
-    ]);
-
-    if (error) {
-      console.error("Erreur envoi message :", error.message);
-      return;
+    if (!session) {
+      document.body.innerHTML = "🔒 Connecte-toi pour chatter.";
+      throw new Error("Pas connecté");
     }
 
-    input.value = "";
+    const currentUserId = session.user.id;
+    const urlParams = new URLSearchParams(window.location.search);
+    const receiverId = urlParams.get("user");
+
+    if (!receiverId) {
+      document.body.innerHTML = "❌ Aucun destinataire spécifié.";
+      throw new Error("Missing receiver ID");
+    }
+
+    const messageList = document.getElementById("messages");
+    const chatForm = document.getElementById("chat-form");
+
+    let currentUsername = "Moi";
+    let currentAvatar = "";
+    let receiverUsername = "Lui";
+    let receiverAvatar = "";
+
+    async function loadCurrentUserInfo() {
+      const { data: userData } = await supabase
+        .from("users")
+        .select("username, avatar")
+        .eq("id", currentUserId)
+        .single();
+
+      if (userData) {
+        currentUsername = userData.username;
+        currentAvatar = userData.avatar;
+      }
+    }
+
+    async function loadReceiverInfo() {
+      const { data: receiverData } = await supabase
+        .from("users")
+        .select("username, avatar")
+        .eq("id", receiverId)
+        .single();
+
+      if (receiverData) {
+        receiverUsername = receiverData.username;
+        receiverAvatar = receiverData.avatar;
+        const header = document.querySelector("header");
+        const receiverSection = document.createElement("div");
+        receiverSection.innerHTML = `
+          <img src="${receiverData.avatar}" alt="Avatar de ${receiverData.username}" style="width: 50px; height: 50px; border-radius: 50%;">
+          <span style="font-size: 20px; margin-left: 10px;">${receiverData.username}</span>
+        `;
+        header.appendChild(receiverSection);
+      }
+    }
+
+    async function loadMessages() {
+      const { data: messages } = await supabase
+        .from("messages")
+        .select("*")
+        .or(`sender.eq.${currentUserId},receiver.eq.${currentUserId}`)
+        .order("created_at");
+
+      const filtered = messages.filter(
+        (m) =>
+          (m.sender === currentUserId && m.receiver === receiverId) ||
+          (m.sender === receiverId && m.receiver === currentUserId)
+      );
+
+      messageList.innerHTML = "";
+      filtered.forEach((msg) => {
+        const isCurrentUser = msg.sender === currentUserId;
+        const username = isCurrentUser ? currentUsername : receiverUsername;
+        const avatar = isCurrentUser ? currentAvatar : receiverAvatar;
+        const dateObj = new Date(msg.created_at);
+        const date = dateObj.toLocaleDateString("fr-FR") + " à " + dateObj.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
+        const container = document.createElement("div");
+        container.className = `message-container ${isCurrentUser ? "message-right" : "message-left"}`;
+
+        const div = document.createElement("div");
+        div.className = "message";
+        div.innerHTML = `
+          <div><strong>${username}</strong> <small>${date}</small></div>
+          <div>${msg.content}</div>
+        `;
+
+        const avatarImg = document.createElement("img");
+        avatarImg.src = avatar;
+        avatarImg.className = "avatar";
+
+        if (isCurrentUser) {
+          container.appendChild(div);
+          container.appendChild(avatarImg);
+        } else {
+          container.appendChild(avatarImg);
+          container.appendChild(div);
+        }
+
+        messageList.appendChild(container);
+      });
+
+      messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    await loadCurrentUserInfo();
+    await loadReceiverInfo();
     await loadMessages();
-  });
 
-  await loadCurrentUserInfo();
-  await loadReceiverInfo();
-  await loadMessages();
-</script>
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const content = document.getElementById("message").value;
 
+      if (!content.trim()) return;
+
+      await supabase.from("messages").insert({
+        sender: currentUserId,
+        receiver: receiverId,
+        content: content,
+      });
+
+      document.getElementById("message").value = "";
+      await loadMessages();
+    });
+
+    setInterval(loadMessages, 5000);
+
+    supabase
+      .channel('chat-messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver=eq.${currentUserId}`
+        },
+        async (payload) => {
+          const msg = payload.new;
+          if (msg.sender === receiverId || msg.receiver === receiverId) {
+            await loadMessages();
+          }
+        }
+      )
+      .subscribe();
+  </script>
 </body>
 </html>
