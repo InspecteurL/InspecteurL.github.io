@@ -110,6 +110,21 @@
       display: none;
     }
 
+    .back-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #555;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+
+    .back-button:hover {
+      background-color: #333;
+    }
   </style>
 </head>
 <body>
@@ -136,6 +151,9 @@
     </div>
 
     <div class="alert" id="alert">Profil mis à jour !</div>
+
+    <!-- Bouton retour vers index.html -->
+    <button class="back-button" onclick="window.location.href='index.html'">Retour</button>
   </div>
 
 <script type="module">
@@ -234,7 +252,6 @@
     setTimeout(() => alert.style.display = 'none', 3000);
   });
 </script>
-
 
 </body>
 </html>
