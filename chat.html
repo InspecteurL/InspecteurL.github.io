@@ -153,12 +153,70 @@
         height: 28px;
       }
     }
+
+    .chat-header {
+  position: sticky;
+  top: 0;
+  background-color: #141414;
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  gap: 15px;
+  z-index: 100;
+  border-bottom: 1px solid #222;
+}
+
+.back-button {
+  color: #e50914;
+  text-decoration: none;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.receiver-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-header {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.receiver-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .avatar-header {
+    width: 32px;
+    height: 32px;
+  }
+
+  .receiver-name {
+    font-size: 16px;
+  }
+
+  .back-button {
+    font-size: 20px;
+  }
+}
+
   </style>
 </head>
 <body>
-  <header>
-    <a href="index.html" class="back-button">← Retour</a>
-  </header>
+  <header class="chat-header">
+  <a href="index.html" class="back-button">←</a>
+  <div class="receiver-info">
+    <img src="receiver.jpg" alt="Avatar" class="avatar-header">
+    <span class="receiver-name">NomDestinataire</span>
+  </div>
+</header>
+
 
   <div class="container">
     <h1>💬 Chat</h1>
@@ -350,6 +408,11 @@
     burgerMenu.addEventListener("click", () => {
       navLinks.classList.toggle("active");
     });
+
+    // Remplacer dynamiquement dans JS après fetch
+document.querySelector(".avatar-header").src = receiverAvatar;
+document.querySelector(".receiver-name").textContent = receiverUsername;
+
   </script>
 </body>
 </html>
