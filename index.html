@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,7 +7,117 @@
     <title>Bunker Zata</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/x-icon" href="BNZ.jpg">
-
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #141414;
+            color: #ffffff;
+        }
+        header {
+            background-color: #141414;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links li {
+            display: inline;
+        }
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .banner {
+            background-image: url('banner.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #ffffff;
+        }
+        .banner-content {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .btn-watch {
+            padding: 10px 20px;
+            background-color: #e50914;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .movies {
+            padding: 20px;
+        }
+        .movies h2 {
+            margin-bottom: 20px;
+        }
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        .movie-card {
+            background-color: #333333;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .movie-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .movie-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .movie-card h3 {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        #auth-form {
+            max-width: 400px;
+            margin: 40px auto;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+        #auth-form input, #auth-form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        #auth-form input {
+            background-color: #2a2a2a;
+            color: white;
+        }
+        #auth-form button {
+            background-color: #e50914;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -35,192 +146,64 @@
     <section class="movies">
         <h2>Populaire</h2>
         <div class="movies-grid">
-            <div class="movie-card">
-                <img src="https://m.media-amazon.com/images/M/MV5BMjUxMzE4ZDctODNjMS00MzIwLThjNDktODkwYjc5YWU0MDc0XkEyXkFqcGdeQXVyNjc3OTE4Nzk@._V1_FMjpg_UX1000_.jpg" alt="Movie 1">
-                <h3>Steins ; Gate</h3>
-            </div>
-            <div class="movie-card">
-                <img src="https://fr.web.img5.acsta.net/pictures/19/09/20/16/59/1993201.jpg" alt="Movie 2">
-                <h3>Erased</h3>
-            </div>
-            <div class="movie-card">
-                <img src="https://m.media-amazon.com/images/M/MV5BYmJhMDYzYzMtNTVlZS00MzgwLWE3ZjAtN2FhZTBlOGQzZmFmXkEyXkFqcGdeQXVyMzgxODM4NjM@._V1_.jpg" alt="Movie 3">
-                <h3>Steins ; Gate 0</h3>
-            </div>
-            <div class="movie-card">
-                <img src="https://imgsrv.crunchyroll.com/cdn-cgi/image/fit=contain,format=auto,quality=85,width=480,height=720/catalog/crunchyroll/257cdb6a1fdd566600a01eb0f9f73b22.jpe" alt="Movie 4">
-                <h3>Dragon Ball</h3>
-            </div>
+            <div class="movie-card"><img src="https://m.media-amazon.com/images/M/MV5BMjUxMzE4ZDctODNjMS00MzIwLThjNDktODkwYjc5YWU0MDc0XkEyXkFqcGdeQXVyNjc3OTE4Nzk@._V1_FMjpg_UX1000_.jpg"><h3>Steins ; Gate</h3></div>
+            <div class="movie-card"><img src="https://fr.web.img5.acsta.net/pictures/19/09/20/16/59/1993201.jpg"><h3>Erased</h3></div>
+            <div class="movie-card"><img src="https://m.media-amazon.com/images/M/MV5BYmJhMDYzYzMtNTVlZS00MzgwLWE3ZjAtN2FhZTBlOGQzZmFmXkEyXkFqcGdeQXVyMzgxODM4NjM@._V1_.jpg"><h3>Steins ; Gate 0</h3></div>
+            <div class="movie-card"><img src="https://imgsrv.crunchyroll.com/cdn-cgi/image/fit=contain,format=auto,quality=85,width=480,height=720/catalog/crunchyroll/257cdb6a1fdd566600a01eb0f9f73b22.jpe"><h3>Dragon Ball</h3></div>
         </div>
     </section>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #141414;
-            color: #ffffff;
-        }
+    <form id="auth-form">
+        <input type="text" id="pseudo" placeholder="Pseudo (visible par les autres)" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Mot de passe" required />
+        <button type="submit">Se connecter / S'inscrire</button>
+    </form>
 
-        header {
-            background-color: #141414;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
-        .nav-links {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            gap: 20px;
-        }
+        const form = document.getElementById('auth-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pseudo = document.getElementById('pseudo').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-        .nav-links li {
-            display: inline;
-        }
+            let { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-        .nav-links a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-        }
+            if (error) {
+                const result = await supabase.auth.signUp({ email, password });
+                if (result.error) {
+                    alert('Erreur : ' + result.error.message);
+                    return;
+                }
+                const user = result.data.user;
+                await supabase.from('profiles').upsert({
+                    id: user.id,
+                    username: pseudo,
+                    is_online: true,
+                    last_seen: new Date()
+                });
+                alert('Inscription réussie. Vérifie ton email !');
+                return;
+            }
 
-        .banner {
-            background-image: url('banner.jpg');
-            background-size: cover;
-            background-position: center;
-            height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #ffffff;
-        }
+            const { data: userData } = await supabase.auth.getUser();
+            const user = userData.user;
 
-        .banner-content {
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        .btn-watch {
-            padding: 10px 20px;
-            background-color: #e50914;
-            border: none;
-            color: #ffffff;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .movies {
-            padding: 20px;
-        }
-
-        .movies h2 {
-            margin-bottom: 20px;
-        }
-
-        .movies-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 20px;
-        }
-
-        .movie-card {
-            background-color: #333333;
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .movie-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .movie-card img {
-            width: 100%;
-            height: 300px; /* Set a fixed height for all images */
-            object-fit: cover; /* Ensure images cover the entire area */
-            border-radius: 10px;
-        }
-
-        .movie-card h3 {
-            margin-top: 10px;
-            font-size: 16px;
-        }
-    </style>
-
-    <script src="scripts.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const btnWatch = document.querySelector('.btn-watch');
-            btnWatch.addEventListener('click', () => {
-                alert('Commencez à regarder maintenant!');
+            await supabase.from('profiles').upsert({
+                id: user.id,
+                username: pseudo,
+                is_online: true,
+                last_seen: new Date()
             });
+
+            alert(`Bienvenue ${pseudo} ! Vous êtes connecté.`);
         });
     </script>
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-  const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  const form = document.getElementById('auth-form');
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    // 👥 Inscription ou Connexion
-    let { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-    // Si l’utilisateur n'existe pas, on tente l’inscription
-    if (error) {
-      console.log('Connexion échouée, tentative d’inscription...');
-      const result = await supabase.auth.signUp({ email, password });
-      if (result.error) {
-        alert('Erreur : ' + result.error.message);
-        return;
-      } else {
-        data = result.data;
-        alert('Inscription réussie, un email de confirmation a été envoyé !');
-        return;
-      }
-    }
-
-    // Si connexion réussie
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData.user;
-    console.log('Utilisateur connecté :', user);
-
-    // 🔧 Créer le profil si non existant
-    const { error: profileError } = await supabase.from('profiles').upsert({
-      id: user.id,
-      username: user.email.split('@')[0], // nom par défaut = partie avant @
-      is_online: true,
-      last_seen: new Date()
-    });
-
-    if (profileError) {
-      console.error('Erreur création profil :', profileError.message);
-    } else {
-      alert(`Bienvenue ${user.email} ! Vous êtes maintenant connecté.`);
-    }
-  });
-</script>
-
-<form id="auth-form">
-  <input type="email" id="email" placeholder="Email" required />
-  <input type="password" id="password" placeholder="Mot de passe" required />
-  <button type="submit">Se connecter / S'inscrire</button>
-</form>
-
 </body>
 </html>
