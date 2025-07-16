@@ -49,72 +49,87 @@
       border-radius: 5px;
       border: 1px solid #ccc;
       width: 300px;
+      background-color: #1e1e1e;
+      color: white;
+    }
+
+    .user-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
     }
 
     .user-card {
       background: #1e1e1e;
-      padding: 10px 20px;
-      margin-bottom: 10px;
-      border-radius: 10px;
-      transition: transform 0.3s ease;
+      padding: 20px;
+      border-radius: 15px;
+      width: 250px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
     }
 
     .user-card:hover {
-      transform: scale(1.05); /* Animation pour agrandir la carte */
+      transform: translateY(-10px);
+      box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.5);
     }
 
     .user-card img {
-      width: 50px;
-      height: 50px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
+      margin-bottom: 15px;
       transition: transform 0.3s ease;
     }
 
     .user-card img:hover {
-      transform: scale(1.3); /* Agrandir l'avatar au survol */
+      transform: scale(1.2); /* Agrandir l'avatar au survol */
     }
 
-    button {
-      background: #e50914;
-      color: white;
-      border: none;
-      padding: 5px 10px;
+    .user-card .name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #e50914;
+    }
+
+    .user-card .status {
       margin-top: 5px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .online {
-      color: #00ff88;
-    }
-
-    .offline {
+      font-size: 14px;
       color: #888;
     }
 
-    .watching {
-      font-style: italic;
+    .user-card .status.online {
+      color: #00ff88;
+    }
+
+    .user-card .status.offline {
+      color: #888;
+    }
+
+    .user-card button {
+      background: #e50914;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      margin-top: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .user-card button:hover {
+      background-color: #c40611;
     }
 
     @media (max-width: 768px) {
-      header {
+      .user-cards {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
       }
 
-      .nav-links {
-        flex-direction: column;
-        gap: 10px;
-        width: 100%;
-      }
-
-      .user-card, .friend-card {
-        padding: 15px;
-      }
-
-      button {
-        width: 100%;
-        margin-top: 10px;
+      .user-card {
+        width: 80%;
       }
     }
 
@@ -148,7 +163,8 @@
     <input type="text" id="search-input" placeholder="Rechercher un utilisateur par pseudo..." />
   </div>
 
-  <div id="user-list">Chargement...</div>
+  <!-- Conteneur des cartes -->
+  <div id="user-list" class="user-cards">Chargement...</div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -190,11 +206,9 @@
           : "";
 
         userCard.innerHTML = `
-          <div>
-            <img src="${user.avatar_url || 'default.jpg'}" alt="avatar" style="width:30px; height:30px; border-radius:50%; margin-right:10px;">
-            <strong>${user.username || user.email}</strong> - 
-            <span class="${user.is_online ? 'online' : 'offline'}">${onlineStatus}</span>
-          </div>
+          <img src="${user.avatar_url || 'default.jpg'}" alt="avatar">
+          <div class="name">${user.username || user.email}</div>
+          <div class="status ${user.is_online ? 'online' : 'offline'}">${onlineStatus}</div>
           ${watching}
           <button data-id="${user.id}">Ajouter en ami</button>
         `;
