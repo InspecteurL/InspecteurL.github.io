@@ -166,14 +166,15 @@
   <!-- Conteneur des cartes -->
   <div id="user-list" class="user-cards">Chargement...</div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://wuagahavmbugmnuzsouf.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-    );
+  const supabase = createClient(
+    'https://wuagahavmbugmnuzsouf.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  );
 
+  (async () => {
     const { data: sessionData } = await supabase.auth.getSession();
     const session = sessionData.session;
 
@@ -184,15 +185,21 @@
 
     const currentUserId = session.user.id;
 
-    // Récupère tous les autres utilisateurs
-    const { data: users, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .neq("id", currentUserId)
-      .catch((err) => {
-        console.error("Erreur de récupération des utilisateurs : ", err);
-        alert("Une erreur est survenue lors de la récupération des utilisateurs.");
-      });
+    let users = [];
+    let error;
+
+    try {
+      const res = await supabase
+        .from("profiles")
+        .select("*")
+        .neq("id", currentUserId);
+      users = res.data;
+      error = res.error;
+    } catch (err) {
+      console.error("Erreur de récupération des utilisateurs : ", err);
+      alert("Une erreur est survenue lors de la récupération des utilisateurs.");
+      return;
+    }
 
     if (error) {
       console.error("Erreur lors de la récupération des utilisateurs : ", error.message);
@@ -203,7 +210,6 @@
     const container = document.getElementById("user-list");
     container.innerHTML = "";
 
-    // Fonction pour afficher la liste des utilisateurs
     function displayUsers(filteredUsers) {
       container.innerHTML = "";
       filteredUsers.forEach((user) => {
@@ -223,7 +229,6 @@
           <button data-id="${user.id}">Ajouter en ami</button>
         `;
 
-        // Gère l'ajout d'ami
         const btn = userCard.querySelector("button");
         btn.addEventListener("click", async () => {
           const { error } = await supabase.from("friends").insert({
@@ -234,7 +239,7 @@
           if (error) {
             alert("Erreur : " + error.message);
           } else {
-            alert("Demande envoyée à " + user.username);
+            alert("Demande envoyée à " + (user.username || user.email));
             btn.disabled = true;
             btn.innerText = "Demande envoyée";
           }
@@ -244,19 +249,18 @@
       });
     }
 
-    // Affiche tous les utilisateurs
     displayUsers(users);
 
-    // Fonction de filtrage
     const searchInput = document.getElementById("search-input");
     searchInput.addEventListener("input", () => {
       const searchValue = searchInput.value.toLowerCase();
       const filteredUsers = users.filter(user =>
-        user.username.toLowerCase().includes(searchValue)
+        (user.username || "").toLowerCase().includes(searchValue)
       );
       displayUsers(filteredUsers);
     });
+  })();
+</script>
 
-  </script>
 </body>
 </html>
