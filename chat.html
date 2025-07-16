@@ -2,37 +2,44 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Messagerie</title>
   <style>
+    /* Global Styles */
     body {
       background: #121212;
       color: white;
-      font-family: sans-serif;
-      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
+      padding: 0;
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
 
+    /* Header */
     header {
       background-color: #141414;
-      padding: 10px 20px;
+      padding: 15px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .logo {
-      font-size: 20px;
+      font-size: 24px;
       font-weight: bold;
+      color: #00ff88;
     }
 
     .nav-links {
       list-style: none;
       padding: 0;
       display: flex;
-      gap: 20px;
+      gap: 15px;
     }
 
     .nav-links li {
@@ -40,29 +47,39 @@
     }
 
     .nav-links a {
-      color: #ffffff;
+      color: white;
       text-decoration: none;
       font-weight: bold;
     }
 
+    .nav-links a:hover {
+      color: #00ff88;
+    }
+
+    /* Message container */
+    #messages {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin-top: 20px;
+      padding: 0 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
     .message-container {
       display: flex;
-      margin: 10px 0;
-      flex-direction: column;
-    }
-
-    .message-left,
-    .message-right {
-      display: flex;
       align-items: flex-start;
+      gap: 10px;
     }
 
-    .message {
+    .message-container .message {
       background: #1e1e1e;
-      padding: 10px;
-      border-radius: 10px;
-      max-width: 70%;
+      padding: 12px;
+      border-radius: 12px;
+      max-width: 80%;
       word-wrap: break-word;
+      display: inline-block;
     }
 
     .message strong {
@@ -71,39 +88,65 @@
 
     .message small {
       color: #aaa;
+      font-size: 0.8rem;
+    }
+
+    .message-left .message {
+      margin-left: 10px;
+    }
+
+    .message-right .message {
+      margin-right: 10px;
+      background: #333333;
     }
 
     .avatar {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      margin-right: 10px;
-      margin-left: 10px;
     }
 
-    #messages {
-      overflow-y: auto;
-      flex-grow: 1;
-      max-height: calc(100vh - 200px);
-      margin-bottom: 10px;
-    }
-
-    input, button {
+    /* Chat Input */
+    form {
+      display: flex;
+      justify-content: space-between;
       padding: 10px;
-      margin: 5px 0;
-      width: 100%;
-      border-radius: 5px;
+      border-top: 1px solid #333;
+      background-color: #141414;
+    }
+
+    input {
+      width: 90%;
+      padding: 10px;
+      border-radius: 20px;
+      background: #333;
+      color: white;
+      border: none;
+      font-size: 14px;
     }
 
     button {
-      background-color: #e50914;
-      color: white;
+      background: #00ff88;
       border: none;
+      padding: 12px 20px;
+      border-radius: 20px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
     }
 
-    /* Styles pour mobile */
+    button:hover {
+      background: #00e078;
+    }
+
+    /* Responsive Styles */
     @media (max-width: 768px) {
       header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .nav-links {
         flex-direction: column;
         align-items: flex-start;
       }
@@ -112,19 +155,27 @@
         flex-direction: column;
       }
 
-      .message {
-        max-width: 100%;
+      .message-container .message {
+        max-width: 95%;
       }
 
       .avatar {
-        width: 30px;
-        height: 30px;
+        width: 35px;
+        height: 35px;
       }
 
-      .message-container.message-left,
-      .message-container.message-right {
-        flex-direction: row;
-        align-items: center;
+      form {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      input {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      button {
+        width: 100%;
       }
     }
   </style>
@@ -144,12 +195,17 @@
     </ul>
   </header>
 
-  <div style="margin-top: 10px;">
+  <div style="margin-top: 15px;">
     <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
   </div>
 
-  <h1>💬 Chat</h1>
-  <div id="messages">Chargement...</div>
+  <h1 style="text-align: center; margin-top: 20px;">💬 Chat</h1>
+
+  <div id="messages">
+    <!-- Les messages seront chargés ici dynamiquement -->
+    Chargement...
+  </div>
+
   <form id="chat-form">
     <input type="text" id="message" placeholder="Votre message..." required />
     <button type="submit">Envoyer</button>
@@ -302,10 +358,7 @@
           filter: `receiver=eq.${currentUserId}`
         },
         async (payload) => {
-          const msg = payload.new;
-          if (msg.sender === receiverId || msg.receiver === receiverId) {
-            await loadMessages();
-          }
+          await loadMessages();
         }
       )
       .subscribe();
