@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mes amis</title>
   <style>
     body {
@@ -69,6 +70,29 @@
       border-radius: 5px;
       cursor: pointer;
     }
+  
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .user-card, .friend-card {
+    padding: 15px;
+  }
+
+  button {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -86,6 +110,10 @@
             </ul>
         </nav>
     </header>
+    <div style="margin-top: 10px;">
+  <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
+</div>
+
   <h1>👥 Mes amis</h1>
 
   <div class="section">
