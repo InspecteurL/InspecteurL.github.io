@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mes amis</title>
   <style>
     body {
@@ -146,7 +146,7 @@
 
   <div class="section">
     <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
-
+    
     <div class="section">
       <h2>Demandes reçues</h2>
       <div id="received-requests">Chargement...</div>
@@ -177,12 +177,18 @@
 
       const userId = session.user.id;
 
-      // Demandes reçues
-      const { data: pendingRequests } = await supabase
+      // 📩 Demandes reçues
+      const { data: pendingRequests, error: pendingError } = await supabase
         .from("friends")
-        .select("id, requester:requester(id, username, avatar)")
+        .select("id, requester:requester(id, username, avatar), status")
         .eq("requested", userId)
         .eq("status", "pending");
+
+      if (pendingError) {
+        console.error("Erreur lors de la récupération des demandes reçues:", pendingError);
+      } else {
+        console.log("Demandes reçues:", pendingRequests);
+      }
 
       const receivedContainer = document.getElementById("received-requests");
       receivedContainer.innerHTML = "";
@@ -192,16 +198,13 @@
       }
 
       for (const req of pendingRequests) {
-        const requester = req.requester || {};
-        const avatar = requester.avatar || 'https://via.placeholder.com/50?text=👤';
-        const username = requester.username || 'Inconnu';
-
         const div = document.createElement("div");
         div.className = "friend-card";
         div.innerHTML = `
-          <img class="avatar" src="${avatar}" alt="Avatar">
+          <img class="avatar" src="${req.requester.avatar || 'default-avatar.png'}" alt="Avatar">
           <div class="friend-info">
-            <strong>${username}</strong> vous a envoyé une demande.<br/>
+            <strong>${req.requester.username}</strong> vous a envoyé une demande.
+            <br>
             <button class="accept">Accepter</button>
             <button class="reject">Refuser</button>
           </div>
@@ -220,30 +223,43 @@
         receivedContainer.appendChild(div);
       }
 
-      // Amis acceptés
-      const { data: acceptedFriends } = await supabase
+      // 👥 Amis acceptés
+      const { data: acceptedFriends, error: acceptedError } = await supabase
         .from("friends")
         .select("*, requester:requester(id, username, avatar, is_online, currently_watching), requested:requested(id, username, avatar, is_online, currently_watching)")
+        .or(`requester.eq.${userId},requested.eq.${userId}`)
         .eq("status", "accepted");
+
+      if (acceptedError) {
+        console.error("Erreur lors de la récupération des amis acceptés:", acceptedError);
+      } else {
+        console.log("Amis acceptés:", acceptedFriends);
+      }
 
       const friendContainer = document.getElementById("accepted-friends");
       friendContainer.innerHTML = "";
 
+      if (!acceptedFriends.length) {
+        friendContainer.innerText = "Vous n'avez pas encore d'amis.";
+      }
+
       for (const rel of acceptedFriends) {
         const friend = rel.requester.id === userId ? rel.requested : rel.requester;
-        if (!friend) continue;
 
-        const avatar = friend.avatar || 'https://via.placeholder.com/50?text=👤';
-        const username = friend.username || 'Ami';
-        const status = friend.is_online ? `<span class="online">🟢 En ligne</span>` : `<span class="offline">🔴 Hors ligne</span>`;
-        const watching = friend.currently_watching ? `<div><em>🎬 Regarde : ${friend.currently_watching}</em></div>` : "";
+        const status = friend.is_online
+          ? `<span class="online">🟢 En ligne</span>`
+          : `<span class="offline">🔴 Hors ligne</span>`;
+
+        const watching = friend.currently_watching
+          ? `<div><em>🎬 Regarde : ${friend.currently_watching}</em></div>`
+          : "";
 
         const div = document.createElement("div");
         div.className = "friend-card";
         div.innerHTML = `
-          <img class="avatar" src="${avatar}" alt="Avatar">
+          <img class="avatar" src="${friend.avatar || 'default-avatar.png'}" alt="Avatar">
           <div class="friend-info">
-            <div><strong>${username}</strong> - ${status}</div>
+            <div><strong>${friend.username}</strong> - ${status}</div>
             ${watching}
             <button class="remove">❌ Supprimer</button>
             <button class="chat">💬 Chat</button>
@@ -262,17 +278,17 @@
         friendContainer.appendChild(div);
       }
 
-      // Refresh auto
+      // 🔁 Refresh
       setInterval(() => location.reload(), 30000);
     }
 
-    // Mise à jour statut en ligne
     document.addEventListener("visibilitychange", async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData.session;
       if (!session) return;
       const userId = session.user.id;
       const isOnline = !document.hidden;
+
       await supabase.from("profiles").update({ is_online: isOnline }).eq("id", userId);
     });
 
