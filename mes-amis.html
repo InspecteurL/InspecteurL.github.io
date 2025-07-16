@@ -235,7 +235,7 @@
       }, 30000);
     }
 
-    // Gestion du statut en ligne
+    // Gestion du statut en ligne et hors ligne
     document.addEventListener("visibilitychange", async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData.session;
@@ -247,6 +247,19 @@
       await supabase
         .from("profiles")
         .update({ is_online: isOnline })
+        .eq("id", userId);
+    });
+
+    // Gérer quand l'utilisateur ferme la page ou l'onglet
+    window.addEventListener("beforeunload", async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      if (!session) return;
+
+      const userId = session.user.id;
+      await supabase
+        .from("profiles")
+        .update({ is_online: false })
         .eq("id", userId);
     });
 
