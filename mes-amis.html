@@ -148,7 +148,7 @@
       const userId = session.user.id;
 
       // 📩 1. DEMANDES REÇUES
-      const { data: pendingRequests } = await supabase
+      const { data: pendingRequests, error: pendingRequestsError } = await supabase
         .from("friends")
         .select("id, requester:requester(*), status")
         .eq("requested", userId)
@@ -157,18 +157,22 @@
       const receivedContainer = document.getElementById("received-requests");
       receivedContainer.innerHTML = "";
 
-      if (pendingRequests.length === 0) {
+      if (pendingRequestsError) {
+        console.error("Erreur lors de la récupération des demandes reçues:", pendingRequestsError);
+      }
+
+      if (!pendingRequests || pendingRequests.length === 0) {
         receivedContainer.innerText = "Aucune demande pour le moment.";
       }
 
       for (const req of pendingRequests) {
         const div = document.createElement("div");
         div.className = "friend-card";
-        div.innerHTML = 
+        div.innerHTML = `
           <div><strong>${req.requester.username || "Utilisateur"}</strong> vous a envoyé une demande.</div>
           <button class="accept">Accepter</button>
           <button class="reject">Refuser</button>
-        ;
+        `;
 
         div.querySelector(".accept").onclick = async () => {
           await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
@@ -184,16 +188,20 @@
       }
 
       // 👥 2. AMIS ACCEPTÉS
-      const { data: acceptedFriends } = await supabase
+      const { data: acceptedFriends, error: acceptedError } = await supabase
         .from("friends")
         .select("*, requester:requester(*), requested:requested(*)")
-        .or(requester.eq.${userId},requested.eq.${userId})
+        .or(`requester.eq.${userId},requested.eq.${userId}`)
         .eq("status", "accepted");
 
       const friendContainer = document.getElementById("accepted-friends");
       friendContainer.innerHTML = "";
 
-      if (acceptedFriends.length === 0) {
+      if (acceptedError) {
+        console.error("Erreur lors de la récupération des amis acceptés:", acceptedError);
+      }
+
+      if (!acceptedFriends || acceptedFriends.length === 0) {
         friendContainer.innerText = "Vous n'avez pas encore d'amis.";
       }
 
@@ -201,21 +209,21 @@
         const friend = rel.requester.id === userId ? rel.requested : rel.requester;
 
         const status = friend.is_online
-          ? <span class="online">🟢 En ligne</span>
-          : <span class="offline">🔴 Hors ligne</span>;
+          ? `<span class="online">🟢 En ligne</span>`
+          : `<span class="offline">🔴 Hors ligne</span>`;
 
         const watching = friend.currently_watching
-          ? <div><em>🎬 Regarde : ${friend.currently_watching}</em></div>
+          ? `<div><em>🎬 Regarde : ${friend.currently_watching}</em></div>`
           : "";
 
         const div = document.createElement("div");
         div.className = "friend-card";
-        div.innerHTML = 
+        div.innerHTML = `
           <div><strong>${friend.username}</strong> - ${status}</div>
           ${watching}
           <button class="remove">❌ Supprimer</button>
           <button class="chat">💬 Chat</button>
-        ;
+        `;
 
         div.querySelector(".remove").onclick = async () => {
           await supabase.from("friends").delete().eq("id", rel.id);
@@ -223,7 +231,7 @@
         };
 
         div.querySelector(".chat").onclick = () => {
-          window.location.href = chat.html?user=${friend.id};
+          window.location.href = `chat.html?user=${friend.id}`;
         };
 
         friendContainer.appendChild(div);
@@ -234,34 +242,6 @@
         location.reload();
       }, 30000);
     }
-
-    // Gestion du statut en ligne et hors ligne
-    document.addEventListener("visibilitychange", async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData.session;
-      if (!session) return;
-
-      const userId = session.user.id;
-      const isOnline = !document.hidden;
-
-      await supabase
-        .from("profiles")
-        .update({ is_online: isOnline })
-        .eq("id", userId);
-    });
-
-    // Gérer quand l'utilisateur ferme la page ou l'onglet
-    window.addEventListener("beforeunload", async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData.session;
-      if (!session) return;
-
-      const userId = session.user.id;
-      await supabase
-        .from("profiles")
-        .update({ is_online: false })
-        .eq("id", userId);
-    });
 
     manageSession();
   </script>
