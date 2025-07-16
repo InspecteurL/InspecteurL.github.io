@@ -156,66 +156,72 @@
     document.getElementById('banner-preview').src = profile.banner_url || '';
 
     // Fonction de téléchargement de fichier
-    async function uploadFile(file, path) {
-      const { data, error } = await supabase.storage
-        .from('avatars') // Assurez-vous que le bucket "avatars" existe sur Supabase
-        .upload(path, file);
+async function uploadFile(file, path) {
+  const { data, error } = await supabase.storage
+    .from('avatars') // Assurez-vous que le bucket "avatars" existe sur Supabase
+    .upload(path, file);
 
-      if (error) {
-        console.error('Erreur de téléchargement :', error.message);
-        return null;
-      }
+  if (error) {
+    console.error('Erreur de téléchargement :', error.message);
+    return null;
+  }
 
-      // Récupérer l'URL publique de l'image téléchargée
-      const { publicURL, error: urlError } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(data.path);
+  // Récupérer l'URL publique de l'image téléchargée
+  const { publicURL, error: urlError } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(data.path);
 
-      if (urlError) {
-        console.error('Erreur de récupération de l\'URL publique :', urlError.message);
-        return null;
-      }
+  if (urlError) {
+    console.error('Erreur de récupération de l\'URL publique :', urlError.message);
+    return null;
+  }
 
-      return publicURL; // Renvoie l'URL publique de l'image
-    }
+  // Affichage de l'URL publique dans la console pour le débogage
+  console.log('URL publique de l\'image :', publicURL);
 
-    // Mettre à jour le profil
-    document.getElementById('profile-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      let avatar_url = profile.avatar_url;
-      let banner_url = profile.banner_url;
+  return publicURL; // Renvoie l'URL publique de l'image
+}
 
-      // Si un fichier photo de profil est sélectionné
-      const avatarFile = document.getElementById('avatar_file').files[0];
-      if (avatarFile) {
-        avatar_url = await uploadFile(avatarFile, `avatars/${userId}/avatar.jpg`);
-      }
+// Mettre à jour le profil
+document.getElementById('profile-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  let avatar_url = profile.avatar_url;
+  let banner_url = profile.banner_url;
 
-      // Si un fichier bannière est sélectionné
-      const bannerFile = document.getElementById('banner_file').files[0];
-      if (bannerFile) {
-        banner_url = await uploadFile(bannerFile, `avatars/${userId}/banner.jpg`);
-      }
+  // Si un fichier photo de profil est sélectionné
+  const avatarFile = document.getElementById('avatar_file').files[0];
+  if (avatarFile) {
+    avatar_url = await uploadFile(avatarFile, `avatars/${userId}/avatar.jpg`);
+  }
 
-      // Mise à jour du profil dans la base de données
-      await supabase.from('profiles').update({
-        username: document.getElementById('pseudo').value,
-        avatar_url,
-        banner_url
-      }).eq('id', userId);
+  // Si un fichier bannière est sélectionné
+  const bannerFile = document.getElementById('banner_file').files[0];
+  if (bannerFile) {
+    banner_url = await uploadFile(bannerFile, `avatars/${userId}/banner.jpg`);
+  }
 
-      // Prévisualiser les nouvelles images
-      document.getElementById('avatar-preview').src = avatar_url;
-      document.getElementById('banner-preview').src = banner_url;
+  // Mise à jour du profil dans la base de données
+  await supabase.from('profiles').update({
+    username: document.getElementById('pseudo').value,
+    avatar_url,
+    banner_url
+  }).eq('id', userId);
 
-      // Afficher l'alerte de succès
-      const alert = document.getElementById('alert');
-      alert.style.display = 'block';
-      setTimeout(() => {
-        alert.style.display = 'none';
-      }, 3000);
-    });
+  // Prévisualiser les nouvelles images
+  console.log('Avatar URL:', avatar_url); // Affichage pour le débogage
+  console.log('Banner URL:', banner_url); // Affichage pour le débogage
+  document.getElementById('avatar-preview').src = avatar_url || '';
+  document.getElementById('banner-preview').src = banner_url || '';
+
+  // Afficher l'alerte de succès
+  const alert = document.getElementById('alert');
+  alert.style.display = 'block';
+  setTimeout(() => {
+    alert.style.display = 'none';
+  }, 3000);
+});
+
   </script>
 
 </body>
