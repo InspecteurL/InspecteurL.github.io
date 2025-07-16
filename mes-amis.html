@@ -15,30 +15,30 @@
     .section {
       margin-bottom: 40px;
     }
-         header {
-            background-color: #141414;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    header {
+      background-color: #141414;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-       .nav-links {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            gap: 20px;
-        }
+    .nav-links {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+    }
 
-        .nav-links li {
-            display: inline;
-        }
+    .nav-links li {
+      display: inline;
+    }
 
-        .nav-links a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-        }
+    .nav-links a {
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: bold;
+    }
 
     h2 {
       border-bottom: 1px solid #444;
@@ -70,50 +70,50 @@
       border-radius: 5px;
       cursor: pointer;
     }
-  
-@media (max-width: 768px) {
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 
-  .nav-links {
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-  }
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
 
-  .user-card, .friend-card {
-    padding: 15px;
-  }
+      .nav-links {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+      }
 
-  button {
-    width: 100%;
-    margin-top: 10px;
-  }
-}
+      .user-card, .friend-card {
+        padding: 15px;
+      }
 
+      button {
+        width: 100%;
+        margin-top: 10px;
+      }
+    }
   </style>
 </head>
 <body>
-      <header>
-        <nav>
-            <div class="logo">BNZ</div>
-            <ul class="nav-links">
-                <li><a href="accueil.html">Accueil</a></li>
-                <li><a href="journal.html">Journal</a></li>
-                <li><a href="lecteurtest.html">Profil</a></li>
-                <li><a href="profil.html">Découvrir</a></li>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="amis.html">Amis</a></li>
-                <li><a href="mes-amis.html">Mes amis</a></li>
-              <li><a href="compte.html">Votre Compte</a></li>
-            </ul>
-        </nav>
-    </header>
-    <div style="margin-top: 10px;">
-  <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
-</div>
+  <header>
+    <nav>
+      <div class="logo">BNZ</div>
+      <ul class="nav-links">
+        <li><a href="accueil.html">Accueil</a></li>
+        <li><a href="journal.html">Journal</a></li>
+        <li><a href="lecteurtest.html">Profil</a></li>
+        <li><a href="profil.html">Découvrir</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="amis.html">Amis</a></li>
+        <li><a href="mes-amis.html">Mes amis</a></li>
+        <li><a href="compte.html">Votre Compte</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <div style="margin-top: 10px;">
+    <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold;">← Retour</a>
+  </div>
 
   <h1>👥 Mes amis</h1>
 
@@ -127,112 +127,130 @@
     <div id="accepted-friends">Chargement...</div>
   </div>
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const supabase = createClient(
-    'https://wuagahavmbugmnuzsouf.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-  );
+    const supabase = createClient(
+      'https://wuagahavmbugmnuzsouf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+    );
 
-  const { data: sessionData } = await supabase.auth.getSession();
-  const session = sessionData.session;
+    // Fonction pour gérer la session utilisateur
+    async function manageSession() {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
 
-  if (!session) {
-    document.body.innerHTML = "🔒 Vous devez être connecté.";
-    throw new Error("Non connecté.");
-  }
+      if (!session) {
+        document.body.innerHTML = "🔒 Vous devez être connecté.";
+        return;
+      }
 
-  const userId = session.user.id;
+      const userId = session.user.id;
 
-  // 📩 1. DEMANDES REÇUES
-  const { data: pendingRequests } = await supabase
-    .from("friends")
-    .select("id, requester:requester(*), status")
-    .eq("requested", userId)
-    .eq("status", "pending");
+      // 📩 1. DEMANDES REÇUES
+      const { data: pendingRequests } = await supabase
+        .from("friends")
+        .select("id, requester:requester(*), status")
+        .eq("requested", userId)
+        .eq("status", "pending");
 
-  const receivedContainer = document.getElementById("received-requests");
-  receivedContainer.innerHTML = "";
+      const receivedContainer = document.getElementById("received-requests");
+      receivedContainer.innerHTML = "";
 
-  if (pendingRequests.length === 0) {
-    receivedContainer.innerText = "Aucune demande pour le moment.";
-  }
+      if (pendingRequests.length === 0) {
+        receivedContainer.innerText = "Aucune demande pour le moment.";
+      }
 
-  for (const req of pendingRequests) {
-    const div = document.createElement("div");
-    div.className = "friend-card";
-    div.innerHTML = `
-      <div><strong>${req.requester.username || "Utilisateur"}</strong> vous a envoyé une demande.</div>
-      <button class="accept">Accepter</button>
-      <button class="reject">Refuser</button>
-    `;
+      for (const req of pendingRequests) {
+        const div = document.createElement("div");
+        div.className = "friend-card";
+        div.innerHTML = `
+          <div><strong>${req.requester.username || "Utilisateur"}</strong> vous a envoyé une demande.</div>
+          <button class="accept">Accepter</button>
+          <button class="reject">Refuser</button>
+        `;
 
-    div.querySelector(".accept").onclick = async () => {
-      await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
-      location.reload();
-    };
+        div.querySelector(".accept").onclick = async () => {
+          await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
+          location.reload();
+        };
 
-    div.querySelector(".reject").onclick = async () => {
-      await supabase.from("friends").update({ status: "rejected" }).eq("id", req.id);
-      location.reload();
-    };
+        div.querySelector(".reject").onclick = async () => {
+          await supabase.from("friends").update({ status: "rejected" }).eq("id", req.id);
+          location.reload();
+        };
 
-    receivedContainer.appendChild(div);
-  }
+        receivedContainer.appendChild(div);
+      }
 
-  // 👥 2. AMIS ACCEPTÉS
-  const { data: acceptedFriends } = await supabase
-    .from("friends")
-    .select("*, requester:requester(*), requested:requested(*)")
-    .or(`requester.eq.${userId},requested.eq.${userId}`)
-    .eq("status", "accepted");
+      // 👥 2. AMIS ACCEPTÉS
+      const { data: acceptedFriends } = await supabase
+        .from("friends")
+        .select("*, requester:requester(*), requested:requested(*)")
+        .or(`requester.eq.${userId},requested.eq.${userId}`)
+        .eq("status", "accepted");
 
-  const friendContainer = document.getElementById("accepted-friends");
-  friendContainer.innerHTML = "";
+      const friendContainer = document.getElementById("accepted-friends");
+      friendContainer.innerHTML = "";
 
-  if (acceptedFriends.length === 0) {
-    friendContainer.innerText = "Vous n'avez pas encore d'amis.";
-  }
+      if (acceptedFriends.length === 0) {
+        friendContainer.innerText = "Vous n'avez pas encore d'amis.";
+      }
 
-  for (const rel of acceptedFriends) {
-    const friend =
-      rel.requester.id === userId ? rel.requested : rel.requester;
+      for (const rel of acceptedFriends) {
+        const friend = rel.requester.id === userId ? rel.requested : rel.requester;
 
-    const status = friend.is_online
-      ? `<span class="online">🟢 En ligne</span>`
-      : `<span class="offline">🔴 Hors ligne</span>`;
+        const status = friend.is_online
+          ? `<span class="online">🟢 En ligne</span>`
+          : `<span class="offline">🔴 Hors ligne</span>`;
 
-    const watching = friend.currently_watching
-      ? `<div><em>🎬 Regarde : ${friend.currently_watching}</em></div>`
-      : "";
+        const watching = friend.currently_watching
+          ? `<div><em>🎬 Regarde : ${friend.currently_watching}</em></div>`
+          : "";
 
-    const div = document.createElement("div");
-    div.className = "friend-card";
-    div.innerHTML = `
-      <div><strong>${friend.username}</strong> - ${status}</div>
-      ${watching}
-      <button class="remove">❌ Supprimer</button>
-      <button class="chat">💬 Chat</button>
-    `;
+        const div = document.createElement("div");
+        div.className = "friend-card";
+        div.innerHTML = `
+          <div><strong>${friend.username}</strong> - ${status}</div>
+          ${watching}
+          <button class="remove">❌ Supprimer</button>
+          <button class="chat">💬 Chat</button>
+        `;
 
-    div.querySelector(".remove").onclick = async () => {
-      await supabase.from("friends").delete().eq("id", rel.id);
-      location.reload();
-    };
+        div.querySelector(".remove").onclick = async () => {
+          await supabase.from("friends").delete().eq("id", rel.id);
+          location.reload();
+        };
 
-    div.querySelector(".chat").onclick = () => {
-      window.location.href = `chat.html?user=${friend.id}`;
-    };
+        div.querySelector(".chat").onclick = () => {
+          window.location.href = `chat.html?user=${friend.id}`;
+        };
 
-    friendContainer.appendChild(div);
-  }
+        friendContainer.appendChild(div);
+      }
 
-  // 🔁 Actualiser la page toutes les 30 secondes pour voir les changements
-  setInterval(() => {
-    location.reload();
-  }, 30000);
-</script>
+      // 🔁 Actualiser la page toutes les 30 secondes pour voir les changements
+      setInterval(() => {
+        location.reload();
+      }, 30000);
+    }
 
+    // Gestion du statut en ligne
+    document.addEventListener("visibilitychange", async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      if (!session) return;
+
+      const userId = session.user.id;
+      const isOnline = !document.hidden;
+
+      await supabase
+        .from("profiles")
+        .update({ is_online: isOnline })
+        .eq("id", userId);
+    });
+
+    manageSession();
+  </script>
 </body>
 </html>
