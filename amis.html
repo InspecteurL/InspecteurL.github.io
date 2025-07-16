@@ -37,7 +37,6 @@
       font-weight: bold;
     }
 
-    /* Style pour la barre de recherche */
     .search-container {
       margin-bottom: 20px;
       display: flex;
@@ -84,7 +83,7 @@
     }
 
     .user-card img:hover {
-      transform: scale(1.2); /* Agrandir l'avatar au survol */
+      transform: scale(1.2);
     }
 
     .user-card .name {
@@ -132,7 +131,6 @@
         width: 80%;
       }
     }
-
   </style>
 </head>
 <body>
@@ -158,12 +156,10 @@
 
   <h1>Utilisateurs disponibles</h1>
 
-  <!-- Barre de recherche -->
   <div class="search-container">
     <input type="text" id="search-input" placeholder="Rechercher un utilisateur par pseudo..." />
   </div>
 
-  <!-- Conteneur des cartes -->
   <div id="user-list" class="user-cards">Chargement...</div>
 
 <script type="module">
@@ -259,6 +255,22 @@
       );
       displayUsers(filteredUsers);
     });
+
+    // Mise à jour du statut en ligne ou hors ligne en fonction de la visibilité de la page
+    document.addEventListener("visibilitychange", async () => {
+      if (document.hidden) {
+        await updateOnlineStatus(false);
+      } else {
+        await updateOnlineStatus(true);
+      }
+    });
+
+    async function updateOnlineStatus(isOnline) {
+      await supabase
+        .from("profiles")
+        .update({ is_online: isOnline })
+        .eq("id", currentUserId);
+    }
   })();
 </script>
 
