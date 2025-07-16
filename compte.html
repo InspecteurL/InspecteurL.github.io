@@ -169,25 +169,26 @@
   }
 
   async function uploadFile(file, path) {
-    const { data, error } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(path, file, { upsert: true });
 
-    if (error) {
-      console.error('Erreur upload :', error.message);
+    if (uploadError) {
+      console.error('Erreur upload :', uploadError.message);
       return null;
     }
 
-    const { data: urlData, error: urlError } = supabase.storage
+    const publicUrl = supabase
+      .storage
       .from('avatars')
-      .getPublicUrl(path);
+      .getPublicUrl(path).data.publicUrl;
 
-    if (urlError) {
-      console.error('Erreur URL :', urlError.message);
+    if (!publicUrl) {
+      console.error("Impossible d'obtenir l'URL publique.");
       return null;
     }
 
-    return urlData.publicUrl;
+    return publicUrl;
   }
 
   document.getElementById('profile-form').addEventListener('submit', async (e) => {
@@ -230,3 +231,7 @@
     }, 3000);
   });
 </script>
+
+</body>
+</html>
+
