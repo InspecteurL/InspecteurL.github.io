@@ -188,7 +188,17 @@
     const { data: users, error } = await supabase
       .from("profiles")
       .select("*")
-      .neq("id", currentUserId);
+      .neq("id", currentUserId)
+      .catch((err) => {
+        console.error("Erreur de récupération des utilisateurs : ", err);
+        alert("Une erreur est survenue lors de la récupération des utilisateurs.");
+      });
+
+    if (error) {
+      console.error("Erreur lors de la récupération des utilisateurs : ", error.message);
+      document.getElementById("user-list").innerHTML = "Une erreur est survenue. Veuillez réessayer plus tard.";
+      return;
+    }
 
     const container = document.getElementById("user-list");
     container.innerHTML = "";
