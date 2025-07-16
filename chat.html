@@ -9,7 +9,12 @@
       color: white;
       font-family: sans-serif;
       padding: 20px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
+
     header {
       background-color: #141414;
       padding: 10px 20px;
@@ -17,42 +22,57 @@
       justify-content: space-between;
       align-items: center;
     }
+
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
     .nav-links {
       list-style: none;
       padding: 0;
       display: flex;
       gap: 20px;
     }
+
     .nav-links li {
       display: inline;
     }
+
     .nav-links a {
       color: #ffffff;
       text-decoration: none;
       font-weight: bold;
     }
+
     .message-container {
       display: flex;
       margin: 10px 0;
+      flex-direction: column;
     }
-    .message-left {
-      justify-content: flex-start;
-    }
+
+    .message-left,
     .message-right {
-      justify-content: flex-end;
+      display: flex;
+      align-items: flex-start;
     }
+
     .message {
       background: #1e1e1e;
       padding: 10px;
       border-radius: 10px;
-      max-width: 60%;
+      max-width: 70%;
+      word-wrap: break-word;
     }
+
     .message strong {
       color: #00ff88;
     }
+
     .message small {
       color: #aaa;
     }
+
     .avatar {
       width: 40px;
       height: 40px;
@@ -60,28 +80,68 @@
       margin-right: 10px;
       margin-left: 10px;
     }
+
+    #messages {
+      overflow-y: auto;
+      flex-grow: 1;
+      max-height: calc(100vh - 200px);
+      margin-bottom: 10px;
+    }
+
     input, button {
       padding: 10px;
       margin: 5px 0;
       width: 100%;
+      border-radius: 5px;
+    }
+
+    button {
+      background-color: #e50914;
+      color: white;
+      border: none;
+    }
+
+    /* Styles pour mobile */
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .message-container {
+        flex-direction: column;
+      }
+
+      .message {
+        max-width: 100%;
+      }
+
+      .avatar {
+        width: 30px;
+        height: 30px;
+      }
+
+      .message-container.message-left,
+      .message-container.message-right {
+        flex-direction: row;
+        align-items: center;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <nav>
-      <div class="logo">BNZ</div>
-      <ul class="nav-links">
-        <li><a href="accueil.html">Accueil</a></li>
-        <li><a href="journal.html">Journal</a></li>
-        <li><a href="lecteurtest.html">Profil</a></li>
-        <li><a href="profil.html">Découvrir</a></li>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="amis.html">Amis</a></li>
-        <li><a href="mes-amis.html">Mes amis</a></li>
-        <li><a href="compte.html">Votre Compte</a></li>
-      </ul>
-    </nav>
+    <div class="logo">BNZ</div>
+    <ul class="nav-links">
+      <li><a href="accueil.html">Accueil</a></li>
+      <li><a href="journal.html">Journal</a></li>
+      <li><a href="lecteurtest.html">Profil</a></li>
+      <li><a href="profil.html">Découvrir</a></li>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="amis.html">Amis</a></li>
+      <li><a href="mes-amis.html">Mes amis</a></li>
+      <li><a href="compte.html">Votre Compte</a></li>
+    </ul>
   </header>
 
   <div style="margin-top: 10px;">
@@ -153,7 +213,7 @@
         receiverAvatar = receiverData.avatar_url || "default.jpg";
         const header = document.querySelector("header");
         const receiverSection = document.createElement("div");
-        receiverSection.innerHTML = `
+        receiverSection.innerHTML = ` 
           <img src="${receiverAvatar}" alt="Avatar de ${receiverUsername}" style="width: 50px; height: 50px; border-radius: 50%; margin-left: 15px;">
           <span style="font-size: 20px; margin-left: 10px;">${receiverUsername}</span>
         `;
@@ -187,7 +247,7 @@
 
         const div = document.createElement("div");
         div.className = "message";
-        div.innerHTML = `
+        div.innerHTML = ` 
           <div><strong>${username}</strong> <small>${date}</small></div>
           <div>${msg.content}</div>
         `;
