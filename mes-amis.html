@@ -13,7 +13,6 @@
       --online: #00ff88;
       --offline: #888;
     }
-
     body {
       font-family: Arial, sans-serif;
       background: var(--bg-1);
@@ -21,7 +20,6 @@
       padding: 20px;
       margin: 0;
     }
-
     header {
       background-color: var(--bg-header);
       padding: 10px 20px;
@@ -29,40 +27,11 @@
       justify-content: space-between;
       align-items: center;
     }
-
-    .logo {
-      font-weight: bold;
-      font-size: 20px;
-      color: var(--accent);
-    }
-
-    .nav-links {
-      list-style: none;
-      padding: 0;
-      display: flex;
-      gap: 20px;
-      margin: 0;
-    }
-
-    .nav-links a {
-      color: #ffffff;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    h1 {
-      margin-top: 30px;
-    }
-
-    h2 {
-      border-bottom: 1px solid #444;
-      padding-bottom: 5px;
-      margin-top: 40px;
-      margin-bottom: 10px;
-      font-size: 20px;
-    }
-
+    .logo { font-weight: bold; font-size: 20px; color: var(--accent); }
+    .nav-links { list-style: none; padding: 0; display: flex; gap: 20px; margin: 0; }
+    .nav-links a { color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; }
+    h1 { margin-top: 30px; }
+    h2 { border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 40px; margin-bottom: 10px; font-size: 20px; }
     .friend-card {
       background: var(--bg-2);
       padding: 16px 20px;
@@ -73,100 +42,22 @@
       gap: 16px;
       align-items: center;
     }
-
-    .friend-card-content {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .friend-name-line {
-      font-size: 18px;
-    }
-
-    .online {
-      color: var(--online);
-      font-size: 14px;
-      margin-left: 4px;
-    }
-
-    .offline {
-      color: var(--offline);
-      font-size: 14px;
-      margin-left: 4px;
-    }
-
-    .watching-activity {
-      font-size: 15px;
-      line-height: 1.3;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .watching-thumb {
-      width: 100px;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
-      border-radius: 6px;
-      border: 1px solid #333;
-    }
-
-    .friend-card-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: stretch;
-    }
-
-    button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-      line-height: 1.2;
-    }
-
-    button.chat-btn {
-      background: #0066ff;
-    }
-
-    a.back-link {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: bold;
-      display: inline-block;
-      margin-top: 10px;
-    }
-
+    .friend-card-content { display: flex; flex-direction: column; gap: 6px; }
+    .friend-name-line { font-size: 18px; }
+    .online  { color: var(--online);  font-size: 14px; margin-left: 4px; }
+    .offline { color: var(--offline); font-size: 14px; margin-left: 4px; }
+    .watching-activity { font-size: 15px; line-height: 1.3; display: flex; flex-direction: column; gap: 6px; }
+    .watching-thumb { width: 100px; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; border: 1px solid #333; }
+    .friend-card-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+    button { background: var(--accent); color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-size: 14px; line-height: 1.2; }
+    button.chat-btn { background: #0066ff; }
+    a.back-link { color: var(--accent); text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px; }
     @media (max-width: 768px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .nav-links {
-        flex-direction: column;
-        gap: 10px;
-        width: 100%;
-      }
-
-      .friend-card {
-        grid-template-columns: 1fr;
-      }
-
-      .friend-card-actions {
-        flex-direction: row;
-        justify-content: flex-start;
-      }
-
-      .watching-thumb {
-        width: 100%;
-        max-width: 300px;
-      }
+      header { flex-direction: column; align-items: flex-start; }
+      .nav-links { flex-direction: column; gap: 10px; width: 100%; }
+      .friend-card { grid-template-columns: 1fr; }
+      .friend-card-actions { flex-direction: row; justify-content: flex-start; }
+      .watching-thumb { width: 100%; max-width: 300px; }
     }
   </style>
 </head>
@@ -215,6 +106,7 @@ const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg';
 const escapeHTML = (str = '') =>
   str.replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch]));
 
+/* ---------- session + chargement ---------- */
 async function manageSession() {
   const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
   if (sessErr) console.error('Erreur session:', sessErr);
@@ -230,6 +122,7 @@ async function manageSession() {
   await loadAcceptedFriends(userId);
 }
 
+/* ---------- demandes reçues ---------- */
 async function loadPendingRequests(userId) {
   const receivedContainer = document.getElementById('received-requests');
   receivedContainer.innerHTML = '';
@@ -288,6 +181,7 @@ async function loadPendingRequests(userId) {
   }
 }
 
+/* ---------- amis acceptés + vignette épisodes ---------- */
 async function loadAcceptedFriends(userId) {
   const friendContainer = document.getElementById('accepted-friends');
   friendContainer.innerHTML = '';
@@ -297,10 +191,24 @@ async function loadAcceptedFriends(userId) {
     .select(`
       id,
       status,
-      requester:requester ( id, username, is_online, currently_watching, episode_number, current_season ),
-      requested:requested ( id, username, is_online, currently_watching, episode_number, current_season )
+      requester:requester (
+        id,
+        username,
+        is_online,
+        currently_watching,
+        episode_number,
+        current_season
+      ),
+      requested:requested (
+        id,
+        username,
+        is_online,
+        currently_watching,
+        episode_number,
+        current_season
+      )
     `)
-    .or(\`requester.eq.${userId},requested.eq.${userId}\`)
+    .or(`requester.eq.${userId},requested.eq.${userId}`)
     .eq('status', 'accepted');
 
   if (error) {
@@ -328,7 +236,10 @@ async function loadAcceptedFriends(userId) {
     let watchingEl = null;
     let episodeImg = PLACEHOLDER_IMG;
 
-    if (friend.currently_watching && friend.current_season && friend.episode_number) {
+    // On suppose que friend.currently_watching contient le show_id (clé) utilisé dans la table episodes.
+    const hasSeason = friend.current_season != null;
+    const hasEpisode = friend.episode_number != null;
+    if (friend.currently_watching && hasSeason && hasEpisode) {
       const { data: episodeData, error: epError } = await supabase
         .from('episodes')
         .select('image_url')
@@ -345,11 +256,13 @@ async function loadAcceptedFriends(userId) {
       watchingEl.className = 'watching-activity';
 
       const caption = `S${friend.current_season} – Épisode ${friend.episode_number}`;
-      watchingEl.innerHTML = `🎬 Regarde : <strong>${escapeHTML(friend.currently_watching)}</strong> – ${caption}`;
+      watchingEl.innerHTML = `🎬 Regarde : <strong>${escapeHTML(String(friend.currently_watching))}</strong> – ${caption}`;
+
       const img = document.createElement('img');
       img.className = 'watching-thumb';
       img.src = episodeImg;
       img.alt = 'Vignette épisode';
+      img.loading = 'lazy';
       watchingEl.appendChild(img);
     }
 
@@ -372,7 +285,7 @@ async function loadAcceptedFriends(userId) {
     chatBtn.className = 'chat chat-btn';
     chatBtn.textContent = '💬 Chat';
     chatBtn.onclick = () => {
-      window.location.href = \`chat.html?user=\${friend.id}\`;
+      window.location.href = `chat.html?user=${friend.id}`;
     };
 
     const removeBtn = document.createElement('button');
@@ -389,6 +302,7 @@ async function loadAcceptedFriends(userId) {
   }
 }
 
+/* ---------- Auto-refresh ---------- */
 manageSession();
 setInterval(manageSession, 10_000);
 </script>
