@@ -2,9 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mes amis</title>
   <style>
     :root {
@@ -218,7 +216,7 @@
 
     const supabase = createClient(
       'https://wuagahavmbugmnuzsouf.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+      'YOUR_SUPABASE_PUBLIC_KEY_HERE' // À remplacer par la clé publique sécurisée
     );
 
     /*************************************************
@@ -262,7 +260,7 @@
 
       if (error) {
         console.error("Erreur fetch demandes:", error);
-        receivedContainer.innerText = "Erreur lors du chargement.";
+        receivedContainer.innerText = "Erreur lors du chargement des demandes.";
         return;
       }
 
@@ -335,7 +333,7 @@
 
       if (error) {
         console.error("Erreur fetch amis:", error);
-        friendContainer.innerText = "Erreur lors du chargement.";
+        friendContainer.innerText = "Erreur lors du chargement des amis.";
         return;
       }
 
@@ -345,20 +343,17 @@
       }
 
       for (const rel of acceptedFriends) {
-        // déterminer quel côté est l'ami
         const friend = (rel.requester.id === userId) ? rel.requested : rel.requester;
-
         const uname = friend.username ?? "Utilisateur";
         const isOnline = friend.is_online;
         const status = isOnline
           ? `<span class="online">🟢 En ligne</span>`
           : `<span class="offline">🔴 Hors ligne</span>`;
 
-        // activité
         const watchingTitle = friend.currently_watching;
         const epNum = friend.episode_number;
         const epImg = friend.episode_image;
-        const seasonNum = friend.current_season; // nullable; gère seulement si tu le mets à jour côté lecteur
+        const seasonNum = friend.current_season;
 
         let watchingHTML = "";
         if (watchingTitle) {
@@ -378,7 +373,6 @@
           `;
         }
 
-        // carte ami
         const div = document.createElement("div");
         div.className = "friend-card";
         div.innerHTML = `
@@ -406,10 +400,9 @@
     }
 
     /*************************************************
-     * Auto-refresh toutes les 10s
+     * Initialisation du session
      *************************************************/
-    await manageSession();
-    setInterval(manageSession, 10_000);
+    manageSession();
   </script>
 </body>
 </html>
