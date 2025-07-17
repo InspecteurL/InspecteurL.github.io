@@ -212,6 +212,18 @@
       });
     }
 
+    // ✅ Réinitialisation quand on ferme le lecteur
+    async function exitFullscreenMode() {
+      videoContainer.classList.remove("show");
+      setTimeout(() => {
+        videoContainer.style.display = "none";
+        videoIframe.src = ""; // Réinitialise la vidéo
+        nextButton.style.display = "none";
+        loader.style.display = "none"; // Cache le loader
+        clearCurrentActivity(); // Réinitialise l'activité de l'utilisateur
+      }, 500);
+    }
+
     // ✅ Fonction pour mettre à jour l'activité dans Supabase
     async function updateCurrentActivity(animeTitle, episodeIndex) {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -229,7 +241,7 @@
         .eq('id', userId);
     }
 
-    // ✅ Réinitialisation quand on ferme le lecteur
+    // ✅ Réinitialisation de l'activité
     async function clearCurrentActivity() {
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData.session;
@@ -279,17 +291,6 @@
         currentEpisodeIndex++;
         playEpisode(currentEpisodeIndex);
       }
-    }
-
-    // ✅ Sortie du mode vidéo + reset activité
-    function exitFullscreenMode() {
-      videoContainer.classList.remove("show");
-      setTimeout(() => {
-        videoContainer.style.display = "none";
-        videoIframe.src = ""; // Réinitialise la vidéo
-        nextButton.style.display = "none";
-        clearCurrentActivity(); // Réinitialise l'activité de l'utilisateur
-      }, 500);
     }
 
     renderEpisodes();
