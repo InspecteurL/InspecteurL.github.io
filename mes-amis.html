@@ -182,10 +182,10 @@ async function manageSession() {
   }
   
   const userId = session.user.id;
-  
-  // Ajoute le token dans l'en-tête de la requête
-  supabase.auth.setAuth(session.access_token);
-  
+
+  // Utilisation de la méthode setSession pour définir la session de l'utilisateur
+  supabase.auth.setSession(session.access_token);
+
   // Charger les demandes reçues et les amis acceptés
   await loadPendingRequests(userId);
   await loadAcceptedFriends(userId);
