@@ -286,9 +286,9 @@
       videoContainer.classList.remove("show");
       setTimeout(() => {
         videoContainer.style.display = "none";
-        videoIframe.src = "";
+        videoIframe.src = ""; // Réinitialise la vidéo
         nextButton.style.display = "none";
-        clearCurrentActivity();
+        clearCurrentActivity(); // Réinitialise l'activité de l'utilisateur
       }, 500);
     }
 
