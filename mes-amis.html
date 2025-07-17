@@ -386,25 +386,32 @@ const { data: friends, error } = await supabase
       if (watchingEl) {
         watchingEl.className = 'watching-activity';
         const safeTitle = escapeHTML(friend.currently_watching);
-        const caption = [
-          friend.current_season ? \`S\${friend.current_season}\` : '',
-          friend.episode_number ? \`Épisode \${friend.episode_number}\` : ''
-        ].filter(Boolean).join(' – ');
-        watchingEl.innerHTML = \`🎬 Regarde : <strong>\${safeTitle}</strong>\${caption ? ' – ' + caption : ''}\`;
+const caption = [
+  friend.current_season ? `S${friend.current_season}` : '',
+  friend.episode_number ? `Épisode ${friend.episode_number}` : ''
+].filter(Boolean).join(' – ');
 
-        // priorité: champ direct > lookup > placeholder
-        let imgURL = normalizeEpisodeImage(friend.episode_image);
-        if (!imgURL) {
-          imgURL = await fetchEpisodeImageFromCatalog({
-            show_id: friend.show_id,
-            season: friend.current_season,
-            episode: friend.episode_number
-          });
-        }
-        if (!imgURL) imgURL = PLACEHOLDER_IMG;
-        const imgEl = buildEpisodeImgEl(imgURL);
-        if (imgEl) watchingEl.appendChild(imgEl);
-      }
+// Utilisation de textContent au lieu de innerHTML pour éviter les problèmes de XSS
+watchingEl.textContent = `🎬 Regarde : ${safeTitle}`;
+if (caption) {
+  const captionEl = document.createElement('span');
+  captionEl.textContent = ` – ${caption}`;
+  watchingEl.appendChild(captionEl);
+}
+
+// Construction de l'élément image de manière sécurisée
+let imgURL = normalizeEpisodeImage(friend.episode_image);
+if (!imgURL) {
+  imgURL = await fetchEpisodeImageFromCatalog({
+    show_id: friend.show_id,
+    season: friend.current_season,
+    episode: friend.episode_number
+  });
+}
+if (!imgURL) imgURL = PLACEHOLDER_IMG;
+const imgEl = buildEpisodeImgEl(imgURL);
+if (imgEl) watchingEl.appendChild(imgEl);
+
 
       const card = document.createElement('div');
       card.className = 'friend-card';
