@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Regardez tous les épisodes de Call of the Night (Yofukashi no Uta) par saison. Streaming en ligne gratuit et rapide." />
   <title>BNZ - Call Of The Night</title>
   <style>
     body {
@@ -97,7 +101,8 @@
       border: none;
     }
 
-    #back-button, #next-button, #next-season-button {
+    #back-button,
+    #next-button {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 18px;
@@ -122,7 +127,6 @@
       .episode-card {
         width: 90%;
       }
-
       #episode-video {
         width: 95%;
         height: 40vh;
@@ -139,15 +143,21 @@
     <li><a href="accueil.html">Feuilleter</a></li>
   </ul>
 
-  <br><br>
+  <br /><br />
   <div style="text-align:center;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Yofukashi_no_Uta_logo.svg/1200px-Yofukashi_no_Uta_logo.svg.png" width="50%" alt="Logo Oshi no Ko">
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Yofukashi_no_Uta_logo.svg/1200px-Yofukashi_no_Uta_logo.svg.png"
+      width="50%"
+      alt="Logo Call of the Night" />
   </div>
 
   <div style="text-align:center; margin: 20px;">
     <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
-    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+    <select
+      id="season-select"
+      style="padding: 10px; font-size: 16px; border-radius: 5px;">
       <option value="1">Saison 1</option>
+      <!-- Ajoute ici une S2 si un jour tu as les données -->
     </select>
   </div>
 
@@ -160,44 +170,116 @@
     <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
   </div>
 
-  <script>
-const episodeDataS1 = [
-  { title: "Épisode 1", description: "Première nuit : Night Life", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sOdkq1P3z3TUlXAmwMDufFz4P5r.jpg", video: "https://vidmoly.to/embed-1qofzkzwg0zd.html" },
-  { title: "Épisode 2", description: "Deuxième nuit : T'as pas un 06 ?", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/xLSmpSXYyFrtQohoEUdJnvHPG6h.jpg", video: "https://vidmoly.to/embed-ix85caahj9ay.html" },
-  { title: "Épisode 3", description: "Troisième nuit : T'en as partout.", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/eplbcueeqEz6qUilG1HTVz1smEE.jpg", video: "https://vidmoly.to/embed-m45cwql5ugxx.html" },
-  { title: "Épisode 4", description: "Quatrième nuit : Pas trop serré ?", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/yAUpZ3NUsnGvfTpQrgfmazJGW06.jpg", video: "https://vidmoly.to/embed-8bs4m1wggz26.html" },
-  { title: "Épisode 5", description: "Cinquième nuit : C'est embêtant", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9ufjihTpkNIRHVJOSlB2sCNwiQU.jpg", video: "https://vidmoly.to/embed-ndjg6k8n8280.html" },
-  { title: "Épisode 6", description: "Sixième nuit : Autant s'amuser", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6MpHjwFMs88fehpwdzMOBewgByo.jpg", video: "https://vidmoly.to/embed-og1gd22uvmtd.html" },
-  { title: "Épisode 7", description: "Septième Nuit : Faire des petits", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/m50X0yjc32qLP4I5ILfq1Ey89GF.jpg", video: "https://vidmoly.to/embed-l8knhf16dwd3.html" },
-  { title: "Épisode 8", description: "Huitième Nuit : Tous les mêmes", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/3rnPCo4ew4RWJp0va8ALvssVPZ7.jpg", video: "https://vidmoly.to/embed-w97kwkqxeahb.html" },
-  { title: "Épisode 9", description: "Neuvième nuit : C'est pas juste", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/fpozNiCwS9RZvRUcymIn6rfA6lz.jpg", video: "https://vidmoly.to/embed-5328p6uowykn.html" },
-  { title: "Épisode 10", description: "Dixième nuit : Zoomer sur les photos volées", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lY2JGnlRVgcXz6V3FldmTeZW52D.jpg", video: "https://vidmoly.to/embed-g6lvvx5lqsgh.html" },
-  { title: "Épisode 11", description: "Onzième nuit : Vous connaissez les vampires ?", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/pBxODhh6RJVpiVuMAk5V8rY6tHn.jpg", video: "https://vidmoly.to/embed-c03jtcw60sh1.html" },
-  { title: "Épisode 12", description: "Douzième nuit : Mes parents ne sont pas là ce soir.", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sNZS3CIRR4D392EOAzBsCY6avGb.jpg", video: "https://vidmoly.to/embed-7dbmssn520gb.html" },
-  { title: "Épisode 13", description: "Treizième nuit : Rapprochons-nous", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/fAGdpxQxNAisTTuZb4yhUNcU0WR.jpg", video: "https://vidmoly.to/embed-atechkgy65x0.html" }
-];
+  <script type="module">
+    /*************************************************
+     * Supabase init
+     *************************************************/
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+    const supabase = createClient(
+      "https://wuagahavmbugmnuzsouf.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
 
+    /*************************************************
+     * Données épisodes Saison 1
+     *************************************************/
+    const episodeDataS1 = [
+      { title: "Épisode 1",  description: "Première nuit : Night Life",                             image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sOdkq1P3z3TUlXAmwMDufFz4P5r.jpg", video: "https://vidmoly.to/embed-1qofzkzwg0zd.html" },
+      { title: "Épisode 2",  description: "Deuxième nuit : T'as pas un 06 ?",                       image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/xLSmpSXYyFrtQohoEUdJnvHPG6h.jpg", video: "https://vidmoly.to/embed-ix85caahj9ay.html" },
+      { title: "Épisode 3",  description: "Troisième nuit : T'en as partout.",                      image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/eplbcueeqEz6qUilG1HTVz1smEE.jpg", video: "https://vidmoly.to/embed-m45cwql5ugxx.html" },
+      { title: "Épisode 4",  description: "Quatrième nuit : Pas trop serré ?",                      image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/yAUpZ3NUsnGvfTpQrgfmazJGW06.jpg", video: "https://vidmoly.to/embed-8bs4m1wggz26.html" },
+      { title: "Épisode 5",  description: "Cinquième nuit : C'est embêtant",                        image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9ufjihTpkNIRHVJOSlB2sCNwiQU.jpg", video: "https://vidmoly.to/embed-ndjg6k8n8280.html" },
+      { title: "Épisode 6",  description: "Sixième nuit : Autant s'amuser",                         image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6MpHjwFMs88fehpwdzMOBewgByo.jpg", video: "https://vidmoly.to/embed-og1gd22uvmtd.html" },
+      { title: "Épisode 7",  description: "Septième nuit : Faire des petits",                       image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/m50X0yjc32qLP4I5ILfq1Ey89GF.jpg", video: "https://vidmoly.to/embed-l8knhf16dwd3.html" },
+      { title: "Épisode 8",  description: "Huitième nuit : Tous les mêmes",                         image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/3rnPCo4ew4RWJp0va8ALvssVPZ7.jpg", video: "https://vidmoly.to/embed-w97kwkqxeahb.html" },
+      { title: "Épisode 9",  description: "Neuvième nuit : C'est pas juste",                        image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/fpozNiCwS9RZvRUcymIn6rfA6lz.jpg", video: "https://vidmoly.to/embed-5328p6uowykn.html" },
+      { title: "Épisode 10", description: "Dixième nuit : Zoomer sur les photos volées",            image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lY2JGnlRVgcXz6V3FldmTeZW52D.jpg", video: "https://vidmoly.to/embed-g6lvvx5lqsgh.html" },
+      { title: "Épisode 11", description: "Onzième nuit : Vous connaissez les vampires ?",          image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/pBxODhh6RJVpiVuMAk5V8rY6tHn.jpg", video: "https://vidmoly.to/embed-c03jtcw60sh1.html" },
+      { title: "Épisode 12", description: "Douzième nuit : Mes parents ne sont pas là ce soir.",    image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sNZS3CIRR4D392EOAzBsCY6avGb.jpg", video: "https://vidmoly.to/embed-7dbmssn520gb.html" },
+      { title: "Épisode 13", description: "Treizième nuit : Rapprochons-nous",                      image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/fAGdpxQxNAisTTuZb4yhUNcU0WR.jpg", video: "https://vidmoly.to/embed-atechkgy65x0.html" }
+    ];
 
+    // Placeholder pour saisons futures
+    // const episodeDataS2 = [ ... ];
+
+    /*************************************************
+     * État
+     *************************************************/
     let currentEpisodeData = episodeDataS1;
     let currentEpisodeIndex = 0;
-    let timeoutId;
+    let timeoutId = null;
+    let userId = null;
+    const ANIME_TITLE = "Call of the Night"; // ce qui apparaît chez les amis
 
-    const episodeList = document.getElementById("episode-list");
+    /*************************************************
+     * DOM refs
+     *************************************************/
+    const episodeList    = document.getElementById("episode-list");
     const videoContainer = document.getElementById("video-container");
-    const videoIframe = document.getElementById("episode-video");
-    const backButton = document.getElementById("back-button");
-    const nextButton = document.getElementById("next-button");
-    const loader = document.getElementById("loader");
-    const seasonSelect = document.getElementById("season-select");
+    const videoIframe    = document.getElementById("episode-video");
+    const nextButton     = document.getElementById("next-button");
+    const loader         = document.getElementById("loader");
+    const seasonSelect   = document.getElementById("season-select");
 
+    /*************************************************
+     * Session utilisateur
+     *************************************************/
+    async function fetchSession() {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Erreur session Supabase:", error);
+        return null;
+      }
+      const session = sessionData?.session;
+      if (!session) {
+        console.warn("Pas de session (non connecté).");
+        return null;
+      }
+      return session.user.id;
+    }
+
+    (async () => {
+      userId = await fetchSession();
+    })();
+
+    /*************************************************
+     * Activité Supabase (profiles)
+     *************************************************/
+    async function updateCurrentActivity(animeTitle, episodeIndex) {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: animeTitle,
+          episode_number: episodeIndex + 1
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur update activité:", error);
+    }
+
+    async function clearCurrentActivity() {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: null,
+          episode_number: null
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur clear activité:", error);
+    }
+
+    /*************************************************
+     * Rendu épisodes
+     *************************************************/
     function renderEpisodes() {
       episodeList.innerHTML = "";
       currentEpisodeData.forEach((ep, index) => {
         const card = document.createElement("div");
         card.className = "episode-card";
         card.innerHTML = `
-          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}">
+          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}" />
           <h3>${ep.title}</h3>
           <p>${ep.description}</p>
         `;
@@ -209,29 +291,43 @@ const episodeDataS1 = [
       });
     }
 
+    /*************************************************
+     * Lecture épisode
+     *************************************************/
     function playEpisode(index) {
       loader.style.display = "block";
       videoIframe.src = currentEpisodeData[index].video;
+
+      // animation d’apparition
       videoContainer.classList.remove("show");
       videoContainer.style.display = "flex";
       requestAnimationFrame(() => {
         videoContainer.classList.add("show");
       });
 
-      nextButton.style.display = "none";
-      clearTimeout(timeoutId);
+      // activité
+      updateCurrentActivity(ANIME_TITLE, index);
 
+      // bouton suivant
+      nextButton.style.display = "none";
+      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         if (index < currentEpisodeData.length - 1) {
           nextButton.style.display = "inline-block";
         }
-      }, 1380000); // 23 minutes
+      }, 1_380_000); // 23 minutes
     }
 
+    /*************************************************
+     * Iframe chargée -> loader off
+     *************************************************/
     videoIframe.onload = () => {
       loader.style.display = "none";
     };
 
+    /*************************************************
+     * Épisode suivant
+     *************************************************/
     function nextEpisode() {
       if (currentEpisodeIndex < currentEpisodeData.length - 1) {
         currentEpisodeIndex++;
@@ -239,22 +335,48 @@ const episodeDataS1 = [
       }
     }
 
+    /*************************************************
+     * Retour (fermer + clear activité)
+     *************************************************/
     function exitFullscreenMode() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
       videoContainer.classList.remove("show");
       setTimeout(() => {
         videoContainer.style.display = "none";
-        videoIframe.src = "";
+
+        // tuer flux iframe
+        videoIframe.src = "about:blank";
+        requestAnimationFrame(() => (videoIframe.src = ""));
+
         nextButton.style.display = "none";
+        loader.style.display = "none";
+
+        clearCurrentActivity();
       }, 500);
     }
 
-    seasonSelect.addEventListener("change", (e) => {
-      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+    /*************************************************
+     * Changement saison (placeholder)
+     *************************************************/
+    seasonSelect.addEventListener("change", () => {
+      // si un jour tu ajoutes d'autres saisons, switch selon seasonSelect.value
+      currentEpisodeData = episodeDataS1;
       renderEpisodes();
     });
 
-   
+    /*************************************************
+     * Exposer global pour onclick HTML
+     *************************************************/
+    window.exitFullscreenMode = exitFullscreenMode;
+    window.nextEpisode = nextEpisode;
 
+    /*************************************************
+     * Init
+     *************************************************/
     renderEpisodes();
   </script>
 </body>
