@@ -2,9 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mes amis</title>
   <style>
     :root {
@@ -250,12 +248,7 @@
       const { data: pendingRequests, error } = await supabase
         .from("friends")
         .select(
-          id,
-          status,
-          requester:requester (
-            id,
-            username
-          )
+          "id, status, requester:requester(id, username)"
         )
         .eq("requested", userId)
         .eq("status", "pending");
@@ -275,7 +268,7 @@
         const uname = req.requester?.username ?? "Utilisateur";
         const div = document.createElement("div");
         div.className = "friend-card";
-        div.innerHTML = 
+        div.innerHTML = `
           <div class="friend-card-content">
             <div class="friend-name-line"><strong>${uname}</strong> vous a envoyé une demande.</div>
           </div>
@@ -283,7 +276,7 @@
             <button class="accept">Accepter</button>
             <button class="reject">Refuser</button>
           </div>
-        ;
+        `;
 
         div.querySelector(".accept").onclick = async () => {
           await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
@@ -309,28 +302,9 @@
       const { data: acceptedFriends, error } = await supabase
         .from("friends")
         .select(
-          id,
-          status,
-          requester:requester (
-            id,
-            username,
-            is_online,
-            currently_watching,
-            episode_number,
-            episode_image,
-            current_season
-          ),
-          requested:requested (
-            id,
-            username,
-            is_online,
-            currently_watching,
-            episode_number,
-            episode_image,
-            current_season
-          )
+          "id, status, requester:requester(id, username, is_online, currently_watching, episode_number, episode_image, current_season), requested:requested(id, username, is_online, currently_watching, episode_number, episode_image, current_season)"
         )
-        .or(requester.eq.${userId},requested.eq.${userId})
+        .or(`requester.eq.${userId},requested.eq.${userId}`)
         .eq("status", "accepted");
 
       if (error) {
@@ -351,8 +325,8 @@
         const uname = friend.username ?? "Utilisateur";
         const isOnline = friend.is_online;
         const status = isOnline
-          ? <span class="online">🟢 En ligne</span>
-          : <span class="offline">🔴 Hors ligne</span>;
+          ? `<span class="online">🟢 En ligne</span>`
+          : `<span class="offline">🔴 Hors ligne</span>`;
 
         // activité
         const watchingTitle = friend.currently_watching;
@@ -362,26 +336,26 @@
 
         let watchingHTML = "";
         if (watchingTitle) {
-          const seasonPart = seasonNum ? S${seasonNum} -  : "";
-          const epPart = (epNum != null) ? Épisode ${epNum} : "";
-          const caption = ${seasonPart}${epPart}.trim();
+          const seasonPart = seasonNum ? `S${seasonNum} - ` : "";
+          const epPart = (epNum != null) ? `Épisode ${epNum}` : "";
+          const caption = `${seasonPart}${epPart}`.trim();
 
           const imgHTML = epImg
-            ? <img class="watching-thumb" src="${epImg}" alt="Vignette épisode en cours" loading="lazy" />
+            ? `<img class="watching-thumb" src="${epImg}" alt="Vignette épisode en cours" loading="lazy" />`
             : "";
 
-          watchingHTML = 
+          watchingHTML = `
             <div class="watching-activity">
               <div>🎬 Regarde : <strong>${watchingTitle}</strong>${caption ? " – " + caption : ""}</div>
               ${imgHTML}
             </div>
-          ;
+          `;
         }
 
         // carte ami
         const div = document.createElement("div");
         div.className = "friend-card";
-        div.innerHTML = 
+        div.innerHTML = `
           <div class="friend-card-content">
             <div class="friend-name-line"><strong>${uname}</strong> ${status}</div>
             ${watchingHTML}
@@ -390,7 +364,7 @@
             <button class="chat chat-btn">💬 Chat</button>
             <button class="remove">❌ Supprimer</button>
           </div>
-        ;
+        `;
 
         div.querySelector(".remove").onclick = async () => {
           await supabase.from("friends").delete().eq("id", rel.id);
@@ -398,7 +372,7 @@
         };
 
         div.querySelector(".chat").onclick = () => {
-          window.location.href = chat.html?user=${friend.id};
+          window.location.href = `chat.html?user=${friend.id}`;
         };
 
         friendContainer.appendChild(div);
