@@ -222,9 +222,13 @@
 
   // Échapper les caractères dangereux (sécurité XSS)
   const escapeHTML = (str = '') =>
-    str.replace(/[&<>"']/g, s => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'
-    }[s]));
+    str.replace(/[&<>"']/g, ch => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    }[ch]));
 
   /*************************************************
    * Récupération image épisode
@@ -238,7 +242,18 @@
       .eq('season_number', season)
       .eq('episode_number', episode)
       .maybeSingle();
-    return error ? null : data?.image_url ?? null;
+    if (error) {
+      console.warn('fetchEpisodeImageFromCatalog error:', error);
+      return null;
+    }
+    return data?.image_url ?? null;
+  }
+
+  function normalizeEpisodeImage(url) {
+    if (!url) return null;
+    const u = String(url).trim();
+    if (!u || u.toUpperCase() === 'NULL' || u === '-') return null;
+    return u;
   }
 
   function buildEpisodeImgEl(url, alt='Vignette épisode') {
@@ -255,7 +270,8 @@
    * Gestion session utilisateur
    *************************************************/
   async function manageSession() {
-    const { data: sessionData } = await supabase.auth.getSession();
+    const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
+    if (sessErr) console.error('Erreur session:', sessErr);
     const session = sessionData?.session;
     if (!session) {
       document.body.innerHTML = '<h2>🔒 Vous devez être connecté.</h2>';
@@ -280,6 +296,7 @@
       .eq('status', 'pending');
 
     if (error) {
+      console.error('Erreur fetch demandes:', error);
       container.textContent = 'Erreur lors du chargement.';
       return;
     }
@@ -333,13 +350,15 @@
       .from('friends')
       .select(`
         id,
+        status,
         requester:requester(id, username, is_online, currently_watching, episode_number, episode_image, current_season, show_id),
         requested:requested(id, username, is_online, currently_watching, episode_number, episode_image, current_season, show_id)
       `)
-      .or(`requester.eq.${userId},requested.eq.${userId}`)
+      .or(\`requester.eq.${userId},requested.eq.${userId}\`)
       .eq('status', 'accepted');
 
     if (error) {
+      console.error('Erreur fetch amis:', error);
       container.textContent = 'Erreur lors du chargement.';
       return;
     }
@@ -353,7 +372,8 @@
       const friend = (rel.requester?.id === userId) ? rel.requested : rel.requester;
       if (!friend) continue;
 
-      const uname = escapeHTML(friend.username);
+      const rawName = friend.username ?? 'Utilisateur';
+      const uname = escapeHTML(rawName);
       const isOnline = !!friend.is_online;
 
       const statusSpan = document.createElement('span');
@@ -364,11 +384,24 @@
       if (watchingEl) {
         watchingEl.className = 'watching-activity';
         const safeTitle = escapeHTML(friend.currently_watching);
-        const caption = [friend.current_season ? `S${friend.current_season}` : '', friend.episode_number ? `Épisode ${friend.episode_number}` : ''].filter(Boolean).join(' – ');
-        watchingEl.innerHTML = `🎬 Regarde : <strong>${safeTitle}</strong>${caption ? ' – ' + caption : ''}`;
-        
-        let imgURL = friend.episode_image || await fetchEpisodeImageFromCatalog({ show_id: friend.show_id, season: friend.current_season, episode: friend.episode_number }) || PLACEHOLDER_IMG;
-        watchingEl.appendChild(buildEpisodeImgEl(imgURL));
+        const caption = [
+          friend.current_season ? \`S\${friend.current_season}\` : '',
+          friend.episode_number ? \`Épisode \${friend.episode_number}\` : ''
+        ].filter(Boolean).join(' – ');
+        watchingEl.innerHTML = \`🎬 Regarde : <strong>\${safeTitle}</strong>\${caption ? ' – ' + caption : ''}\`;
+
+        // priorité: champ direct > lookup > placeholder
+        let imgURL = normalizeEpisodeImage(friend.episode_image);
+        if (!imgURL) {
+          imgURL = await fetchEpisodeImageFromCatalog({
+            show_id: friend.show_id,
+            season: friend.current_season,
+            episode: friend.episode_number
+          });
+        }
+        if (!imgURL) imgURL = PLACEHOLDER_IMG;
+        const imgEl = buildEpisodeImgEl(imgURL);
+        if (imgEl) watchingEl.appendChild(imgEl);
       }
 
       const card = document.createElement('div');
@@ -378,7 +411,7 @@
       content.className = 'friend-card-content';
       const nameLine = document.createElement('div');
       nameLine.className = 'friend-name-line';
-      nameLine.innerHTML = `<strong>${uname}</strong> `;
+      nameLine.innerHTML = \`<strong>\${uname}</strong> \`;
       nameLine.appendChild(statusSpan);
       content.appendChild(nameLine);
       if (watchingEl) content.appendChild(watchingEl);
@@ -390,7 +423,7 @@
       chatBtn.className = 'chat-btn';
       chatBtn.textContent = '💬 Chat';
       chatBtn.onclick = () => {
-        window.location.href = `chat.html?user=${friend.id}`;
+        window.location.href = \`chat.html?user=\${friend.id}\`;
       };
 
       const removeBtn = document.createElement('button');
@@ -410,5 +443,6 @@
   await manageSession();
   setInterval(manageSession, 10000);
 </script>
+
 </body>
 </html>
