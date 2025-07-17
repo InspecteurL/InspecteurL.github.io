@@ -13,51 +13,31 @@
       --online: #00ff88;
       --offline: #888;
     }
-    body {
-      font-family: Arial, sans-serif;
-      background: var(--bg-1);
-      color: #ffffff;
-      padding: 20px;
-      margin: 0;
-    }
-    header {
-      background-color: var(--bg-header);
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .logo { font-weight: bold; font-size: 20px; color: var(--accent); }
-    .nav-links { list-style: none; padding: 0; display: flex; gap: 20px; margin: 0; }
-    .nav-links a { color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; }
-    h1 { margin-top: 30px; }
-    h2 { border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 40px; margin-bottom: 10px; font-size: 20px; }
-    .friend-card {
-      background: var(--bg-2);
-      padding: 16px 20px;
-      margin: 12px 0;
-      border-radius: 10px;
-      display: grid;
-      grid-template-columns: auto 100px;
-      gap: 16px;
-      align-items: center;
-    }
-    .friend-card-content { display: flex; flex-direction: column; gap: 6px; }
-    .friend-name-line { font-size: 18px; }
-    .online  { color: var(--online);  font-size: 14px; margin-left: 4px; }
-    .offline { color: var(--offline); font-size: 14px; margin-left: 4px; }
-    .watching-activity { font-size: 15px; line-height: 1.3; display: flex; flex-direction: column; gap: 6px; }
-    .watching-thumb { width: 100px; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; border: 1px solid #333; }
-    .friend-card-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
-    button { background: var(--accent); color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-size: 14px; line-height: 1.2; }
-    button.chat-btn { background: #0066ff; }
-    a.back-link { color: var(--accent); text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px; }
-    @media (max-width: 768px) {
-      header { flex-direction: column; align-items: flex-start; }
-      .nav-links { flex-direction: column; gap: 10px; width: 100%; }
-      .friend-card { grid-template-columns: 1fr; }
-      .friend-card-actions { flex-direction: row; justify-content: flex-start; }
-      .watching-thumb { width: 100%; max-width: 300px; }
+    body { font-family: Arial,sans-serif; background:var(--bg-1); color:#fff; padding:20px; margin:0; }
+    header { background:var(--bg-header); padding:10px 20px; display:flex; justify-content:space-between; align-items:center; }
+    .logo{font-weight:bold;font-size:20px;color:var(--accent);}
+    .nav-links{list-style:none;padding:0;display:flex;gap:20px;margin:0;}
+    .nav-links a{color:#fff;text-decoration:none;font-weight:bold;font-size:16px;}
+    h1{margin-top:30px;}
+    h2{border-bottom:1px solid #444;padding-bottom:5px;margin-top:40px;margin-bottom:10px;font-size:20px;}
+    .friend-card{background:var(--bg-2);padding:16px 20px;margin:12px 0;border-radius:10px;display:grid;grid-template-columns:auto 100px;gap:16px;align-items:center;}
+    .friend-card-content{display:flex;flex-direction:column;gap:6px;}
+    .friend-name-line{font-size:18px;}
+    .online{color:var(--online);font-size:14px;margin-left:4px;}
+    .offline{color:var(--offline);font-size:14px;margin-left:4px;}
+    .watching-activity{font-size:15px;line-height:1.3;display:flex;flex-direction:column;gap:6px;}
+    .watching-thumb{width:100px;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #333;}
+    .friend-card-actions{display:flex;flex-direction:column;gap:8px;align-items:stretch;}
+    button{background:var(--accent);color:#fff;border:none;padding:6px 10px;border-radius:5px;cursor:pointer;font-size:14px;line-height:1.2;}
+    button.chat-btn{background:#0066ff;}
+    button.invite-btn{background:#00b050;}
+    a.back-link{color:var(--accent);text-decoration:none;font-weight:bold;display:inline-block;margin-top:10px;}
+    @media (max-width:768px){
+      header{flex-direction:column;align-items:flex-start;}
+      .nav-links{flex-direction:column;gap:10px;width:100%;}
+      .friend-card{grid-template-columns:1fr;}
+      .friend-card-actions{flex-direction:row;justify-content:flex-start;}
+      .watching-thumb{width:100%;max-width:300px;}
     }
   </style>
 </head>
@@ -104,9 +84,23 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg';
 
 const escapeHTML = (str = '') =>
-  str.replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch]));
+  str.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 
-/* ---------- session + chargement ---------- */
+/* ------------------ UUID util ------------------ */
+function uuidv4() {
+  // crypto.randomUUID si dispo
+  if (crypto?.randomUUID) return crypto.randomUUID();
+  // fallback
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+    const r=(Math.random()*16)|0;
+    const v=c==='x'?r:(r&0x3)|0x8;
+    return v.toString(16);
+  });
+}
+
+/* ------------------ Session + chargement ------------------ */
+let currentUser = null; // {id:...}
+
 async function manageSession() {
   const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
   if (sessErr) console.error('Erreur session:', sessErr);
@@ -116,13 +110,12 @@ async function manageSession() {
     document.body.innerHTML = '🔒 Vous devez être connecté.';
     return;
   }
-  const userId = session.user.id;
-
-  await loadPendingRequests(userId);
-  await loadAcceptedFriends(userId);
+  currentUser = { id: session.user.id };
+  await loadPendingRequests(currentUser.id);
+  await loadAcceptedFriends(currentUser.id);
 }
 
-/* ---------- demandes reçues ---------- */
+/* ------------------ Demandes reçues ------------------ */
 async function loadPendingRequests(userId) {
   const receivedContainer = document.getElementById('received-requests');
   receivedContainer.innerHTML = '';
@@ -181,7 +174,7 @@ async function loadPendingRequests(userId) {
   }
 }
 
-/* ---------- amis acceptés + vignette épisodes ---------- */
+/* ------------------ Amis acceptés ------------------ */
 async function loadAcceptedFriends(userId) {
   const friendContainer = document.getElementById('accepted-friends');
   friendContainer.innerHTML = '';
@@ -197,7 +190,8 @@ async function loadAcceptedFriends(userId) {
         is_online,
         currently_watching,
         episode_number,
-        current_season
+        current_season,
+        current_time
       ),
       requested:requested (
         id,
@@ -205,7 +199,8 @@ async function loadAcceptedFriends(userId) {
         is_online,
         currently_watching,
         episode_number,
-        current_season
+        current_season,
+        current_time
       )
     `)
     .or(`requester.eq.${userId},requested.eq.${userId}`)
@@ -233,78 +228,129 @@ async function loadAcceptedFriends(userId) {
     statusSpan.className = isOnline ? 'online' : 'offline';
     statusSpan.textContent = isOnline ? '🟢 En ligne' : '🔴 Hors ligne';
 
-    let watchingEl = null;
-    let episodeImg = PLACEHOLDER_IMG;
-
-    // On suppose que friend.currently_watching contient le show_id (clé) utilisé dans la table episodes.
-    const hasSeason = friend.current_season != null;
-    const hasEpisode = friend.episode_number != null;
-    if (friend.currently_watching && hasSeason && hasEpisode) {
-      const { data: episodeData, error: epError } = await supabase
-        .from('episodes')
-        .select('image_url')
-        .eq('show_id', friend.currently_watching)
-        .eq('season_number', friend.current_season)
-        .eq('episode_number', friend.episode_number)
-        .single();
-
-      if (!epError && episodeData?.image_url) {
-        episodeImg = episodeData.image_url;
-      }
-
-      watchingEl = document.createElement('div');
-      watchingEl.className = 'watching-activity';
-
-      const caption = `S${friend.current_season} – Épisode ${friend.episode_number}`;
-      watchingEl.innerHTML = `🎬 Regarde : <strong>${escapeHTML(String(friend.currently_watching))}</strong> – ${caption}`;
-
-      const img = document.createElement('img');
-      img.className = 'watching-thumb';
-      img.src = episodeImg;
-      img.alt = 'Vignette épisode';
-      img.loading = 'lazy';
-      watchingEl.appendChild(img);
-    }
-
     const card = document.createElement('div');
     card.className = 'friend-card';
 
     const content = document.createElement('div');
     content.className = 'friend-card-content';
+
     const nameLine = document.createElement('div');
     nameLine.className = 'friend-name-line';
     nameLine.innerHTML = `<strong>${uname}</strong> `;
     nameLine.appendChild(statusSpan);
     content.appendChild(nameLine);
+
+    // Activité
+    let watchingEl = null;
+    const showId   = friend.currently_watching;
+    const season   = friend.current_season;
+    const episode  = friend.episode_number;
+    const position = friend.current_time ?? 0;
+
+    if (showId) {
+      watchingEl = document.createElement('div');
+      watchingEl.className = 'watching-activity';
+
+      // Légende saison/épisode
+      const parts = [];
+      if (season != null) parts.push(`S${season}`);
+      if (episode != null) parts.push(`Épisode ${episode}`);
+      const caption = parts.join(' – ');
+
+      // Récup image episode
+      let imgUrl = PLACEHOLDER_IMG;
+      if (season != null && episode != null) {
+        const { data: epData, error: epError } = await supabase
+          .from('episodes')
+          .select('image_url')
+          .eq('show_id', showId)
+          .eq('season_number', season)
+          .eq('episode_number', episode)
+          .single();
+        if (!epError && epData?.image_url) imgUrl = epData.image_url;
+      }
+
+      // ligne texte
+      const safeTitle = escapeHTML(String(showId)); // si showId == titre, change selon ton schéma
+      const line = document.createElement('div');
+      line.innerHTML = `🎬 Regarde : <strong>${safeTitle}</strong>${caption ? ' – ' + caption : ''}`;
+      watchingEl.appendChild(line);
+
+      // image
+      const img = document.createElement('img');
+      img.className = 'watching-thumb';
+      img.src = imgUrl;
+      img.alt = 'Vignette épisode';
+      img.loading = 'lazy';
+      watchingEl.appendChild(img);
+    }
+
     if (watchingEl) content.appendChild(watchingEl);
 
     const actions = document.createElement('div');
     actions.className = 'friend-card-actions';
 
+    // Chat
     const chatBtn = document.createElement('button');
-    chatBtn.className = 'chat chat-btn';
+    chatBtn.className = 'chat-btn';
     chatBtn.textContent = '💬 Chat';
     chatBtn.onclick = () => {
       window.location.href = `chat.html?user=${friend.id}`;
     };
+    actions.appendChild(chatBtn);
 
+    // Invite Watch Party si ami regarde qqch
+    if (showId) {
+      const inviteBtn = document.createElement('button');
+      inviteBtn.className = 'invite-btn';
+      inviteBtn.textContent = '▶ Regarder ensemble';
+      inviteBtn.onclick = async () => {
+        const sessionId = uuidv4(); // Génère une session
+        // (optionnel) push dans DB invitation -> table invites
+        /*
+        await supabase.from('watch_party_invites').insert({
+          session_id: sessionId,
+          from_user: userId,
+          to_user: friend.id,
+          show_id: showId,
+          season_number: season,
+          episode_number: episode,
+          start_time: position
+        });
+        */
+        // Redirige l'hôte vers lecteur sync
+        const url = `lecteur.html?session=${encodeURIComponent(sessionId)}&show=${encodeURIComponent(showId)}&season=${season ?? ''}&episode=${episode ?? ''}&t=${position}&role=host`;
+        window.location.href = url;
+      };
+      actions.appendChild(inviteBtn);
+    }
+
+    // Remove
     const removeBtn = document.createElement('button');
-    removeBtn.className = 'remove';
     removeBtn.textContent = '❌ Supprimer';
     removeBtn.onclick = async () => {
       await supabase.from('friends').delete().eq('id', rel.id);
       manageSession();
     };
+    actions.appendChild(removeBtn);
 
-    actions.append(chatBtn, removeBtn);
     card.append(content, actions);
     friendContainer.appendChild(card);
   }
 }
 
-/* ---------- Auto-refresh ---------- */
+/* ------------------ Realtime ------------------ */
+/* recharge la page amis lorsque table friends ou profiles change */
+supabase.channel('friends-realtime')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'friends' }, () => manageSession())
+  .subscribe();
+
+supabase.channel('profiles-realtime')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => manageSession())
+  .subscribe();
+
+/* ------------------ Init ------------------ */
 manageSession();
-setInterval(manageSession, 10_000);
 </script>
 </body>
 </html>
