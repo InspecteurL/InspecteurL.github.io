@@ -2,9 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mes amis</title>
   <style>
     :root {
@@ -53,7 +51,10 @@
       font-size: 16px;
     }
 
-    h1 { margin-top: 30px; }
+    h1 {
+      margin-top: 30px;
+    }
+
     h2 {
       border-bottom: 1px solid #444;
       padding-bottom: 5px;
@@ -72,14 +73,28 @@
       gap: 16px;
       align-items: center;
     }
+
     .friend-card-content {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
-    .friend-name-line { font-size: 18px; }
-    .online  { color: var(--online);  font-size: 14px; margin-left: 4px; }
-    .offline { color: var(--offline); font-size: 14px; margin-left: 4px; }
+
+    .friend-name-line {
+      font-size: 18px;
+    }
+
+    .online {
+      color: var(--online);
+      font-size: 14px;
+      margin-left: 4px;
+    }
+
+    .offline {
+      color: var(--offline);
+      font-size: 14px;
+      margin-left: 4px;
+    }
 
     .watching-activity {
       font-size: 15px;
@@ -88,7 +103,7 @@
       flex-direction: column;
       gap: 6px;
     }
-    .watching-activity strong { font-weight: bold; }
+
     .watching-thumb {
       width: 100px;
       aspect-ratio: 16 / 9;
@@ -114,7 +129,10 @@
       font-size: 14px;
       line-height: 1.2;
     }
-    button.chat-btn { background: #0066ff; }
+
+    button.chat-btn {
+      background: #0066ff;
+    }
 
     a.back-link {
       color: var(--accent);
@@ -125,11 +143,30 @@
     }
 
     @media (max-width: 768px) {
-      header { flex-direction: column; align-items: flex-start; }
-      .nav-links { flex-direction: column; gap: 10px; width: 100%; }
-      .friend-card { grid-template-columns: 1fr; }
-      .friend-card-actions { flex-direction: row; justify-content: flex-start; }
-      .watching-thumb { width: 100%; max-width: 300px; }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .nav-links {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+      }
+
+      .friend-card {
+        grid-template-columns: 1fr;
+      }
+
+      .friend-card-actions {
+        flex-direction: row;
+        justify-content: flex-start;
+      }
+
+      .watching-thumb {
+        width: 100%;
+        max-width: 300px;
+      }
     }
   </style>
 </head>
@@ -167,26 +204,17 @@
   </div>
 
 <script type="module">
-/*************************************************
- * Supabase init
- *************************************************/
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg'; // vérifie que le fichier existe
+const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg';
 
-/* sécurité XSS basique */
 const escapeHTML = (str = '') =>
-  str.replace(/[&<>"']/g, ch => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[ch]));
+  str.replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch]));
 
-/*************************************************
- * Session + chargement
- *************************************************/
 async function manageSession() {
   const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
   if (sessErr) console.error('Erreur session:', sessErr);
@@ -202,9 +230,6 @@ async function manageSession() {
   await loadAcceptedFriends(userId);
 }
 
-/*************************************************
- * Demandes reçues
- *************************************************/
 async function loadPendingRequests(userId) {
   const receivedContainer = document.getElementById('received-requests');
   receivedContainer.innerHTML = '';
@@ -214,10 +239,7 @@ async function loadPendingRequests(userId) {
     .select(`
       id,
       status,
-      requester:requester (
-        id,
-        username
-      )
+      requester:requester ( id, username )
     `)
     .eq('requested', userId)
     .eq('status', 'pending');
@@ -266,9 +288,6 @@ async function loadPendingRequests(userId) {
   }
 }
 
-/*************************************************
- * Amis acceptés (activité + vignette)
- *************************************************/
 async function loadAcceptedFriends(userId) {
   const friendContainer = document.getElementById('accepted-friends');
   friendContainer.innerHTML = '';
@@ -278,26 +297,10 @@ async function loadAcceptedFriends(userId) {
     .select(`
       id,
       status,
-      requester:requester (
-        id,
-        username,
-        is_online,
-        currently_watching,
-        episode_number,
-        episode_image,
-        current_season
-      ),
-      requested:requested (
-        id,
-        username,
-        is_online,
-        currently_watching,
-        episode_number,
-        episode_image,
-        current_season
-      )
+      requester:requester ( id, username, is_online, currently_watching, episode_number, current_season ),
+      requested:requested ( id, username, is_online, currently_watching, episode_number, current_season )
     `)
-    .or(`requester.eq.${userId},requested.eq.${userId}`)
+    .or(\`requester.eq.${userId},requested.eq.${userId}\`)
     .eq('status', 'accepted');
 
   if (error) {
@@ -322,32 +325,31 @@ async function loadAcceptedFriends(userId) {
     statusSpan.className = isOnline ? 'online' : 'offline';
     statusSpan.textContent = isOnline ? '🟢 En ligne' : '🔴 Hors ligne';
 
-    // activité
-    const watchingTitle = friend.currently_watching;
-    const epNum = friend.episode_number;
-    const epImg = friend.episode_image;
-    const seasonNum = friend.current_season;
-
     let watchingEl = null;
-    if (watchingTitle) {
+    let episodeImg = PLACEHOLDER_IMG;
+
+    if (friend.currently_watching && friend.current_season && friend.episode_number) {
+      const { data: episodeData, error: epError } = await supabase
+        .from('episodes')
+        .select('image_url')
+        .eq('show_id', friend.currently_watching)
+        .eq('season_number', friend.current_season)
+        .eq('episode_number', friend.episode_number)
+        .single();
+
+      if (!epError && episodeData?.image_url) {
+        episodeImg = episodeData.image_url;
+      }
+
       watchingEl = document.createElement('div');
       watchingEl.className = 'watching-activity';
 
-      const safeTitle = escapeHTML(String(watchingTitle));
-      const seasonPart = (seasonNum != null) ? `S${seasonNum}` : '';
-      const epPart = (epNum != null) ? `Épisode ${epNum}` : '';
-      const caption = [seasonPart, epPart].filter(Boolean).join(' – ');
-
-      const line = document.createElement('div');
-      line.innerHTML = `🎬 Regarde : <strong>${safeTitle}</strong>${caption ? ' – ' + caption : ''}`;
-      watchingEl.appendChild(line);
-
-      let imgURL = epImg && epImg !== 'NULL' && epImg !== '-' ? epImg : PLACEHOLDER_IMG;
+      const caption = `S${friend.current_season} – Épisode ${friend.episode_number}`;
+      watchingEl.innerHTML = `🎬 Regarde : <strong>${escapeHTML(friend.currently_watching)}</strong> – ${caption}`;
       const img = document.createElement('img');
       img.className = 'watching-thumb';
-      img.src = imgURL;
-      img.alt = 'Vignette épisode en cours';
-      img.loading = 'lazy';
+      img.src = episodeImg;
+      img.alt = 'Vignette épisode';
       watchingEl.appendChild(img);
     }
 
@@ -370,7 +372,7 @@ async function loadAcceptedFriends(userId) {
     chatBtn.className = 'chat chat-btn';
     chatBtn.textContent = '💬 Chat';
     chatBtn.onclick = () => {
-      window.location.href = `chat.html?user=${friend.id}`;
+      window.location.href = \`chat.html?user=\${friend.id}\`;
     };
 
     const removeBtn = document.createElement('button');
@@ -387,9 +389,6 @@ async function loadAcceptedFriends(userId) {
   }
 }
 
-/*************************************************
- * Auto-refresh toutes les 10s
- *************************************************/
 manageSession();
 setInterval(manageSession, 10_000);
 </script>
