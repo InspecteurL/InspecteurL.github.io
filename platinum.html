@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Regardez tous les épisodes de Platinum End par saison. Streaming en ligne gratuit et rapide." />
   <title>BNZ - Platinum End</title>
   <style>
     body {
@@ -97,7 +101,8 @@
       border: none;
     }
 
-    #back-button, #next-button, #next-season-button {
+    #back-button,
+    #next-button {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 18px;
@@ -122,7 +127,6 @@
       .episode-card {
         width: 90%;
       }
-
       #episode-video {
         width: 95%;
         height: 40vh;
@@ -139,15 +143,21 @@
     <li><a href="accueil.html">Feuilleter</a></li>
   </ul>
 
-  <br><br>
+  <br /><br />
   <div style="text-align:center;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Platinum_End_%28black%29_logo.png" width="50%" alt="Logo Oshi no Ko">
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Platinum_End_%28black%29_logo.png"
+      width="50%"
+      alt="Logo Platinum End" />
   </div>
 
   <div style="text-align:center; margin: 20px;">
     <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
-    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+    <select
+      id="season-select"
+      style="padding: 10px; font-size: 16px; border-radius: 5px;">
       <option value="1">Saison 1</option>
+      <!-- Ajoute d'autres saisons si besoin -->
     </select>
   </div>
 
@@ -160,58 +170,127 @@
     <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
   </div>
 
-  <script>
-const episodeDataS1 = [
-  { title: "Episode 1", description: "Cadeau d'un ange", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/84rk6ZUXiQgozG5hSazNrr1eKap.jpg", video: "https://vidmoly.to/embed-co98gxpfm3wq.html" },
-  { title: "Episode 2", description: "Héros de la justice", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dNc0ywS0oPNOzMcgSaTjyBLQkMe.jpg", video: "https://vidmoly.to/embed-ywkzwjwpdn19.html" },
-  { title: "Episode 3", description: "Celle que j'aime", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/euSmNCElVqwejRVZv0XGJqSVyMv.jpg", video: "https://vidmoly.to/embed-blgobjuiu6ww.html" },
-  { title: "Episode 4", description: "L'heure du rassemblement", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/kRD0F2y1opQUdukzLnI3bIgnNtO.jpg", video: "https://vidmoly.to/embed-kzvevg07as6g.html" },
-  { title: "Episode 5", description: "Condamnation à mort", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/k1DvCCWkntuvImI4UQmVUK7V6Og.jpg", video: "https://vidmoly.to/embed-tec0mr8ogthv.html" },
-  { title: "Episode 6", description: "Deux choix amers", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iXh27pZNEaGm85nxNerArFCCO2U.jpg", video: "https://vidmoly.to/embed-d7f1fr42ge9b.html" },
-  { title: "Episode 7", description: "La tour du cauchemard", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4rudkOn9woApCcXVUgmdfh7YE7Z.jpg", video: "https://vidmoly.to/embed-1t24sf5vp1vp.html" },
-  { title: "Episode 8", description: "Le symbole d'une promesse", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iBlhwOfOWy3mjO3oLa6QaYYVwq9.jpg", video: "https://vidmoly.to/embed-dmd2sludnlpv.html" },
-  { title: "Episode 9", description: "Le visage d’un meurtrier", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/mckGkktyuc1FFO13vZ0BFA3a0sz.jpg", video: "https://vidmoly.to/embed-75vodqbz981v.html" },
-  { title: "Episode 10", description: "Là où les larmes coulent", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/meXDbu30sJFnNd8CFIhw7flTiMI.jpg", video: "https://vidmoly.to/embed-tau8g5p13lys.html" },
-  { title: "Episode 11", description: "Sa propre valeur", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hNHA5bSHsdBfujidUc19jitGXIF.jpg", video: "https://vidmoly.to/embed-b9mkpxkt26cd.html" },
-  { title: "Episode 12", description: "Issue incertaine", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/yasw5c7QkdeM7TCpGRgqv4vWoii.jpg", video: "https://vidmoly.to/embed-snuya206324w.html" },
-  { title: "Episode 13", description: "La paix dans le monde", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/eSV3n7CZk6DJH6Q36stkB5bjcu9.jpg", video: "https://vidmoly.to/embed-3xyiorf09otk.html" },
-  { title: "Episode 14", description: "Deux lumières", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/qtvX5bb31PXJNvIxQrRWeFsVcTz.jpg", video: "https://vidmoly.to/embed-qfe1m47g20za.html" },
-  { title: "Episode 15", description: "Le pouvoir de diffusion", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/rEU8FHP9FjHazGR5PgyMkth1TEH.jpg", video: "https://vidmoly.to/embed-d05xub83q7f0.html" },
-  { title: "Episode 16", description: "L’assassin parfait", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/gI1pjwOxDeWyGBY6gnCbCNiDXZc.jpg", video: "https://vidmoly.to/embed-8p8rfrxwh8xg.html" },
-  { title: "Episode 17", description: "Les cinq autres", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/zFMXvlwiFsW8hCzaRtJljO1SHv2.jpg", video: "https://vidmoly.to/embed-a74zrlvuf0gt.html" },
-  { title: "Episode 18", description: "Le dernier repas", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wWrsUo6Uqee5w04D8xKwFngghbi.jpg", video: "https://vidmoly.to/embed-qn9vlqeiyou1.html" },
-  { title: "Episode 19", description: "L'avenir de l'humanité", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5ZLAuEyvydz499MZQlgbZO30x7W.jpg", video: "https://vidmoly.to/embed-uv54jf37c4iy.html" },
-  { title: "Episode 20", description: "La rançon du succès", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/1394LmR6eQkgLOVGmIaYFeI3Geu.jpg", video: "https://vidmoly.to/embed-z98rxkpe413f.html" },
-  { title: "Episode 21", description: "L'heure des discussions", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dIhe0wvwMCxmwbL4H8rOaNT5d63.jpg", video: "https://vidmoly.to/embed-ptadhr4wzbla.html" },
-  { title: "Episode 22", description: "Les ailes de la résignation", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dcKMcyafMlE6y5iKxic7rnx8vBG.jpg", video: "https://vidmoly.to/embed-lbncmunrqksg.html" },
-  { title: "Episode 23", description: "Réflexion mûrie", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9xwt1niOFiuXYv0L2JyBGMlDcg2.jpg", video: "https://vidmoly.to/embed-78znbl2kykfi.html" },
-  { title: "Episode 24", description: "La dernière flèche", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/qtuEnXUe1jZ7QVxNA5rcAGQVCVw.jpg", video: "https://vidmoly.to/embed-53c256tpw4it.html" }
-];
+  <script type="module">
+    /*************************************************
+     * Supabase init
+     *************************************************/
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+    const supabase = createClient(
+      "https://wuagahavmbugmnuzsouf.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
 
+    /*************************************************
+     * Données épisodes Saison 1
+     *************************************************/
+    const episodeDataS1 = [
+      { title: "Épisode 1",  description: "Cadeau d'un ange",              image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/84rk6ZUXiQgozG5hSazNrr1eKap.jpg", video: "https://vidmoly.to/embed-co98gxpfm3wq.html" },
+      { title: "Épisode 2",  description: "Héros de la justice",           image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dNc0ywS0oPNOzMcgSaTjyBLQkMe.jpg", video: "https://vidmoly.to/embed-ywkzwjwpdn19.html" },
+      { title: "Épisode 3",  description: "Celle que j'aime",              image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/euSmNCElVqwejRVZv0XGJqSVyMv.jpg", video: "https://vidmoly.to/embed-blgobjuiu6ww.html" },
+      { title: "Épisode 4",  description: "L'heure du rassemblement",      image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/kRD0F2y1opQUdukzLnI3bIgnNtO.jpg", video: "https://vidmoly.to/embed-kzvevg07as6g.html" },
+      { title: "Épisode 5",  description: "Condamnation à mort",           image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/k1DvCCWkntuvImI4UQmVUK7V6Og.jpg", video: "https://vidmoly.to/embed-tec0mr8ogthv.html" },
+      { title: "Épisode 6",  description: "Deux choix amers",              image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iXh27pZNEaGm85nxNerArFCCO2U.jpg", video: "https://vidmoly.to/embed-d7f1fr42ge9b.html" },
+      { title: "Épisode 7",  description: "La tour du cauchemar",          image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4rudkOn9woApCcXVUgmdfh7YE7Z.jpg", video: "https://vidmoly.to/embed-1t24sf5vp1vp.html" },
+      { title: "Épisode 8",  description: "Le symbole d'une promesse",     image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iBlhwOfOWy3mjO3oLa6QaYYVwq9.jpg", video: "https://vidmoly.to/embed-dmd2sludnlpv.html" },
+      { title: "Épisode 9",  description: "Le visage d’un meurtrier",      image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/mckGkktyuc1FFO13vZ0BFA3a0sz.jpg", video: "https://vidmoly.to/embed-75vodqbz981v.html" },
+      { title: "Épisode 10", description: "Là où les larmes coulent",      image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/meXDbu30sJFnNd8CFIhw7flTiMI.jpg", video: "https://vidmoly.to/embed-tau8g5p13lys.html" },
+      { title: "Épisode 11", description: "Sa propre valeur",              image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hNHA5bSHsdBfujidUc19jitGXIF.jpg", video: "https://vidmoly.to/embed-b9mkpxkt26cd.html" },
+      { title: "Épisode 12", description: "Issue incertaine",              image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/yasw5c7QkdeM7TCpGRgqv4vWoii.jpg", video: "https://vidmoly.to/embed-snuya206324w.html" },
+      { title: "Épisode 13", description: "La paix dans le monde",         image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/eSV3n7CZk6DJH6Q36stkB5bjcu9.jpg", video: "https://vidmoly.to/embed-3xyiorf09otk.html" },
+      { title: "Épisode 14", description: "Deux lumières",                 image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/qtvX5bb31PXJNvIxQrRWeFsVcTz.jpg", video: "https://vidmoly.to/embed-qfe1m47g20za.html" },
+      { title: "Épisode 15", description: "Le pouvoir de diffusion",       image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/rEU8FHP9FjHazGR5PgyMkth1TEH.jpg", video: "https://vidmoly.to/embed-d05xub83q7f0.html" },
+      { title: "Épisode 16", description: "L’assassin parfait",            image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/gI1pjwOxDeWyGBY6gnCbCNiDXZc.jpg", video: "https://vidmoly.to/embed-8p8rfrxwh8xg.html" },
+      { title: "Épisode 17", description: "Les cinq autres",               image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/zFMXvlwiFsW8hCzaRtJljO1SHv2.jpg", video: "https://vidmoly.to/embed-a74zrlvuf0gt.html" },
+      { title: "Épisode 18", description: "Le dernier repas",              image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wWrsUo6Uqee5w04D8xKwFngghbi.jpg", video: "https://vidmoly.to/embed-qn9vlqeiyou1.html" },
+      { title: "Épisode 19", description: "L'avenir de l'humanité",        image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5ZLAuEyvydz499MZQlgbZO30x7W.jpg", video: "https://vidmoly.to/embed-uv54jf37c4iy.html" },
+      { title: "Épisode 20", description: "La rançon du succès",           image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/1394LmR6eQkgLOVGmIaYFeI3Geu.jpg", video: "https://vidmoly.to/embed-z98rxkpe413f.html" },
+      { title: "Épisode 21", description: "L'heure des discussions",       image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dIhe0wvwMCxmwbL4H8rOaNT5d63.jpg", video: "https://vidmoly.to/embed-ptadhr4wzbla.html" },
+      { title: "Épisode 22", description: "Les ailes de la résignation",   image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dcKMcyafMlE6y5iKxic7rnx8vBG.jpg", video: "https://vidmoly.to/embed-lbncmunrqksg.html" },
+      { title: "Épisode 23", description: "Réflexion mûrie",               image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9xwt1niOFiuXYv0L2JyBGMlDcg2.jpg", video: "https://vidmoly.to/embed-78znbl2kykfi.html" },
+      { title: "Épisode 24", description: "La dernière flèche",            image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/qtuEnXUe1jZ7QVxNA5rcAGQVCVw.jpg", video: "https://vidmoly.to/embed-53c256tpw4it.html" }
+    ];
 
+    // Placeholder pour d’autres saisons :
+    // const episodeDataS2 = [ ... ];
 
-
-
+    /*************************************************
+     * État
+     *************************************************/
     let currentEpisodeData = episodeDataS1;
     let currentEpisodeIndex = 0;
-    let timeoutId;
+    let timeoutId = null;
+    let userId = null;
+    const ANIME_TITLE = "Platinum End";
 
-    const episodeList = document.getElementById("episode-list");
+    /*************************************************
+     * DOM refs
+     *************************************************/
+    const episodeList    = document.getElementById("episode-list");
     const videoContainer = document.getElementById("video-container");
-    const videoIframe = document.getElementById("episode-video");
-    const backButton = document.getElementById("back-button");
-    const nextButton = document.getElementById("next-button");
-    const loader = document.getElementById("loader");
-    const seasonSelect = document.getElementById("season-select");
+    const videoIframe    = document.getElementById("episode-video");
+    const nextButton     = document.getElementById("next-button");
+    const loader         = document.getElementById("loader");
+    const seasonSelect   = document.getElementById("season-select");
 
+    /*************************************************
+     * Session utilisateur
+     *************************************************/
+    async function fetchSession() {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Erreur session Supabase:", error);
+        return null;
+      }
+      const session = sessionData?.session;
+      if (!session) {
+        console.warn("Pas de session (non connecté).");
+        return null;
+      }
+      return session.user.id;
+    }
+
+    (async () => {
+      userId = await fetchSession();
+    })();
+
+    /*************************************************
+     * Activité Supabase (profiles)
+     *************************************************/
+    async function updateCurrentActivity(animeTitle, episodeIndex) {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: animeTitle,
+          episode_number: episodeIndex + 1
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur update activité:", error);
+    }
+
+    async function clearCurrentActivity() {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: null,
+          episode_number: null
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur clear activité:", error);
+    }
+
+    /*************************************************
+     * Rendu épisodes
+     *************************************************/
     function renderEpisodes() {
       episodeList.innerHTML = "";
       currentEpisodeData.forEach((ep, index) => {
         const card = document.createElement("div");
         card.className = "episode-card";
         card.innerHTML = `
-          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}">
+          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}" />
           <h3>${ep.title}</h3>
           <p>${ep.description}</p>
         `;
@@ -223,29 +302,43 @@ const episodeDataS1 = [
       });
     }
 
+    /*************************************************
+     * Lecture épisode
+     *************************************************/
     function playEpisode(index) {
       loader.style.display = "block";
       videoIframe.src = currentEpisodeData[index].video;
+
+      // animation d’apparition
       videoContainer.classList.remove("show");
       videoContainer.style.display = "flex";
       requestAnimationFrame(() => {
         videoContainer.classList.add("show");
       });
 
-      nextButton.style.display = "none";
-      clearTimeout(timeoutId);
+      // activité
+      updateCurrentActivity(ANIME_TITLE, index);
 
+      // bouton suivant
+      nextButton.style.display = "none";
+      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         if (index < currentEpisodeData.length - 1) {
           nextButton.style.display = "inline-block";
         }
-      }, 1380000); // 23 minutes
+      }, 1_380_000); // 23 min
     }
 
+    /*************************************************
+     * Iframe chargée -> loader off
+     *************************************************/
     videoIframe.onload = () => {
       loader.style.display = "none";
     };
 
+    /*************************************************
+     * Épisode suivant
+     *************************************************/
     function nextEpisode() {
       if (currentEpisodeIndex < currentEpisodeData.length - 1) {
         currentEpisodeIndex++;
@@ -253,22 +346,48 @@ const episodeDataS1 = [
       }
     }
 
+    /*************************************************
+     * Retour (fermer + clear activité)
+     *************************************************/
     function exitFullscreenMode() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
       videoContainer.classList.remove("show");
       setTimeout(() => {
         videoContainer.style.display = "none";
-        videoIframe.src = "";
+
+        // tuer flux iframe
+        videoIframe.src = "about:blank";
+        requestAnimationFrame(() => (videoIframe.src = ""));
+
         nextButton.style.display = "none";
+        loader.style.display = "none";
+
+        clearCurrentActivity();
       }, 500);
     }
 
-    seasonSelect.addEventListener("change", (e) => {
-      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+    /*************************************************
+     * Changement saison (placeholder)
+     *************************************************/
+    seasonSelect.addEventListener("change", () => {
+      // Ajoute switch si plusieurs saisons
+      currentEpisodeData = episodeDataS1;
       renderEpisodes();
     });
 
-   
+    /*************************************************
+     * Exposer global pour onclick HTML
+     *************************************************/
+    window.exitFullscreenMode = exitFullscreenMode;
+    window.nextEpisode = nextEpisode;
 
+    /*************************************************
+     * Init
+     *************************************************/
     renderEpisodes();
   </script>
 </body>
