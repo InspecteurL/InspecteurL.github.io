@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0" />
   <title>BNZ - Oshi no Ko</title>
+  <meta
+    name="description"
+    content="Regardez tous les épisodes de Oshi no Ko, saisons 1 et 2. Streaming en ligne gratuit et rapide." />
   <style>
     body {
       background: linear-gradient(to top, #000000 0%, #000066 100%);
@@ -96,7 +101,8 @@
       border: none;
     }
 
-    #back-button, #next-button {
+    #back-button,
+    #next-button {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 18px;
@@ -110,9 +116,26 @@
     .hidden {
       display: none;
     }
+
+    #loader {
+      color: white;
+      font-size: 20px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .episode-card {
+        width: 90%;
+      }
+      #episode-video {
+        width: 95%;
+        height: 40vh;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Nav -->
   <ul>
     <li><a class="active" href="index.html">Home</a></li>
     <li><a href="journal.html">Journal</a></li>
@@ -121,15 +144,19 @@
     <li><a href="accueil.html">Feuilleter</a></li>
   </ul>
 
-  <br><br>
+  <br /><br />
   <div style="text-align: center;">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Oshi_no_Ko_logo.png" width="50%">
-</div>
-
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Oshi_no_Ko_logo.png"
+      width="50%"
+      alt="Logo Oshi no Ko" />
+  </div>
 
   <div style="text-align:center; margin: 20px;">
     <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
-    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+    <select
+      id="season-select"
+      style="padding: 10px; font-size: 16px; border-radius: 5px;">
       <option value="1">Saison 1</option>
       <option value="2">Saison 2</option>
     </select>
@@ -139,59 +166,132 @@
 
   <div id="video-container">
     <iframe id="episode-video" allowfullscreen></iframe>
+    <div id="loader" style="display:none;">Chargement de la vidéo...</div>
     <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
     <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
   </div>
 
-  <script>
+  <script type="module">
+    /*************************************************
+     * Supabase init
+     *************************************************/
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabase = createClient(
+      "https://wuagahavmbugmnuzsouf.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
+
+    /*************************************************
+     * Données épisodes
+     *************************************************/
     const episodeDataS1 = [
-      { title: "Épisode 1", description: "Une mère et ses enfants", image: "https://www.myutaku.com/media/episodes/421069/9207267.jpg", video: "https://vidmoly.to/embed-2v891imx7x9y.html" },
-      { title: "Épisode 2", description: "La troisième option", image: "https://www.myutaku.com/media/episodes/421069/9687591.jpg", video: "https://vidmoly.to/embed-ja9dux9ihyef.html" },
-      { title: "Épisode 3", description: "Une série adaptée d'un manga", image: "https://www.myutaku.com/media/episodes/421069/9687592.jpg", video: "https://vidmoly.to/embed-yh51mc31bswo.html" },
-      { title: "Épisode 4", description: "Acteur", image: "https://www.myutaku.com/media/episodes/421069/9687593.jpg", video: "https://vidmoly.to/embed-mof90utnd8yf.html" },
-      { title: "Épisode 5", description: "Téléréalité de rencontre", image: "https://www.myutaku.com/media/episodes/421069/9687594.jpg", video: "https://vidmoly.to/embed-xeyayenx4ki2.html" },
-      { title: "Épisode 6", description: "Ego-surfing", image: "https://www.myutaku.com/media/episodes/421069/9687595.jpg", video: "https://vidmoly.to/embed-bb6tzs1zmy0m.html" },
-      { title: "Épisode 7", description: "Buzz", image: "https://www.myutaku.com/media/episodes/421069/9687596.jpg", video: "https://vidmoly.to/embed-f7t90yd27ovu.html" },
-      { title: "Épisode 8", description: "Première fois", image: "https://www.myutaku.com/media/episodes/421069/9687597.jpg", video: "https://vidmoly.to/embed-3gy9zfjmm0zh.html" },
-      { title: "Épisode 9", description: "B Komachi", image: "https://www.myutaku.com/media/episodes/421069/9687598.jpg", video: "https://vidmoly.to/embed-o9kh46hijbst.html" },
-      { title: "Épisode 10", description: "Pression", image: "https://www.myutaku.com/media/episodes/421069/9687599.jpg", video: "https://vidmoly.to/embed-0q7o8ghqnkyh.html" },
-      { title: "Épisode 11", description: "Idoles", image: "https://www.myutaku.com/media/episodes/421069/9687600.jpg", video: "https://vidmoly.to/embed-l1w7ncfm2xuz.html" }
+      { title: "Épisode 1",  description: "Une mère et ses enfants",           image: "https://www.myutaku.com/media/episodes/421069/9207267.jpg",   video: "https://vidmoly.to/embed-2v891imx7x9y.html" },
+      { title: "Épisode 2",  description: "La troisième option",               image: "https://www.myutaku.com/media/episodes/421069/9687591.jpg",   video: "https://vidmoly.to/embed-ja9dux9ihyef.html" },
+      { title: "Épisode 3",  description: "Une série adaptée d'un manga",      image: "https://www.myutaku.com/media/episodes/421069/9687592.jpg",   video: "https://vidmoly.to/embed-yh51mc31bswo.html" },
+      { title: "Épisode 4",  description: "Acteur",                            image: "https://www.myutaku.com/media/episodes/421069/9687593.jpg",   video: "https://vidmoly.to/embed-mof90utnd8yf.html" },
+      { title: "Épisode 5",  description: "Téléréalité de rencontre",          image: "https://www.myutaku.com/media/episodes/421069/9687594.jpg",   video: "https://vidmoly.to/embed-xeyayenx4ki2.html" },
+      { title: "Épisode 6",  description: "Ego-surfing",                        image: "https://www.myutaku.com/media/episodes/421069/9687595.jpg",   video: "https://vidmoly.to/embed-bb6tzs1zmy0m.html" },
+      { title: "Épisode 7",  description: "Buzz",                               image: "https://www.myutaku.com/media/episodes/421069/9687596.jpg",   video: "https://vidmoly.to/embed-f7t90yd27ovu.html" },
+      { title: "Épisode 8",  description: "Première fois",                      image: "https://www.myutaku.com/media/episodes/421069/9687597.jpg",   video: "https://vidmoly.to/embed-3gy9zfjmm0zh.html" },
+      { title: "Épisode 9",  description: "B Komachi",                          image: "https://www.myutaku.com/media/episodes/421069/9687598.jpg",   video: "https://vidmoly.to/embed-o9kh46hijbst.html" },
+      { title: "Épisode 10", description: "Pression",                           image: "https://www.myutaku.com/media/episodes/421069/9687599.jpg",   video: "https://vidmoly.to/embed-0q7o8ghqnkyh.html" },
+      { title: "Épisode 11", description: "Idoles",                             image: "https://www.myutaku.com/media/episodes/421069/9687600.jpg",   video: "https://vidmoly.to/embed-l1w7ncfm2xuz.html" }
     ];
 
     const episodeDataS2 = [
-      { title: "Épisode 1", description: "Tokyo Blade", image: "https://www.myutaku.com/media/episodes/421069/10508996.jpg", video: "https://vidmoly.to/embed-f68u61c42n3m.html" },
-      { title: "Épisode 2", description: "Game of Telephone", image: "https://www.myutaku.com/media/episodes/421069/10530178.jpg", video: "https://vidmoly.to/embed-mpqza1hxxrjz.html" },
-      { title: "Épisode 3", description: "Rewriting", image: "https://www.myutaku.com/media/episodes/421069/10530179.jpg", video: "https://vidmoly.to/embed-g1rghy3fe009.html" },
-      { title: "Épisode 4", description: "Emotional Acting", image: "https://www.myutaku.com/media/episodes/421069/10530180.jpg", video: "https://vidmoly.to/embed-2gq520ax5mzt.html" },
-      { title: "Épisode 5", description: "The Curtain Rises", image: "https://www.myutaku.com/media/episodes/421069/10530181.jpg", video: "https://vidmoly.to/embed-ennt6y2kqbdy.html" },
-      { title: "Épisode 6", description: "Growth", image: "https://www.myutaku.com/media/episodes/421069/10530182.jpg", video: "https://vidmoly.to/embed-ctijzjrgnfgw.html" },
-      { title: "Épisode 7", description: "Sun", image: "https://www.myutaku.com/media/episodes/421069/10530183.jpg", video: "https://vidmoly.to/embed-vu7dh67p9xvx.html" },
-      { title: "Épisode 8", description: "Trigger", image: "https://www.myutaku.com/media/episodes/421069/10530184.jpg", video: "https://vidmoly.to/embed-jwkk6pk5t9n3.html" },
-      { title: "Épisode 9", description: "Dream", image: "https://www.myutaku.com/media/episodes/421069/10530185.jpg", video: "https://vidmoly.to/embed-yahlw953b3qx.html" },
-      { title: "Épisode 10", description: "Liberation", image: "https://www.myutaku.com/media/episodes/421069/10530186.jpg", video: "https://vidmoly.to/embed-do3wv9dwm1qw.html" },
-      { title: "Épisode 11", description: "Freedom", image: "https://www.myutaku.com/media/episodes/421069/10530187.jpg", video: "https://vidmoly.to/embed-97qc7yl9eaw2.html" },
-      { title: "Épisode 12", description: "Reunion", image: "https://www.myutaku.com/media/episodes/421069/10530188.jpg", video: "https://vidmoly.to/embed-lk4rtduw3vgh.html" },
-      { title: "Épisode 13", description: "Wish", image: "https://www.myutaku.com/media/episodes/421069/10569952.jpg", video: "https://vidmoly.to/embed-j94dz7ebwv70.html" }
+      { title: "Épisode 1",  description: "Tokyo Blade",        image: "https://www.myutaku.com/media/episodes/421069/10508996.jpg", video: "https://vidmoly.to/embed-f68u61c42n3m.html" },
+      { title: "Épisode 2",  description: "Game of Telephone",  image: "https://www.myutaku.com/media/episodes/421069/10530178.jpg", video: "https://vidmoly.to/embed-mpqza1hxxrjz.html" },
+      { title: "Épisode 3",  description: "Rewriting",          image: "https://www.myutaku.com/media/episodes/421069/10530179.jpg", video: "https://vidmoly.to/embed-g1rghy3fe009.html" },
+      { title: "Épisode 4",  description: "Emotional Acting",   image: "https://www.myutaku.com/media/episodes/421069/10530180.jpg", video: "https://vidmoly.to/embed-2gq520ax5mzt.html" },
+      { title: "Épisode 5",  description: "The Curtain Rises",  image: "https://www.myutaku.com/media/episodes/421069/10530181.jpg", video: "https://vidmoly.to/embed-ennt6y2kqbdy.html" },
+      { title: "Épisode 6",  description: "Growth",             image: "https://www.myutaku.com/media/episodes/421069/10530182.jpg", video: "https://vidmoly.to/embed-ctijzjrgnfgw.html" },
+      { title: "Épisode 7",  description: "Sun",                image: "https://www.myutaku.com/media/episodes/421069/10530183.jpg", video: "https://vidmoly.to/embed-vu7dh67p9xvx.html" },
+      { title: "Épisode 8",  description: "Trigger",            image: "https://www.myutaku.com/media/episodes/421069/10530184.jpg", video: "https://vidmoly.to/embed-jwkk6pk5t9n3.html" },
+      { title: "Épisode 9",  description: "Dream",              image: "https://www.myutaku.com/media/episodes/421069/10530185.jpg", video: "https://vidmoly.to/embed-yahlw953b3qx.html" },
+      { title: "Épisode 10", description: "Liberation",         image: "https://www.myutaku.com/media/episodes/421069/10530186.jpg", video: "https://vidmoly.to/embed-do3wv9dwm1qw.html" },
+      { title: "Épisode 11", description: "Freedom",            image: "https://www.myutaku.com/media/episodes/421069/10530187.jpg", video: "https://vidmoly.to/embed-97qc7yl9eaw2.html" },
+      { title: "Épisode 12", description: "Reunion",            image: "https://www.myutaku.com/media/episodes/421069/10530188.jpg", video: "https://vidmoly.to/embed-lk4rtduw3vgh.html" },
+      { title: "Épisode 13", description: "Wish",               image: "https://www.myutaku.com/media/episodes/421069/10569952.jpg", video: "https://vidmoly.to/embed-j94dz7ebwv70.html" }
     ];
 
+    /*************************************************
+     * État
+     *************************************************/
     let currentEpisodeData = episodeDataS1;
     let currentEpisodeIndex = 0;
-    let timeoutId;
+    let timeoutId = null;
+    let userId = null;
+    const ANIME_TITLE = "Oshi no Ko";
 
-    const episodeList = document.getElementById("episode-list");
+    /*************************************************
+     * DOM refs
+     *************************************************/
+    const episodeList    = document.getElementById("episode-list");
     const videoContainer = document.getElementById("video-container");
-    const videoIframe = document.getElementById("episode-video");
-    const backButton = document.getElementById("back-button");
-    const nextButton = document.getElementById("next-button");
-    const seasonSelect = document.getElementById("season-select");
+    const videoIframe    = document.getElementById("episode-video");
+    const nextButton     = document.getElementById("next-button");
+    const loader         = document.getElementById("loader");
+    const seasonSelect   = document.getElementById("season-select");
 
+    /*************************************************
+     * Session utilisateur
+     *************************************************/
+    async function fetchSession() {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Erreur session Supabase:", error);
+        return null;
+      }
+      const session = sessionData?.session;
+      if (!session) {
+        console.warn("Pas de session (non connecté).");
+        return null;
+      }
+      return session.user.id;
+    }
+
+    (async () => {
+      userId = await fetchSession();
+    })();
+
+    /*************************************************
+     * Activité Supabase (profiles table)
+     *************************************************/
+    async function updateCurrentActivity(animeTitle, episodeIndex) {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: animeTitle,
+          episode_number: episodeIndex + 1
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur update activité:", error);
+    }
+
+    async function clearCurrentActivity() {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: null,
+          episode_number: null
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur clear activité:", error);
+    }
+
+    /*************************************************
+     * Rendu des épisodes
+     *************************************************/
     function renderEpisodes() {
       episodeList.innerHTML = "";
       currentEpisodeData.forEach((ep, index) => {
         const card = document.createElement("div");
         card.className = "episode-card";
         card.innerHTML = `
-          <img src="${ep.image}" alt="${ep.title}">
+          <img src="${ep.image}" alt="${ep.title} - ${ep.description}" />
           <h3>${ep.title}</h3>
           <p>${ep.description}</p>
         `;
@@ -203,59 +303,91 @@
       });
     }
 
+    /*************************************************
+     * Lecture épisode
+     *************************************************/
     function playEpisode(index) {
+      loader.style.display = "block";
       videoIframe.src = currentEpisodeData[index].video;
+
+      // afficher conteneur avec animation
       videoContainer.classList.remove("show");
       videoContainer.style.display = "flex";
       requestAnimationFrame(() => {
         videoContainer.classList.add("show");
       });
 
+      // activité
+      updateCurrentActivity(ANIME_TITLE, index);
+
+      // gérer bouton suivant
       nextButton.style.display = "none";
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         if (index < currentEpisodeData.length - 1) {
           nextButton.style.display = "inline-block";
         }
-      }, 1380000); // 23 minutes
+      }, 1_380_000); // 23 min
     }
 
+    /*************************************************
+     * Iframe chargée -> loader off
+     *************************************************/
+    videoIframe.onload = () => {
+      loader.style.display = "none";
+    };
+
+    /*************************************************
+     * Épisode suivant
+     *************************************************/
     function nextEpisode() {
       if (currentEpisodeIndex < currentEpisodeData.length - 1) {
         currentEpisodeIndex++;
         playEpisode(currentEpisodeIndex);
-        nextButton.style.display = "none";
       }
     }
 
+    /*************************************************
+     * Retour (clear activité + fermer lecteur)
+     *************************************************/
     function exitFullscreenMode() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
       videoContainer.classList.remove("show");
       setTimeout(() => {
         videoContainer.style.display = "none";
-        videoIframe.src = "";
-      }, 500);
-      nextButton.style.display = "none";
+
+        // tuer flux iframe
+        videoIframe.src = "about:blank";
+        requestAnimationFrame(() => (videoIframe.src = ""));
+
+        nextButton.style.display = "none";
+        loader.style.display = "none";
+
+        clearCurrentActivity();
+      }, 500); // correspond à transition CSS
     }
 
+    /*************************************************
+     * Changement de saison
+     *************************************************/
     seasonSelect.addEventListener("change", () => {
       currentEpisodeData = seasonSelect.value === "2" ? episodeDataS2 : episodeDataS1;
       renderEpisodes();
     });
 
-    document.addEventListener("fullscreenchange", () => {
-      if (document.fullscreenElement) {
-        backButton.classList.add("hidden");
-      } else {
-        backButton.classList.remove("hidden");
-      }
-    });
+    /*************************************************
+     * Exposer global (onclick dans HTML)
+     *************************************************/
+    window.exitFullscreenMode = exitFullscreenMode;
+    window.nextEpisode = nextEpisode;
 
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        backButton.classList.remove("hidden");
-      }
-    });
-
+    /*************************************************
+     * Init
+     *************************************************/
     renderEpisodes();
   </script>
 </body>
