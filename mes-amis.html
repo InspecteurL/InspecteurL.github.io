@@ -169,8 +169,10 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg';
 
+// Fonction pour échapper le contenu HTML
 const escapeHTML = (str='') => str.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 
+// Fonction pour gérer la session
 async function manageSession() {
   const { data: sessionData } = await supabase.auth.getSession();
   const session = sessionData?.session;
@@ -178,11 +180,18 @@ async function manageSession() {
     document.body.innerHTML = '<h2>🔒 Vous devez être connecté.</h2>';
     return;
   }
+  
   const userId = session.user.id;
+  
+  // Ajoute le token dans l'en-tête de la requête
+  supabase.auth.setAuth(session.access_token);
+  
+  // Charger les demandes reçues et les amis acceptés
   await loadPendingRequests(userId);
   await loadAcceptedFriends(userId);
 }
 
+// Fonction pour charger les demandes reçues
 async function loadPendingRequests(userId) {
   const container = document.getElementById('received-requests');
   container.innerHTML = '<p class="loading">Chargement...</p>';
@@ -193,8 +202,15 @@ async function loadPendingRequests(userId) {
     .eq('requested', userId)
     .eq('status', 'pending');
 
-  if (error) { container.innerHTML = '<p class="error">Erreur lors du chargement.</p>'; return; }
-  if (!data?.length) { container.textContent = 'Aucune demande pour le moment.'; return; }
+  if (error) { 
+    container.innerHTML = '<p class="error">Erreur lors du chargement.</p>'; 
+    return; 
+  }
+  
+  if (!data?.length) { 
+    container.textContent = 'Aucune demande pour le moment.'; 
+    return; 
+  }
 
   container.innerHTML = '';
   for (const req of data) {
@@ -228,6 +244,7 @@ async function loadPendingRequests(userId) {
   }
 }
 
+// Fonction pour charger les amis acceptés
 async function loadAcceptedFriends(userId) {
   const container = document.getElementById('accepted-friends');
   container.innerHTML = '<p class="loading">Chargement...</p>';
@@ -241,8 +258,15 @@ async function loadAcceptedFriends(userId) {
     .or(`requester.eq.${userId},requested.eq.${userId}`)
     .eq('status','accepted');
 
-  if (error) { container.innerHTML = '<p class="error">Erreur lors du chargement.</p>'; return; }
-  if (!data?.length) { container.textContent = "Vous n'avez pas encore d'amis."; return; }
+  if (error) { 
+    container.innerHTML = '<p class="error">Erreur lors du chargement.</p>'; 
+    return; 
+  }
+  
+  if (!data?.length) { 
+    container.textContent = "Vous n'avez pas encore d'amis."; 
+    return; 
+  }
 
   container.innerHTML = '';
   for (const rel of data) {
@@ -307,8 +331,12 @@ async function loadAcceptedFriends(userId) {
   }
 }
 
+// Gérer la session dès le départ
 manageSession();
+
+// Rafraîchir toutes les 10 secondes
 setInterval(manageSession, 10_000);
 </script>
+
 </body>
 </html>
