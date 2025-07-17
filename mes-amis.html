@@ -346,16 +346,17 @@
     const container = document.getElementById('accepted-friends');
     container.innerHTML = '';
 
-    const { data: friends, error } = await supabase
-      .from('friends')
-      .select(`
-        id,
-        status,
-        requester:requester(id, username, is_online, currently_watching, episode_number, episode_image, current_season, show_id),
-        requested:requested(id, username, is_online, currently_watching, episode_number, episode_image, current_season, show_id)
-      `)
-      .or(\`requester.eq.${userId},requested.eq.${userId}\`)
-      .eq('status', 'accepted');
+const { data: friends, error } = await supabase
+  .from('friends')
+  .select(`
+    id,
+    status,
+    requester:requester(id, username, is_online, currently_watching, episode_number, episode_image, current_season, show_id),
+    requested:requested(id, username, is_online, currently_watching, episode_number, episode_image, current_season, show_id)
+  `)
+  .or(`requester.eq.${userId},requested.eq.${userId}`)
+  .eq('status', 'accepted');
+
 
     if (error) {
       console.error('Erreur fetch amis:', error);
