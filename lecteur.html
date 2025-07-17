@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Lecteur Watch Party</title>
+<style>
+body{margin:0;background:#000;color:#fff;font-family:Arial,sans-serif;display:flex;flex-direction:column;height:100vh;}
+header{padding:8px 16px;background:#141414;display:flex;justify-content:space-between;align-items:center;font-size:14px;}
+#info{font-size:12px;opacity:.8;}
+#player-wrap{flex:1;display:flex;align-items:center;justify-content:center;}
+video{max-width:100%;max-height:100%;background:#000;}
+#participants{padding:8px 16px;background:#1e1e1e;font-size:14px;max-height:120px;overflow-y:auto;}
+#controls-remote{padding:8px 16px;background:#141414;display:flex;gap:8px;align-items:center;}
+#controls-remote button{background:#e50914;border:none;color:#fff;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:14px;}
+</style>
+</head>
+<body>
+<header>
+  <div id="title">Lecture synchronisée</div>
+  <div id="info"></div>
+</header>
+
+<div id="player-wrap">
+  <video id="player" controls></video>
+</div>
+
+<div id="controls-remote">
+  <button id="btn-play">Play</button>
+  <button id="btn-pause">Pause</button>
+  <button id="btn-sync">Resync</button>
+</div>
+
+<div id="participants">Participants…</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+/* ---------- Params URL ---------- */
+const params = new URLSearchParams(location.search);
+const SESSION_ID = params.get('session') || crypto.randomUUID();
+const SHOW_ID    = params.get('show')    || 'unknown';
+const SEASON     = parseInt(params.get('season') ?? '1', 10) || 1;
+const EPISODE    = parseInt(params.get('episode') ?? '1', 10) || 1;
+const START_T    = parseFloat(params.get('t') ?? '0') || 0;
+const ROLE       = (params.get('role') || 'guest').toLowerCase(); // 'host' ou 'guest'
+
+/* ---------- UI refs ---------- */
+const videoEl = document.getElementById('player');
+const infoEl  = document.getElementById('info');
+const participantsEl = document.getElementById('participants');
+const btnPlay  = document.getElementById('btn-play');
+const btnPause = document.getElementById('btn-pause');
+const btnSync  = document.getElementById('btn-sync');
+
+/* ---------- Load video source ----------
+   ICI : remplace par ton vrai système (manifest HLS, MP4, etc.)
+   Exemple statique :
+*/
+videoEl.src = `media/${encodeURIComponent(SHOW_ID)}_S${SEASON}_E${EPISODE}.mp4`;
+
+/* ---------- État local ---------- */
+let isHost = ROLE === 'host';
+let selfUser = null; // {id, username}
+let ignoreNext = false; // pour éviter boucle
+let lastBroadcastAt = 0; // throttle timeupdate
+
+/* ---------- Session utilisateur ---------- */
+async function getUser() {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
+  if (!session) {
+    infoEl.textContent = 'Non connecté.';
+    return;
+  }
+  const userId = session.user.id;
+  // Récup username
+  const { data: prof } = await supabase
+    .from('profiles')
+    .select('id, username')
+    .eq('id', userId)
+    .single();
+  selfUser = { id: userId, username: prof?.username ?? 'Moi' };
+}
+await getUser();
+
+/* ---------- Canal Realtime ---------- */
+const chanName = `watchparty:${SESSION_ID}`;
+const channel = supabase.channel(chanName, {
+  config: {
+    presence: {
+      key: selfUser?.id ?? Math.random().toString(36).slice(2)
+    }
+  }
+});
+
+/* ----- Presence callbacks ----- */
+channel.on('presence', { event: 'sync' }, () => {
+  const state = channel.presenceState();
+  const people = [];
+  for (const key in state) {
+    state[key].forEach(entry => people.push(entry.username || entry.id || key));
+  }
+  participantsEl.textContent = people.length
+    ? `Participants : ${people.join(', ')}`
+    : 'Participants…';
+  // Si un guest vient de se connecter, il va envoyer une demande d'état (voir plus bas)
+});
+
+/* ----- Broadcast message handler ----- */
+channel.on('broadcast', { event: 'watch' }, ({ payload }) => {
+  handleWatchMessage(payload);
+});
+
+/* ----- Sub ----- */
+await channel.subscribe(async status => {
+  if (status === 'SUBSCRIBED') {
+    // Joindre présence
+    await channel.track({
+      id: selfUser?.id,
+      username: selfUser?.username,
+      role: ROLE
+    });
+
+    // Guests demandent l'état initial
+    if (!isHost) {
+      sendStateRequest();
+    } else {
+      // Host position initiale depuis URL
+      try {
+        videoEl.currentTime = START_T;
+      } catch {}
+    }
+  }
+});
+
+/* ---------- Messages ---------- */
+/*
+payload types:
+  {type:'state_request', from:'userId'}
+  {type:'state_sync', from:'hostId', playing:true/false, time:secs, show, season, episode}
+  {type:'play', time:secs}
+  {type:'pause', time:secs}
+  {type:'seek', time:secs}
+  {type:'timeupdate', time:secs}   (throttled, optional)
+*/
+function sendBroadcast(obj) {
+  channel.send({
+    type: 'broadcast',
+    event: 'watch',
+    payload: obj
+  });
+}
+
+function sendStateRequest() {
+  sendBroadcast({ type:'state_request', from:selfUser?.id });
+}
+
+function sendStateSync() {
+  if (!isHost) return;
+  const playing = !videoEl.paused && !videoEl.ended;
+  sendBroadcast({
+    type:'state_sync',
+    from:selfUser?.id,
+    playing,
+    time: videoEl.currentTime,
+    show: SHOW_ID,
+    season: SEASON,
+    episode: EPISODE
+  });
+}
+
+function sendPlay()  { if (isHost) sendBroadcast({type:'play',  time: videoEl.currentTime}); }
+function sendPause() { if (isHost) sendBroadcast({type:'pause', time: videoEl.currentTime}); }
+function sendSeek()  { if (isHost) sendBroadcast({type:'seek',  time: videoEl.currentTime}); }
+function sendTimeupdate() {
+  if (!isHost) return;
+  const now = performance.now();
+  if (now - lastBroadcastAt < 1000) return; // 1s throttle
+  lastBroadcastAt = now;
+  sendBroadcast({type:'timeupdate', time: videoEl.currentTime});
+}
+
+/* ---------- Handler messages entrants ---------- */
+function handleWatchMessage(msg) {
+  if (!msg || typeof msg !== 'object') return;
+  switch (msg.type) {
+    case 'state_request':
+      if (isHost) sendStateSync();
+      break;
+    case 'state_sync':
+      if (isHost) return; // host ignore
+      applyRemoteState(msg);
+      break;
+    case 'play':
+      if (isHost) return;
+      syncTo(msg.time, true);
+      break;
+    case 'pause':
+      if (isHost) return;
+      syncTo(msg.time, false);
+      break;
+    case 'seek':
+      if (isHost) return;
+      syncTo(msg.time, !videoEl.paused); // conserve état local
+      break;
+    case 'timeupdate':
+      if (isHost) return;
+      maybeDriftCorrect(msg.time);
+      break;
+  }
+}
+
+/* ---------- Appliquer état envoyé par l'hôte ---------- */
+function applyRemoteState(msg) {
+  // show/season/episode pourraient être utilisés pour recharger source si différent
+  syncTo(msg.time, msg.playing);
+}
+
+/* ---------- Synchro ---------- */
+function syncTo(timeSec, shouldPlay) {
+  ignoreNext = true;
+  try {
+    videoEl.currentTime = timeSec ?? 0;
+  } catch {}
+  if (shouldPlay) {
+    videoEl.play().catch(()=>{});
+  } else {
+    videoEl.pause();
+  }
+  // expire ignoreNext après petite latence
+  setTimeout(()=>{ignoreNext=false;}, 200);
+}
+
+/* Correction de dérive légère (guests) */
+function maybeDriftCorrect(remoteT) {
+  const localT = videoEl.currentTime;
+  const drift = Math.abs(localT - remoteT);
+  if (drift > 2) { // tolérance 2s
+    syncTo(remoteT, !videoEl.paused);
+  }
+}
+
+/* ---------- Listeners Vidéo (host émet) ---------- */
+videoEl.addEventListener('play',  () => { if (!ignoreNext) sendPlay();  });
+videoEl.addEventListener('pause', () => { if (!ignoreNext) sendPause(); });
+videoEl.addEventListener('seeked',() => { if (!ignoreNext) sendSeek();  });
+videoEl.addEventListener('timeupdate', sendTimeupdate);
+
+/* ---------- Boutons UI ---------- */
+btnPlay.onclick  = () => videoEl.play();
+btnPause.onclick = () => videoEl.pause();
+btnSync .onclick = () => {
+  if (isHost) sendStateSync();
+  else sendStateRequest();
+};
+
+/* ---------- Info UI ---------- */
+infoEl.textContent = `Session: ${SESSION_ID} • Rôle: ${isHost ? 'hôte' : 'invité'}`;
+</script>
+</body>
+</html>
