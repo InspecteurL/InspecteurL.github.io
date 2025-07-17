@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Regardez tous les épisodes de Death Note par saison. Streaming en ligne gratuit et rapide." />
   <title>BNZ - Death Note</title>
   <style>
     body {
@@ -97,7 +101,9 @@
       border: none;
     }
 
-    #back-button, #next-button, #next-season-button {
+    #back-button,
+    #next-button,
+    #next-season-button {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 18px;
@@ -139,15 +145,21 @@
     <li><a href="accueil.html">Feuilleter</a></li>
   </ul>
 
-  <br><br>
+  <br /><br />
   <div style="text-align:center;">
-    <img src="https://wallpapers.com/images/hd/death-note-anime-logo-f1o1xxt32a7cw9uz.jpg" width="50%" alt="Logo Oshi no Ko">
+    <img
+      src="https://wallpapers.com/images/hd/death-note-anime-logo-f1o1xxt32a7cw9uz.jpg"
+      width="50%"
+      alt="Logo Death Note" />
   </div>
 
   <div style="text-align:center; margin: 20px;">
     <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
-    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+    <select
+      id="season-select"
+      style="padding: 10px; font-size: 16px; border-radius: 5px;">
       <option value="1">Saison 1</option>
+      <!-- il n'y a qu'une saison dans tes données -->
     </select>
   </div>
 
@@ -160,65 +172,130 @@
     <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
   </div>
 
-  <script>
-const episodeDataS1 = [
-  { title: "Episode 1", description: "Renaissance", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/aB8hhRZzqXERPFqNwm7fF8GFpNy.jpg", video: "https://vidmoly.to/embed-0go0wmu0n0e1.html" },
-  { title: "Episode 2", description: "Confrontation", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/63fCP6HZf5EbP6muq2mcYh6Lvc8.jpg", video: "https://vidmoly.to/embed-q2bh5pnab55x.html" },
-  { title: "Episode 3", description: "Pacte", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/k0g0yiL74LSp8JodQVjted6YMJf.jpg", video: "https://vidmoly.to/embed-6kinjxg54hlu.html" },
-  { title: "Episode 4", description: "Poursuite", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bisms0qgIVV8Qa9vGlFnfP9briJ.jpg", video: "https://vidmoly.to/embed-ms0q0m75fehu.html" },
-  { title: "Episode 5", description: "Tactique", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/m4aiPObgEBrb3w6TPejqX5sg8Nm.jpg", video: "https://vidmoly.to/embed-n7hnc8v8hm2e.html" },
-  { title: "Episode 6", description: "Déchirure", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5J62ABo9G1OrTYbLeShozI5uBwg.jpg", video: "https://vidmoly.to/embed-ibg4wknr05ad.html" },
-  { title: "Episode 7", description: "Temps couvert", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sYCqCMvO2stQIJewetuUNP78MmG.jpg", video: "https://vidmoly.to/embed-coc0swmme205.html" },
-  { title: "Episode 8", description: "Regard", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/smXhV1fvWJrDtGB1MV8N3lIt5JY.jpg", video: "https://vidmoly.to/embed-vfimz60j6uzj.html" },
-  { title: "Episode 9", description: "Contact", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iBRK6viH6YPlD81p6kD7yZlTIrZ.jpg", video: "https://vidmoly.to/embed-lkls1aj30ay4.html" },
-  { title: "Episode 10", description: "Doute", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iaXRsMzritInUDbQGUXG3ej3sTS.jpg", video: "https://vidmoly.to/embed-i43p69t302ic.html" },
-  { title: "Episode 11", description: "Assaut", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lgNB5KSLGYHrNgZeb0dYkDseqZX.jpg", video: "https://vidmoly.to/embed-izadjvu1gvnm.html" },
-  { title: "Episode 12", description: "Amour", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/nXhKdqsD4TZb83ZVkqNyYqkRMOX.jpg", video: "https://vidmoly.to/embed-3zf7n1vioxhg.html" },
-  { title: "Episode 13", description: "Confession", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/peEBI9p36VCBgDp6XW8JRjO7Vdt.jpg", video: "https://vidmoly.to/embed-sgslp9fumnbi.html" },
-  { title: "Episode 14", description: "Ami", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ztpKA5qn2eggXEH7xVsQPI2wYCW.jpg", video: "https://vidmoly.to/embed-z37c1vbcxn8f.html" },
-  { title: "Episode 15", description: "Pari", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/haM3evWcGOKlm2vb4mMiIuOOcqs.jpg", video: "https://vidmoly.to/embed-6bjefznyoc1u.html" },
-  { title: "Episode 16", description: "Décision", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hjCoHx1bUBWefQpfCbrqGMf3OBU.jpg", video: "https://vidmoly.to/embed-utxva5ki4x6r.html" },
-  { title: "Episode 17", description: "Exécution", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/1FUuh3vBS6nHQrwyo9Mp8uJ7gSm.jpg", video: "https://vidmoly.to/embed-v90jo3ja10l8.html" },
-  { title: "Episode 18", description: "Allié", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4TKRHj64fOaPynNP9tX635rqBQq.jpg", video: "https://vidmoly.to/embed-q1ifequjcg55.html" },
-  { title: "Episode 19", description: "Matsuda", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sF4lBqyCA7XUFnw3GcNyfreTlI4.jpg", video: "https://vidmoly.to/embed-nywqb1emlmqs.html" },
-  { title: "Episode 20", description: "Expédient", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/b92CjZHibPwxHPp4ID6vvaD5WZD.jpg", video: "https://vidmoly.to/embed-czdblvnfiua9.html" },
-  { title: "Episode 21", description: "Performance", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bRPNU2tc41D44L5C3wuVRq7iYZH.jpg", video: "https://vidmoly.to/embed-raxln9v4ko05.html" },
-  { title: "Episode 22", description: "Conduite", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/k8XdLNTPvIOVpXn8OXV8pOxksw3.jpg", video: "https://vidmoly.to/embed-i2rnrw255tc7.html" },
-  { title: "Episode 23", description: "Frénésie", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9bqSbzuySON08hKYUWigkalTqfh.jpg", video: "https://vidmoly.to/embed-qa5r1e54ef95.html" },
-  { title: "Episode 24", description: "Résurrection", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/vXoBIHI5u4jn8tieqMtbIPWtu1L.jpg", video: "https://vidmoly.to/embed-8tnfkb252732.html" },
-  { title: "Episode 25", description: "Silence", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hKsiCNb6cUUmgFPfA5nbZW3Tlpq.jpg", video: "https://vidmoly.to/embed-iirea2w7coxp.html" },
-  { title: "Episode 26", description: "Reprise", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/znx2F672Ng1QqqVc3EtC5xrm9h9.jpg", video: "https://vidmoly.to/embed-8w0b5jcefgb0.html" },
-  { title: "Episode 27", description: "Enlèvement", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5Nj7ueMx7zQyIC9WjLqAGcIVygW.jpg", video: "https://vidmoly.to/embed-87iey2arkp6r.html" },
-  { title: "Episode 28", description: "Impatience", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/kDCYenlI22Fjzw7a5pR9cUy3ByI.jpg", video: "https://vidmoly.to/embed-p7ejfwz80a1n.html" },
-  { title: "Episode 29", description: "Père", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lg9llxpONn5t5GYR2pyIQNpYyPt.jpg", video: "https://vidmoly.to/embed-kvwjj97z96p3.html" },
-  { title: "Episode 30", description: "Justice", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hhNecHn6UEcvGIXaWaSqKfGOBIM.jpg", video: "https://vidmoly.to/embed-zi3gde5jgjpo.html" },
-  { title: "Episode 31", description: "Transfert", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sXEJqLQvNEAGUJNDHJzfiMK0qV4.jpg", video: "https://vidmoly.to/embed-5cmiiv1hyt3s.html" },
-  { title: "Episode 32", description: "Choix", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/A4v49zTK59PCExMM5tQJUqj0231.jpg", video: "https://vidmoly.to/embed-l3tn4ktkfn3d.html" },
-  { title: "Episode 33", description: "Arrogance", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/y7i5PSIUqHv3HjKV1iSdD6WqpQq.jpg", video: "https://vidmoly.to/embed-genp2gmd5am6.html" },
-  { title: "Episode 34", description: "Vigilance", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/xIcazNfhYAD2RqTps5aibV1rzuJ.jpg", video: "https://vidmoly.to/embed-kkyv48mhbk4o.html" },
-  { title: "Episode 35", description: "Tentative de meurtre", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/2Zb7s6RZ6uvEL8YJ4R7KhEQBCuk.jpg", video: "https://vidmoly.to/embed-b31sbke936gl.html" },
-  { title: "Episode 36", description: "28 janvier", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5jnmAdjOpeCHN4v4R5XquLICPt5.jpg", video: "https://vidmoly.to/embed-da4bnvra1pe2.html" },
-  { title: "Episode 37", description: "Le nouveau monde", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/85nG6sUrczzZVATIXP9JJvNMuSo.jpg", video: "https://vidmoly.to/embed-c5qalng4xlp3.html" }
-];
+  <script type="module">
+    /*************************************************
+     * Supabase init
+     *************************************************/
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+    const supabase = createClient(
+      "https://wuagahavmbugmnuzsouf.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
 
+    /*************************************************
+     * Données épisodes Saison 1
+     *************************************************/
+    const episodeDataS1 = [
+      { title: "Episode 1",  description: "Renaissance",              image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/aB8hhRZzqXERPFqNwm7fF8GFpNy.jpg", video: "https://vidmoly.to/embed-0go0wmu0n0e1.html" },
+      { title: "Episode 2",  description: "Confrontation",            image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/63fCP6HZf5EbP6muq2mcYh6Lvc8.jpg", video: "https://vidmoly.to/embed-q2bh5pnab55x.html" },
+      { title: "Episode 3",  description: "Pacte",                    image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/k0g0yiL74LSp8JodQVjted6YMJf.jpg", video: "https://vidmoly.to/embed-6kinjxg54hlu.html" },
+      { title: "Episode 4",  description: "Poursuite",                image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bisms0qgIVV8Qa9vGlFnfP9briJ.jpg", video: "https://vidmoly.to/embed-ms0q0m75fehu.html" },
+      { title: "Episode 5",  description: "Tactique",                 image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/m4aiPObgEBrb3w6TPejqX5sg8Nm.jpg", video: "https://vidmoly.to/embed-n7hnc8v8hm2e.html" },
+      { title: "Episode 6",  description: "Déchirure",                image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5J62ABo9G1OrTYbLeShozI5uBwg.jpg", video: "https://vidmoly.to/embed-ibg4wknr05ad.html" },
+      { title: "Episode 7",  description: "Temps couvert",            image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sYCqCMvO2stQIJewetuUNP78MmG.jpg", video: "https://vidmoly.to/embed-coc0swmme205.html" },
+      { title: "Episode 8",  description: "Regard",                   image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/smXhV1fvWJrDtGB1MV8N3lIt5JY.jpg", video: "https://vidmoly.to/embed-vfimz60j6uzj.html" },
+      { title: "Episode 9",  description: "Contact",                  image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iBRK6viH6YPlD81p6kD7yZlTIrZ.jpg", video: "https://vidmoly.to/embed-lkls1aj30ay4.html" },
+      { title: "Episode 10", description: "Doute",                    image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iaXRsMzritInUDbQGUXG3ej3sTS.jpg", video: "https://vidmoly.to/embed-i43p69t302ic.html" },
+      { title: "Episode 11", description: "Assaut",                   image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lgNB5KSLGYHrNgZeb0dYkDseqZX.jpg", video: "https://vidmoly.to/embed-izadjvu1gvnm.html" },
+      { title: "Episode 12", description: "Amour",                    image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/nXhKdqsD4TZb83ZVkqNyYqkRMOX.jpg", video: "https://vidmoly.to/embed-3zf7n1vioxhg.html" },
+      { title: "Episode 13", description: "Confession",               image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/peEBI9p36VCBgDp6XW8JRjO7Vdt.jpg", video: "https://vidmoly.to/embed-sgslp9fumnbi.html" },
+      { title: "Episode 14", description: "Ami",                      image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ztpKA5qn2eggXEH7xVsQPI2wYCW.jpg", video: "https://vidmoly.to/embed-z37c1vbcxn8f.html" },
+      { title: "Episode 15", description: "Pari",                     image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/haM3evWcGOKlm2vb4mMiIuOOcqs.jpg", video: "https://vidmoly.to/embed-6bjefznyoc1u.html" },
+      { title: "Episode 16", description: "Décision",                 image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hjCoHx1bUBWefQpfCbrqGMf3OBU.jpg", video: "https://vidmoly.to/embed-utxva5ki4x6r.html" },
+      { title: "Episode 17", description: "Exécution",                image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/1FUuh3vBS6nHQrwyo9Mp8uJ7gSm.jpg", video: "https://vidmoly.to/embed-v90jo3ja10l8.html" },
+      { title: "Episode 18", description: "Allié",                    image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4TKRHj64fOaPynNP9tX635rqBQq.jpg", video: "https://vidmoly.to/embed-q1ifequjcg55.html" },
+      { title: "Episode 19", description: "Matsuda",                  image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sF4lBqyCA7XUFnw3GcNyfreTlI4.jpg", video: "https://vidmoly.to/embed-nywqb1emlmqs.html" },
+      { title: "Episode 20", description: "Expédient",                image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/b92CjZHibPwxHPp4ID6vvaD5WZD.jpg", video: "https://vidmoly.to/embed-czdblvnfiua9.html" },
+      { title: "Episode 21", description: "Performance",               image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bRPNU2tc41D44L5C3wuVRq7iYZH.jpg", video: "https://vidmoly.to/embed-raxln9v4ko05.html" },
+      { title: "Episode 22", description: "Conduite",                  image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/k8XdLNTPvIOVpXn8OXV8pOxksw3.jpg", video: "https://vidmoly.to/embed-i2rnrw255tc7.html" },
+      { title: "Episode 23", description: "Frénésie",                  image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9bqSbzuySON08hKYUWigkalTqfh.jpg", video: "https://vidmoly.to/embed-qa5r1e54ef95.html" },
+      { title: "Episode 24", description: "Résurrection",              image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/vXoBIHI5u4jn8tieqMtbIPWtu1L.jpg", video: "https://vidmoly.to/embed-8tnfkb252732.html" },
+      { title: "Episode 25", description: "Silence",                   image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hKsiCNb6cUUmgFPfA5nbZW3Tlpq.jpg", video: "https://vidmoly.to/embed-iirea2w7coxp.html" },
+      { title: "Episode 26", description: "Reprise",                   image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/znx2F672Ng1QqqVc3EtC5xrm9h9.jpg", video: "https://vidmoly.to/embed-8w0b5jcefgb0.html" },
+      { title: "Episode 27", description: "Enlèvement",                image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5Nj7ueMx7zQyIC9WjLqAGcIVygW.jpg", video: "https://vidmoly.to/embed-87iey2arkp6r.html" },
+      { title: "Episode 28", description: "Impatience",                image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/kDCYenlI22Fjzw7a5pR9cUy3ByI.jpg", video: "https://vidmoly.to/embed-p7ejfwz80a1n.html" },
+      { title: "Episode 29", description: "Père",                      image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lg9llxpONn5t5GYR2pyIQNpYyPt.jpg", video: "https://vidmoly.to/embed-kvwjj97z96p3.html" },
+      { title: "Episode 30", description: "Justice",                   image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hhNecHn6UEcvGIXaWaSqKfGOBIM.jpg", video: "https://vidmoly.to/embed-zi3gde5jgjpo.html" },
+      { title: "Episode 31", description: "Transfert",                 image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/sXEJqLQvNEAGUJNDHJzfiMK0qV4.jpg", video: "https://vidmoly.to/embed-5cmiiv1hyt3s.html" },
+      { title: "Episode 32", description: "Choix",                     image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/A4v49zTK59PCExMM5tQJUqj0231.jpg", video: "https://vidmoly.to/embed-l3tn4ktkfn3d.html" },
+      { title: "Episode 33", description: "Arrogance",                 image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/y7i5PSIUqHv3HjKV1iSdD6WqpQq.jpg", video: "https://vidmoly.to/embed-genp2gmd5am6.html" },
+      { title: "Episode 34", description: "Vigilance",                 image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/xIcazNfhYAD2RqTps5aibV1rzuJ.jpg", video: "https://vidmoly.to/embed-kkyv48mhbk4o.html" },
+      { title: "Episode 35", description: "Tentative de meurtre",      image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/2Zb7s6RZ6uvEL8YJ4R7KhEQBCuk.jpg", video: "https://vidmoly.to/embed-b31sbke936gl.html" },
+      { title: "Episode 36", description: "28 janvier",                image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5jnmAdjOpeCHN4v4R5XquLICPt5.jpg", video: "https://vidmoly.to/embed-da4bnvra1pe2.html" },
+      { title: "Episode 37", description: "Le nouveau monde",          image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/85nG6sUrczzZVATIXP9JJvNMuSo.jpg", video: "https://vidmoly.to/embed-c5qalng4xlp3.html" }
+    ];
 
-
-
-
-
+    /*************************************************
+     * État
+     *************************************************/
     let currentEpisodeData = episodeDataS1;
     let currentEpisodeIndex = 0;
-    let timeoutId;
+    let timeoutId = null;
+    let userId = null;
+    const ANIME_TITLE = "Death Note";
 
-    const episodeList = document.getElementById("episode-list");
+    /*************************************************
+     * DOM refs
+     *************************************************/
+    const episodeList    = document.getElementById("episode-list");
     const videoContainer = document.getElementById("video-container");
-    const videoIframe = document.getElementById("episode-video");
-    const backButton = document.getElementById("back-button");
-    const nextButton = document.getElementById("next-button");
-    const loader = document.getElementById("loader");
-    const seasonSelect = document.getElementById("season-select");
+    const videoIframe    = document.getElementById("episode-video");
+    const nextButton     = document.getElementById("next-button");
+    const loader         = document.getElementById("loader");
+    const seasonSelect   = document.getElementById("season-select");
 
+    /*************************************************
+     * Session utilisateur
+     *************************************************/
+    async function fetchSession() {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Erreur session Supabase:", error);
+        return null;
+      }
+      const session = sessionData?.session;
+      if (!session) {
+        console.warn("Pas de session (non connecté).");
+        return null;
+      }
+      return session.user.id;
+    }
+
+    (async () => {
+      userId = await fetchSession();
+    })();
+
+    /*************************************************
+     * Activité Supabase (profiles)
+     *************************************************/
+    async function updateCurrentActivity(animeTitle, episodeIndex) {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: animeTitle,
+          episode_number: episodeIndex + 1
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur update activité:", error);
+    }
+
+    async function clearCurrentActivity() {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: null,
+          episode_number: null
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur clear activité:", error);
+    }
+
+    /*************************************************
+     * Rendu épisodes
+     *************************************************/
     function renderEpisodes() {
       episodeList.innerHTML = "";
       currentEpisodeData.forEach((ep, index) => {
@@ -237,29 +314,43 @@ const episodeDataS1 = [
       });
     }
 
+    /*************************************************
+     * Lecture épisode
+     *************************************************/
     function playEpisode(index) {
       loader.style.display = "block";
       videoIframe.src = currentEpisodeData[index].video;
+
+      // animation d’apparition
       videoContainer.classList.remove("show");
       videoContainer.style.display = "flex";
       requestAnimationFrame(() => {
         videoContainer.classList.add("show");
       });
 
-      nextButton.style.display = "none";
-      clearTimeout(timeoutId);
+      // activité
+      updateCurrentActivity(ANIME_TITLE, index);
 
+      // bouton suivant
+      nextButton.style.display = "none";
+      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         if (index < currentEpisodeData.length - 1) {
           nextButton.style.display = "inline-block";
         }
-      }, 1380000); // 23 minutes
+      }, 1_380_000); // 23 min
     }
 
+    /*************************************************
+     * Iframe chargée -> loader off
+     *************************************************/
     videoIframe.onload = () => {
       loader.style.display = "none";
     };
 
+    /*************************************************
+     * Épisode suivant
+     *************************************************/
     function nextEpisode() {
       if (currentEpisodeIndex < currentEpisodeData.length - 1) {
         currentEpisodeIndex++;
@@ -267,22 +358,48 @@ const episodeDataS1 = [
       }
     }
 
+    /*************************************************
+     * Retour (fermer + clear activité)
+     *************************************************/
     function exitFullscreenMode() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
       videoContainer.classList.remove("show");
       setTimeout(() => {
         videoContainer.style.display = "none";
-        videoIframe.src = "";
+
+        // tuer flux iframe
+        videoIframe.src = "about:blank";
+        requestAnimationFrame(() => (videoIframe.src = ""));
+
         nextButton.style.display = "none";
+        loader.style.display = "none";
+
+        clearCurrentActivity();
       }, 500);
     }
 
-    seasonSelect.addEventListener("change", (e) => {
-      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+    /*************************************************
+     * Changement saison
+     * (placeholder : une seule saison dispo)
+     *************************************************/
+    seasonSelect.addEventListener("change", () => {
+      currentEpisodeData = episodeDataS1;
       renderEpisodes();
     });
 
-   
+    /*************************************************
+     * Exposer global pour onclick HTML
+     *************************************************/
+    window.exitFullscreenMode = exitFullscreenMode;
+    window.nextEpisode = nextEpisode;
 
+    /*************************************************
+     * Init
+     *************************************************/
     renderEpisodes();
   </script>
 </body>
