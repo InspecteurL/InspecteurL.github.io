@@ -216,6 +216,8 @@ const episodeDataS1 = [
       videoContainer.style.display = "flex";
       requestAnimationFrame(() => {
         videoContainer.classList.add("show");
+        updateCurrentActivity("Erased", index);
+
       });
 
       nextButton.style.display = "none";
@@ -231,6 +233,22 @@ const episodeDataS1 = [
     videoIframe.onload = () => {
       loader.style.display = "none";
     };
+    async function updateCurrentActivity(animeTitle, episodeIndex) {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData.session;
+  if (!session) return;
+
+  const userId = session.user.id;
+
+  await supabase
+    .from('profiles')
+    .update({
+      currently_watching: animeTitle,
+      episode_number: episodeIndex + 1 // car index commence à 0
+    })
+    .eq('id', userId);
+}
+
 
     function nextEpisode() {
       if (currentEpisodeIndex < currentEpisodeData.length - 1) {
