@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Regardez tous les épisodes de Steins;Gate par saison. Streaming en ligne gratuit et rapide." />
   <title>BNZ - Steins ; Gate</title>
   <style>
     body {
@@ -97,7 +101,8 @@
       border: none;
     }
 
-    #back-button, #next-button, #next-season-button {
+    #back-button,
+    #next-button {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 18px;
@@ -139,15 +144,21 @@
     <li><a href="accueil.html">Feuilleter</a></li>
   </ul>
 
-  <br><br>
+  <br /><br />
   <div style="text-align:center;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Steins%3BGate.svg/1024px-Steins%3BGate.svg.png" width="50%" alt="Logo Oshi no Ko">
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Steins%3BGate.svg/1024px-Steins%3BGate.svg.png"
+      width="50%"
+      alt="Logo Steins;Gate" />
   </div>
 
   <div style="text-align:center; margin: 20px;">
     <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
-    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+    <select
+      id="season-select"
+      style="padding: 10px; font-size: 16px; border-radius: 5px;">
       <option value="1">Saison 1</option>
+      <!-- Ajouter d'autres saisons ici si dispo -->
     </select>
   </div>
 
@@ -160,57 +171,124 @@
     <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
   </div>
 
-  <script>
-const episodeDataS1 = [
-  { title: "Episode 1", description: "Prologue du commencement et de la fin", image: "https://www.myutaku.com/media/episodes/244061/3989271.jpg", video: "https://vidmoly.to/embed-6io31mm461y1.html" },
-  { title: "Episode 2", description: "Paranoïa du voyage dans le temps", image: "https://www.myutaku.com/media/episodes/244061/3989281.jpg", video: "https://vidmoly.to/embed-dxkng8050lgm.html" },
-  { title: "Episode 3", description: "Paranoïa de mondes parallèles", image: "https://www.myutaku.com/media/episodes/244061/3989291.jpg", video: "https://vidmoly.to/embed-57u0lqnguedt.html" },
-  { title: "Episode 4", description: "Rendez-vous entre collisions de théories errantes", image: "https://www.myutaku.com/media/episodes/244061/3989301.jpg", video: "https://vidmoly.to/embed-5k03se180ass.html" },
-  { title: "Episode 5", description: "Rendez-vous de collisions entre charges électriques", image: "https://www.myutaku.com/media/episodes/244061/3989311.jpg", video: "https://vidmoly.to/embed-nbyg2q7f43cc.html" },
-  { title: "Episode 6", description: "Divergence de l'effet papillon", image: "https://www.myutaku.com/media/episodes/244061/3989321.jpg", video: "https://vidmoly.to/embed-0u2r8wrcrj2g.html" },
-  { title: "Episode 7", description: "Divergence de la fracture", image: "https://www.myutaku.com/media/episodes/244061/3989331.jpg", video: "https://vidmoly.to/embed-1x3jkrouopuq.html" },
-  { title: "Episode 8", description: "Homéostasie d'une fantaisie", image: "https://www.myutaku.com/media/episodes/244061/3989341.jpg", video: "https://vidmoly.to/embed-fmfjm2ebbmjn.html" },
-  { title: "Episode 9", description: "Homéostasie d'une illusion", image: "https://www.myutaku.com/media/episodes/244061/3989351.jpg", video: "https://vidmoly.to/embed-o90z8u2a1kbt.html" },
-  { title: "Episode 10", description: "Homéostasie d'une vie commune", image: "https://www.myutaku.com/media/episodes/244061/3989361.jpg", video: "https://vidmoly.to/embed-0oitju0mp6rn.html" },
-  { title: "Episode 11", description: "Dogme de la frontière espace-temps", image: "https://www.myutaku.com/media/episodes/244061/3989371.jpg", video: "https://vidmoly.to/embed-02zyxgbor06r.html" },
-  { title: "Episode 12", description: "Dogme de la limite statique", image: "https://www.myutaku.com/media/episodes/244061/3989391.jpg", video: "https://vidmoly.to/embed-aokk7wxp9kwg.html" },
-  { title: "Episode 13", description: "Nécrose métaphysique", image: "https://www.myutaku.com/media/episodes/244061/3989401.jpg", video: "https://vidmoly.to/embed-a0bwh1jyjso4.html" },
-  { title: "Episode 14", description: "Nécrose physique", image: "https://www.myutaku.com/media/episodes/244061/3989411.jpg", video: "https://vidmoly.to/embed-lx1xkcyevw68.html" },
-  { title: "Episode 15", description: "Nécrose d'un chaînon mourant", image: "https://www.myutaku.com/media/episodes/244061/3989421.jpg", video: "https://vidmoly.to/embed-2xsxnyc5ukzm.html" },
-  { title: "Episode 16", description: "Nécrose de l'irréversibilité", image: "https://www.myutaku.com/media/episodes/244061/3989431.jpg", video: "https://vidmoly.to/embed-j5hl3871pm6j.html" },
-  { title: "Episode 17", description: "Complexe d'une image visuelle distordue", image: "https://www.myutaku.com/media/episodes/244061/3989441.jpg", video: "https://vidmoly.to/embed-nq40y4ddx12f.html" },
-  { title: "Episode 18", description: "Ressemblance androgyne", image: "https://www.myutaku.com/media/episodes/244061/3989451.jpg", video: "https://vidmoly.to/embed-uz7efcdsz23o.html" },
-  { title: "Episode 19", description: "Apoptose d'une chaîne infinie", image: "https://www.myutaku.com/media/episodes/244061/3989461.jpg", video: "https://vidmoly.to/embed-79xlhpdqb1uv.html" },
-  { title: "Episode 20", description: "Apoptose du cri de rancœur", image: "https://www.myutaku.com/media/episodes/244061/3989471.jpg", video: "https://vidmoly.to/embed-icfscdyssfkr.html" },
-  { title: "Episode 21", description: "Effondrement du principe de causalité", image: "https://www.myutaku.com/media/episodes/244061/3989481.jpg", video: "https://vidmoly.to/embed-3qi6oy76at9k.html" },
-  { title: "Episode 22", description: "Effondrement de l'existence", image: "https://www.myutaku.com/media/episodes/244061/3989491.jpg", video: "https://vidmoly.to/embed-7ok4iwftlgn2.html" },
-  { title: "Episode 23", description: "Sur la frontière du Steins;Gate", image: "https://www.myutaku.com/media/episodes/244061/3989501.jpg", video: "https://vidmoly.to/embed-7a73u4aj08f7.html" },
-  { title: "Episode 24", description: "Prologue de la fin et du commencement", image: "https://www.myutaku.com/media/episodes/244061/3989511.jpg", video: "https://vidmoly.to/embed-ebuhqmws3ov7.html" }
-];
+  <script type="module">
+    /*************************************************
+     * Supabase init
+     *************************************************/
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+    const supabase = createClient(
+      "https://wuagahavmbugmnuzsouf.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
 
+    /*************************************************
+     * Données épisodes Saison 1
+     *************************************************/
+    const episodeDataS1 = [
+      { title: "Épisode 1",  description: "Prologue du commencement et de la fin",                image: "https://www.myutaku.com/media/episodes/244061/3989271.jpg", video: "https://vidmoly.to/embed-6io31mm461y1.html" },
+      { title: "Épisode 2",  description: "Paranoïa du voyage dans le temps",                    image: "https://www.myutaku.com/media/episodes/244061/3989281.jpg", video: "https://vidmoly.to/embed-dxkng8050lgm.html" },
+      { title: "Épisode 3",  description: "Paranoïa de mondes parallèles",                       image: "https://www.myutaku.com/media/episodes/244061/3989291.jpg", video: "https://vidmoly.to/embed-57u0lqnguedt.html" },
+      { title: "Épisode 4",  description: "Rendez-vous entre collisions de théories errantes",   image: "https://www.myutaku.com/media/episodes/244061/3989301.jpg", video: "https://vidmoly.to/embed-5k03se180ass.html" },
+      { title: "Épisode 5",  description: "Rendez-vous de collisions entre charges électriques", image: "https://www.myutaku.com/media/episodes/244061/3989311.jpg", video: "https://vidmoly.to/embed-nbyg2q7f43cc.html" },
+      { title: "Épisode 6",  description: "Divergence de l'effet papillon",                      image: "https://www.myutaku.com/media/episodes/244061/3989321.jpg", video: "https://vidmoly.to/embed-0u2r8wrcrj2g.html" },
+      { title: "Épisode 7",  description: "Divergence de la fracture",                           image: "https://www.myutaku.com/media/episodes/244061/3989331.jpg", video: "https://vidmoly.to/embed-1x3jkrouopuq.html" },
+      { title: "Épisode 8",  description: "Homéostasie d'une fantaisie",                         image: "https://www.myutaku.com/media/episodes/244061/3989341.jpg", video: "https://vidmoly.to/embed-fmfjm2ebbmjn.html" },
+      { title: "Épisode 9",  description: "Homéostasie d'une illusion",                          image: "https://www.myutaku.com/media/episodes/244061/3989351.jpg", video: "https://vidmoly.to/embed-o90z8u2a1kbt.html" },
+      { title: "Épisode 10", description: "Homéostasie d'une vie commune",                       image: "https://www.myutaku.com/media/episodes/244061/3989361.jpg", video: "https://vidmoly.to/embed-0oitju0mp6rn.html" },
+      { title: "Épisode 11", description: "Dogme de la frontière espace-temps",                  image: "https://www.myutaku.com/media/episodes/244061/3989371.jpg", video: "https://vidmoly.to/embed-02zyxgbor06r.html" },
+      { title: "Épisode 12", description: "Dogme de la limite statique",                         image: "https://www.myutaku.com/media/episodes/244061/3989391.jpg", video: "https://vidmoly.to/embed-aokk7wxp9kwg.html" },
+      { title: "Épisode 13", description: "Nécrose métaphysique",                                image: "https://www.myutaku.com/media/episodes/244061/3989401.jpg", video: "https://vidmoly.to/embed-a0bwh1jyjso4.html" },
+      { title: "Épisode 14", description: "Nécrose physique",                                    image: "https://www.myutaku.com/media/episodes/244061/3989411.jpg", video: "https://vidmoly.to/embed-lx1xkcyevw68.html" },
+      { title: "Épisode 15", description: "Nécrose d'un chaînon mourant",                        image: "https://www.myutaku.com/media/episodes/244061/3989421.jpg", video: "https://vidmoly.to/embed-2xsxnyc5ukzm.html" },
+      { title: "Épisode 16", description: "Nécrose de l'irréversibilité",                        image: "https://www.myutaku.com/media/episodes/244061/3989431.jpg", video: "https://vidmoly.to/embed-j5hl3871pm6j.html" },
+      { title: "Épisode 17", description: "Complexe d'une image visuelle distordue",             image: "https://www.myutaku.com/media/episodes/244061/3989441.jpg", video: "https://vidmoly.to/embed-nq40y4ddx12f.html" },
+      { title: "Épisode 18", description: "Ressemblance androgyne",                              image: "https://www.myutaku.com/media/episodes/244061/3989451.jpg", video: "https://vidmoly.to/embed-uz7efcdsz23o.html" },
+      { title: "Épisode 19", description: "Apoptose d'une chaîne infinie",                       image: "https://www.myutaku.com/media/episodes/244061/3989461.jpg", video: "https://vidmoly.to/embed-79xlhpdqb1uv.html" },
+      { title: "Épisode 20", description: "Apoptose du cri de rancœur",                          image: "https://www.myutaku.com/media/episodes/244061/3989471.jpg", video: "https://vidmoly.to/embed-icfscdyssfkr.html" },
+      { title: "Épisode 21", description: "Effondrement du principe de causalité",               image: "https://www.myutaku.com/media/episodes/244061/3989481.jpg", video: "https://vidmoly.to/embed-3qi6oy76at9k.html" },
+      { title: "Épisode 22", description: "Effondrement de l'existence",                         image: "https://www.myutaku.com/media/episodes/244061/3989491.jpg", video: "https://vidmoly.to/embed-7ok4iwftlgn2.html" },
+      { title: "Épisode 23", description: "Sur la frontière du Steins;Gate",                     image: "https://www.myutaku.com/media/episodes/244061/3989501.jpg", video: "https://vidmoly.to/embed-7a73u4aj08f7.html" },
+      { title: "Épisode 24", description: "Prologue de la fin et du commencement",               image: "https://www.myutaku.com/media/episodes/244061/3989511.jpg", video: "https://vidmoly.to/embed-ebuhqmws3ov7.html" }
+    ];
 
-
-
+    /*************************************************
+     * État
+     *************************************************/
     let currentEpisodeData = episodeDataS1;
     let currentEpisodeIndex = 0;
-    let timeoutId;
+    let timeoutId = null;
+    let userId = null;
+    const ANIME_TITLE = "Steins;Gate"; // string stockée dans profiles.currently_watching
 
-    const episodeList = document.getElementById("episode-list");
+    /*************************************************
+     * DOM refs
+     *************************************************/
+    const episodeList    = document.getElementById("episode-list");
     const videoContainer = document.getElementById("video-container");
-    const videoIframe = document.getElementById("episode-video");
-    const backButton = document.getElementById("back-button");
-    const nextButton = document.getElementById("next-button");
-    const loader = document.getElementById("loader");
-    const seasonSelect = document.getElementById("season-select");
+    const videoIframe    = document.getElementById("episode-video");
+    const nextButton     = document.getElementById("next-button");
+    const loader         = document.getElementById("loader");
+    const seasonSelect   = document.getElementById("season-select");
 
+    /*************************************************
+     * Session utilisateur
+     *************************************************/
+    async function fetchSession() {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Erreur session Supabase:", error);
+        return null;
+      }
+      const session = sessionData?.session;
+      if (!session) {
+        console.warn("Pas de session (non connecté).");
+        return null;
+      }
+      return session.user.id;
+    }
+
+    (async () => {
+      userId = await fetchSession();
+    })();
+
+    /*************************************************
+     * Activité Supabase (profiles)
+     *************************************************/
+    async function updateCurrentActivity(animeTitle, episodeIndex) {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: animeTitle,
+          episode_number: episodeIndex + 1
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur update activité:", error);
+    }
+
+    async function clearCurrentActivity() {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: null,
+          episode_number: null
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur clear activité:", error);
+    }
+
+    /*************************************************
+     * Rendu liste épisodes
+     *************************************************/
     function renderEpisodes() {
       episodeList.innerHTML = "";
       currentEpisodeData.forEach((ep, index) => {
         const card = document.createElement("div");
         card.className = "episode-card";
         card.innerHTML = `
-          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}">
+          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}" />
           <h3>${ep.title}</h3>
           <p>${ep.description}</p>
         `;
@@ -222,29 +300,43 @@ const episodeDataS1 = [
       });
     }
 
+    /*************************************************
+     * Lecture épisode
+     *************************************************/
     function playEpisode(index) {
       loader.style.display = "block";
       videoIframe.src = currentEpisodeData[index].video;
+
+      // Show container w/ transition
       videoContainer.classList.remove("show");
       videoContainer.style.display = "flex";
       requestAnimationFrame(() => {
         videoContainer.classList.add("show");
       });
 
-      nextButton.style.display = "none";
-      clearTimeout(timeoutId);
+      // update activité
+      updateCurrentActivity(ANIME_TITLE, index);
 
+      // bouton suivant masqué tant que timer pas écoulé
+      nextButton.style.display = "none";
+      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         if (index < currentEpisodeData.length - 1) {
           nextButton.style.display = "inline-block";
         }
-      }, 1380000); // 23 minutes
+      }, 1_380_000); // 23 min
     }
 
+    /*************************************************
+     * Iframe chargée -> loader off
+     *************************************************/
     videoIframe.onload = () => {
       loader.style.display = "none";
     };
 
+    /*************************************************
+     * Épisode suivant
+     *************************************************/
     function nextEpisode() {
       if (currentEpisodeIndex < currentEpisodeData.length - 1) {
         currentEpisodeIndex++;
@@ -252,22 +344,48 @@ const episodeDataS1 = [
       }
     }
 
+    /*************************************************
+     * Retour (fermer lecteur + clear activité)
+     *************************************************/
     function exitFullscreenMode() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
       videoContainer.classList.remove("show");
       setTimeout(() => {
         videoContainer.style.display = "none";
-        videoIframe.src = "";
+
+        // tuer le flux dans l'iframe (double flush pour certains players)
+        videoIframe.src = "about:blank";
+        requestAnimationFrame(() => (videoIframe.src = ""));
+
         nextButton.style.display = "none";
-      }, 500);
+        loader.style.display = "none";
+
+        clearCurrentActivity();
+      }, 500); // durée transition CSS
     }
 
+    /*************************************************
+     * Changement saison (placeholder)
+     *************************************************/
     seasonSelect.addEventListener("change", (e) => {
-      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+      // si tu ajoutes d'autres saisons : switch ici
+      currentEpisodeData = episodeDataS1;
       renderEpisodes();
     });
 
-   
+    /*************************************************
+     * Exposer global pour onclick HTML
+     *************************************************/
+    window.exitFullscreenMode = exitFullscreenMode;
+    window.nextEpisode = nextEpisode;
 
+    /*************************************************
+     * Init
+     *************************************************/
     renderEpisodes();
   </script>
 </body>
