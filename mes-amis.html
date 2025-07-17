@@ -358,6 +358,7 @@ const { data: friends, error } = await supabase
   .eq('status', 'accepted');
 
 
+
     if (error) {
       console.error('Erreur fetch amis:', error);
       container.textContent = 'Erreur lors du chargement.';
