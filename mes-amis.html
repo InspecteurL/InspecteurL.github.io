@@ -12,9 +12,6 @@
       padding: 20px;
     }
 
-    .section {
-      margin-bottom: 40px;
-    }
     header {
       background-color: #141414;
       padding: 10px 20px;
@@ -28,10 +25,6 @@
       padding: 0;
       display: flex;
       gap: 20px;
-    }
-
-    .nav-links li {
-      display: inline;
     }
 
     .nav-links a {
@@ -83,7 +76,7 @@
         width: 100%;
       }
 
-      .user-card, .friend-card {
+      .friend-card {
         padding: 15px;
       }
 
@@ -135,7 +128,6 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
     );
 
-    // Fonction pour gérer la session utilisateur
     async function manageSession() {
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData.session;
@@ -147,103 +139,93 @@
 
       const userId = session.user.id;
 
-      // 📩 1. DEMANDES REÇUES
-      const { data: pendingRequests, error: pendingRequestsError } = await supabase
+      // DEMANDES REÇUES
+      const receivedContainer = document.getElementById("received-requests");
+      receivedContainer.innerHTML = "";
+
+      const { data: pendingRequests } = await supabase
         .from("friends")
         .select("id, requester:requester(*), status")
         .eq("requested", userId)
         .eq("status", "pending");
 
-      const receivedContainer = document.getElementById("received-requests");
-      receivedContainer.innerHTML = "";
-
-      if (pendingRequestsError) {
-        console.error("Erreur lors de la récupération des demandes reçues:", pendingRequestsError);
-      }
-
       if (!pendingRequests || pendingRequests.length === 0) {
         receivedContainer.innerText = "Aucune demande pour le moment.";
+      } else {
+        for (const req of pendingRequests) {
+          const div = document.createElement("div");
+          div.className = "friend-card";
+          div.innerHTML = `
+            <div><strong>${req.requester.username || "Utilisateur"}</strong> vous a envoyé une demande.</div>
+            <button class="accept">Accepter</button>
+            <button class="reject">Refuser</button>
+          `;
+
+          div.querySelector(".accept").onclick = async () => {
+            await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
+            manageSession();
+          };
+
+          div.querySelector(".reject").onclick = async () => {
+            await supabase.from("friends").update({ status: "rejected" }).eq("id", req.id);
+            manageSession();
+          };
+
+          receivedContainer.appendChild(div);
+        }
       }
 
-      for (const req of pendingRequests) {
-        const div = document.createElement("div");
-        div.className = "friend-card";
-        div.innerHTML = `
-          <div><strong>${req.requester.username || "Utilisateur"}</strong> vous a envoyé une demande.</div>
-          <button class="accept">Accepter</button>
-          <button class="reject">Refuser</button>
-        `;
+      // AMIS ACCEPTÉS
+      const friendContainer = document.getElementById("accepted-friends");
+      friendContainer.innerHTML = "";
 
-        div.querySelector(".accept").onclick = async () => {
-          await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
-          location.reload();
-        };
-
-        div.querySelector(".reject").onclick = async () => {
-          await supabase.from("friends").update({ status: "rejected" }).eq("id", req.id);
-          location.reload();
-        };
-
-        receivedContainer.appendChild(div);
-      }
-
-      // 👥 2. AMIS ACCEPTÉS
-      const { data: acceptedFriends, error: acceptedError } = await supabase
+      const { data: acceptedFriends } = await supabase
         .from("friends")
         .select("*, requester:requester(*), requested:requested(*)")
         .or(`requester.eq.${userId},requested.eq.${userId}`)
         .eq("status", "accepted");
 
-      const friendContainer = document.getElementById("accepted-friends");
-      friendContainer.innerHTML = "";
-
-      if (acceptedError) {
-        console.error("Erreur lors de la récupération des amis acceptés:", acceptedError);
-      }
-
       if (!acceptedFriends || acceptedFriends.length === 0) {
         friendContainer.innerText = "Vous n'avez pas encore d'amis.";
+      } else {
+        for (const rel of acceptedFriends) {
+          const friend = rel.requester.id === userId ? rel.requested : rel.requester;
+
+          const status = friend.is_online
+            ? `<span class="online">🟢 En ligne</span>`
+            : `<span class="offline">🔴 Hors ligne</span>`;
+
+          // ✅ Afficher activité : anime + épisode
+          const watching = friend.currently_watching
+            ? `<div><em>🎬 Regarde : ${friend.currently_watching} - Épisode ${friend.episode_number}</em></div>`
+            : "";
+
+          const div = document.createElement("div");
+          div.className = "friend-card";
+          div.innerHTML = `
+            <div><strong>${friend.username}</strong> - ${status}</div>
+            ${watching}
+            <button class="remove">❌ Supprimer</button>
+            <button class="chat">💬 Chat</button>
+          `;
+
+          div.querySelector(".remove").onclick = async () => {
+            await supabase.from("friends").delete().eq("id", rel.id);
+            manageSession();
+          };
+
+          div.querySelector(".chat").onclick = () => {
+            window.location.href = `chat.html?user=${friend.id}`;
+          };
+
+          friendContainer.appendChild(div);
+        }
       }
-
-      for (const rel of acceptedFriends) {
-        const friend = rel.requester.id === userId ? rel.requested : rel.requester;
-
-        const status = friend.is_online
-          ? `<span class="online">🟢 En ligne</span>`
-          : `<span class="offline">🔴 Hors ligne</span>`;
-
-        const watching = friend.currently_watching
-          ? `<div><em>🎬 Regarde : ${friend.currently_watching}</em></div>`
-          : "";
-
-        const div = document.createElement("div");
-        div.className = "friend-card";
-        div.innerHTML = `
-          <div><strong>${friend.username}</strong> - ${status}</div>
-          ${watching}
-          <button class="remove">❌ Supprimer</button>
-          <button class="chat">💬 Chat</button>
-        `;
-
-        div.querySelector(".remove").onclick = async () => {
-          await supabase.from("friends").delete().eq("id", rel.id);
-          location.reload();
-        };
-
-        div.querySelector(".chat").onclick = () => {
-          window.location.href = `chat.html?user=${friend.id}`;
-        };
-
-        friendContainer.appendChild(div);
-      }
-
-      // 🔁 Actualiser la page toutes les 30 secondes pour voir les changements
-      setInterval(() => {
-        location.reload();
-      }, 30000);
     }
 
-    manageSession();
+    // ✅ Auto-refresh toutes les 10s sans recharger la page
+    await manageSession();
+    setInterval(manageSession, 10000);
   </script>
 </body>
 </html>
