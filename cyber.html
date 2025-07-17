@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Regardez tous les épisodes de Cyberpunk: Edgerunners. Streaming en ligne gratuit et rapide." />
   <title>BNZ - Cyberpunk: Edgerunners</title>
   <style>
     body {
@@ -97,7 +101,8 @@
       border: none;
     }
 
-    #back-button, #next-button, #next-season-button {
+    #back-button,
+    #next-button {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 18px;
@@ -122,7 +127,6 @@
       .episode-card {
         width: 90%;
       }
-
       #episode-video {
         width: 95%;
         height: 40vh;
@@ -139,15 +143,21 @@
     <li><a href="accueil.html">Feuilleter</a></li>
   </ul>
 
-  <br><br>
+  <br /><br />
   <div style="text-align:center;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Cyberpunk_Edgerunners_logo.png/800px-Cyberpunk_Edgerunners_logo.png?20220914210623" width="50%" alt="Logo Oshi no Ko">
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Cyberpunk_Edgerunners_logo.png/800px-Cyberpunk_Edgerunners_logo.png?20220914210623"
+      width="50%"
+      alt="Logo Cyberpunk: Edgerunners" />
   </div>
 
   <div style="text-align:center; margin: 20px;">
     <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
-    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+    <select
+      id="season-select"
+      style="padding: 10px; font-size: 16px; border-radius: 5px;">
       <option value="1">Saison 1</option>
+      <!-- Ajoute d'autres saisons ici si un jour il y en a -->
     </select>
   </div>
 
@@ -160,42 +170,113 @@
     <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
   </div>
 
-  <script>
-const episodeDataS1 = [
-  { title: "Épisode 1", description: "Let You Down", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/egBHU73t79tMg2qrqj3aJof1ibS.jpg", video: "https://vidmoly.to/embed-sz2a9i7bs1c6.html" },
-  { title: "Épisode 2", description: "Like a Boy", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/gLlemMoIN4vbKvZvOWInWGxeQNL.jpg", video: "https://vidmoly.to/embed-p27lun7jga67.html" },
-  { title: "Épisode 3", description: "Smooth Criminal", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bfqnjIZal7sgnjnI3rQzC6GpoIL.jpg", video: "https://vidmoly.to/embed-04giuq479u59.html" },
-  { title: "Épisode 4", description: "Lucky You", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/evdHgmavUPJOJyfKh4PEclugUmn.jpg", video: "https://vidmoly.to/embed-mai9kdwfamvx.html" },
-  { title: "Épisode 5", description: "All Eyez On Me", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/Ar2jz0uKUrUVKC3r9KEaonTzOFr.jpg", video: "https://vidmoly.to/embed-mbh94hx0jgqq.html" },
-  { title: "Épisode 6", description: "Girl on Fire", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hZW2QGWUYN0LxtFxbn6YGAxsGHY.jpg", video: "https://vidmoly.to/embed-ulnfrldxxvut.html" },
-  { title: "Épisode 7", description: "Stronger", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dBU8l0esjACL5ESSdsHbQNuAmnq.jpg", video: "https://vidmoly.to/embed-pl8as7j0r30h.html" },
-  { title: "Épisode 8", description: "Stay", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/83LC8gPjcmg4gMeVkvKOegjA8gf.jpg", video: "https://vidmoly.to/embed-ik3js8hmnxzk.html" },
-  { title: "Épisode 9", description: "Humanity", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wIyh7jtDRWctOwe9kKXDr4mSwgP.jpg", video: "https://vidmoly.to/embed-3spygun95euf.html" },
-  { title: "Épisode 10", description: "My Moon My Man", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6cPT6Rm7BmqNRAn2mbnPM9VALbJ.jpg", video: "https://vidmoly.to/embed-g777l3ep254f.html" },
-];
+  <script type="module">
+    /*************************************************
+     * Supabase init
+     *************************************************/
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+    const supabase = createClient(
+      "https://wuagahavmbugmnuzsouf.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
 
+    /*************************************************
+     * Données épisodes Saison 1
+     *************************************************/
+    const episodeDataS1 = [
+      { title: "Épisode 1",  description: "Let You Down",        image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/egBHU73t79tMg2qrqj3aJof1ibS.jpg", video: "https://vidmoly.to/embed-sz2a9i7bs1c6.html" },
+      { title: "Épisode 2",  description: "Like a Boy",          image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/gLlemMoIN4vbKvZvOWInWGxeQNL.jpg", video: "https://vidmoly.to/embed-p27lun7jga67.html" },
+      { title: "Épisode 3",  description: "Smooth Criminal",     image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bfqnjIZal7sgnjnI3rQzC6GpoIL.jpg", video: "https://vidmoly.to/embed-04giuq479u59.html" },
+      { title: "Épisode 4",  description: "Lucky You",           image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/evdHgmavUPJOJyfKh4PEclugUmn.jpg", video: "https://vidmoly.to/embed-mai9kdwfamvx.html" },
+      { title: "Épisode 5",  description: "All Eyez On Me",      image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/Ar2jz0uKUrUVKC3r9KEaonTzOFr.jpg", video: "https://vidmoly.to/embed-mbh94hx0jgqq.html" },
+      { title: "Épisode 6",  description: "Girl on Fire",        image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hZW2QGWUYN0LxtFxbn6YGAxsGHY.jpg", video: "https://vidmoly.to/embed-ulnfrldxxvut.html" },
+      { title: "Épisode 7",  description: "Stronger",            image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dBU8l0esjACL5ESSdsHbQNuAmnq.jpg", video: "https://vidmoly.to/embed-pl8as7j0r30h.html" },
+      { title: "Épisode 8",  description: "Stay",                image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/83LC8gPjcmg4gMeVkvKOegjA8gf.jpg", video: "https://vidmoly.to/embed-ik3js8hmnxzk.html" },
+      { title: "Épisode 9",  description: "Humanity",            image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wIyh7jtDRWctOwe9kKXDr4mSwgP.jpg", video: "https://vidmoly.to/embed-3spygun95euf.html" },
+      { title: "Épisode 10", description: "My Moon My Man",      image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6cPT6Rm7BmqNRAn2mbnPM9VALbJ.jpg", video: "https://vidmoly.to/embed-g777l3ep254f.html" }
+    ];
 
+    // Placeholder pour saisons futures :
+    // const episodeDataS2 = [ ... ];
 
+    /*************************************************
+     * État
+     *************************************************/
     let currentEpisodeData = episodeDataS1;
     let currentEpisodeIndex = 0;
-    let timeoutId;
+    let timeoutId = null;
+    let userId = null;
+    const ANIME_TITLE = "Cyberpunk: Edgerunners";
 
-    const episodeList = document.getElementById("episode-list");
+    /*************************************************
+     * DOM refs
+     *************************************************/
+    const episodeList    = document.getElementById("episode-list");
     const videoContainer = document.getElementById("video-container");
-    const videoIframe = document.getElementById("episode-video");
-    const backButton = document.getElementById("back-button");
-    const nextButton = document.getElementById("next-button");
-    const loader = document.getElementById("loader");
-    const seasonSelect = document.getElementById("season-select");
+    const videoIframe    = document.getElementById("episode-video");
+    const nextButton     = document.getElementById("next-button");
+    const loader         = document.getElementById("loader");
+    const seasonSelect   = document.getElementById("season-select");
 
+    /*************************************************
+     * Session utilisateur
+     *************************************************/
+    async function fetchSession() {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Erreur session Supabase:", error);
+        return null;
+      }
+      const session = sessionData?.session;
+      if (!session) {
+        console.warn("Pas de session (non connecté).");
+        return null;
+      }
+      return session.user.id;
+    }
+
+    (async () => {
+      userId = await fetchSession();
+    })();
+
+    /*************************************************
+     * Activité Supabase (profiles)
+     *************************************************/
+    async function updateCurrentActivity(animeTitle, episodeIndex) {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: animeTitle,
+          episode_number: episodeIndex + 1
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur update activité:", error);
+    }
+
+    async function clearCurrentActivity() {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: null,
+          episode_number: null
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur clear activité:", error);
+    }
+
+    /*************************************************
+     * Rendu épisodes
+     *************************************************/
     function renderEpisodes() {
       episodeList.innerHTML = "";
       currentEpisodeData.forEach((ep, index) => {
         const card = document.createElement("div");
         card.className = "episode-card";
         card.innerHTML = `
-          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}">
+          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}" />
           <h3>${ep.title}</h3>
           <p>${ep.description}</p>
         `;
@@ -207,29 +288,43 @@ const episodeDataS1 = [
       });
     }
 
+    /*************************************************
+     * Lecture épisode
+     *************************************************/
     function playEpisode(index) {
       loader.style.display = "block";
       videoIframe.src = currentEpisodeData[index].video;
+
+      // animation d’apparition
       videoContainer.classList.remove("show");
       videoContainer.style.display = "flex";
       requestAnimationFrame(() => {
         videoContainer.classList.add("show");
       });
 
-      nextButton.style.display = "none";
-      clearTimeout(timeoutId);
+      // activité
+      updateCurrentActivity(ANIME_TITLE, index);
 
+      // bouton suivant
+      nextButton.style.display = "none";
+      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         if (index < currentEpisodeData.length - 1) {
           nextButton.style.display = "inline-block";
         }
-      }, 1380000); // 23 minutes
+      }, 1_380_000); // 23 min
     }
 
+    /*************************************************
+     * Iframe chargée -> loader off
+     *************************************************/
     videoIframe.onload = () => {
       loader.style.display = "none";
     };
 
+    /*************************************************
+     * Épisode suivant
+     *************************************************/
     function nextEpisode() {
       if (currentEpisodeIndex < currentEpisodeData.length - 1) {
         currentEpisodeIndex++;
@@ -237,22 +332,48 @@ const episodeDataS1 = [
       }
     }
 
+    /*************************************************
+     * Retour (fermer + clear activité)
+     *************************************************/
     function exitFullscreenMode() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
       videoContainer.classList.remove("show");
       setTimeout(() => {
         videoContainer.style.display = "none";
-        videoIframe.src = "";
+
+        // tuer flux iframe
+        videoIframe.src = "about:blank";
+        requestAnimationFrame(() => (videoIframe.src = ""));
+
         nextButton.style.display = "none";
+        loader.style.display = "none";
+
+        clearCurrentActivity();
       }, 500);
     }
 
-    seasonSelect.addEventListener("change", (e) => {
-      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+    /*************************************************
+     * Changement saison (placeholder)
+     *************************************************/
+    seasonSelect.addEventListener("change", () => {
+      // Ajoute un switch si plusieurs saisons
+      currentEpisodeData = episodeDataS1;
       renderEpisodes();
     });
 
-   
+    /*************************************************
+     * Exposer global pour onclick HTML
+     *************************************************/
+    window.exitFullscreenMode = exitFullscreenMode;
+    window.nextEpisode = nextEpisode;
 
+    /*************************************************
+     * Init
+     *************************************************/
     renderEpisodes();
   </script>
 </body>
