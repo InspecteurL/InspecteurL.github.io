@@ -17,7 +17,6 @@
       margin: 0;
       padding: 0;
     }
-
     ul {
       list-style-type: none;
       margin: 0;
@@ -25,11 +24,7 @@
       overflow: hidden;
       background-color: #1c1c1c;
     }
-
-    li {
-      float: left;
-    }
-
+    li { float: left; }
     li a {
       display: block;
       color: white;
@@ -38,12 +33,10 @@
       text-decoration: none;
       font-size: 20px;
     }
-
     li a:hover {
       background-color: red;
       border-radius: 5px;
     }
-
     .episode-card {
       width: 250px;
       margin: 10px;
@@ -55,23 +48,17 @@
       display: inline-block;
       transition: transform 0.2s;
     }
-
-    .episode-card:hover {
-      transform: scale(1.05);
-    }
-
+    .episode-card:hover { transform: scale(1.05); }
     .episode-card img {
       width: 100%;
       border-radius: 5px;
     }
-
     #episode-list {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       padding: 20px;
     }
-
     #video-container {
       position: fixed;
       top: 0;
@@ -88,19 +75,16 @@
       transform: scale(0.95);
       transition: opacity 0.5s ease, transform 0.5s ease;
     }
-
     #video-container.show {
       display: flex;
       opacity: 1;
       transform: scale(1);
     }
-
     #episode-video {
       width: 80%;
       height: 60vh;
       border: none;
     }
-
     #back-button,
     #next-button {
       margin-top: 20px;
@@ -112,21 +96,15 @@
       border-radius: 8px;
       cursor: pointer;
     }
-
-    .hidden {
-      display: none;
-    }
-
+    .hidden { display: none; }
     #loader {
       color: white;
       font-size: 20px;
       margin-top: 15px;
+      display: none;
     }
-
     @media (max-width: 600px) {
-      .episode-card {
-        width: 90%;
-      }
+      .episode-card { width: 90%; }
       #episode-video {
         width: 95%;
         height: 40vh;
@@ -166,7 +144,7 @@
 
   <div id="video-container">
     <iframe id="episode-video" allowfullscreen></iframe>
-    <div id="loader" style="display:none;">Chargement de la vidéo...</div>
+    <div id="loader">Chargement de la vidéo...</div>
     <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
     <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
   </div>
@@ -218,11 +196,12 @@
     /*************************************************
      * État
      *************************************************/
+    const ANIME_TITLE = "Oshi no Ko";
+    let currentSeason = 1;
     let currentEpisodeData = episodeDataS1;
     let currentEpisodeIndex = 0;
     let timeoutId = null;
     let userId = null;
-    const ANIME_TITLE = "Oshi no Ko";
 
     /*************************************************
      * DOM refs
@@ -250,7 +229,6 @@
       }
       return session.user.id;
     }
-
     (async () => {
       userId = await fetchSession();
     })();
@@ -258,13 +236,17 @@
     /*************************************************
      * Activité Supabase (profiles table)
      *************************************************/
-    async function updateCurrentActivity(animeTitle, episodeIndex) {
+    function activityLabel() {
+      return `${ANIME_TITLE} (Saison ${currentSeason})`;
+    }
+
+    async function updateCurrentActivity(episodeIndex) {
       if (!userId) return;
       const { error } = await supabase
         .from("profiles")
         .update({
-          currently_watching: animeTitle,
-          episode_number: episodeIndex + 1
+          currently_watching: activityLabel(), // inclut saison
+          episode_number: episodeIndex + 1     // 1-based
         })
         .eq("id", userId);
       if (error) console.error("Erreur update activité:", error);
@@ -310,17 +292,17 @@
       loader.style.display = "block";
       videoIframe.src = currentEpisodeData[index].video;
 
-      // afficher conteneur avec animation
+      // animation d'apparition
       videoContainer.classList.remove("show");
       videoContainer.style.display = "flex";
       requestAnimationFrame(() => {
         videoContainer.classList.add("show");
       });
 
-      // activité
-      updateCurrentActivity(ANIME_TITLE, index);
+      // activité (avec saison)
+      updateCurrentActivity(index);
 
-      // gérer bouton suivant
+      // bouton suivant (après ~23 min)
       nextButton.style.display = "none";
       if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
@@ -355,32 +337,32 @@
         clearTimeout(timeoutId);
         timeoutId = null;
       }
-
       videoContainer.classList.remove("show");
       setTimeout(() => {
         videoContainer.style.display = "none";
-
         // tuer flux iframe
         videoIframe.src = "about:blank";
         requestAnimationFrame(() => (videoIframe.src = ""));
-
         nextButton.style.display = "none";
         loader.style.display = "none";
-
         clearCurrentActivity();
-      }, 500); // correspond à transition CSS
+      }, 500); // durée transition
     }
 
     /*************************************************
      * Changement de saison
      *************************************************/
     seasonSelect.addEventListener("change", () => {
-      currentEpisodeData = seasonSelect.value === "2" ? episodeDataS2 : episodeDataS1;
+      currentSeason = Number(seasonSelect.value);
+      currentEpisodeData = currentSeason === 2 ? episodeDataS2 : episodeDataS1;
+      currentEpisodeIndex = 0;
       renderEpisodes();
+      // on efface l'activité si l'utilisateur change de saison sans lancer un épisode
+      clearCurrentActivity();
     });
 
     /*************************************************
-     * Exposer global (onclick dans HTML)
+     * Exposer global (onclick HTML)
      *************************************************/
     window.exitFullscreenMode = exitFullscreenMode;
     window.nextEpisode = nextEpisode;
