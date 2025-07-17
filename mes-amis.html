@@ -53,10 +53,7 @@
       font-size: 16px;
     }
 
-    h1 {
-      margin-top: 30px;
-    }
-
+    h1 { margin-top: 30px; }
     h2 {
       border-bottom: 1px solid #444;
       padding-bottom: 5px;
@@ -75,28 +72,14 @@
       gap: 16px;
       align-items: center;
     }
-
     .friend-card-content {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
-
-    .friend-name-line {
-      font-size: 18px;
-    }
-
-    .online {
-      color: var(--online);
-      font-size: 14px;
-      margin-left: 4px;
-    }
-
-    .offline {
-      color: var(--offline);
-      font-size: 14px;
-      margin-left: 4px;
-    }
+    .friend-name-line { font-size: 18px; }
+    .online  { color: var(--online);  font-size: 14px; margin-left: 4px; }
+    .offline { color: var(--offline); font-size: 14px; margin-left: 4px; }
 
     .watching-activity {
       font-size: 15px;
@@ -105,11 +88,7 @@
       flex-direction: column;
       gap: 6px;
     }
-
-    .watching-activity strong {
-      font-weight: bold;
-    }
-
+    .watching-activity strong { font-weight: bold; }
     .watching-thumb {
       width: 100px;
       aspect-ratio: 16 / 9;
@@ -135,10 +114,7 @@
       font-size: 14px;
       line-height: 1.2;
     }
-
-    button.chat-btn {
-      background: #0066ff;
-    }
+    button.chat-btn { background: #0066ff; }
 
     a.back-link {
       color: var(--accent);
@@ -148,32 +124,12 @@
       margin-top: 10px;
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .nav-links {
-        flex-direction: column;
-        gap: 10px;
-        width: 100%;
-      }
-
-      .friend-card {
-        grid-template-columns: 1fr;
-      }
-
-      .friend-card-actions {
-        flex-direction: row;
-        justify-content: flex-start;
-      }
-
-      .watching-thumb {
-        width: 100%;
-        max-width: 300px;
-      }
+      header { flex-direction: column; align-items: flex-start; }
+      .nav-links { flex-direction: column; gap: 10px; width: 100%; }
+      .friend-card { grid-template-columns: 1fr; }
+      .friend-card-actions { flex-direction: row; justify-content: flex-start; }
+      .watching-thumb { width: 100%; max-width: 300px; }
     }
   </style>
 </head>
@@ -220,16 +176,16 @@ const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg'; // assure-toi que le fichier existe
+const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg'; // vérifie que le fichier existe
 
-/* petite utilité sécurité (optionnelle) */
+/* sécurité XSS basique */
 const escapeHTML = (str = '') =>
   str.replace(/[&<>"']/g, ch => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[ch]));
 
 /*************************************************
- * Chargement + logique principale
+ * Session + chargement
  *************************************************/
 async function manageSession() {
   const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
@@ -311,7 +267,7 @@ async function loadPendingRequests(userId) {
 }
 
 /*************************************************
- * Amis acceptés (avec activité + vignette épisode)
+ * Amis acceptés (activité + vignette)
  *************************************************/
 async function loadAcceptedFriends(userId) {
   const friendContainer = document.getElementById('accepted-friends');
@@ -341,7 +297,7 @@ async function loadAcceptedFriends(userId) {
         current_season
       )
     `)
-    .or(\`requester.eq.${userId},requested.eq.${userId}\`)
+    .or(`requester.eq.${userId},requested.eq.${userId}`)
     .eq('status', 'accepted');
 
   if (error) {
@@ -351,12 +307,11 @@ async function loadAcceptedFriends(userId) {
   }
 
   if (!acceptedFriends?.length) {
-    friendContainer.innerText = \"Vous n'avez pas encore d'amis.\";
+    friendContainer.innerText = "Vous n'avez pas encore d'amis.";
     return;
   }
 
   for (const rel of acceptedFriends) {
-    // déterminer quel côté est l'ami
     const friend = (rel.requester?.id === userId) ? rel.requested : rel.requester;
     if (!friend) continue;
 
@@ -371,7 +326,7 @@ async function loadAcceptedFriends(userId) {
     const watchingTitle = friend.currently_watching;
     const epNum = friend.episode_number;
     const epImg = friend.episode_image;
-    const seasonNum = friend.current_season; // nullable
+    const seasonNum = friend.current_season;
 
     let watchingEl = null;
     if (watchingTitle) {
@@ -387,9 +342,7 @@ async function loadAcceptedFriends(userId) {
       line.innerHTML = `🎬 Regarde : <strong>${safeTitle}</strong>${caption ? ' – ' + caption : ''}`;
       watchingEl.appendChild(line);
 
-      let imgURL = normalizeEpisodeImage(epImg);
-      // TODO: si tu veux lookup via table episodes, ajoute ici (il faut show_id dans ton schéma)
-      if (!imgURL) imgURL = PLACEHOLDER_IMG;
+      let imgURL = epImg && epImg !== 'NULL' && epImg !== '-' ? epImg : PLACEHOLDER_IMG;
       const img = document.createElement('img');
       img.className = 'watching-thumb';
       img.src = imgURL;
@@ -398,7 +351,6 @@ async function loadAcceptedFriends(userId) {
       watchingEl.appendChild(img);
     }
 
-    // carte ami
     const card = document.createElement('div');
     card.className = 'friend-card';
 
@@ -438,7 +390,7 @@ async function loadAcceptedFriends(userId) {
 /*************************************************
  * Auto-refresh toutes les 10s
  *************************************************/
-manageSession();              // pas d'await en top-level HTML older browsers (module support ok mais safe)
+manageSession();
 setInterval(manageSession, 10_000);
 </script>
 </body>
