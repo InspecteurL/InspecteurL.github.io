@@ -210,31 +210,25 @@
 
 <script type="module">
   /*************************************************
-   * Supabase init
+   * Initialisation Supabase
    *************************************************/
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const supabase = createClient(
-    'https://wuagahavmbugmnuzsouf.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-  );
+  const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-  /* petite utilité sécurité (optionnelle) */
+  const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg';
+
+  // Échapper les caractères dangereux (sécurité XSS)
   const escapeHTML = (str = '') =>
     str.replace(/[&<>"']/g, s => ({
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'
     }[s]));
 
   /*************************************************
-   * Helpers
+   * Récupération image épisode
    *************************************************/
-  const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg'; // mettez un fichier local ou data URI
-
-  /**
-   * Récupère (au besoin) une image d'épisode depuis une table episodes.
-   * On l'appelle seulement si friend.episode_image est vide.
-   * Adaptez les noms de colonnes selon votre schéma.
-   */
   async function fetchEpisodeImageFromCatalog({ show_id, season, episode }) {
     if (!show_id || season == null || episode == null) return null;
     const { data, error } = await supabase
@@ -244,15 +238,10 @@
       .eq('season_number', season)
       .eq('episode_number', episode)
       .maybeSingle();
-    if (error) {
-      console.warn('fetchEpisodeImageFromCatalog error', error);
-      return null;
-    }
-    return data?.image_url ?? null;
+    return error ? null : data?.image_url ?? null;
   }
 
-  /** Construit un élément <img> (ou null) selon l'URL fournie. */
-  function buildEpisodeImgEl(url, alt='Vignette épisode en cours') {
+  function buildEpisodeImgEl(url, alt='Vignette épisode') {
     if (!url) return null;
     const img = document.createElement('img');
     img.className = 'watching-thumb';
@@ -263,49 +252,44 @@
   }
 
   /*************************************************
-   * Chargement + logique principale
+   * Gestion session utilisateur
    *************************************************/
   async function manageSession() {
-    const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
-    if (sessErr) {
-      console.error('Erreur session:', sessErr);
-    }
+    const { data: sessionData } = await supabase.auth.getSession();
     const session = sessionData?.session;
     if (!session) {
-      document.body.innerHTML = '🔒 Vous devez être connecté.';
+      document.body.innerHTML = '<h2>🔒 Vous devez être connecté.</h2>';
       return;
     }
     const userId = session.user.id;
-
     await loadPendingRequests(userId);
     await loadAcceptedFriends(userId);
   }
 
   /*************************************************
-   * Demandes reçues
+   * Chargement des demandes reçues
    *************************************************/
   async function loadPendingRequests(userId) {
-    const receivedContainer = document.getElementById('received-requests');
-    receivedContainer.innerHTML = '';
+    const container = document.getElementById('received-requests');
+    container.innerHTML = '';
 
     const { data: pendingRequests, error } = await supabase
       .from('friends')
-      .select(`id, status, requester:requester(id, username)`) // ajustez selon FK
+      .select('id, requester:requester(id, username)')
       .eq('requested', userId)
       .eq('status', 'pending');
 
     if (error) {
-      console.error('Erreur fetch demandes:', error);
-      receivedContainer.innerText = 'Erreur lors du chargement.';
+      container.textContent = 'Erreur lors du chargement.';
       return;
     }
 
-    if (!pendingRequests || pendingRequests.length === 0) {
-      receivedContainer.innerText = 'Aucune demande pour le moment.';
+    if (!pendingRequests?.length) {
+      container.textContent = 'Aucune demande pour le moment.';
       return;
     }
 
-    for (const req of pendingRequests) {
+    pendingRequests.forEach(req => {
       const uname = escapeHTML(req.requester?.username ?? 'Utilisateur');
 
       const card = document.createElement('div');
@@ -334,23 +318,21 @@
 
       actions.append(acceptBtn, rejectBtn);
       card.append(content, actions);
-      receivedContainer.appendChild(card);
-    }
+      container.appendChild(card);
+    });
   }
 
   /*************************************************
-   * Amis acceptés (avec activité + vignette épisode)
+   * Chargement des amis acceptés
    *************************************************/
   async function loadAcceptedFriends(userId) {
-    const friendContainer = document.getElementById('accepted-friends');
-    friendContainer.innerHTML = '';
+    const container = document.getElementById('accepted-friends');
+    container.innerHTML = '';
 
-    // NB: .or() doit recevoir une string. userId est injecté via interpolation.
-    const { data: acceptedFriends, error } = await supabase
+    const { data: friends, error } = await supabase
       .from('friends')
       .select(`
         id,
-        status,
         requester:requester(id, username, is_online, currently_watching, episode_number, episode_image, current_season, show_id),
         requested:requested(id, username, is_online, currently_watching, episode_number, episode_image, current_season, show_id)
       `)
@@ -358,64 +340,37 @@
       .eq('status', 'accepted');
 
     if (error) {
-      console.error('Erreur fetch amis:', error);
-      friendContainer.innerText = 'Erreur lors du chargement.';
+      container.textContent = 'Erreur lors du chargement.';
       return;
     }
 
-    if (!acceptedFriends || acceptedFriends.length === 0) {
-      friendContainer.innerText = "Vous n'avez pas encore d'amis.";
+    if (!friends?.length) {
+      container.textContent = "Vous n'avez pas encore d'amis.";
       return;
     }
 
-    for (const rel of acceptedFriends) {
-      // déterminer quel côté est l'ami
+    for (const rel of friends) {
       const friend = (rel.requester?.id === userId) ? rel.requested : rel.requester;
       if (!friend) continue;
 
-      const uname = escapeHTML(friend.username ?? 'Utilisateur');
+      const uname = escapeHTML(friend.username);
       const isOnline = !!friend.is_online;
 
-      // statut en ligne
       const statusSpan = document.createElement('span');
       statusSpan.className = isOnline ? 'online' : 'offline';
       statusSpan.textContent = isOnline ? '🟢 En ligne' : '🔴 Hors ligne';
 
-      // activité
-      const watchingTitle = friend.currently_watching;        // titre de la série/film
-      const epNum        = friend.episode_number;            // numéro d'épisode
-      const epImg        = friend.episode_image;             // URL directe si présent
-      const seasonNum    = friend.current_season;            // numéro de saison
-      const showId       = friend.show_id;                   // facultatif pour lookup dans episodes
-
-      let watchingEl = null;
-      if (watchingTitle) {
-        watchingEl = document.createElement('div');
+      const watchingEl = friend.currently_watching ? document.createElement('div') : null;
+      if (watchingEl) {
         watchingEl.className = 'watching-activity';
-
-        const safeWatchingTitle = escapeHTML(watchingTitle);
-        const parts = [];
-        if (seasonNum != null) parts.push(`S${seasonNum}`);
-        if (epNum != null) parts.push(`Épisode ${epNum}`);
-        const caption = parts.join(' – ');
-
-        const line = document.createElement('div');
-        line.innerHTML = `🎬 Regarde : <strong>${safeWatchingTitle}</strong>${caption ? ' – ' + caption : ''}`;
-        watchingEl.appendChild(line);
-
-        // image priorité : champ friend.episode_image > lookup > placeholder
-        let imgURL = (epImg && epImg !== 'NULL' && epImg !== '-') ? epImg : null;
-        if (!imgURL) {
-          // tentative de lookup dans table episodes
-          imgURL = await fetchEpisodeImageFromCatalog({ show_id: showId, season: seasonNum, episode: epNum });
-        }
-        if (!imgURL) imgURL = PLACEHOLDER_IMG;
-
-        const imgEl = buildEpisodeImgEl(imgURL);
-        if (imgEl) watchingEl.appendChild(imgEl);
+        const safeTitle = escapeHTML(friend.currently_watching);
+        const caption = [friend.current_season ? `S${friend.current_season}` : '', friend.episode_number ? `Épisode ${friend.episode_number}` : ''].filter(Boolean).join(' – ');
+        watchingEl.innerHTML = `🎬 Regarde : <strong>${safeTitle}</strong>${caption ? ' – ' + caption : ''}`;
+        
+        let imgURL = friend.episode_image || await fetchEpisodeImageFromCatalog({ show_id: friend.show_id, season: friend.current_season, episode: friend.episode_number }) || PLACEHOLDER_IMG;
+        watchingEl.appendChild(buildEpisodeImgEl(imgURL));
       }
 
-      // carte ami
       const card = document.createElement('div');
       card.className = 'friend-card';
 
@@ -432,14 +387,13 @@
       actions.className = 'friend-card-actions';
 
       const chatBtn = document.createElement('button');
-      chatBtn.className = 'chat chat-btn';
+      chatBtn.className = 'chat-btn';
       chatBtn.textContent = '💬 Chat';
       chatBtn.onclick = () => {
         window.location.href = `chat.html?user=${friend.id}`;
       };
 
       const removeBtn = document.createElement('button');
-      removeBtn.className = 'remove';
       removeBtn.textContent = '❌ Supprimer';
       removeBtn.onclick = async () => {
         await supabase.from('friends').delete().eq('id', rel.id);
@@ -448,16 +402,13 @@
 
       actions.append(chatBtn, removeBtn);
       card.append(content, actions);
-      friendContainer.appendChild(card);
+      container.appendChild(card);
     }
   }
 
-  /*************************************************
-   * Auto-refresh toutes les 10s
-   *************************************************/
+  // Chargement initial et refresh toutes les 10s
   await manageSession();
-  setInterval(manageSession, 10_000);
+  setInterval(manageSession, 10000);
 </script>
-
 </body>
 </html>
