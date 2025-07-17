@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
-  <title>BNZ - Steins ; Gate 0</title>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Regardez tous les épisodes de Steins;Gate 0. Streaming en ligne gratuit et rapide." />
+  <title>BNZ - Steins;Gate 0</title>
   <style>
     body {
       background: linear-gradient(to bottom, #666699 0%, #000000 100%);
@@ -97,7 +101,9 @@
       border: none;
     }
 
-    #back-button, #next-button, #next-season-button {
+    #back-button,
+    #next-button,
+    #next-season-button {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 18px;
@@ -139,15 +145,21 @@
     <li><a href="accueil.html">Feuilleter</a></li>
   </ul>
 
-  <br><br>
+  <br /><br />
   <div style="text-align:center;">
-    <img src="https://images.launchbox-app.com/16d3f7e3-8e23-4455-be83-b909e8b7766e.png" width="50%" alt="Logo Oshi no Ko">
+    <img
+      src="https://images.launchbox-app.com/16d3f7e3-8e23-4455-be83-b909e8b7766e.png"
+      width="50%"
+      alt="Logo Steins;Gate 0" />
   </div>
 
   <div style="text-align:center; margin: 20px;">
     <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
-    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+    <select
+      id="season-select"
+      style="padding: 10px; font-size: 16px; border-radius: 5px;">
       <option value="1">Saison 1</option>
+      <!-- une seule saison dans tes données -->
     </select>
   </div>
 
@@ -160,50 +172,116 @@
     <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
   </div>
 
-  <script>
-const episodeDataS1 = [
-  { title: "Episode 1", description: "Le lien manquant de l'annihilateur", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/xHkTdFpdTePArIOr0th8MT5zi7K.jpg", video: "https://vidmoly.to/embed-be19o7ptlj6d.html" },
-  { title: "Episode 2", description: "Épigraphe d'une courbe du temps fermée", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/q5EnGAITegtisGCGdhaQtJr0DCp.jpg", video: "https://vidmoly.to/embed-h0rekiwbeuo9.html" },
-  { title: "Episode 3", description: "Protocole de la relativité de l’Évangile", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/gR6CgJDBMmm97nlJO8vEwnaYcPq.jpg", video: "https://vidmoly.to/embed-k49msqnswjug.html" },
-  { title: "Episode 4", description: "Solitude du flux perdu", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/50v3q6WGwKQstuU4X4YQVnXmRbu.jpg", video: "https://vidmoly.to/embed-xjmd92easuzm.html" },
-  { title: "Episode 5", description: "Solitude d'un astigmatisme", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/foAx1isxo9puGjknujypr2HGgtC.jpg", video: "https://vidmoly.to/embed-5uuqmv9mbx5l.html" },
-  { title: "Episode 6", description: "Éclipse orbitale", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4Itq8KBhRZMXPdl9tcf8INu6grM.jpg", video: "https://vidmoly.to/embed-c5b6xqkk6bhp.html" },
-  { title: "Episode 7", description: "Éclipse d'une transition vibronique", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/yfwNouLYH7a77TBG6S9geHq0P5W.jpg", video: "https://vidmoly.to/embed-owxdj8ntk9ux.html" },
-  { title: "Episode 8", description: "Dualité antinomique", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/okZ3veQ5LQQrwVchIoUAkwxFQUU.jpg", video: "https://vidmoly.to/embed-z585qetybn0h.html" },
-  { title: "Episode 9", description: "Pandore du retour éternel - Boîte de Pandore -", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/s3fakS6tW2z3CyDT7Z0kygrN6Ov.jpg", video: "https://vidmoly.to/embed-lhzjcn01lmz3.html" },
-  { title: "Episode 10", description: "Existence prouvable de Pandore -Cabine Interdite-", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/tBQ2mWt1WB8OG3ZlwbkQkUmNmAK.jpg", video: "https://vidmoly.to/embed-v1qkxj7lhxiv.html" },
-  { title: "Episode 11", description: "Boîte de Pandore d'une existence oubliée", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bzvjrOyNfuqHPxaLImnXYWA8GsM.jpg", video: "https://vidmoly.to/embed-fha1xsvt6hmu.html" },
-  { title: "Episode 12", description: "Récurrence Mutuelle de Mère l'Oie", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/juA1OzM9uuoLlPnPdNhY7IM0N61.jpg", video: "https://vidmoly.to/embed-cfs3rn7u4a4c.html" },
-  { title: "Episode 13", description: "La formule de diffraction de mère l'Oie", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/8N6iXmVuYRifw8efvbSLQ9XvmDt.jpg", video: "https://vidmoly.to/embed-abp64j8krzhr.html" },
-  { title: "Episode 14", description: "Reconnaissance de la limite élastique -Présage ou Reconnaissance-", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/pHOARY4I17H2VToUNS4sEGvgNte.jpg", video: "https://vidmoly.to/embed-jhzzn14vy770.html" },
-  { title: "Episode 15", description: "Reconnaissance d'asymptote", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/7PxxBLPv1teToLGajIbxwv3YKu6.jpg", video: "https://vidmoly.to/embed-oa3ffy8qev88.html" },
-  { title: "Episode 16", description: "Altair du Point de l'Infini -Vega et Altair-", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/AtU5hGozo4P3GyiVHFdvXDY7Ci8.jpg", video: "https://vidmoly.to/embed-uhiv4b5s7jft.html" },
-  { title: "Episode 17", description: "Altair du plan hyperbolique -Beltrami Pseudosphere-", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wdAzdeRMqGdBmM69LfJkkpWAKIo.jpg", video: "https://vidmoly.to/embed-pt5l45cw04xu.html" },
-  { title: "Episode 18", description: "Altair de la symétrie translationnelle - Symétrie translationnelle", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dkRTlWDrxP2jhHt5OhpqjatEJYw.jpg", video: "https://vidmoly.to/embed-b7mqukbuuw77.html" },
-  { title: "Episode 19", description: "Altaïr en coordonnées cycliques - Time-leap Machine", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/asQwAITmCpCXGHodollNMj4M20V.jpg", video: "https://vidmoly.to/embed-nau2atvj1qas.html" },
-  { title: "Episode 20", description: "Renaissance de la promesse inébranlable - Renaissance Promise -", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/mQvdOmMIqdXfAEOqJGdEkeA3XMb.jpg", video: "https://vidmoly.to/embed-3sqfyteup9s1.html" },
-  { title: "Episode 21", description: "Renaissance de formation d'image -Retour de Phoenix-", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/mn2PrCyZwUENWckLpsjHjVsVMhN.jpg", video: "https://vidmoly.to/embed-d30hv48kb4nf.html" },
-  { title: "Episode 22", description: "Renaissance de Projection -Projet Amadeus-", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6I0xNNgEOZJRSo0zsxIj2UOJkSl.jpg", video: "https://vidmoly.to/embed-j8bh5uke0fpf.html" },
-  { title: "Episode 23", description: "Arc de lumière du Point à l'infini -Arc de lumière du ciel", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/m5qBHFbRw5tC34EnjOrfu0jp2Gw.jpg", video: "https://vidmoly.to/embed-ojx8nmlmwlwv.html" }
-];
+  <script type="module">
+    /*************************************************
+     * Supabase init
+     *************************************************/
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+    const supabase = createClient(
+      "https://wuagahavmbugmnuzsouf.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
 
+    /*************************************************
+     * Données épisodes Saison 1
+     *************************************************/
+    const episodeDataS1 = [
+      { title: "Episode 1",  description: "Le lien manquant de l'annihilateur",                                        image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/xHkTdFpdTePArIOr0th8MT5zi7K.jpg", video: "https://vidmoly.to/embed-be19o7ptlj6d.html" },
+      { title: "Episode 2",  description: "Épigraphe d'une courbe du temps fermée",                                     image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/q5EnGAITegtisGCGdhaQtJr0DCp.jpg", video: "https://vidmoly.to/embed-h0rekiwbeuo9.html" },
+      { title: "Episode 3",  description: "Protocole de la relativité de l’Évangile",                                   image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/gR6CgJDBMmm97nlJO8vEwnaYcPq.jpg", video: "https://vidmoly.to/embed-k49msqnswjug.html" },
+      { title: "Episode 4",  description: "Solitude du flux perdu",                                                     image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/50v3q6WGwKQstuU4X4YQVnXmRbu.jpg", video: "https://vidmoly.to/embed-xjmd92easuzm.html" },
+      { title: "Episode 5",  description: "Solitude d'un astigmatisme",                                                 image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/foAx1isxo9puGjknujypr2HGgtC.jpg", video: "https://vidmoly.to/embed-5uuqmv9mbx5l.html" },
+      { title: "Episode 6",  description: "Éclipse orbitale",                                                           image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4Itq8KBhRZMXPdl9tcf8INu6grM.jpg", video: "https://vidmoly.to/embed-c5b6xqkk6bhp.html" },
+      { title: "Episode 7",  description: "Éclipse d'une transition vibronique",                                        image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/yfwNouLYH7a77TBG6S9geHq0P5W.jpg", video: "https://vidmoly.to/embed-owxdj8ntk9ux.html" },
+      { title: "Episode 8",  description: "Dualité antinomique",                                                        image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/okZ3veQ5LQQrwVchIoUAkwxFQUU.jpg", video: "https://vidmoly.to/embed-z585qetybn0h.html" },
+      { title: "Episode 9",  description: "Pandore du retour éternel - Boîte de Pandore -",                             image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/s3fakS6tW2z3CyDT7Z0kygrN6Ov.jpg", video: "https://vidmoly.to/embed-lhzjcn01lmz3.html" },
+      { title: "Episode 10", description: "Existence prouvable de Pandore -Cabine Interdite-",                           image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/tBQ2mWt1WB8OG3ZlwbkQkUmNmAK.jpg", video: "https://vidmoly.to/embed-v1qkxj7lhxiv.html" },
+      { title: "Episode 11", description: "Boîte de Pandore d'une existence oubliée",                                   image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bzvjrOyNfuqHPxaLImnXYWA8GsM.jpg", video: "https://vidmoly.to/embed-fha1xsvt6hmu.html" },
+      { title: "Episode 12", description: "Récurrence Mutuelle de Mère l'Oie",                                           image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/juA1OzM9uuoLlPnPdNhY7IM0N61.jpg", video: "https://vidmoly.to/embed-cfs3rn7u4a4c.html" },
+      { title: "Episode 13", description: "La formule de diffraction de mère l'Oie",                                     image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/8N6iXmVuYRifw8efvbSLQ9XvmDt.jpg", video: "https://vidmoly.to/embed-abp64j8krzhr.html" },
+      { title: "Episode 14", description: "Reconnaissance de la limite élastique -Présage ou Reconnaissance-",           image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/pHOARY4I17H2VToUNS4sEGvgNte.jpg", video: "https://vidmoly.to/embed-jhzzn14vy770.html" },
+      { title: "Episode 15", description: "Reconnaissance d'asymptote",                                                  image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/7PxxBLPv1teToLGajIbxwv3YKu6.jpg", video: "https://vidmoly.to/embed-oa3ffy8qev88.html" },
+      { title: "Episode 16", description: "Altair du Point de l'Infini -Vega et Altair-",                                image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/AtU5hGozo4P3GyiVHFdvXDY7Ci8.jpg", video: "https://vidmoly.to/embed-uhiv4b5s7jft.html" },
+      { title: "Episode 17", description: "Altair du plan hyperbolique -Beltrami Pseudosphere-",                         image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wdAzdeRMqGdBmM69LfJkkpWAKIo.jpg", video: "https://vidmoly.to/embed-pt5l45cw04xu.html" },
+      { title: "Episode 18", description: "Altair de la symétrie translationnelle - Symétrie translationnelle",          image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dkRTlWDrxP2jhHt5OhpqjatEJYw.jpg", video: "https://vidmoly.to/embed-b7mqukbuuw77.html" },
+      { title: "Episode 19", description: "Altaïr en coordonnées cycliques - Time-leap Machine",                         image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/asQwAITmCpCXGHodollNMj4M20V.jpg", video: "https://vidmoly.to/embed-nau2atvj1qas.html" },
+      { title: "Episode 20", description: "Renaissance de la promesse inébranlable - Renaissance Promise -",             image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/mQvdOmMIqdXfAEOqJGdEkeA3XMb.jpg", video: "https://vidmoly.to/embed-3sqfyteup9s1.html" },
+      { title: "Episode 21", description: "Renaissance de formation d'image -Retour de Phoenix-",                        image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/mn2PrCyZwUENWckLpsjHjVsVMhN.jpg", video: "https://vidmoly.to/embed-d30hv48kb4nf.html" },
+      { title: "Episode 22", description: "Renaissance de Projection -Projet Amadeus-",                                  image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6I0xNNgEOZJRSo0zsxIj2UOJkSl.jpg", video: "https://vidmoly.to/embed-j8bh5uke0fpf.html" },
+      { title: "Episode 23", description: "Arc de lumière du Point à l'infini -Arc de lumière du ciel",                  image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/m5qBHFbRw5tC34EnjOrfu0jp2Gw.jpg", video: "https://vidmoly.to/embed-ojx8nmlmwlwv.html" }
+    ];
 
-
-
-
+    /*************************************************
+     * État
+     *************************************************/
     let currentEpisodeData = episodeDataS1;
     let currentEpisodeIndex = 0;
-    let timeoutId;
+    let timeoutId = null;
+    let userId = null;
+    const ANIME_TITLE = "Steins;Gate 0";
 
-    const episodeList = document.getElementById("episode-list");
+    /*************************************************
+     * DOM refs
+     *************************************************/
+    const episodeList    = document.getElementById("episode-list");
     const videoContainer = document.getElementById("video-container");
-    const videoIframe = document.getElementById("episode-video");
-    const backButton = document.getElementById("back-button");
-    const nextButton = document.getElementById("next-button");
-    const loader = document.getElementById("loader");
-    const seasonSelect = document.getElementById("season-select");
+    const videoIframe    = document.getElementById("episode-video");
+    const nextButton     = document.getElementById("next-button");
+    const loader         = document.getElementById("loader");
+    const seasonSelect   = document.getElementById("season-select");
 
+    /*************************************************
+     * Session utilisateur
+     *************************************************/
+    async function fetchSession() {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Erreur session Supabase:", error);
+        return null;
+      }
+      const session = sessionData?.session;
+      if (!session) {
+        console.warn("Pas de session (non connecté).");
+        return null;
+      }
+      return session.user.id;
+    }
+
+    (async () => {
+      userId = await fetchSession();
+    })();
+
+    /*************************************************
+     * Activité Supabase (profiles)
+     *************************************************/
+    async function updateCurrentActivity(animeTitle, episodeIndex) {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: animeTitle,
+          episode_number: episodeIndex + 1
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur update activité:", error);
+    }
+
+    async function clearCurrentActivity() {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: null,
+          episode_number: null
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur clear activité:", error);
+    }
+
+    /*************************************************
+     * Rendu épisodes
+     *************************************************/
     function renderEpisodes() {
       episodeList.innerHTML = "";
       currentEpisodeData.forEach((ep, index) => {
@@ -222,29 +300,43 @@ const episodeDataS1 = [
       });
     }
 
+    /*************************************************
+     * Lecture épisode
+     *************************************************/
     function playEpisode(index) {
       loader.style.display = "block";
       videoIframe.src = currentEpisodeData[index].video;
+
+      // animation d’apparition
       videoContainer.classList.remove("show");
       videoContainer.style.display = "flex";
       requestAnimationFrame(() => {
         videoContainer.classList.add("show");
       });
 
-      nextButton.style.display = "none";
-      clearTimeout(timeoutId);
+      // activité -> mes-amis.html pourra l'afficher
+      updateCurrentActivity(ANIME_TITLE, index);
 
+      // bouton suivant
+      nextButton.style.display = "none";
+      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         if (index < currentEpisodeData.length - 1) {
           nextButton.style.display = "inline-block";
         }
-      }, 1380000); // 23 minutes
+      }, 1_380_000); // 23 min
     }
 
+    /*************************************************
+     * Iframe chargée -> loader off
+     *************************************************/
     videoIframe.onload = () => {
       loader.style.display = "none";
     };
 
+    /*************************************************
+     * Épisode suivant
+     *************************************************/
     function nextEpisode() {
       if (currentEpisodeIndex < currentEpisodeData.length - 1) {
         currentEpisodeIndex++;
@@ -252,22 +344,47 @@ const episodeDataS1 = [
       }
     }
 
+    /*************************************************
+     * Retour (fermer + clear activité)
+     *************************************************/
     function exitFullscreenMode() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
       videoContainer.classList.remove("show");
       setTimeout(() => {
         videoContainer.style.display = "none";
-        videoIframe.src = "";
+
+        // tuer flux iframe
+        videoIframe.src = "about:blank";
+        requestAnimationFrame(() => (videoIframe.src = ""));
+
         nextButton.style.display = "none";
+        loader.style.display = "none";
+
+        clearCurrentActivity();
       }, 500);
     }
 
-    seasonSelect.addEventListener("change", (e) => {
-      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+    /*************************************************
+     * Changement saison (placeholder)
+     *************************************************/
+    seasonSelect.addEventListener("change", () => {
+      currentEpisodeData = episodeDataS1;
       renderEpisodes();
     });
 
-   
+    /*************************************************
+     * Exposer global pour onclick HTML
+     *************************************************/
+    window.exitFullscreenMode = exitFullscreenMode;
+    window.nextEpisode = nextEpisode;
 
+    /*************************************************
+     * Init
+     *************************************************/
     renderEpisodes();
   </script>
 </body>
