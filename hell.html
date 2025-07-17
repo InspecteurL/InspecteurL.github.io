@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Regardez tous les épisodes de Oshi no Ko par saison. Streaming en ligne gratuit et rapide.">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Regardez tous les épisodes de Hell's Paradise (Jigokuraku) par saison. Streaming en ligne gratuit et rapide." />
   <title>BNZ - Hell's Paradise</title>
   <style>
     body {
@@ -97,7 +101,8 @@
       border: none;
     }
 
-    #back-button, #next-button, #next-season-button {
+    #back-button,
+    #next-button {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 18px;
@@ -122,7 +127,6 @@
       .episode-card {
         width: 90%;
       }
-
       #episode-video {
         width: 95%;
         height: 40vh;
@@ -131,6 +135,7 @@
   </style>
 </head>
 <body>
+  <!-- Nav -->
   <ul>
     <li><a href="index.html">Home</a></li>
     <li><a href="journal.html">Journal</a></li>
@@ -139,15 +144,21 @@
     <li><a href="accueil.html">Feuilleter</a></li>
   </ul>
 
-  <br><br>
+  <br /><br />
   <div style="text-align:center;">
-    <img src="https://media.vgm.io/products/59/12795/12795-1680629513.png" width="50%" alt="Logo Oshi no Ko">
+    <img
+      src="https://media.vgm.io/products/59/12795/12795-1680629513.png"
+      width="50%"
+      alt="Logo Hell's Paradise" />
   </div>
 
   <div style="text-align:center; margin: 20px;">
     <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
-    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+    <select
+      id="season-select"
+      style="padding: 10px; font-size: 16px; border-radius: 5px;">
       <option value="1">Saison 1</option>
+      <!-- Ajoute d'autres saisons ici si dispo -->
     </select>
   </div>
 
@@ -160,44 +171,116 @@
     <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
   </div>
 
-  <script>
+  <script type="module">
+    /*************************************************
+     * Supabase init
+     *************************************************/
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-const episodeDataS1 = [
-  { title: "Épisode 1", description: "Le Condamné et le Bourreau", image: "https://www.myutaku.com/media/episodes/402474/8477108.jpg", video: "https://vidmoly.to/embed-d7srm99heg6u.html" },
-  { title: "Épisode 2", description: "Sélection et Choix", image: "https://www.myutaku.com/media/episodes/402474/9679421.jpg", video: "https://vidmoly.to/embed-hje0hbdwibb3.html" },
-  { title: "Épisode 3", description: "Force et Faiblesse", image: "https://www.myutaku.com/media/episodes/402474/9679422.jpg", video: "https://vidmoly.to/embed-y0on6j9jtba9.html" },
-  { title: "Épisode 4", description: "Enfer et Paradis", image: "https://www.myutaku.com/media/episodes/402474/9679423.jpg", video: "https://vidmoly.to/embed-3sd6fjmue7bp.html" },
-  { title: "Épisode 5", description: "Samouraï et Femme", image: "https://www.myutaku.com/media/episodes/402474/9679424.jpg", video: "https://vidmoly.to/embed-nhhgm420mzz1.html" },
-  { title: "Épisode 6", description: "Cœur et Raison", image: "https://www.myutaku.com/media/episodes/402474/9679425.jpg", video: "https://vidmoly.to/embed-ukmoar9uss91.html" },
-  { title: "Épisode 7", description: "Fleur et Offrande", image: "https://www.myutaku.com/media/episodes/402474/9679426.jpg", video: "https://vidmoly.to/embed-leox27e5mqpa.html" },
-  { title: "Épisode 8", description: "Disciple et Maître", image: "https://www.myutaku.com/media/episodes/402474/9679427.jpg", video: "https://vidmoly.to/embed-kh4zkr78oyil.html" },
-  { title: "Épisode 9", description: "Dieu et Homme", image: "https://www.myutaku.com/media/episodes/402474/9679428.jpg", video: "https://vidmoly.to/embed-3r6zyn8rnnmy.html" },
-  { title: "Épisode 10", description: "Yin et Yang", image: "https://www.myutaku.com/media/episodes/402474/9679429.jpg", video: "https://vidmoly.to/embed-bvinu7htd1eb.html" },
-  { title: "Épisode 11", description: "Fort et Faible", image: "https://www.myutaku.com/media/episodes/402474/9679430.jpg", video: "https://vidmoly.to/embed-2ezjnkggtpxe.html" },
-  { title: "Épisode 12", description: "Ombrelle et Encre", image: "https://www.myutaku.com/media/episodes/402474/9679431.jpg", video: "https://vidmoly.to/embed-feakqwcfqbjd.html" },
-  { title: "Épisode 13", description: "Rêve et Réalité", image: "https://www.myutaku.com/media/episodes/402474/9717392.jpg", video: "https://vidmoly.to/embed-4kqbpce853va.html" }
-];
+    const supabase = createClient(
+      "https://wuagahavmbugmnuzsouf.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
 
+    /*************************************************
+     * Données épisodes Saison 1
+     *************************************************/
+    const episodeDataS1 = [
+      { title: "Épisode 1",  description: "Le Condamné et le Bourreau", image: "https://www.myutaku.com/media/episodes/402474/8477108.jpg",   video: "https://vidmoly.to/embed-d7srm99heg6u.html" },
+      { title: "Épisode 2",  description: "Sélection et Choix",         image: "https://www.myutaku.com/media/episodes/402474/9679421.jpg",   video: "https://vidmoly.to/embed-hje0hbdwibb3.html" },
+      { title: "Épisode 3",  description: "Force et Faiblesse",         image: "https://www.myutaku.com/media/episodes/402474/9679422.jpg",   video: "https://vidmoly.to/embed-y0on6j9jtba9.html" },
+      { title: "Épisode 4",  description: "Enfer et Paradis",           image: "https://www.myutaku.com/media/episodes/402474/9679423.jpg",   video: "https://vidmoly.to/embed-3sd6fjmue7bp.html" },
+      { title: "Épisode 5",  description: "Samouraï et Femme",          image: "https://www.myutaku.com/media/episodes/402474/9679424.jpg",   video: "https://vidmoly.to/embed-nhhgm420mzz1.html" },
+      { title: "Épisode 6",  description: "Cœur et Raison",             image: "https://www.myutaku.com/media/episodes/402474/9679425.jpg",   video: "https://vidmoly.to/embed-ukmoar9uss91.html" },
+      { title: "Épisode 7",  description: "Fleur et Offrande",          image: "https://www.myutaku.com/media/episodes/402474/9679426.jpg",   video: "https://vidmoly.to/embed-leox27e5mqpa.html" },
+      { title: "Épisode 8",  description: "Disciple et Maître",         image: "https://www.myutaku.com/media/episodes/402474/9679427.jpg",   video: "https://vidmoly.to/embed-kh4zkr78oyil.html" },
+      { title: "Épisode 9",  description: "Dieu et Homme",              image: "https://www.myutaku.com/media/episodes/402474/9679428.jpg",   video: "https://vidmoly.to/embed-3r6zyn8rnnmy.html" },
+      { title: "Épisode 10", description: "Yin et Yang",                image: "https://www.myutaku.com/media/episodes/402474/9679429.jpg",   video: "https://vidmoly.to/embed-bvinu7htd1eb.html" },
+      { title: "Épisode 11", description: "Fort et Faible",             image: "https://www.myutaku.com/media/episodes/402474/9679430.jpg",   video: "https://vidmoly.to/embed-2ezjnkggtpxe.html" },
+      { title: "Épisode 12", description: "Ombrelle et Encre",          image: "https://www.myutaku.com/media/episodes/402474/9679431.jpg",   video: "https://vidmoly.to/embed-feakqwcfqbjd.html" },
+      { title: "Épisode 13", description: "Rêve et Réalité",            image: "https://www.myutaku.com/media/episodes/402474/9717392.jpg",   video: "https://vidmoly.to/embed-4kqbpce853va.html" }
+    ];
 
+    // Placeholder pour futures saisons :
+    // const episodeDataS2 = [ ... ];
+
+    /*************************************************
+     * État
+     *************************************************/
     let currentEpisodeData = episodeDataS1;
     let currentEpisodeIndex = 0;
-    let timeoutId;
+    let timeoutId = null;
+    let userId = null;
+    const ANIME_TITLE = "Hell's Paradise";
 
-    const episodeList = document.getElementById("episode-list");
+    /*************************************************
+     * DOM refs
+     *************************************************/
+    const episodeList    = document.getElementById("episode-list");
     const videoContainer = document.getElementById("video-container");
-    const videoIframe = document.getElementById("episode-video");
-    const backButton = document.getElementById("back-button");
-    const nextButton = document.getElementById("next-button");
-    const loader = document.getElementById("loader");
-    const seasonSelect = document.getElementById("season-select");
+    const videoIframe    = document.getElementById("episode-video");
+    const nextButton     = document.getElementById("next-button");
+    const loader         = document.getElementById("loader");
+    const seasonSelect   = document.getElementById("season-select");
 
+    /*************************************************
+     * Session utilisateur
+     *************************************************/
+    async function fetchSession() {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Erreur session Supabase:", error);
+        return null;
+      }
+      const session = sessionData?.session;
+      if (!session) {
+        console.warn("Pas de session (non connecté).");
+        return null;
+      }
+      return session.user.id;
+    }
+
+    (async () => {
+      userId = await fetchSession();
+    })();
+
+    /*************************************************
+     * Activité Supabase (profiles)
+     *************************************************/
+    async function updateCurrentActivity(animeTitle, episodeIndex) {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: animeTitle,
+          episode_number: episodeIndex + 1
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur update activité:", error);
+    }
+
+    async function clearCurrentActivity() {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: null,
+          episode_number: null
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur clear activité:", error);
+    }
+
+    /*************************************************
+     * Rendu épisodes
+     *************************************************/
     function renderEpisodes() {
       episodeList.innerHTML = "";
       currentEpisodeData.forEach((ep, index) => {
         const card = document.createElement("div");
         card.className = "episode-card";
         card.innerHTML = `
-          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}">
+          <img src="${ep.image}" alt="Affiche de ${ep.title} : ${ep.description}" />
           <h3>${ep.title}</h3>
           <p>${ep.description}</p>
         `;
@@ -209,29 +292,43 @@ const episodeDataS1 = [
       });
     }
 
+    /*************************************************
+     * Lecture épisode
+     *************************************************/
     function playEpisode(index) {
       loader.style.display = "block";
       videoIframe.src = currentEpisodeData[index].video;
+
+      // animation d’apparition
       videoContainer.classList.remove("show");
       videoContainer.style.display = "flex";
       requestAnimationFrame(() => {
         videoContainer.classList.add("show");
       });
 
-      nextButton.style.display = "none";
-      clearTimeout(timeoutId);
+      // activité
+      updateCurrentActivity(ANIME_TITLE, index);
 
+      // bouton suivant
+      nextButton.style.display = "none";
+      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         if (index < currentEpisodeData.length - 1) {
           nextButton.style.display = "inline-block";
         }
-      }, 1380000); // 23 minutes
+      }, 1_380_000); // 23 min
     }
 
+    /*************************************************
+     * Iframe chargée -> loader off
+     *************************************************/
     videoIframe.onload = () => {
       loader.style.display = "none";
     };
 
+    /*************************************************
+     * Épisode suivant
+     *************************************************/
     function nextEpisode() {
       if (currentEpisodeIndex < currentEpisodeData.length - 1) {
         currentEpisodeIndex++;
@@ -239,27 +336,48 @@ const episodeDataS1 = [
       }
     }
 
+    /*************************************************
+     * Retour (fermer + clear activité)
+     *************************************************/
     function exitFullscreenMode() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
       videoContainer.classList.remove("show");
       setTimeout(() => {
         videoContainer.style.display = "none";
-        videoIframe.src = "";
+
+        // tuer flux iframe
+        videoIframe.src = "about:blank";
+        requestAnimationFrame(() => (videoIframe.src = ""));
+
         nextButton.style.display = "none";
+        loader.style.display = "none";
+
+        clearCurrentActivity();
       }, 500);
     }
 
-    seasonSelect.addEventListener("change", (e) => {
-      currentEpisodeData = e.target.value === "2" ? episodeDataS2 : episodeDataS1;
+    /*************************************************
+     * Changement saison (placeholder)
+     *************************************************/
+    seasonSelect.addEventListener("change", () => {
+      // ajouter switch si tu as d'autres saisons plus tard
+      currentEpisodeData = episodeDataS1;
       renderEpisodes();
     });
 
-    function goToNextSeason() {
-      if (seasonSelect.value === "1") {
-        seasonSelect.value = "2";
-        seasonSelect.dispatchEvent(new Event("change"));
-      }
-    }
+    /*************************************************
+     * Exposer global pour onclick HTML
+     *************************************************/
+    window.exitFullscreenMode = exitFullscreenMode;
+    window.nextEpisode = nextEpisode;
 
+    /*************************************************
+     * Init
+     *************************************************/
     renderEpisodes();
   </script>
 </body>
