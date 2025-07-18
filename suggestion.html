@@ -203,10 +203,10 @@
             
             const suggestionText = document.getElementById('suggestion-text').value;
             
-            // Vérifie si l'utilisateur est connecté
-            const user = supabase.auth.user();
+            // Vérifie si l'utilisateur est connecté avec getUser()
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
             
-            if (!user) {
+            if (userError || !user) {
                 alert("Vous devez être connecté pour soumettre une suggestion.");
                 return;
             }
