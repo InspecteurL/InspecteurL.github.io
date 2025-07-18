@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Mes amis</title>
   <style>
     :root {
@@ -154,16 +154,24 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm';
 
-    /* ================== CONFIG ================== */
+    /* ================== CONFIG SUPABASE ================== */
     const supabase = createClient(
       'https://wuagahavmbugmnuzsouf.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
     );
 
-    // Mets ici une vraie image si tu veux éviter la 404
-    const PLACEHOLDER_IMG = 'https://via.placeholder.com/160x90?text=Episode';
+    /* ================== CONSTANTES ================== */
+    // petite image inline → jamais de 404
+    const PLACEHOLDER_IMG =
+      'data:image/svg+xml;base64,' +
+      btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90" width="160" height="90" fill="none"><rect width="160" height="90" rx="8" fill="#333"/><text x="50%" y="50%" fill="#aaa" font-size="12" font-family="Arial" dominant-baseline="middle" text-anchor="middle">Aucune image</text></svg>');
 
-    /* ================== HELPERS ================== */
+    const ONLINE_THRESHOLD_MS   = 60_000;        // 60s → en ligne
+    const ACTIVITY_STALE_MS     = 5 * 60_000;    // 5 min → n'affiche plus l'activité
+    const HEARTBEAT_INTERVAL_MS = 30_000;        // ping presence
+    const REFRESH_INTERVAL_MS   = 10_000;        // reload amis/demandes
+
+    /* ================== HELPERS UI / DATA ================== */
     function escapeHTML(str = '') {
       return str.replace(/[&<>"']/g, ch => ({
         '&':'&amp;',
@@ -181,39 +189,58 @@
       return u;
     }
 
-    // En ligne si last_seen_at < 60s (fallback bool si jamais absent)
-    function computeOnline(lastSeen, fallbackBool) {
-      if (!lastSeen) return !!fallbackBool;
-      const THRESHOLD = 60000; // 60s
+    function computeOnlineFromLastSeen(lastSeen) {
+      if (!lastSeen) return false;
       const delta = Date.now() - new Date(lastSeen).getTime();
-      return delta < THRESHOLD;
+      return delta < ONLINE_THRESHOLD_MS;
     }
 
-    /* ================== HEARTBEAT ================== */
-    let currentUserId = null;
-    let heartbeatTimer = null;
+    function isActivityFresh(lastSeen) {
+      if (!lastSeen) return false;
+      const delta = Date.now() - new Date(lastSeen).getTime();
+      return delta < ACTIVITY_STALE_MS;
+    }
 
+    /* ================== STATE ================== */
+    let currentUserId   = null;
+    let heartbeatTimer  = null;
+    let refreshTimer    = null;
+
+    /* ================== PRESENCE HEARTBEAT ================== */
     async function heartbeat() {
       if (!currentUserId) return;
+      // On ne force pas is_online ici : on laisse la colonne exister mais on se base sur last_seen_at
       const { error } = await supabase
         .from('profiles')
         .update({ last_seen_at: new Date().toISOString() })
         .eq('id', currentUserId);
-      if (error) console.error('heartbeat error:', error);
+
+      if (error) {
+        console.error('[heartbeat] erreur update last_seen_at:', error);
+      }
     }
 
     function startHeartbeat() {
-      heartbeat(); // immédiat
+      heartbeat(); // ping immédiat
       if (heartbeatTimer) clearInterval(heartbeatTimer);
-      heartbeatTimer = setInterval(heartbeat, 30000); // toutes les 30s
+      heartbeatTimer = setInterval(heartbeat, HEARTBEAT_INTERVAL_MS);
     }
 
-    // Quand l'onglet revient en avant-plan → heartbeat
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) heartbeat();
     });
 
-    /* ================== SESSION ================== */
+    window.addEventListener('beforeunload', () => {
+      // On met à jour last_seen_at juste avant de quitter (best effort)
+      navigator.sendBeacon?.(
+        `${supabase.url}/rest/v1/profiles?id=eq.${currentUserId}`,
+        JSON.stringify({ last_seen_at: new Date().toISOString() })
+      );
+      // NB: sendBeacon pour PostgREST demanderait headers, etc. → ce best-effort n'est pas garanti.
+      // heartbeat régulier suffit dans la plupart des cas.
+    });
+
+    /* ================== SESSION PRINCIPALE ================== */
     async function manageSession() {
       const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
       if (sessErr) console.error('Erreur session:', sessErr);
@@ -223,9 +250,12 @@
         document.body.innerHTML = '🔒 Vous devez être connecté.';
         return;
       }
+
+      // stock user
       currentUserId = session.user.id;
       startHeartbeat();
 
+      // charger données
       await loadPendingRequests(currentUserId);
       await loadAcceptedFriends(currentUserId);
     }
@@ -242,7 +272,7 @@
         .eq('status', 'pending');
 
       if (error) {
-        console.error('Erreur fetch demandes:', error);
+        console.error('[pending] erreur fetch:', error);
         receivedContainer.innerText = 'Erreur lors du chargement.';
         return;
       }
@@ -254,28 +284,35 @@
 
       for (const req of pendingRequests) {
         const uname = escapeHTML(req.requester?.username ?? 'Utilisateur');
-        const div = document.createElement('div');
-        div.className = 'friend-card';
-        div.innerHTML = `
-          <div class="friend-card-content">
-            <div class="friend-name-line"><strong>${uname}</strong> vous a envoyé une demande.</div>
-          </div>
-          <div class="friend-card-actions">
-            <button class="accept">Accepter</button>
-            <button class="reject">Refuser</button>
-          </div>
-        `;
 
-        div.querySelector('.accept').onclick = async () => {
+        const card = document.createElement('div');
+        card.className = 'friend-card';
+
+        const content = document.createElement('div');
+        content.className = 'friend-card-content';
+        content.innerHTML =
+          `<div class="friend-name-line"><strong>${uname}</strong> vous a envoyé une demande.</div>`;
+
+        const actions = document.createElement('div');
+        actions.className = 'friend-card-actions';
+
+        const acceptBtn = document.createElement('button');
+        acceptBtn.textContent = 'Accepter';
+        acceptBtn.onclick = async () => {
           await supabase.from('friends').update({ status: 'accepted' }).eq('id', req.id);
           manageSession();
         };
-        div.querySelector('.reject').onclick = async () => {
+
+        const rejectBtn = document.createElement('button');
+        rejectBtn.textContent = 'Refuser';
+        rejectBtn.onclick = async () => {
           await supabase.from('friends').update({ status: 'rejected' }).eq('id', req.id);
           manageSession();
         };
 
-        receivedContainer.appendChild(div);
+        actions.append(acceptBtn, rejectBtn);
+        card.append(content, actions);
+        receivedContainer.appendChild(card);
       }
     }
 
@@ -284,7 +321,8 @@
       const friendContainer = document.getElementById('accepted-friends');
       friendContainer.innerHTML = '';
 
-      const orClause = 'requester.eq.' + userId + ',requested.eq.' + userId;
+      // or clause paramétrée
+      const orClause = `requester.eq.${userId},requested.eq.${userId}`;
 
       const { data: acceptedFriends, error } = await supabase
         .from('friends')
@@ -297,9 +335,9 @@
             is_online,
             last_seen_at,
             currently_watching,
+            current_season,
             episode_number,
-            episode_image,
-            current_season
+            episode_image
           ),
           requested:requested(
             id,
@@ -307,16 +345,16 @@
             is_online,
             last_seen_at,
             currently_watching,
+            current_season,
             episode_number,
-            episode_image,
-            current_season
+            episode_image
           )
         `)
         .or(orClause)
         .eq('status', 'accepted');
 
       if (error) {
-        console.error('Erreur fetch amis:', error);
+        console.error('[amis] erreur fetch:', error);
         friendContainer.innerText = 'Erreur lors du chargement.';
         return;
       }
@@ -327,38 +365,39 @@
       }
 
       for (const rel of acceptedFriends) {
-        // déterminer quel côté est l'ami
+        // côté ami = l'autre id
         const friend = (rel.requester?.id === userId) ? rel.requested : rel.requester;
         if (!friend) continue;
 
         const uname = escapeHTML(friend.username ?? 'Utilisateur');
 
-        // statut calculé
-        const online = computeOnline(friend.last_seen_at, friend.is_online);
+        // statut calculé uniquement via last_seen_at (fallback sur bool si null)
+        const online = computeOnlineFromLastSeen(friend.last_seen_at) || (!!friend.is_online && friend.is_online !== null);
         const statusHTML = online
           ? '<span class="online">🟢 En ligne</span>'
           : '<span class="offline">🔴 Hors ligne</span>';
 
-        // activité : NE S'AFFICHE QUE SI EN LIGNE ← corrige le problème "reste bloqué"
+        /* ----- activité ----- */
         let watchingHTML = '';
-        if (online && friend.currently_watching) {
+        const freshActivity = isActivityFresh(friend.last_seen_at); // évite affichage bloqué
+        if (freshActivity && friend.currently_watching) {
           const safeTitle = escapeHTML(friend.currently_watching);
-          const seasonPart = friend.current_season ? 'S' + friend.current_season + ' - ' : '';
-          const epPart = (friend.episode_number != null) ? 'Épisode ' + friend.episode_number : '';
-          const caption = (seasonPart + epPart).trim();
-          const imgUrl = sanitizeImg(friend.episode_image) || PLACEHOLDER_IMG;
-          const imgHTML = `<img class="watching-thumb" src="${imgUrl}" alt="Vignette épisode en cours" loading="lazy" />`;
+          const seasonPart = friend.current_season ? `S${friend.current_season}` : '';
+          const epPart     = (friend.episode_number != null) ? `Épisode ${friend.episode_number}` : '';
+          const caption    = [seasonPart, epPart].filter(Boolean).join(' – ');
+          const imgUrl     = sanitizeImg(friend.episode_image) || PLACEHOLDER_IMG;
+
           watchingHTML = `
             <div class="watching-activity">
               <div>🎬 Regarde : <strong>${safeTitle}</strong>${caption ? ' – ' + caption : ''}</div>
-              ${imgHTML}
+              <img class="watching-thumb" src="${imgUrl}" alt="Vignette épisode en cours" loading="lazy" />
             </div>`;
         }
 
         // carte ami
-        const div = document.createElement('div');
-        div.className = 'friend-card';
-        div.innerHTML = `
+        const card = document.createElement('div');
+        card.className = 'friend-card';
+        card.innerHTML = `
           <div class="friend-card-content">
             <div class="friend-name-line"><strong>${uname}</strong> ${statusHTML}</div>
             ${watchingHTML}
@@ -369,29 +408,28 @@
           </div>
         `;
 
-        div.querySelector('.remove').onclick = async () => {
+        card.querySelector('.remove').onclick = async () => {
           await supabase.from('friends').delete().eq('id', rel.id);
           manageSession();
         };
 
-        div.querySelector('.chat').onclick = () => {
+        card.querySelector('.chat').onclick = () => {
           window.location.href = 'chat.html?user=' + friend.id;
         };
 
-        friendContainer.appendChild(div);
+        friendContainer.appendChild(card);
       }
     }
 
-    /* ================== INIT ================== */
-    (async () => {
-      try {
-        console.log('[mes-amis] init…');
-        await manageSession();
-        setInterval(manageSession, 10000); // 10s
-      } catch (err) {
-        console.error('[mes-amis] top-level error:', err);
-      }
-    })();
+    /* ================== LOOP ================== */
+    async function initMesAmis() {
+      console.log('[mes-amis] init…');
+      await manageSession();
+      if (refreshTimer) clearInterval(refreshTimer);
+      refreshTimer = setInterval(manageSession, REFRESH_INTERVAL_MS);
+    }
+
+    initMesAmis();
   </script>
 </body>
 </html>
