@@ -160,7 +160,8 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
     );
 
-    const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg'; // assure-toi que ce fichier existe
+    // Mets ici une vraie image si tu veux éviter la 404
+    const PLACEHOLDER_IMG = 'https://via.placeholder.com/160x90?text=Episode';
 
     /* ================== HELPERS ================== */
     function escapeHTML(str = '') {
@@ -180,7 +181,7 @@
       return u;
     }
 
-    // En ligne si last_seen_at < 60s (fallback is_online si pas de last_seen)
+    // En ligne si last_seen_at < 60s (fallback bool si jamais absent)
     function computeOnline(lastSeen, fallbackBool) {
       if (!lastSeen) return !!fallbackBool;
       const THRESHOLD = 60000; // 60s
@@ -202,12 +203,12 @@
     }
 
     function startHeartbeat() {
-      heartbeat(); // immediate
+      heartbeat(); // immédiat
       if (heartbeatTimer) clearInterval(heartbeatTimer);
-      heartbeatTimer = setInterval(heartbeat, 30000); // 30s
+      heartbeatTimer = setInterval(heartbeat, 30000); // toutes les 30s
     }
 
-    // Tab re-activée => ping
+    // Quand l'onglet revient en avant-plan → heartbeat
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) heartbeat();
     });
@@ -283,7 +284,6 @@
       const friendContainer = document.getElementById('accepted-friends');
       friendContainer.innerHTML = '';
 
-      // Pour éviter un problème de template/backtick : on construit la clause .or() à part
       const orClause = 'requester.eq.' + userId + ',requested.eq.' + userId;
 
       const { data: acceptedFriends, error } = await supabase
@@ -327,33 +327,27 @@
       }
 
       for (const rel of acceptedFriends) {
+        // déterminer quel côté est l'ami
         const friend = (rel.requester?.id === userId) ? rel.requested : rel.requester;
         if (!friend) continue;
 
         const uname = escapeHTML(friend.username ?? 'Utilisateur');
 
-        // statut
+        // statut calculé
         const online = computeOnline(friend.last_seen_at, friend.is_online);
         const statusHTML = online
           ? '<span class="online">🟢 En ligne</span>'
           : '<span class="offline">🔴 Hors ligne</span>';
 
-        // activité
-        const watchingTitle = friend.currently_watching;
-        const epNum = friend.episode_number;
-        const seasonNum = friend.current_season;
-        const imgUrlRaw = friend.episode_image;
-        const imgUrl = sanitizeImg(imgUrlRaw) || PLACEHOLDER_IMG;
-
+        // activité : NE S'AFFICHE QUE SI EN LIGNE ← corrige le problème "reste bloqué"
         let watchingHTML = '';
-        if (watchingTitle) {
-          const safeTitle = escapeHTML(watchingTitle);
-          const seasonPart = seasonNum ? 'S' + seasonNum + ' - ' : '';
-          const epPart = (epNum != null) ? 'Épisode ' + epNum : '';
+        if (online && friend.currently_watching) {
+          const safeTitle = escapeHTML(friend.currently_watching);
+          const seasonPart = friend.current_season ? 'S' + friend.current_season + ' - ' : '';
+          const epPart = (friend.episode_number != null) ? 'Épisode ' + friend.episode_number : '';
           const caption = (seasonPart + epPart).trim();
-          const imgHTML = imgUrl
-            ? `<img class="watching-thumb" src="${imgUrl}" alt="Vignette épisode en cours" loading="lazy" />`
-            : '';
+          const imgUrl = sanitizeImg(friend.episode_image) || PLACEHOLDER_IMG;
+          const imgHTML = `<img class="watching-thumb" src="${imgUrl}" alt="Vignette épisode en cours" loading="lazy" />`;
           watchingHTML = `
             <div class="watching-activity">
               <div>🎬 Regarde : <strong>${safeTitle}</strong>${caption ? ' – ' + caption : ''}</div>
@@ -361,7 +355,7 @@
             </div>`;
         }
 
-        // carte
+        // carte ami
         const div = document.createElement('div');
         div.className = 'friend-card';
         div.innerHTML = `
