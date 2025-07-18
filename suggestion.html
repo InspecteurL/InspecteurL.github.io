@@ -68,6 +68,53 @@
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
 
+    /* Formulaire de suggestion */
+    .suggestion-form {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .suggestion-form h2 {
+        text-align: center;
+        font-size: 2em;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .suggestion-form textarea {
+        width: 100%;
+        height: 150px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        font-size: 1em;
+        resize: none;
+        margin-bottom: 20px;
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+    }
+
+    .suggestion-form textarea:focus {
+        border-color: #3b82f6;
+        box-shadow: inset 0 2px 5px rgba(0, 123, 255, 0.3);
+    }
+
+    .suggestion-form button {
+        width: 100%;
+        background-color: #3b82f6;
+        color: white;
+        font-size: 1.2em;
+        border: none;
+        padding: 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .suggestion-form button:hover {
+        background-color: #2563eb;
+    }
+
     /* Liste des suggestions */
     .admin-suggestions {
         text-align: center;
@@ -133,6 +180,14 @@
     </header>
 
     <section class="suggestion-section">
+        <!-- Formulaire de soumission de suggestion -->
+        <div class="suggestion-form">
+            <h2>Soumettre une suggestion</h2>
+            <textarea id="suggestion-text" placeholder="Entrez votre suggestion ici..."></textarea>
+            <button id="submit-suggestion">Soumettre</button>
+        </div>
+
+        <!-- Liste des suggestions -->
         <h2>Suggestions Soumises</h2>
         <div id="suggestions-list"></div>
         <div id="admin-section"></div>
@@ -144,10 +199,25 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
         const supabase = createClient(supabaseUrl, supabaseKey);
 
-        // Fonction pour récupérer l'utilisateur actuellement connecté
-        async function getUser() {
-            const user = supabase.auth.user();
-            return user;
+        // Fonction pour soumettre une suggestion
+        async function submitSuggestion() {
+            const suggestionText = document.getElementById('suggestion-text').value;
+            if (!suggestionText) {
+                alert('Veuillez entrer une suggestion.');
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('suggestions')
+                .insert([{ suggestion_text: suggestionText, status: 'En cours' }]);
+
+            if (error) {
+                console.error('Erreur lors de la soumission de la suggestion:', error);
+                alert('Erreur lors de la soumission de la suggestion: ' + error.message);
+            } else {
+                alert('Suggestion soumise avec succès.');
+                loadSuggestions(); // Recharger les suggestions après soumission
+            }
         }
 
         // Fonction pour récupérer et afficher les suggestions
@@ -185,7 +255,7 @@
         async function showAdminInterface() {
             const user = await getUser();
 
-            if (user && user.role === 'admin') { // Assurez-vous que le rôle de l'admin est bien défini
+            if (user && user.role === 'admin') {
                 const adminSection = document.getElementById('admin-section');
                 adminSection.innerHTML = `
                     <h3>Gestion des Suggestions</h3>
@@ -193,7 +263,6 @@
                     <div id="admin-suggestions-list"></div>
                 `;
 
-                // Charger les suggestions pour modification
                 const { data: suggestions, error } = await supabase
                     .from('suggestions')
                     .select('*');
@@ -205,7 +274,7 @@
                 }
 
                 const adminSuggestionsList = document.getElementById('admin-suggestions-list');
-                adminSuggestionsList.innerHTML = ''; // Clear previous suggestions
+                adminSuggestionsList.innerHTML = '';
 
                 suggestions.forEach(suggestion => {
                     const suggestionItem = document.createElement('div');
@@ -223,7 +292,6 @@
                     adminSuggestionsList.appendChild(suggestionItem);
                 });
 
-                // Ajout de l'événement de changement de statut
                 const statusSelectors = document.querySelectorAll('.status-selector');
                 statusSelectors.forEach(selector => {
                     selector.addEventListener('change', async (e) => {
@@ -248,9 +316,18 @@
             }
         }
 
+        // Fonction pour récupérer l'utilisateur connecté
+        async function getUser() {
+            const user = supabase.auth.user();
+            return user;
+        }
+
         // Initialisation
         loadSuggestions();
         showAdminInterface();
+
+        // Ajout du gestionnaire d'événement pour soumettre une suggestion
+        document.getElementById('submit-suggestion').addEventListener('click', submitSuggestion);
     </script>
 </body>
 </html>
