@@ -7,167 +7,167 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <style>W
+    <style>
     /* Reset pour les marges et les paddings */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Corps de la page */
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
-}
-
-/* Entête de la page */
-header {
-    background-color: #3b82f6; /* Couleur bleue moderne */
-    padding: 20px 0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-header .logo {
-    color: white;
-    font-size: 1.8em;
-    font-weight: bold;
-    text-align: center;
-}
-
-header .nav-links {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 10px;
-}
-
-header .nav-links li {
-    list-style: none;
-}
-
-header .nav-links a {
-    color: white;
-    text-decoration: none;
-    font-size: 1.1em;
-    padding: 10px 20px;
-    transition: background-color 0.3s;
-}
-
-header .nav-links a:hover {
-    background-color: #2563eb;
-    border-radius: 5px;
-}
-
-/* Section principale */
-section {
-    padding: 40px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* Formulaire de suggestion */
-.suggestion-form {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.suggestion-form h2 {
-    text-align: center;
-    font-size: 2em;
-    margin-bottom: 20px;
-    color: #333;
-}
-
-.suggestion-form textarea {
-    width: 100%;
-    height: 150px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    font-size: 1em;
-    resize: none;
-    margin-bottom: 20px;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s;
-}
-
-.suggestion-form textarea:focus {
-    border-color: #3b82f6;
-    box-shadow: inset 0 2px 5px rgba(0, 123, 255, 0.3);
-}
-
-.suggestion-form button {
-    width: 100%;
-    background-color: #3b82f6;
-    color: white;
-    font-size: 1.2em;
-    border: none;
-    padding: 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.suggestion-form button:hover {
-    background-color: #2563eb;
-}
-
-/* Liste des suggestions */
-.admin-suggestions {
-    text-align: center;
-}
-
-#suggestions-list {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.suggestion-item {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.suggestion-item p {
-    font-size: 1.1em;
-    margin-bottom: 10px;
-}
-
-.suggestion-item select {
-    padding: 8px;
-    font-size: 1em;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    width: 100%;
-    transition: all 0.3s ease;
-}
-
-.suggestion-item select:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
-}
-
-@media (max-width: 768px) {
-    /* Ajustements pour les petits écrans */
-    #suggestions-list {
-        grid-template-columns: 1fr 1fr;
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
     }
-}
 
-@media (max-width: 480px) {
-    /* Ajustements pour les très petits écrans */
-    #suggestions-list {
-        grid-template-columns: 1fr;
+    /* Corps de la page */
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
     }
-}
+
+    /* Entête de la page */
+    header {
+        background-color: #3b82f6; /* Couleur bleue moderne */
+        padding: 20px 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    header .logo {
+        color: white;
+        font-size: 1.8em;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    header .nav-links {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 10px;
+    }
+
+    header .nav-links li {
+        list-style: none;
+    }
+
+    header .nav-links a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.1em;
+        padding: 10px 20px;
+        transition: background-color 0.3s;
+    }
+
+    header .nav-links a:hover {
+        background-color: #2563eb;
+        border-radius: 5px;
+    }
+
+    /* Section principale */
+    section {
+        padding: 40px 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Formulaire de suggestion */
+    .suggestion-form {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .suggestion-form h2 {
+        text-align: center;
+        font-size: 2em;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .suggestion-form textarea {
+        width: 100%;
+        height: 150px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        font-size: 1em;
+        resize: none;
+        margin-bottom: 20px;
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+    }
+
+    .suggestion-form textarea:focus {
+        border-color: #3b82f6;
+        box-shadow: inset 0 2px 5px rgba(0, 123, 255, 0.3);
+    }
+
+    .suggestion-form button {
+        width: 100%;
+        background-color: #3b82f6;
+        color: white;
+        font-size: 1.2em;
+        border: none;
+        padding: 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .suggestion-form button:hover {
+        background-color: #2563eb;
+    }
+
+    /* Liste des suggestions */
+    .admin-suggestions {
+        text-align: center;
+    }
+
+    #suggestions-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .suggestion-item {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .suggestion-item p {
+        font-size: 1.1em;
+        margin-bottom: 10px;
+    }
+
+    .suggestion-item select {
+        padding: 8px;
+        font-size: 1em;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .suggestion-item select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        /* Ajustements pour les petits écrans */
+        #suggestions-list {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        /* Ajustements pour les très petits écrans */
+        #suggestions-list {
+            grid-template-columns: 1fr;
+        }
+    }
 
     </style>
     <header>
@@ -200,53 +200,54 @@ section {
             if (error) {
                 console.error('Erreur lors de la récupération des suggestions:', error);
                 alert('Erreur lors de la récupération des suggestions: ' + error.message);
-            } else {
-                console.log('Suggestions récupérées:', suggestions);
-                const suggestionsList = document.getElementById('suggestions-list');
-                suggestionsList.innerHTML = ''; // Clear previous suggestions
-
-                if (suggestions.length === 0) {
-                    suggestionsList.innerHTML = '<p>Aucune suggestion trouvée.</p>';
-                }
-
-                suggestions.forEach(suggestion => {
-                    const suggestionItem = document.createElement('div');
-                    suggestionItem.classList.add('suggestion-item');
-                    suggestionItem.innerHTML = `
-                        <p>${suggestion.suggestion_text}</p>
-                        <p>Status: <strong>${suggestion.status}</strong></p>
-                        <select data-id="${suggestion.id}" class="status-selector">
-                            <option value="En cours" ${suggestion.status === 'En cours' ? 'selected' : ''}>En cours</option>
-                            <option value="Planifié" ${suggestion.status === 'Planifié' ? 'selected' : ''}>Planifié</option>
-                            <option value="Refusé" ${suggestion.status === 'Refusé' ? 'selected' : ''}>Refusé</option>
-                            <option value="Terminé" ${suggestion.status === 'Terminé' ? 'selected' : ''}>Terminé</option>
-                        </select>
-                    `;
-                    suggestionsList.appendChild(suggestionItem);
-                });
-
-                // Ajout de l'événement de changement de statut
-                const statusSelectors = document.querySelectorAll('.status-selector');
-                statusSelectors.forEach(selector => {
-                    selector.addEventListener('change', async (e) => {
-                        const suggestionId = e.target.getAttribute('data-id');
-                        const newStatus = e.target.value;
-
-                        const { data, error } = await supabase
-                            .from('suggestions')
-                            .update({ status: newStatus })
-                            .eq('id', suggestionId);
-
-                        if (error) {
-                            console.error('Erreur lors de la mise à jour du statut:', error);
-                            alert('Erreur lors de la mise à jour du statut: ' + error.message);
-                        } else {
-                            alert('Statut mis à jour.');
-                            loadSuggestions(); // Recharger les suggestions après modification
-                        }
-                    });
-                });
+                return;
             }
+
+            console.log('Suggestions récupérées:', suggestions);
+            const suggestionsList = document.getElementById('suggestions-list');
+            suggestionsList.innerHTML = ''; // Clear previous suggestions
+
+            if (suggestions.length === 0) {
+                suggestionsList.innerHTML = '<p>Aucune suggestion trouvée.</p>';
+            }
+
+            suggestions.forEach(suggestion => {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.classList.add('suggestion-item');
+                suggestionItem.innerHTML = `
+                    <p>${suggestion.suggestion_text}</p>
+                    <p>Status: <strong>${suggestion.status}</strong></p>
+                    <select data-id="${suggestion.id}" class="status-selector">
+                        <option value="En cours" ${suggestion.status === 'En cours' ? 'selected' : ''}>En cours</option>
+                        <option value="Planifié" ${suggestion.status === 'Planifié' ? 'selected' : ''}>Planifié</option>
+                        <option value="Refusé" ${suggestion.status === 'Refusé' ? 'selected' : ''}>Refusé</option>
+                        <option value="Terminé" ${suggestion.status === 'Terminé' ? 'selected' : ''}>Terminé</option>
+                    </select>
+                `;
+                suggestionsList.appendChild(suggestionItem);
+            });
+
+            // Ajout de l'événement de changement de statut
+            const statusSelectors = document.querySelectorAll('.status-selector');
+            statusSelectors.forEach(selector => {
+                selector.addEventListener('change', async (e) => {
+                    const suggestionId = e.target.getAttribute('data-id');
+                    const newStatus = e.target.value;
+
+                    const { data, error } = await supabase
+                        .from('suggestions')
+                        .update({ status: newStatus })
+                        .eq('id', suggestionId);
+
+                    if (error) {
+                        console.error('Erreur lors de la mise à jour du statut:', error);
+                        alert('Erreur lors de la mise à jour du statut: ' + error.message);
+                    } else {
+                        alert('Statut mis à jour.');
+                        loadSuggestions(); // Recharger les suggestions après modification
+                    }
+                });
+            });
         }
 
         loadSuggestions();
