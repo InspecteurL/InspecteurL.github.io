@@ -24,7 +24,6 @@
       margin: 0;
       padding: 0;
     }
-
     ul {
       list-style-type: none;
       margin: 0;
@@ -32,11 +31,7 @@
       overflow: hidden;
       background-color: #1c1c1c;
     }
-
-    li {
-      float: left;
-    }
-
+    li { float: left; }
     li a {
       display: block;
       color: white;
@@ -45,12 +40,10 @@
       text-decoration: none;
       font-size: 20px;
     }
-
     li a:hover {
       background-color: red;
       border-radius: 5px;
     }
-
     .episode-card {
       width: 250px;
       margin: 10px;
@@ -69,23 +62,17 @@
       display: inline-block;
       transition: transform 0.2s;
     }
-
-    .episode-card:hover {
-      transform: scale(1.05);
-    }
-
+    .episode-card:hover { transform: scale(1.05); }
     .episode-card img {
       width: 100%;
       border-radius: 5px;
     }
-
     #episode-list {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       padding: 20px;
     }
-
     #video-container {
       position: fixed;
       top: 0;
@@ -102,19 +89,16 @@
       transform: scale(0.95);
       transition: opacity 0.5s ease, transform 0.5s ease;
     }
-
     #video-container.show {
       display: flex;
       opacity: 1;
       transform: scale(1);
     }
-
     #episode-video {
       width: 80%;
       height: 60vh;
       border: none;
     }
-
     #back-button,
     #next-button {
       margin-top: 20px;
@@ -126,18 +110,13 @@
       border-radius: 8px;
       cursor: pointer;
     }
-
     #loader {
       color: white;
       font-size: 20px;
       margin-top: 15px;
     }
-
     @media (max-width: 600px) {
-      .episode-card {
-        width: 90%;
-      }
-
+      .episode-card { width: 90%; }
       #episode-video {
         width: 95%;
         height: 40vh;
@@ -168,8 +147,8 @@
     <select
       id="season-select"
       style="padding: 10px; font-size: 16px; border-radius: 5px;">
-      <option value="1">Saison 1</option>
-      <!-- <option value="2">Saison 2</option>  Ajoute quand tu auras des données -->
+      <option value="1" selected>Saison 1</option>
+      <!-- <option value="2">Saison 2</option> -->
     </select>
   </div>
 
@@ -180,7 +159,6 @@
   <div id="video-container">
     <iframe id="episode-video" allowfullscreen></iframe>
     <div id="loader" style="display:none;">Chargement de la vidéo...</div>
-    <!-- IMPORTANT: onclick reste, fonctions exposées sur window -->
     <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
     <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
   </div>
@@ -189,7 +167,7 @@
     /*************************************************
      * Supabase init
      *************************************************/
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm";
 
     const supabase = createClient(
       "https://wuagahavmbugmnuzsouf.supabase.co",
@@ -197,7 +175,7 @@
     );
 
     /*************************************************
-     * Données épisodes
+     * Données épisodes (Saison 1)
      *************************************************/
     const episodeDataS1 = [
       { title: "Épisode 1",  description: "Théâtre d'ombres",         image: "https://www.myutaku.com/media/episodes/303071/5400132.jpg",   video: "https://vidmoly.to/embed-90xv2zvph97q.html" },
@@ -214,18 +192,17 @@
       { title: "Épisode 12", description: "Trésor",                    image: "https://www.myutaku.com/media/episodes/303071/5468811.jpg",   video: "https://vidmoly.to/embed-e9gvn9gumhaw.html" }
     ];
 
-    /* Placeholder si tu ajoutes une S2 plus tard
-    const episodeDataS2 = [...];
-    */
-
     /*************************************************
-     * État
+     * Constantes / état
      *************************************************/
+    const ANIME_TITLE = "Erased";
+    const DEFAULT_SEASON = 1;
+    const PLACEHOLDER_IMG = "img/placeholder-episode.jpg"; // assure-toi qu'il existe (ou mets une URL absolue)
+
     let currentEpisodeData = episodeDataS1;
     let currentEpisodeIndex = 0;
     let timeoutId = null;
-    let userId = null; // Récupéré via session
-    const ANIME_TITLE = "Erased"; // Ce qui sera écrit dans profiles.currently_watching
+    let userId = null; // Récupéré via session Supabase
 
     /*************************************************
      * DOM refs
@@ -237,6 +214,22 @@
     const nextButton     = document.getElementById("next-button");
     const loader         = document.getElementById("loader");
     const seasonSelect   = document.getElementById("season-select");
+
+    /*************************************************
+     * Helpers
+     *************************************************/
+    function escapeHTML(str = "") {
+      return str.replace(/[&<>"']/g, s => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+      }[s]));
+    }
+
+    function sanitizeImage(url) {
+      if (!url) return null;
+      const u = String(url).trim();
+      if (!u || u === "-" || u.toUpperCase() === "NULL") return null;
+      return u;
+    }
 
     /*************************************************
      * Session utilisateur
@@ -262,15 +255,19 @@
 
     /*************************************************
      * Activité: mise à jour / reset
-     * Table: profiles (comme dans ta page mes-amis)
+     * Table: profiles
      *************************************************/
-    async function updateCurrentActivity(animeTitle, episodeIndex) {
+    async function updateCurrentActivity({ animeTitle, season, episodeIndex, imageUrl, currentTime = 0 }) {
       if (!userId) return;
+      const cleanImg = sanitizeImage(imageUrl) ?? null;
       const { error } = await supabase
         .from("profiles")
         .update({
           currently_watching: animeTitle,
-          episode_number: episodeIndex + 1
+          current_season: season,
+          episode_number: episodeIndex + 1, // 1-based
+          episode_image: cleanImg,
+          current_time: currentTime
         })
         .eq("id", userId);
       if (error) console.error("Erreur update activité:", error);
@@ -282,7 +279,10 @@
         .from("profiles")
         .update({
           currently_watching: null,
-          episode_number: null
+          current_season: null,
+          episode_number: null,
+          episode_image: null,
+          current_time: null
         })
         .eq("id", userId);
       if (error) console.error("Erreur clear activité:", error);
@@ -297,9 +297,10 @@
         const card = document.createElement("div");
         card.className = "episode-card";
         card.innerHTML = `
-          <img src="${ep.image}" alt="Affiche ${ep.title} : ${ep.description}" />
-          <h3>${ep.title}</h3>
-          <p>${ep.description}</p>
+          <img src="${sanitizeImage(ep.image) ?? PLACEHOLDER_IMG}"
+               alt="Affiche ${escapeHTML(ep.title)} : ${escapeHTML(ep.description)}" />
+          <h3>${escapeHTML(ep.title)}</h3>
+          <p>${escapeHTML(ep.description)}</p>
         `;
         card.addEventListener("click", () => {
           currentEpisodeIndex = index;
@@ -312,12 +313,13 @@
     /*************************************************
      * Lecture d'un épisode
      *************************************************/
-    function playEpisode(index) {
+    async function playEpisode(index) {
+      const ep = currentEpisodeData[index];
       // loader visible pendant chargement iframe
       loader.style.display = "block";
 
       // appliquer src (déclenche chargement)
-      videoIframe.src = currentEpisodeData[index].video;
+      videoIframe.src = ep.video;
 
       // forcer affichage conteneur avant transition
       videoContainer.classList.remove("show");
@@ -326,8 +328,14 @@
         videoContainer.classList.add("show");
       });
 
-      // mettre à jour activité Supabase
-      updateCurrentActivity(ANIME_TITLE, index);
+      // mettre à jour activité Supabase (avec image)
+      await updateCurrentActivity({
+        animeTitle: ANIME_TITLE,
+        season: Number(seasonSelect.value) || DEFAULT_SEASON,
+        episodeIndex: index,
+        imageUrl: ep.image,
+        currentTime: 0
+      });
 
       // masquer bouton suivant et reset timer
       nextButton.style.display = "none";
@@ -344,9 +352,9 @@
     /*************************************************
      * Iframe chargée => cacher loader
      *************************************************/
-    videoIframe.onload = () => {
+    videoIframe.addEventListener("load", () => {
       loader.style.display = "none";
-    };
+    });
 
     /*************************************************
      * Épisode suivant
@@ -360,27 +368,20 @@
 
     /*************************************************
      * Sortie vidéo (bouton Retour)
-     * IMPORTANT: accessible globalement pour onclick
      *************************************************/
     function exitFullscreenMode() {
-      // stop timer "épisode suivant"
       if (timeoutId) {
         clearTimeout(timeoutId);
         timeoutId = null;
       }
 
-      // transition out
       videoContainer.classList.remove("show");
 
-      // attendre la fin de la transition CSS (0.5s)
       setTimeout(() => {
         videoContainer.style.display = "none";
 
         // stopper vidéo (vider src)
-        // Pour éviter que certains lecteurs tiers poursuivent audio,
-        // on bascule src vers about:blank avant clear:
         videoIframe.src = "about:blank";
-        // flush complet
         requestAnimationFrame(() => (videoIframe.src = ""));
 
         // masquer bouton suivant & loader
@@ -398,15 +399,13 @@
     seasonSelect.addEventListener("change", (e) => {
       const val = e.target.value;
       // Ajoute d'autres saisons ici si dispo
-      // const episodeDataS2 = [...]
-      // currentEpisodeData = val === "2" ? episodeDataS2 : episodeDataS1;
+      // currentEpisodeData = (val === "2") ? episodeDataS2 : episodeDataS1;
       currentEpisodeData = episodeDataS1; // unique pour l'instant
       renderEpisodes();
     });
 
     /*************************************************
-     * Exposer fonctions pour les attributs onclick HTML
-     * (nécessaire car script type="module" -> scope local)
+     * Exposer fonctions globales pour les boutons inline
      *************************************************/
     window.exitFullscreenMode = exitFullscreenMode;
     window.nextEpisode = nextEpisode;
