@@ -116,10 +116,6 @@
     }
 
     /* Liste des suggestions */
-    .admin-suggestions {
-        text-align: center;
-    }
-
     #suggestions-list {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
@@ -198,6 +194,12 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
         const supabase = createClient(supabaseUrl, supabaseKey);
 
+        // Fonction pour obtenir l'utilisateur actuel
+        async function getUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            return user ?? null;
+        }
+
         // Fonction pour soumettre une suggestion
         async function submitSuggestion() {
             const suggestionText = document.getElementById('suggestion-text').value;
@@ -231,7 +233,7 @@
                 return;
             }
 
-            console.log('Suggestions récupérées:', suggestions);
+            const user = await getUser();
             const suggestionsList = document.getElementById('suggestions-list');
             suggestionsList.innerHTML = ''; // Clear previous suggestions
 
@@ -245,12 +247,14 @@
                 suggestionItem.innerHTML = `
                     <p>${suggestion.suggestion_text}</p>
                     <p>Status: <strong>${suggestion.status}</strong></p>
+                    ${user && user.role === 'admin' ? `
                     <select data-id="${suggestion.id}" class="status-selector">
                         <option value="En cours" ${suggestion.status === 'En cours' ? 'selected' : ''}>En cours</option>
                         <option value="Planifié" ${suggestion.status === 'Planifié' ? 'selected' : ''}>Planifié</option>
                         <option value="Refusé" ${suggestion.status === 'Refusé' ? 'selected' : ''}>Refusé</option>
                         <option value="Terminé" ${suggestion.status === 'Terminé' ? 'selected' : ''}>Terminé</option>
                     </select>
+                    ` : ''}
                 `;
                 suggestionsList.appendChild(suggestionItem);
             });
