@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Suggestions</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">BNZ</div>
+            <ul class="nav-links">
+                <li><a href="accueil.html">Accueil</a></li>
+                <li><a href="suggestion.html">Suggestions</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="admin-suggestions">
+        <h2>Suggestions Soumises</h2>
+        <div id="suggestions-list"></div>
+    </section>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
+        const supabaseKey = 'YOUR_PUBLIC_ANON_KEY';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // Fonction pour récupérer et afficher les suggestions
+        async function loadSuggestions() {
+            const { data: suggestions, error } = await supabase
+                .from('suggestions')
+                .select('*');
+
+            if (error) {
+                alert('Erreur lors de la récupération des suggestions: ' + error.message);
+            } else {
+                const suggestionsList = document.getElementById('suggestions-list');
+                suggestionsList.innerHTML = ''; // Clear previous suggestions
+
+                suggestions.forEach(suggestion => {
+                    const suggestionItem = document.createElement('div');
+                    suggestionItem.classList.add('suggestion-item');
+                    suggestionItem.innerHTML = `
+                        <p>${suggestion.suggestion_text}</p>
+                        <p>Status: <strong>${suggestion.status}</strong></p>
+                        <select data-id="${suggestion.id}" class="status-selector">
+                            <option value="En cours" ${suggestion.status === 'En cours' ? 'selected' : ''}>En cours</option>
+                            <option value="Planifié" ${suggestion.status === 'Planifié' ? 'selected' : ''}>Planifié</option>
+                            <option value="Refusé" ${suggestion.status === 'Refusé' ? 'selected' : ''}>Refusé</option>
+                            <option value="Terminé" ${suggestion.status === 'Terminé' ? 'selected' : ''}>Terminé</option>
+                        </select>
+                    `;
+                    suggestionsList.appendChild(suggestionItem);
+                });
+
+                // Ajout de l'événement de changement de statut
+                const statusSelectors = document.querySelectorAll('.status-selector');
+                statusSelectors.forEach(selector => {
+                    selector.addEventListener('change', async (e) => {
+                        const suggestionId = e.target.getAttribute('data-id');
+                        const newStatus = e.target.value;
+
+                        const { data, error } = await supabase
+                            .from('suggestions')
+                            .update({ status: newStatus })
+                            .eq('id', suggestionId);
+
+                        if (error) {
+                            alert('Erreur lors de la mise à jour du statut: ' + error.message);
+                        } else {
+                            alert('Statut mis à jour.');
+                            loadSuggestions(); // Recharger les suggestions après modification
+                        }
+                    });
+                });
+            }
+        }
+
+        loadSuggestions();
+    </script>
+</body>
+</html>
