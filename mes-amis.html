@@ -154,18 +154,24 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm';
 
+    /* ================== CONFIG ================== */
     const supabase = createClient(
       'https://wuagahavmbugmnuzsouf.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
     );
 
-    const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg'; // mets un vrai fichier
+    const PLACEHOLDER_IMG = 'img/placeholder-episode.jpg'; // assure-toi que ce fichier existe
 
-    /* ---------- helpers ---------- */
-    const escapeHTML = (str = '') =>
-      str.replace(/[&<>"']/g, ch => ({
-        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    /* ================== HELPERS ================== */
+    function escapeHTML(str = '') {
+      return str.replace(/[&<>"']/g, ch => ({
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;',
+        '"':'&quot;',
+        "'":'&#39;'
       }[ch]));
+    }
 
     function sanitizeImg(url) {
       if (!url) return null;
@@ -174,15 +180,15 @@
       return u;
     }
 
-    // Si last_seen_at < 60s => en ligne
-    function computeOnline(lastSeen, fallbackBool = false) {
+    // En ligne si last_seen_at < 60s (fallback is_online si pas de last_seen)
+    function computeOnline(lastSeen, fallbackBool) {
       if (!lastSeen) return !!fallbackBool;
-      const THRESHOLD = 60_000; // 60s
+      const THRESHOLD = 60000; // 60s
       const delta = Date.now() - new Date(lastSeen).getTime();
       return delta < THRESHOLD;
     }
 
-    /* ---------- session + heartbeat ---------- */
+    /* ================== HEARTBEAT ================== */
     let currentUserId = null;
     let heartbeatTimer = null;
 
@@ -196,23 +202,24 @@
     }
 
     function startHeartbeat() {
-      heartbeat(); // immédiat
+      heartbeat(); // immediate
       if (heartbeatTimer) clearInterval(heartbeatTimer);
-      heartbeatTimer = setInterval(heartbeat, 30_000); // toutes les 30s
+      heartbeatTimer = setInterval(heartbeat, 30000); // 30s
     }
 
+    // Tab re-activée => ping
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) heartbeat();
     });
 
-    /* ---------- main session mgmt ---------- */
+    /* ================== SESSION ================== */
     async function manageSession() {
       const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
       if (sessErr) console.error('Erreur session:', sessErr);
 
       const session = sessionData?.session;
       if (!session) {
-        document.body.innerHTML = "🔒 Vous devez être connecté.";
+        document.body.innerHTML = '🔒 Vous devez être connecté.';
         return;
       }
       currentUserId = session.user.id;
@@ -222,32 +229,32 @@
       await loadAcceptedFriends(currentUserId);
     }
 
-    /* ---------- demandes reçues ---------- */
+    /* ================== DEMANDES REÇUES ================== */
     async function loadPendingRequests(userId) {
-      const receivedContainer = document.getElementById("received-requests");
-      receivedContainer.innerHTML = "";
+      const receivedContainer = document.getElementById('received-requests');
+      receivedContainer.innerHTML = '';
 
       const { data: pendingRequests, error } = await supabase
-        .from("friends")
-        .select("id, status, requester:requester(id, username)")
-        .eq("requested", userId)
-        .eq("status", "pending");
+        .from('friends')
+        .select('id, status, requester:requester(id, username)')
+        .eq('requested', userId)
+        .eq('status', 'pending');
 
       if (error) {
-        console.error("Erreur fetch demandes:", error);
-        receivedContainer.innerText = "Erreur lors du chargement.";
+        console.error('Erreur fetch demandes:', error);
+        receivedContainer.innerText = 'Erreur lors du chargement.';
         return;
       }
 
-      if (!pendingRequests?.length) {
-        receivedContainer.innerText = "Aucune demande pour le moment.";
+      if (!pendingRequests || !pendingRequests.length) {
+        receivedContainer.innerText = 'Aucune demande pour le moment.';
         return;
       }
 
       for (const req of pendingRequests) {
-        const uname = escapeHTML(req.requester?.username ?? "Utilisateur");
-        const div = document.createElement("div");
-        div.className = "friend-card";
+        const uname = escapeHTML(req.requester?.username ?? 'Utilisateur');
+        const div = document.createElement('div');
+        div.className = 'friend-card';
         div.innerHTML = `
           <div class="friend-card-content">
             <div class="friend-name-line"><strong>${uname}</strong> vous a envoyé une demande.</div>
@@ -258,12 +265,12 @@
           </div>
         `;
 
-        div.querySelector(".accept").onclick = async () => {
-          await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
+        div.querySelector('.accept').onclick = async () => {
+          await supabase.from('friends').update({ status: 'accepted' }).eq('id', req.id);
           manageSession();
         };
-        div.querySelector(".reject").onclick = async () => {
-          await supabase.from("friends").update({ status: "rejected" }).eq("id", req.id);
+        div.querySelector('.reject').onclick = async () => {
+          await supabase.from('friends').update({ status: 'rejected' }).eq('id', req.id);
           manageSession();
         };
 
@@ -271,13 +278,16 @@
       }
     }
 
-    /* ---------- amis acceptés ---------- */
+    /* ================== AMIS ACCEPTÉS ================== */
     async function loadAcceptedFriends(userId) {
-      const friendContainer = document.getElementById("accepted-friends");
-      friendContainer.innerHTML = "";
+      const friendContainer = document.getElementById('accepted-friends');
+      friendContainer.innerHTML = '';
+
+      // Pour éviter un problème de template/backtick : on construit la clause .or() à part
+      const orClause = 'requester.eq.' + userId + ',requested.eq.' + userId;
 
       const { data: acceptedFriends, error } = await supabase
-        .from("friends")
+        .from('friends')
         .select(`
           id,
           status,
@@ -302,16 +312,16 @@
             current_season
           )
         `)
-        .or(\`requester.eq.${userId},requested.eq.${userId}\`)
-        .eq("status", "accepted");
+        .or(orClause)
+        .eq('status', 'accepted');
 
       if (error) {
-        console.error("Erreur fetch amis:", error);
-        friendContainer.innerText = "Erreur lors du chargement.";
+        console.error('Erreur fetch amis:', error);
+        friendContainer.innerText = 'Erreur lors du chargement.';
         return;
       }
 
-      if (!acceptedFriends?.length) {
+      if (!acceptedFriends || !acceptedFriends.length) {
         friendContainer.innerText = "Vous n'avez pas encore d'amis.";
         return;
       }
@@ -320,43 +330,43 @@
         const friend = (rel.requester?.id === userId) ? rel.requested : rel.requester;
         if (!friend) continue;
 
-        const uname = escapeHTML(friend.username ?? "Utilisateur");
-        // calcule online à partir de last_seen_at (fallback: friend.is_online si dispo)
-        const online = computeOnline(friend.last_seen_at, friend.is_online);
-        const status = online
-          ? `<span class="online">🟢 En ligne</span>`
-          : `<span class="offline">🔴 Hors ligne</span>`;
+        const uname = escapeHTML(friend.username ?? 'Utilisateur');
 
+        // statut
+        const online = computeOnline(friend.last_seen_at, friend.is_online);
+        const statusHTML = online
+          ? '<span class="online">🟢 En ligne</span>'
+          : '<span class="offline">🔴 Hors ligne</span>';
+
+        // activité
         const watchingTitle = friend.currently_watching;
         const epNum = friend.episode_number;
         const seasonNum = friend.current_season;
         const imgUrlRaw = friend.episode_image;
-        const imgUrl = sanitizeImg(imgUrlRaw) ?? PLACEHOLDER_IMG;
+        const imgUrl = sanitizeImg(imgUrlRaw) || PLACEHOLDER_IMG;
 
-        let watchingHTML = "";
+        let watchingHTML = '';
         if (watchingTitle) {
           const safeTitle = escapeHTML(watchingTitle);
-          const seasonPart = seasonNum ? `S${seasonNum} - ` : "";
-          const epPart = (epNum != null) ? `Épisode ${epNum}` : "";
-          const caption = `${seasonPart}${epPart}`.trim();
-
+          const seasonPart = seasonNum ? 'S' + seasonNum + ' - ' : '';
+          const epPart = (epNum != null) ? 'Épisode ' + epNum : '';
+          const caption = (seasonPart + epPart).trim();
           const imgHTML = imgUrl
             ? `<img class="watching-thumb" src="${imgUrl}" alt="Vignette épisode en cours" loading="lazy" />`
-            : "";
-
+            : '';
           watchingHTML = `
             <div class="watching-activity">
-              <div>🎬 Regarde : <strong>${safeTitle}</strong>${caption ? " – " + caption : ""}</div>
+              <div>🎬 Regarde : <strong>${safeTitle}</strong>${caption ? ' – ' + caption : ''}</div>
               ${imgHTML}
-            </div>
-          `;
+            </div>`;
         }
 
-        const div = document.createElement("div");
-        div.className = "friend-card";
+        // carte
+        const div = document.createElement('div');
+        div.className = 'friend-card';
         div.innerHTML = `
           <div class="friend-card-content">
-            <div class="friend-name-line"><strong>${uname}</strong> ${status}</div>
+            <div class="friend-name-line"><strong>${uname}</strong> ${statusHTML}</div>
             ${watchingHTML}
           </div>
           <div class="friend-card-actions">
@@ -365,22 +375,29 @@
           </div>
         `;
 
-        div.querySelector(".remove").onclick = async () => {
-          await supabase.from("friends").delete().eq("id", rel.id);
+        div.querySelector('.remove').onclick = async () => {
+          await supabase.from('friends').delete().eq('id', rel.id);
           manageSession();
         };
 
-        div.querySelector(".chat").onclick = () => {
-          window.location.href = `chat.html?user=${friend.id}`;
+        div.querySelector('.chat').onclick = () => {
+          window.location.href = 'chat.html?user=' + friend.id;
         };
 
         friendContainer.appendChild(div);
       }
     }
 
-    /* ---------- run ---------- */
-    manageSession();
-    setInterval(manageSession, 10_000);
+    /* ================== INIT ================== */
+    (async () => {
+      try {
+        console.log('[mes-amis] init…');
+        await manageSession();
+        setInterval(manageSession, 10000); // 10s
+      } catch (err) {
+        console.error('[mes-amis] top-level error:', err);
+      }
+    })();
   </script>
 </body>
 </html>
