@@ -190,7 +190,6 @@
         <!-- Liste des suggestions -->
         <h2>Suggestions Soumises</h2>
         <div id="suggestions-list"></div>
-        <div id="admin-section"></div>
     </section>
 
     <script type="module">
@@ -246,88 +245,43 @@
                 suggestionItem.innerHTML = `
                     <p>${suggestion.suggestion_text}</p>
                     <p>Status: <strong>${suggestion.status}</strong></p>
+                    <select data-id="${suggestion.id}" class="status-selector">
+                        <option value="En cours" ${suggestion.status === 'En cours' ? 'selected' : ''}>En cours</option>
+                        <option value="Planifié" ${suggestion.status === 'Planifié' ? 'selected' : ''}>Planifié</option>
+                        <option value="Refusé" ${suggestion.status === 'Refusé' ? 'selected' : ''}>Refusé</option>
+                        <option value="Terminé" ${suggestion.status === 'Terminé' ? 'selected' : ''}>Terminé</option>
+                    </select>
                 `;
                 suggestionsList.appendChild(suggestionItem);
             });
-        }
 
-        // Fonction pour afficher l'interface d'administration si l'utilisateur est un admin
-        async function showAdminInterface() {
-            const user = await getUser();
+            // Ajout de l'événement de changement de statut
+            const statusSelectors = document.querySelectorAll('.status-selector');
+            statusSelectors.forEach(selector => {
+                selector.addEventListener('change', async (e) => {
+                    const suggestionId = e.target.getAttribute('data-id');
+                    const newStatus = e.target.value;
 
-            if (user && user.role === 'admin') {
-                const adminSection = document.getElementById('admin-section');
-                adminSection.innerHTML = `
-                    <h3>Gestion des Suggestions</h3>
-                    <p>Modifiez le statut des suggestions en cours.</p>
-                    <div id="admin-suggestions-list"></div>
-                `;
+                    const { data, error } = await supabase
+                        .from('suggestions')
+                        .update({ status: newStatus })
+                        .eq('id', suggestionId);
 
-                const { data: suggestions, error } = await supabase
-                    .from('suggestions')
-                    .select('*');
-
-                if (error) {
-                    console.error('Erreur lors de la récupération des suggestions:', error);
-                    alert('Erreur lors de la récupération des suggestions: ' + error.message);
-                    return;
-                }
-
-                const adminSuggestionsList = document.getElementById('admin-suggestions-list');
-                adminSuggestionsList.innerHTML = '';
-
-                suggestions.forEach(suggestion => {
-                    const suggestionItem = document.createElement('div');
-                    suggestionItem.classList.add('suggestion-item');
-                    suggestionItem.innerHTML = `
-                        <p>${suggestion.suggestion_text}</p>
-                        <p>Status: <strong>${suggestion.status}</strong></p>
-                        <select data-id="${suggestion.id}" class="status-selector">
-                            <option value="En cours" ${suggestion.status === 'En cours' ? 'selected' : ''}>En cours</option>
-                            <option value="Planifié" ${suggestion.status === 'Planifié' ? 'selected' : ''}>Planifié</option>
-                            <option value="Refusé" ${suggestion.status === 'Refusé' ? 'selected' : ''}>Refusé</option>
-                            <option value="Terminé" ${suggestion.status === 'Terminé' ? 'selected' : ''}>Terminé</option>
-                        </select>
-                    `;
-                    adminSuggestionsList.appendChild(suggestionItem);
+                    if (error) {
+                        console.error('Erreur lors de la mise à jour du statut:', error);
+                        alert('Erreur lors de la mise à jour du statut: ' + error.message);
+                    } else {
+                        alert('Statut mis à jour.');
+                        loadSuggestions(); // Recharger les suggestions après modification
+                    }
                 });
-
-                const statusSelectors = document.querySelectorAll('.status-selector');
-                statusSelectors.forEach(selector => {
-                    selector.addEventListener('change', async (e) => {
-                        const suggestionId = e.target.getAttribute('data-id');
-                        const newStatus = e.target.value;
-
-                        const { data, error } = await supabase
-                            .from('suggestions')
-                            .update({ status: newStatus })
-                            .eq('id', suggestionId);
-
-                        if (error) {
-                            console.error('Erreur lors de la mise à jour du statut:', error);
-                            alert('Erreur lors de la mise à jour du statut: ' + error.message);
-                        } else {
-                            alert('Statut mis à jour.');
-                            loadSuggestions(); // Recharger les suggestions après modification
-                            showAdminInterface(); // Recharger l'interface admin
-                        }
-                    });
-                });
-            }
+            });
         }
 
-        // Fonction pour récupérer l'utilisateur connecté
-        async function getUser() {
-            const user = supabase.auth.user();
-            return user;
-        }
-
-        // Initialisation
-        loadSuggestions();
-        showAdminInterface();
-
-        // Ajout du gestionnaire d'événement pour soumettre une suggestion
         document.getElementById('submit-suggestion').addEventListener('click', submitSuggestion);
+
+        // Appel pour charger les suggestions au démarrage
+        loadSuggestions();
     </script>
 </body>
 </html>
