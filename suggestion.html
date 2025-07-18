@@ -3,189 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suggestions</title>
-    <style>
-        /* RESET */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background: #f3f4f6;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-
-        header {
-            background: #3b82f6;
-            width: 100%;
-            padding: 20px;
-            text-align: center;
-            color: #fff;
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 20px;
-            border-radius: 8px;
-        }
-
-        section {
-            background: #fff;
-            padding: 20px;
-            width: 100%;
-            max-width: 800px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        h2 {
-            margin-bottom: 15px;
-            color: #111;
-        }
-
-        textarea {
-            width: 100%;
-            padding: 10px;
-            height: 120px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 1em;
-            margin-bottom: 15px;
-            resize: none;
-            transition: border-color 0.3s;
-        }
-
-        textarea:focus {
-            border-color: #3b82f6;
-        }
-
-        button {
-            width: 100%;
-            background: #3b82f6;
-            color: #fff;
-            padding: 12px;
-            font-size: 1.1em;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background: #2563eb;
-        }
-
-        #suggestions-list {
-            display: grid;
-            gap: 15px;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        }
-
-        .suggestion-item {
-            background: #f9fafb;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .suggestion-item p {
-            margin-bottom: 8px;
-        }
-
-        .status {
-            font-size: 0.9em;
-            color: #555;
-            font-weight: bold;
-        }
-    </style>
+    <title>Gestion des Suggestions</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>Suggestions</header>
+    <header>
+        <nav>
+            <div class="logo">BNZ</div>
+            <ul class="nav-links">
+                <li><a href="accueil.html">Accueil</a></li>
+                <li><a href="suggestion.html">Suggestions</a></li>
+            </ul>
+        </nav>
+    </header>
 
-    <!-- Formulaire -->
-    <section>
-        <h2>Soumettre une suggestion</h2>
-        <form id="suggestion-form">
-            <textarea id="suggestion-text" placeholder="Votre suggestion..." required></textarea>
-            <button type="submit">Envoyer</button>
-        </form>
+    <section class="suggestion-section">
+        <h2>Suggestions Soumises</h2>
+        <div id="suggestions-list"></div>
+        <div id="admin-section"></div>
     </section>
 
-    <!-- Liste des suggestions -->
-    <section>
-        <h2>Suggestions soumises</h2>
-        <div id="suggestions-list">Chargement...</div>
-    </section>
-
-    <!-- Script Supabase -->
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
         const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
         const supabase = createClient(supabaseUrl, supabaseKey);
 
-        // Formulaire d'envoi
-        const form = document.getElementById('suggestion-form');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const suggestionText = document.getElementById('suggestion-text').value;
-
-            // Récupérer l'utilisateur connecté
-            const { data: { user } } = await supabase.auth.getUser();
-
-            if (!user) {
-                alert("Vous devez être connecté pour soumettre une suggestion.");
-                return;
-            }
-
-            const { error } = await supabase
-                .from('suggestions')
-                .insert([{ suggestion_text: suggestionText, status: 'En attente', user_id: user.id }]);
-
-            if (error) {
-                alert('Erreur : ' + error.message);
-            } else {
-                alert('Suggestion envoyée avec succès.');
-                document.getElementById('suggestion-text').value = '';
-                fetchSuggestions();
-            }
-        });
-
-        // Affichage des suggestions
-        async function fetchSuggestions() {
-            const { data, error } = await supabase
-                .from('suggestions')
-                .select('*')
-                .order('id', { ascending: false });
-
-            const list = document.getElementById('suggestions-list');
-
-            if (error) {
-                list.innerHTML = `<p>Erreur : ${error.message}</p>`;
-                return;
-            }
-
-            if (!data || data.length === 0) {
-                list.innerHTML = '<p>Aucune suggestion trouvée.</p>';
-                return;
-            }
-
-            list.innerHTML = data.map(item => `
-                <div class="suggestion-item">
-                    <p>${item.suggestion_text}</p>
-                    <p class="status">Status : ${item.status}</p>
-                </div>
-            `).join('');
+        // Fonction pour récupérer l'utilisateur actuellement connecté
+        async function getUser() {
+            const user = supabase.auth.user();
+            return user;
         }
 
-        fetchSuggestions();
+        // Fonction pour récupérer et afficher les suggestions
+        async function loadSuggestions() {
+            const { data: suggestions, error } = await supabase
+                .from('suggestions')
+                .select('*');
+
+            if (error) {
+                console.error('Erreur lors de la récupération des suggestions:', error);
+                alert('Erreur lors de la récupération des suggestions: ' + error.message);
+                return;
+            }
+
+            console.log('Suggestions récupérées:', suggestions);
+            const suggestionsList = document.getElementById('suggestions-list');
+            suggestionsList.innerHTML = ''; // Clear previous suggestions
+
+            if (suggestions.length === 0) {
+                suggestionsList.innerHTML = '<p>Aucune suggestion trouvée.</p>';
+            }
+
+            suggestions.forEach(suggestion => {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.classList.add('suggestion-item');
+                suggestionItem.innerHTML = `
+                    <p>${suggestion.suggestion_text}</p>
+                    <p>Status: <strong>${suggestion.status}</strong></p>
+                `;
+                suggestionsList.appendChild(suggestionItem);
+            });
+        }
+
+        // Fonction pour afficher l'interface d'administration si l'utilisateur est un admin
+        async function showAdminInterface() {
+            const user = await getUser();
+
+            if (user && user.role === 'admin') { // Assurez-vous que le rôle de l'admin est bien défini
+                const adminSection = document.getElementById('admin-section');
+                adminSection.innerHTML = `
+                    <h3>Gestion des Suggestions</h3>
+                    <p>Modifiez le statut des suggestions en cours.</p>
+                    <div id="admin-suggestions-list"></div>
+                `;
+
+                // Charger les suggestions pour modification
+                const { data: suggestions, error } = await supabase
+                    .from('suggestions')
+                    .select('*');
+
+                if (error) {
+                    console.error('Erreur lors de la récupération des suggestions:', error);
+                    alert('Erreur lors de la récupération des suggestions: ' + error.message);
+                    return;
+                }
+
+                const adminSuggestionsList = document.getElementById('admin-suggestions-list');
+                adminSuggestionsList.innerHTML = ''; // Clear previous suggestions
+
+                suggestions.forEach(suggestion => {
+                    const suggestionItem = document.createElement('div');
+                    suggestionItem.classList.add('suggestion-item');
+                    suggestionItem.innerHTML = `
+                        <p>${suggestion.suggestion_text}</p>
+                        <p>Status: <strong>${suggestion.status}</strong></p>
+                        <select data-id="${suggestion.id}" class="status-selector">
+                            <option value="En cours" ${suggestion.status === 'En cours' ? 'selected' : ''}>En cours</option>
+                            <option value="Planifié" ${suggestion.status === 'Planifié' ? 'selected' : ''}>Planifié</option>
+                            <option value="Refusé" ${suggestion.status === 'Refusé' ? 'selected' : ''}>Refusé</option>
+                            <option value="Terminé" ${suggestion.status === 'Terminé' ? 'selected' : ''}>Terminé</option>
+                        </select>
+                    `;
+                    adminSuggestionsList.appendChild(suggestionItem);
+                });
+
+                // Ajout de l'événement de changement de statut
+                const statusSelectors = document.querySelectorAll('.status-selector');
+                statusSelectors.forEach(selector => {
+                    selector.addEventListener('change', async (e) => {
+                        const suggestionId = e.target.getAttribute('data-id');
+                        const newStatus = e.target.value;
+
+                        const { data, error } = await supabase
+                            .from('suggestions')
+                            .update({ status: newStatus })
+                            .eq('id', suggestionId);
+
+                        if (error) {
+                            console.error('Erreur lors de la mise à jour du statut:', error);
+                            alert('Erreur lors de la mise à jour du statut: ' + error.message);
+                        } else {
+                            alert('Statut mis à jour.');
+                            loadSuggestions(); // Recharger les suggestions après modification
+                            showAdminInterface(); // Recharger l'interface admin
+                        }
+                    });
+                });
+            }
+        }
+
+        // Initialisation
+        loadSuggestions();
+        showAdminInterface();
     </script>
 </body>
 </html>
