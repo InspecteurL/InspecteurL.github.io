@@ -191,29 +191,41 @@
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
         const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'; 
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         const form = document.getElementById('suggestion-form');
+        
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const suggestionText = document.getElementById('suggestion-text').value;
-
-            // Remplace supabase.auth.user() par supabase.auth.getUser()
-            const { data: user } = await supabase.auth.getUser();
-
+            
+            // Vérifie si l'utilisateur est connecté
+            const user = supabase.auth.user();
+            
+            if (!user) {
+                alert("Vous devez être connecté pour soumettre une suggestion.");
+                return;
+            }
+            
             const { data, error } = await supabase
                 .from('suggestions')
                 .insert([
-                    { suggestion_text: suggestionText, status: 'En attente', user_id: user?.id }
+                    { 
+                        suggestion_text: suggestionText, 
+                        status: 'En attente', 
+                        user_id: user.id 
+                    }
                 ]);
-
+            
             if (error) {
                 alert('Erreur lors de l\'envoi de votre suggestion: ' + error.message);
             } else {
                 alert('Votre suggestion a été soumise avec succès.');
-                document.getElementById('suggestion-text').value = '';  // Réinitialiser le textarea
+                document.getElementById('suggestion-text').value = '';  // Réinitialiser le champ
             }
         });
     </script>
