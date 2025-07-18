@@ -25,7 +25,7 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'; // Assure-toi d'utiliser une clé publique ici.
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         // Fonction pour récupérer et afficher les suggestions
@@ -35,10 +35,16 @@
                 .select('*');
 
             if (error) {
+                console.error('Erreur lors de la récupération des suggestions:', error);
                 alert('Erreur lors de la récupération des suggestions: ' + error.message);
             } else {
+                console.log('Suggestions récupérées:', suggestions);
                 const suggestionsList = document.getElementById('suggestions-list');
                 suggestionsList.innerHTML = ''; // Clear previous suggestions
+
+                if (suggestions.length === 0) {
+                    suggestionsList.innerHTML = '<p>Aucune suggestion trouvée.</p>';
+                }
 
                 suggestions.forEach(suggestion => {
                     const suggestionItem = document.createElement('div');
@@ -69,6 +75,7 @@
                             .eq('id', suggestionId);
 
                         if (error) {
+                            console.error('Erreur lors de la mise à jour du statut:', error);
                             alert('Erreur lors de la mise à jour du statut: ' + error.message);
                         } else {
                             alert('Statut mis à jour.');
