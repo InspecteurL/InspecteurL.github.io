@@ -296,11 +296,11 @@
       currentEpisodeData.forEach((ep, index) => {
         const card = document.createElement("div");
         card.className = "episode-card";
-        card.innerHTML = 
+        card.innerHTML = `
           <img src="${ep.image}" alt="Affiche ${ep.title} : ${ep.description}" />
           <h3>${ep.title}</h3>
           <p>${ep.description}</p>
-        ;
+        `;
         card.addEventListener("click", () => {
           currentEpisodeIndex = index;
           playEpisode(index);
