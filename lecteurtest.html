@@ -1,266 +1,440 @@
-<!DOCTYPE html>
+             <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Lecteur Watch Party</title>
-<style>
-body{margin:0;background:#000;color:#fff;font-family:Arial,sans-serif;display:flex;flex-direction:column;height:100vh;}
-header{padding:8px 16px;background:#141414;display:flex;justify-content:space-between;align-items:center;font-size:14px;}
-#info{font-size:12px;opacity:.8;}
-#player-wrap{flex:1;display:flex;align-items:center;justify-content:center;}
-video{max-width:100%;max-height:100%;background:#000;}
-#participants{padding:8px 16px;background:#1e1e1e;font-size:14px;max-height:120px;overflow-y:auto;}
-#controls-remote{padding:8px 16px;background:#141414;display:flex;gap:8px;align-items:center;}
-#controls-remote button{background:#e50914;border:none;color:#fff;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:14px;}
-</style>
+    <meta charset="UTF-8">
+    <title>Profil</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle, rgba(25, 34, 77, 1) 0%, rgba(0, 0, 0, 1) 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        #En\ cours, #Terminé, #En\ Pause, #Abandonné, #Envie\ de\ voir {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .anime-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .movieimg {
+            margin: 10px;
+            position: relative;
+            padding: 0px 0px 0px 10px;
+            max-width: max-content;
+            cursor: pointer;
+        }
+
+        .movieimg .myimages {
+            height: auto;
+            width: 100%;
+        }
+
+        .movieimg .myimages img {
+            width: 300px;
+            height: 450px;
+            object-fit: cover;
+            border-radius: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .movieimg .myimages img:hover {
+            transform: scale(1.05);
+            border: 5px #0385fe solid;
+            border-radius: 23px;
+            background: #ff0000;
+            box-shadow: 15px 15px 100px #660000, -15px -15px 100px #ff0000;
+        }
+
+        .progress-bar {
+            height: 10px;
+            border-radius: 70px;
+            position: absolute;
+            bottom: 100px;
+            left: 0;
+            right: 0;
+            background-color: #0385fe;
+        }
+
+        .moviecontainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-gap: 15px;
+            margin: auto;
+        }
+
+        .card {
+            border-radius: 0.5em;
+            box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+            background-color: navy;
+            width: 17.5em;
+            height: 25em;
+            overflow: hidden;
+            transition: all 1s ease-in-out;
+        }
+
+        .card img {
+            border-top-right-radius: inherit;
+            border-top-left-radius: inherit;
+            width: 100%;
+            height: 75%;
+            object-fit: cover;
+        }
+
+        .card .content {
+            background-color: darkblue;
+            border-bottom-left-radius: inherit;
+            border-bottom-right-radius: inherit;
+            padding: 1em;
+            text-align: center;
+            height: 25%;
+        }
+
+        .card .content h1,
+        .card .content h3 {
+            margin: 0.35em 0;
+        }
+
+        .card .content h1 {
+            color: #fff;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+        .card .content h3 {
+            color: #ccc;
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: transparent;
+        }
+
+        li {
+            float: left;
+        }
+
+        li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        li a:hover {
+            background-color: red;
+            border-radius: 10px;
+        }
+
+        @media screen and (max-width: 600px) {
+            .movieimg,
+            .card {
+                width: 100%;
+            }
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            width: 80%;
+            max-width: 600px;
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .popup h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+            border-bottom: 2px solid #0385fe;
+            padding-bottom: 10px;
+        }
+
+        .popup .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 1.5em;
+            color: #ff0000;
+        }
+
+        .popup .episodes {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        .popup .episodes li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .popup .episodes li:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .popup .episodes li input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .popup-background {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
+
 <body>
-<header>
-  <div id="title">Lecture synchronisée</div>
-  <div id="info"></div>
-</header>
+    <ul>
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="journal.html">Journal</a></li>
+        <li><a href="profil.html">Découvrir</a></li>
+        <li><a href="accueil.html">Feuilleter</a></li>
+        <li><a href="lecteurtest.html">Profil</a></li>
+    </ul>
+    <div id="En cours">
+        <h2>En cours</h2>
+        <div class="anime-container"></div>
+    </div>
+    <div id="Terminé">
+        <h2>Terminé</h2>
+        <div class="anime-container"></div>
+    </div>
+    <div id="En Pause">
+        <h2>En Pause</h2>
+        <div class="anime-container"></div>
+    </div>
+    <div id="Abandonné">
+        <h2>Abandonné</h2>
+        <div class="anime-container"></div>
+    </div>
+    <div id="Envie de voir">
+        <h2>Envie de voir</h2>
+        <div class="anime-container"></div>
+    </div>
 
-<div id="player-wrap">
-  <video id="player" controls></video>
-</div>
+    <div class="popup-background"></div>
+    <div class="popup">
+        <span class="close">×</span>
+        <h2 id="popup-title"></h2>
+        <ul class="episodes"></ul>
+    </div>
 
-<div id="controls-remote">
-  <button id="btn-play">Play</button>
-  <button id="btn-pause">Pause</button>
-  <button id="btn-sync">Resync</button>
-</div>
+    <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const animes = JSON.parse(localStorage.getItem('animes')) || [];
+    const categories = ['En cours', 'Terminé', 'En Pause', 'Abandonné', 'Envie de voir'];
+    const categoryHasAnime = {};
 
-<div id="participants">Participants…</div>
+    // Définir le nombre d'épisodes pour chaque anime
+    const episodesCount = {
+        'Erased': 12,
+        'Steins;Gate': 24,
+        'Steins;Gate 0': 23,
+        'Call of the Night': 13,
+        'Cyberpunk: Edgerunners': 10,
+        'Death Note': 37,
+        'Chibi Revengers': 11,
+        'Hell’s Paradise': 13,
+        'Platinum End': 24,
+        'Oshi no Ko': 11,
+        'Death Parade': 12,
+        'Blue Period': 12,
+        'Jujutsu Kaisen': 45
+    };
 
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    categories.forEach(category => categoryHasAnime[category] = false);
 
-const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    animes.forEach(animeData => {
+        if (animeData?.status && animeData?.img && animeData?.title && animeData?.genre) {
+            const section = document.getElementById(animeData.status);
+            if (section) {
+                const animeDiv = document.createElement('div');
+                animeDiv.classList.add('movieimg');
+                animeDiv.dataset.title = animeData.title;
+                animeDiv.dataset.genre = animeData.genre;
+                
+                // Utiliser le nombre d'épisodes défini ou 12 par défaut
+                animeDiv.dataset.episodes = episodesCount[animeData.title] || 12;
+                
+                animeDiv.innerHTML = `
+                    <div class="myimages">
+                        <img src="${animeData.img}" alt="${animeData.title}">
+                    </div>
+                    <h2>${animeData.title}</h2>
+                    <span>${animeData.genre}</span>
+                    <div class="progress-bar" data-status="${animeData.status}"></div>`;
+                section.querySelector('.anime-container').appendChild(animeDiv);
+                categoryHasAnime[animeData.status] = true;
 
-/* ---------- Params URL ---------- */
-const params = new URLSearchParams(location.search);
-const SESSION_ID = params.get('session') || crypto.randomUUID();
-const SHOW_ID    = params.get('show')    || 'unknown';
-const SEASON     = parseInt(params.get('season') ?? '1', 10) || 1;
-const EPISODE    = parseInt(params.get('episode') ?? '1', 10) || 1;
-const START_T    = parseFloat(params.get('t') ?? '0') || 0;
-const ROLE       = (params.get('role') || 'guest').toLowerCase(); // 'host' ou 'guest'
+                animeDiv.addEventListener('contextmenu', function (e) {
+                    e.preventDefault();
+                    if (confirm('Voulez-vous supprimer cet anime ?')) {
+                        const index = animes.findIndex(anime => anime.title === animeData.title);
+                        if (index !== -1) {
+                            animes.splice(index, 1);
+                            localStorage.setItem('animes', JSON.stringify(animes));
+                            this.remove();
+                        }
+                    }
+                });
 
-/* ---------- UI refs ---------- */
-const videoEl = document.getElementById('player');
-const infoEl  = document.getElementById('info');
-const participantsEl = document.getElementById('participants');
-const btnPlay  = document.getElementById('btn-play');
-const btnPause = document.getElementById('btn-pause');
-const btnSync  = document.getElementById('btn-sync');
+                animeDiv.addEventListener('click', function () {
+                    const popup = document.querySelector('.popup');
+                    const popupBackground = document.querySelector('.popup-background');
+                    const popupTitle = document.getElementById('popup-title');
+                    const episodesList = document.querySelector('.episodes');
 
-/* ---------- Load video source ----------
-   ICI : remplace par ton vrai système (manifest HLS, MP4, etc.)
-   Exemple statique :
-*/
-videoEl.src = `media/${encodeURIComponent(SHOW_ID)}_S${SEASON}_E${EPISODE}.mp4`;
+                    popupTitle.textContent = animeData.title;
+                    episodesList.innerHTML = '';
+                    for (let i = 1; i <= animeDiv.dataset.episodes; i++) {
+                        const episodeItem = document.createElement('li');
+                        const isChecked = animeData.watchedEpisodes && animeData.watchedEpisodes.includes(i) ? 'checked' : '';
+                        episodeItem.innerHTML = `<input type="checkbox" ${isChecked}> Épisode ${i}`;
+                        episodesList.appendChild(episodeItem);
 
-/* ---------- État local ---------- */
-let isHost = ROLE === 'host';
-let selfUser = null; // {id, username}
-let ignoreNext = false; // pour éviter boucle
-let lastBroadcastAt = 0; // throttle timeupdate
+                        episodeItem.querySelector('input').addEventListener('change', function () {
+                            if (this.checked) {
+                                if (!animeData.watchedEpisodes) {
+                                    animeData.watchedEpisodes = [];
+                                }
+                                animeData.watchedEpisodes.push(i);
+                            } else {
+                                animeData.watchedEpisodes = animeData.watchedEpisodes.filter(ep => ep !== i);
+                            }
+                            localStorage.setItem('animes', JSON.stringify(animes));
 
-/* ---------- Session utilisateur ---------- */
-async function getUser() {
-  const { data: sessionData } = await supabase.auth.getSession();
-  const session = sessionData?.session;
-  if (!session) {
-    infoEl.textContent = 'Non connecté.';
-    return;
-  }
-  const userId = session.user.id;
-  // Récup username
-  const { data: prof } = await supabase
-    .from('profiles')
-    .select('id, username')
-    .eq('id', userId)
-    .single();
-  selfUser = { id: userId, username: prof?.username ?? 'Moi' };
-}
-await getUser();
+                            if (this.checked && i > 1 && !episodesList.children[i - 2].querySelector('input').checked) {
+                                if (confirm('Voulez-vous cocher tous les épisodes précédents comme vus ?')) {
+                                    for (let j = 0; j < i; j++) {
+                                        episodesList.children[j].querySelector('input').checked = true;
+                                        if (!animeData.watchedEpisodes.includes(j + 1)) {
+                                            animeData.watchedEpisodes.push(j + 1);
+                                        }
+                                    }
+                                    localStorage.setItem('animes', JSON.stringify(animes));
+                                }
+                            }
 
-/* ---------- Canal Realtime ---------- */
-const chanName = `watchparty:${SESSION_ID}`;
-const channel = supabase.channel(chanName, {
-  config: {
-    presence: {
-      key: selfUser?.id ?? Math.random().toString(36).slice(2)
-    }
-  }
-});
+                            const allChecked = Array.from(episodesList.children).every(item => item.querySelector('input').checked);
+                            if (allChecked && animeData.status !== 'Terminé') {
+                                animeData.status = 'Terminé';
+                                section.querySelector('.anime-container').removeChild(animeDiv);
+                                document.getElementById('Terminé').querySelector('.anime-container').appendChild(animeDiv);
+                                localStorage.setItem('animes', JSON.stringify(animes));
+                            }
 
-/* ----- Presence callbacks ----- */
-channel.on('presence', { event: 'sync' }, () => {
-  const state = channel.presenceState();
-  const people = [];
-  for (const key in state) {
-    state[key].forEach(entry => people.push(entry.username || entry.id || key));
-  }
-  participantsEl.textContent = people.length
-    ? `Participants : ${people.join(', ')}`
-    : 'Participants…';
-  // Si un guest vient de se connecter, il va envoyer une demande d'état (voir plus bas)
-});
+                            if (animeData.status === 'En cours') {
+                                const checkedCount = Array.from(episodesList.children).filter(item => item.querySelector('input').checked).length;
+                                const progress = (checkedCount / animeDiv.dataset.episodes) * 100;
+                                animeDiv.querySelector('.progress-bar').style.width = `${progress}%`;
+                            }
+                        });
+                    }
 
-/* ----- Broadcast message handler ----- */
-channel.on('broadcast', { event: 'watch' }, ({ payload }) => {
-  handleWatchMessage(payload);
-});
-
-/* ----- Sub ----- */
-await channel.subscribe(async status => {
-  if (status === 'SUBSCRIBED') {
-    // Joindre présence
-    await channel.track({
-      id: selfUser?.id,
-      username: selfUser?.username,
-      role: ROLE
+                    popup.style.display = 'block';
+                    popupBackground.style.display = 'block';
+                });
+            } else {
+                console.error(`Section with ID ${animeData.status} not found`);
+            }
+        } else {
+            console.error(`Invalid animeData or status for key`);
+            console.log(`Value: ${JSON.stringify(animeData)}`);
+        }
     });
 
-    // Guests demandent l'état initial
-    if (!isHost) {
-      sendStateRequest();
-    } else {
-      // Host position initiale depuis URL
-      try {
-        videoEl.currentTime = START_T;
-      } catch {}
-    }
-  }
+    categories.forEach(category => {
+        if (!categoryHasAnime[category]) {
+            document.getElementById(category).style.display = 'none';
+        }
+    });
+
+    document.querySelectorAll('.progress-bar').forEach(bar => {
+        switch (bar.dataset.status) {
+            case 'En cours':
+                bar.style.width = '0%';
+                bar.style.backgroundColor = 'blue';
+                break;
+            case 'Terminé':
+                bar.style.width = '100%';
+                bar.style.background = 'linear-gradient(90deg, rgba(0,153,255,1) 0%, rgba(0,204,255,1) 50%, rgba(0,102,255,1) 100%)';
+                break;
+            case 'En Pause':
+                bar.style.width = '0%';
+                bar.style.background = 'linear-gradient(90deg, rgba(255,153,0,1) 0%, rgba(255,187,51,1) 50%, rgba(255,102,0,1) 100%)';
+                break;
+            case 'Abandonné':
+                bar.style.width = '0%';
+                bar.style.background = 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,51,51,1) 50%, rgba(204,0,0,1) 100%)';
+                break;
+            case 'Envie de voir':
+                bar.style.width = '0%';
+                bar.style.background = 'linear-gradient(90deg, rgba(0,255,0,1) 0%, rgba(51,255,51,1) 50%, rgba(0,204,0,1) 100%)';
+                break;
+        }
+    });
+
+    document.querySelector('.popup .close').addEventListener('click', function () {
+        document.querySelector('.popup').style.display = 'none';
+        document.querySelector('.popup-background').style.display = 'none';
+    });
+
+    document.querySelector('.popup-background').addEventListener('click', function () {
+        document.querySelector('.popup').style.display = 'none';
+        document.querySelector('.popup-background').style.display = 'none';
+    });
 });
 
-/* ---------- Messages ---------- */
-/*
-payload types:
-  {type:'state_request', from:'userId'}
-  {type:'state_sync', from:'hostId', playing:true/false, time:secs, show, season, episode}
-  {type:'play', time:secs}
-  {type:'pause', time:secs}
-  {type:'seek', time:secs}
-  {type:'timeupdate', time:secs}   (throttled, optional)
-*/
-function sendBroadcast(obj) {
-  channel.send({
-    type: 'broadcast',
-    event: 'watch',
-    payload: obj
-  });
-}
 
-function sendStateRequest() {
-  sendBroadcast({ type:'state_request', from:selfUser?.id });
-}
-
-function sendStateSync() {
-  if (!isHost) return;
-  const playing = !videoEl.paused && !videoEl.ended;
-  sendBroadcast({
-    type:'state_sync',
-    from:selfUser?.id,
-    playing,
-    time: videoEl.currentTime,
-    show: SHOW_ID,
-    season: SEASON,
-    episode: EPISODE
-  });
-}
-
-function sendPlay()  { if (isHost) sendBroadcast({type:'play',  time: videoEl.currentTime}); }
-function sendPause() { if (isHost) sendBroadcast({type:'pause', time: videoEl.currentTime}); }
-function sendSeek()  { if (isHost) sendBroadcast({type:'seek',  time: videoEl.currentTime}); }
-function sendTimeupdate() {
-  if (!isHost) return;
-  const now = performance.now();
-  if (now - lastBroadcastAt < 1000) return; // 1s throttle
-  lastBroadcastAt = now;
-  sendBroadcast({type:'timeupdate', time: videoEl.currentTime});
-}
-
-/* ---------- Handler messages entrants ---------- */
-function handleWatchMessage(msg) {
-  if (!msg || typeof msg !== 'object') return;
-  switch (msg.type) {
-    case 'state_request':
-      if (isHost) sendStateSync();
-      break;
-    case 'state_sync':
-      if (isHost) return; // host ignore
-      applyRemoteState(msg);
-      break;
-    case 'play':
-      if (isHost) return;
-      syncTo(msg.time, true);
-      break;
-    case 'pause':
-      if (isHost) return;
-      syncTo(msg.time, false);
-      break;
-    case 'seek':
-      if (isHost) return;
-      syncTo(msg.time, !videoEl.paused); // conserve état local
-      break;
-    case 'timeupdate':
-      if (isHost) return;
-      maybeDriftCorrect(msg.time);
-      break;
-  }
-}
-
-/* ---------- Appliquer état envoyé par l'hôte ---------- */
-function applyRemoteState(msg) {
-  // show/season/episode pourraient être utilisés pour recharger source si différent
-  syncTo(msg.time, msg.playing);
-}
-
-/* ---------- Synchro ---------- */
-function syncTo(timeSec, shouldPlay) {
-  ignoreNext = true;
-  try {
-    videoEl.currentTime = timeSec ?? 0;
-  } catch {}
-  if (shouldPlay) {
-    videoEl.play().catch(()=>{});
-  } else {
-    videoEl.pause();
-  }
-  // expire ignoreNext après petite latence
-  setTimeout(()=>{ignoreNext=false;}, 200);
-}
-
-/* Correction de dérive légère (guests) */
-function maybeDriftCorrect(remoteT) {
-  const localT = videoEl.currentTime;
-  const drift = Math.abs(localT - remoteT);
-  if (drift > 2) { // tolérance 2s
-    syncTo(remoteT, !videoEl.paused);
-  }
-}
-
-/* ---------- Listeners Vidéo (host émet) ---------- */
-videoEl.addEventListener('play',  () => { if (!ignoreNext) sendPlay();  });
-videoEl.addEventListener('pause', () => { if (!ignoreNext) sendPause(); });
-videoEl.addEventListener('seeked',() => { if (!ignoreNext) sendSeek();  });
-videoEl.addEventListener('timeupdate', sendTimeupdate);
-
-/* ---------- Boutons UI ---------- */
-btnPlay.onclick  = () => videoEl.play();
-btnPause.onclick = () => videoEl.pause();
-btnSync .onclick = () => {
-  if (isHost) sendStateSync();
-  else sendStateRequest();
-};
-
-/* ---------- Info UI ---------- */
-infoEl.textContent = `Session: ${SESSION_ID} • Rôle: ${isHost ? 'hôte' : 'invité'}`;
-</script>
+    </script>
 </body>
+
 </html>
