@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soumettre une Suggestion</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">BNZ</div>
+            <ul class="nav-links">
+                <li><a href="accueil.html">Accueil</a></li>
+                <li><a href="profil.html">Profil</a></li>
+                <li><a href="suggestion.html">Suggestions</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="suggestion-form">
+        <h2>Soumettre une suggestion</h2>
+        <form id="suggestion-form">
+            <textarea id="suggestion-text" placeholder="Votre suggestion..." required></textarea>
+            <button type="submit">Soumettre</button>
+        </form>
+    </section>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
+        const supabaseKey = 'YOUR_PUBLIC_ANON_KEY';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        const form = document.getElementById('suggestion-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const suggestionText = document.getElementById('suggestion-text').value;
+
+            const { data, error } = await supabase
+                .from('suggestions')
+                .insert([
+                    { suggestion_text: suggestionText, status: 'En attente', user_id: supabase.auth.user().id }
+                ]);
+
+            if (error) {
+                alert('Erreur lors de l\'envoi de votre suggestion: ' + error.message);
+            } else {
+                alert('Votre suggestion a été soumise avec succès.');
+                document.getElementById('suggestion-text').value = '';  // Reset the textarea
+            }
+        });
+    </script>
+</body>
+</html>
