@@ -62,14 +62,13 @@
     const suggestionForm  = document.getElementById('suggestionForm');
     const suggestionText  = document.getElementById('suggestionText');
     const initialStatus   = document.getElementById('initialStatus');
-    const initialStatusWrapper = document.getElementById('initialStatusWrapper'); // NOTE: conteneur pour pouvoir retirer proprement
     const filterStatus    = document.getElementById('filterStatus');
     const totalCount      = document.getElementById('totalCount');
     const emptyMessage    = document.getElementById('emptyMessage');
     const currentUserInfo = document.getElementById('currentUserInfo');
 
     /* ========= État ========= */
-    let suggestions = [];
+    let suggestions = [];  // {id,text,status,created_at,author_pseudo,author_email,comments:[]}
     let currentUser = null;
     let isAdmin = false;
     let loading = false;
@@ -114,18 +113,13 @@
 
     async function detectSupabaseUser() {
       const { data } = await supabase.auth.getUser();
-      if (data?.user && !currentUser) {
+      if (data?.user && !currentUser) { // si pas déjà un currentUser local
         currentUser = {
           pseudo: data.user.user_metadata?.username || data.user.email?.split('@')[0],
-            email: data.user.email
+          email: data.user.email
         };
         isAdmin = currentUser.email === 'lolovp.portrets41@gmail.com';
         currentUserInfo.innerHTML = `Connecté : <strong>${escapeHtml(currentUser.pseudo)}</strong>${isAdmin?'<span class="admin-badge">ADMIN</span>':''}`;
-      }
-
-      // NOTE: cacher le select si non admin (après détection)
-      if (!isAdmin && initialStatusWrapper) {
-        initialStatusWrapper.remove(); // retire complètement le sélecteur
       }
     }
 
@@ -144,6 +138,7 @@
         return;
       }
 
+      // Pour chaque suggestion charger ses commentaires
       const ids = data.map(s => s.id);
       let commentsMap = {};
       if (ids.length) {
@@ -170,165 +165,179 @@
     }
 
     async function addSuggestion(text, status) {
-      // NOTE: Sécurisation front – force le statut si non admin
-      if (!isAdmin || !STATUSES.includes(status)) {
-        status = 'Planifié';
-      }
       const payload = {
         text,
         status,
-        created_at: new Date().toISOString(),
-        author_pseudo: currentUser?.pseudo,
-        author_email: currentUser?.email
+        author_pseudo: currentUser?.pseudo || null,
+        author_email: currentUser?.email || null
       };
-      const { data, error } = await supabase.from('suggestions').insert([payload]).select();
-      if (error) {
-        alert('Erreur lors de l\'ajout de la suggestion');
-        console.error(error);
-      } else if (data && data[0]) {
-        suggestions.unshift({ ...data[0], comments: [] });
-        render();
-      }
-    }
-
-    async function updateStatus(id, status) {
-      if (!isAdmin) return; // NOTE: garde-fou front
-      if (!STATUSES.includes(status)) return;
       const { data, error } = await supabase
         .from('suggestions')
-        .update({ status })
-        .match({ id })
-        .select();
+        .insert(payload)
+        .select()
+        .single();
       if (error) {
-        alert('Erreur de mise à jour du statut');
-        console.error(error);
-      } else {
-        const idx = suggestions.findIndex(s => s.id === id);
-        if (idx !== -1) {
-          suggestions[idx].status = status;
-          render();
-        }
+        alert('Erreur ajout: ' + error.message);
+        return;
+      }
+      data.comments = [];
+      suggestions.unshift(data);
+      render();
+    }
+
+    async function updateSuggestionStatus(id, newStatus) {
+      const { error } = await supabase
+        .from('suggestions')
+        .update({ status: newStatus })
+        .eq('id', id);
+      if (error) {
+        alert('Erreur statut: '+error.message);
+        return;
+      }
+      const s = suggestions.find(s => s.id === id);
+      if (s) s.status = newStatus;
+      render();
+    }
+
+    async function deleteSuggestion(id) {
+      const { error } = await supabase.from('suggestions').delete().eq('id', id);
+      if (error) {
+        alert('Erreur suppression: ' + error.message);
+        return;
+      }
+      suggestions = suggestions.filter(s => s.id !== id);
+      render();
+    }
+
+    async function addComment(suggestionId, text) {
+      const payload = {
+        suggestion_id: suggestionId,
+        content: text,
+        author_pseudo: currentUser?.pseudo || null,
+        author_email: currentUser?.email || null
+      };
+      const { data, error } = await supabase
+        .from('comments')
+        .insert(payload)
+        .select()
+        .single();
+      if (error) {
+        alert('Erreur commentaire: ' + error.message);
+        return;
+      }
+      const s = suggestions.find(s => s.id === suggestionId);
+      if (s) {
+        s.comments.push(data);
+        render(); // re-render complet (simple)
       }
     }
 
     /* ========= Rendu ========= */
     function render() {
-      const filterValue = filterStatus.value;
-      const filteredSuggestions = filterValue
-        ? suggestions.filter(s => s.status === filterValue)
-        : suggestions;
+      const fStatus = filterStatus.value;
+      let list = fStatus ? suggestions.filter(s => s.status === fStatus) : suggestions;
 
-      if (filteredSuggestions.length) {
-        emptyMessage.style.display = 'none';
-        totalCount.innerHTML = `Suggestions : ${filteredSuggestions.length}`;
-        suggestionsList.innerHTML = filteredSuggestions.map(s => `
-          <div class="suggestion" data-id="${s.id}"> <!-- NOTE: ajout data-id -->
-            <div class="suggestion-header">
-              <div class="meta">
-                Posté par <strong>${escapeHtml(s.author_pseudo || '')}</strong> le ${formatDate(s.created_at)}
-              </div>
-              <div class="status-badge status-${s.status.replace(/\s+/g,'-')}">
-                ${s.status}
-              </div>
+      suggestionsList.innerHTML = '';
+      totalCount.textContent = `${list.length} suggestion${list.length>1?'s':''}`;
+      emptyMessage.style.display = list.length ? 'none' : 'block';
+
+      list.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'suggestion';
+        const badgeClass = 'status-' + s.status.replace(' ','\\ ');
+
+        const canModerate = isAdmin;
+
+        div.innerHTML = `
+          <div class="suggestion-header">
+            <div>
+              <span class="status-badge ${badgeClass}">${escapeHtml(s.status)}</span>
             </div>
-            <div class="content">${escapeHtml(s.text)}</div>
-            <div class="actions">
-              ${isAdmin ? statusButtonsHTML(s.status) : ''}
-            </div>
-            <div class="comment-section">
-              <div class="comments-list">
-                ${s.comments.map(c => `
-                  <div class="comment">
-                    <strong>${escapeHtml(c.author_pseudo || '')}</strong> :
-                    <span>${escapeHtml(c.text)}</span><time>${formatDate(c.created_at)}</time>
-                  </div>
-                `).join('')}
-              </div>
-              <div class="inline-form">
-                <input type="text" placeholder="Ajouter un commentaire..." data-suggestion-id="${s.id}">
-                <button data-action="add-comment">Commenter</button>
-              </div>
+            <div class="meta">
+              ${s.author_pseudo ? 'Par <strong>'+escapeHtml(s.author_pseudo)+'</strong>' : '<strong>Utilisateur</strong>'}
+              ${s.created_at ? ' • <time>'+formatDate(s.created_at)+'</time>' : ''}
             </div>
           </div>
-        `).join('');
-      } else {
-        emptyMessage.style.display = 'block';
-        totalCount.innerHTML = 'Suggestions : 0';
-      }
-    }
+          <p class="content">${escapeHtml(s.text)}</p>
 
-    /* ========= Évènements ========= */
-    function setupEventListeners() {
-      filterStatus.addEventListener('change', () => render());
+          <div class="actions" data-id="${s.id}">
+            ${canModerate ? statusButtonsHTML(s.status) : ''}
+            ${canModerate ? '<button data-action="delete" class="danger">Supprimer</button>' : ''}
+          </div>
 
-      suggestionForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const text = suggestionText.value.trim();
-        if (text.length < 10) {
-          alert('La suggestion doit faire au moins 10 caractères.');
-          return;
-        }
-        const statusToUse = isAdmin ? (initialStatus?.value || 'Planifié') : 'Planifié';
-        addSuggestion(text, statusToUse);
-        suggestionText.value = '';
+          <div class="comment-section">
+            <strong>Commentaires (${s.comments.length})</strong>
+            <div class="comments">
+              ${s.comments.map(c => `
+                <div class="comment">
+                  <strong>${escapeHtml(c.author_pseudo || 'Anonyme')}</strong>
+                  <time>${formatDate(c.created_at)}</time><br>
+                  ${escapeHtml(c.content)}
+                </div>`).join('')}
+            </div>
+            <form class="inline-form" data-id="${s.id}">
+              <input type="text" placeholder="Ajouter un commentaire..." required />
+              <button type="submit">Envoyer</button>
+            </form>
+          </div>
+        `;
+        suggestionsList.appendChild(div);
       });
 
-      suggestionsList.addEventListener('click', async (e) => {
-        if (e.target.tagName === 'BUTTON' && e.target.dataset.action) {
-          const action = e.target.dataset.action;
-          const suggestionElement = e.target.closest('.suggestion');
-            const suggestionId = suggestionElement?.dataset.id;
+      // Évènements commentaires
+      document.querySelectorAll('.inline-form').forEach(form => {
+        form.addEventListener('submit', e => {
+          e.preventDefault();
+            const id = Number(form.getAttribute('data-id'));
+            const input = form.querySelector('input');
+            const val = input.value.trim();
+            if (!val) return;
+            addComment(id, val);
+            input.value = '';
+        });
+      });
 
-          if (action.startsWith('status-') && suggestionId) {
-            const newStatus = action.replace('status-', '');
-            await updateStatus(suggestionId, newStatus);
+      // Actions admin
+      document.querySelectorAll('.actions').forEach(block => {
+        block.addEventListener('click', e => {
+          const btn = e.target.closest('button');
+          if (!btn) return;
+          const id = Number(block.getAttribute('data-id'));
+          const action = btn.getAttribute('data-action');
+          if (action === 'delete' && isAdmin) {
+            if (confirm('Supprimer cette suggestion ?')) deleteSuggestion(id);
+          } else if (action?.startsWith('status-') && isAdmin) {
+            const newStatus = action.replace('status-','');
+            updateSuggestionStatus(id, newStatus);
           }
-        }
-
-        if (e.target.dataset.action === 'add-comment') {
-          const commentInput = e.target.previousElementSibling;
-          const suggestionId = commentInput.dataset.suggestionId;
-          const text = commentInput.value.trim();
-          if (text.length < 5) {
-            alert('Le commentaire doit faire au moins 5 caractères.');
-            return;
-          }
-          const { data, error } = await supabase
-            .from('comments')
-            .insert([{ text, suggestion_id: suggestionId, author_pseudo: currentUser?.pseudo }])
-            .select();
-          if (error) {
-            alert('Erreur lors de l\'ajout du commentaire');
-            console.error(error);
-          } else if (data && data[0]) {
-            const suggestion = suggestions.find(s => s.id === suggestionId);
-            if (suggestion) {
-              suggestion.comments.unshift(data[0]);
-              render();
-              commentInput.value = '';
-            }
-          }
-        }
+        });
       });
     }
+
+    /* ========= Events ========= */
+    suggestionForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = suggestionText.value.trim();
+      if (!text) return;
+      addSuggestion(text, initialStatus.value);
+      suggestionText.value = '';
+    });
+
+    filterStatus.addEventListener('change', render);
 
     /* ========= Initialisation ========= */
-    async function init() {
-      detectLocalUser();
-      await detectSupabaseUser();
-      await loadSuggestionsFromSupabase();
-      setupEventListeners();
-    }
-
-    window.addEventListener('DOMContentLoaded', init);
+    detectLocalUser();
+    await detectSupabaseUser();
+    loadSuggestionsFromSupabase();
   </script>
 </head>
 <body>
   <header>
-    <h1>Suggestions</h1>
+    <div><a href="index.html">← Retour</a></div>
     <div id="currentUserInfo"></div>
   </header>
-
+   <h1>Suggestions</h1>
+  
   <div class="container">
     <div class="board-header">
       <div class="filter-bar">
