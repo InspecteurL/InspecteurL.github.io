@@ -29,7 +29,6 @@
     .status-En\ cours {background:#5a189a; color:#e0c3ff;}
     .status-Terminé {background:#1b5e20; color:#b2ffb2;}
     .status-Refusé {background:#6d0505; color:#ffb3b3;}
-    .status-En\ Attente {background:#f0a500; color:#fff;} /* Nouveau statut "En Attente" */
     .content {white-space:pre-wrap; line-height:1.4; font-size:15px; margin:0 0 8px;}
     .actions {display:flex; gap:6px; flex-wrap:wrap; margin-bottom:4px;}
     .actions button, .inline-form button {background:#333; color:#eee; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:12px;}
@@ -80,7 +79,7 @@
     function formatDate(d) {
       return new Date(d).toLocaleString('fr-FR',{dateStyle:'short', timeStyle:'short'});
     }
-    const STATUSES = ['Planifié','En cours','Terminé','Refusé', 'En Attente']; // Ajout du statut "En Attente"
+    const STATUSES = ['Planifié','En cours','Terminé','Refusé'];
 
     function statusButtonsHTML(current) {
       return STATUSES.map(st => `
@@ -275,86 +274,103 @@
                   ${escapeHtml(c.content)}
                 </div>`).join('')}
             </div>
-            ${canModerate ? `
-              <div class="inline-form">
-                <input type="text" placeholder="Ajouter un commentaire..." data-action="add-comment">
-                <button data-action="add-comment">Envoyer</button>
-              </div>
-            ` : ''}
+            <form class="inline-form" data-id="${s.id}">
+              <input type="text" placeholder="Ajouter un commentaire..." required />
+              <button type="submit">Envoyer</button>
+            </form>
           </div>
         `;
         suggestionsList.appendChild(div);
       });
+
+      // Évènements commentaires
+      document.querySelectorAll('.inline-form').forEach(form => {
+        form.addEventListener('submit', e => {
+          e.preventDefault();
+            const id = Number(form.getAttribute('data-id'));
+            const input = form.querySelector('input');
+            const val = input.value.trim();
+            if (!val) return;
+            addComment(id, val);
+            input.value = '';
+        });
+      });
+
+      // Actions admin
+      document.querySelectorAll('.actions').forEach(block => {
+        block.addEventListener('click', e => {
+          const btn = e.target.closest('button');
+          if (!btn) return;
+          const id = Number(block.getAttribute('data-id'));
+          const action = btn.getAttribute('data-action');
+          if (action === 'delete' && isAdmin) {
+            if (confirm('Supprimer cette suggestion ?')) deleteSuggestion(id);
+          } else if (action?.startsWith('status-') && isAdmin) {
+            const newStatus = action.replace('status-','');
+            updateSuggestionStatus(id, newStatus);
+          }
+        });
+      });
     }
 
-    /* ========= Initialisation ========= */
-    window.onload = async () => {
-      detectLocalUser();
-      await detectSupabaseUser();
-      await loadSuggestionsFromSupabase();
-    };
-
-    /* ========= Evénements ========= */
-    suggestionForm.addEventListener('submit', async (e) => {
+    /* ========= Events ========= */
+    suggestionForm.addEventListener('submit', e => {
       e.preventDefault();
-      await addSuggestion(suggestionText.value, initialStatus.value);
+      const text = suggestionText.value.trim();
+      if (!text) return;
+      addSuggestion(text, initialStatus.value);
       suggestionText.value = '';
-      initialStatus.selectedIndex = 0;
     });
 
-    suggestionsList.addEventListener('click', async (e) => {
-      const id = e.target.closest('.actions')?.dataset?.id;
-      if (!id) return;
-      if (e.target.dataset?.action?.startsWith('status-')) {
-        const newStatus = e.target.dataset?.action?.replace('status-','');
-        await updateSuggestionStatus(id, newStatus);
-      } else if (e.target.dataset?.action === 'delete') {
-        await deleteSuggestion(id);
-      } else if (e.target.dataset?.action === 'add-comment') {
-        const commentInput = e.target.closest('.inline-form').querySelector('input');
-        await addComment(id, commentInput.value);
-        commentInput.value = '';
-      }
-    });
+    filterStatus.addEventListener('change', render);
+
+    /* ========= Initialisation ========= */
+    detectLocalUser();
+    await detectSupabaseUser();
+    loadSuggestionsFromSupabase();
   </script>
 </head>
-
 <body>
   <header>
-    <a href="/" id="home">Retour</a>
+    <div><a href="index.html">← Retour</a></div>
     <div id="currentUserInfo"></div>
   </header>
 
+  <h1>Suggestions</h1>
   <div class="container">
-    <h1>Suggérer une idée</h1>
-    <form id="suggestionForm" class="suggestion-form">
-      <textarea id="suggestionText" required placeholder="Votre idée..."></textarea>
-      <div class="row">
-        <select id="initialStatus" required>
+
+    <div class="board-header">
+      <div>
+        <span id="totalCount"></span>
+      </div>
+      <div class="filter-bar">
+        <select id="filterStatus">
+          <option value="">-- Filtrer par statut --</option>
           <option value="Planifié">Planifié</option>
           <option value="En cours">En cours</option>
           <option value="Terminé">Terminé</option>
           <option value="Refusé">Refusé</option>
-          <option value="En Attente">En Attente</option> <!-- Option pour le statut En Attente -->
         </select>
-        <button type="submit">Envoyer</button>
+      </div>
+    </div>
+
+    <form class="suggestion-form" id="suggestionForm">
+      <label for="suggestionText"><strong>Nouvelle suggestion :</strong></label>
+      <textarea id="suggestionText" placeholder="Décris ta suggestion..." required></textarea>
+      <div class="row">
+        <select id="initialStatus">
+          <option value="Planifié">Planifié</option>
+          <option value="En cours">En cours</option>
+          <option value="Terminé">Terminé</option>
+          <option value="Refusé">Refusé</option>
+        </select>
+        <button type="submit">Publier</button>
       </div>
     </form>
 
-    <div class="filter-bar">
-      <select id="filterStatus">
-        <option value="">Filtrer par statut</option>
-        <option value="Planifié">Planifié</option>
-        <option value="En cours">En cours</option>
-        <option value="Terminé">Terminé</option>
-        <option value="Refusé">Refusé</option>
-        <option value="En Attente">En Attente</option> <!-- Option pour filtrer par statut En Attente -->
-      </select>
-    </div>
-
-    <div id="emptyMessage" class="no-data">Aucune suggestion</div>
-    <div id="totalCount"></div>
     <div id="suggestionsList" class="suggestions-list"></div>
+    <div id="emptyMessage" class="no-data" style="display:none;">Aucune suggestion.</div>
+
   </div>
 </body>
 </html>
