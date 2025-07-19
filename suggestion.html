@@ -25,8 +25,9 @@
     .suggestion-header {display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom:8px;}
     .meta {font-size:12px; color:#bbb;}
     .status-badge {padding:4px 10px; font-size:12px; border-radius:20px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; display:inline-flex; align-items:center; gap:6px;}
+    /* Classes de statuts normalisées (tirées de status-${nom.replace(/\s+/g,'-')}) */
     .status-Planifié {background:#1d3557; color:#a8d4ff;}
-    .status-En\ cours {background:#5a189a; color:#e0c3ff;}
+    .status-En-cours {background:#5a189a; color:#e0c3ff;}
     .status-Terminé {background:#1b5e20; color:#b2ffb2;}
     .status-Refusé {background:#6d0505; color:#ffb3b3;}
     .content {white-space:pre-wrap; line-height:1.4; font-size:15px; margin:0 0 8px;}
@@ -61,13 +62,14 @@
     const suggestionForm  = document.getElementById('suggestionForm');
     const suggestionText  = document.getElementById('suggestionText');
     const initialStatus   = document.getElementById('initialStatus');
+    const initialStatusWrapper = document.getElementById('initialStatusWrapper'); // NOTE: conteneur pour pouvoir retirer proprement
     const filterStatus    = document.getElementById('filterStatus');
     const totalCount      = document.getElementById('totalCount');
     const emptyMessage    = document.getElementById('emptyMessage');
     const currentUserInfo = document.getElementById('currentUserInfo');
 
     /* ========= État ========= */
-    let suggestions = [];  // {id,text,status,created_at,author_pseudo,author_email,comments:[]}
+    let suggestions = [];
     let currentUser = null;
     let isAdmin = false;
     let loading = false;
@@ -112,13 +114,18 @@
 
     async function detectSupabaseUser() {
       const { data } = await supabase.auth.getUser();
-      if (data?.user && !currentUser) { // si pas déjà un currentUser local
+      if (data?.user && !currentUser) {
         currentUser = {
           pseudo: data.user.user_metadata?.username || data.user.email?.split('@')[0],
-          email: data.user.email
+            email: data.user.email
         };
         isAdmin = currentUser.email === 'lolovp.portrets41@gmail.com';
         currentUserInfo.innerHTML = `Connecté : <strong>${escapeHtml(currentUser.pseudo)}</strong>${isAdmin?'<span class="admin-badge">ADMIN</span>':''}`;
+      }
+
+      // NOTE: cacher le select si non admin (après détection)
+      if (!isAdmin && initialStatusWrapper) {
+        initialStatusWrapper.remove(); // retire complètement le sélecteur
       }
     }
 
@@ -137,7 +144,6 @@
         return;
       }
 
-      // Pour chaque suggestion charger ses commentaires
       const ids = data.map(s => s.id);
       let commentsMap = {};
       if (ids.length) {
@@ -164,213 +170,199 @@
     }
 
     async function addSuggestion(text, status) {
+      // NOTE: Sécurisation front – force le statut si non admin
+      if (!isAdmin || !STATUSES.includes(status)) {
+        status = 'Planifié';
+      }
       const payload = {
         text,
         status,
-        author_pseudo: currentUser?.pseudo || null,
-        author_email: currentUser?.email || null
+        created_at: new Date().toISOString(),
+        author_pseudo: currentUser?.pseudo,
+        author_email: currentUser?.email
       };
+      const { data, error } = await supabase.from('suggestions').insert([payload]).select();
+      if (error) {
+        alert('Erreur lors de l\'ajout de la suggestion');
+        console.error(error);
+      } else if (data && data[0]) {
+        suggestions.unshift({ ...data[0], comments: [] });
+        render();
+      }
+    }
+
+    async function updateStatus(id, status) {
+      if (!isAdmin) return; // NOTE: garde-fou front
+      if (!STATUSES.includes(status)) return;
       const { data, error } = await supabase
         .from('suggestions')
-        .insert(payload)
-        .select()
-        .single();
+        .update({ status })
+        .match({ id })
+        .select();
       if (error) {
-        alert('Erreur ajout: ' + error.message);
-        return;
-      }
-      data.comments = [];
-      suggestions.unshift(data);
-      render();
-    }
-
-    async function updateSuggestionStatus(id, newStatus) {
-      const { error } = await supabase
-        .from('suggestions')
-        .update({ status: newStatus })
-        .eq('id', id);
-      if (error) {
-        alert('Erreur statut: '+error.message);
-        return;
-      }
-      const s = suggestions.find(s => s.id === id);
-      if (s) s.status = newStatus;
-      render();
-    }
-
-    async function deleteSuggestion(id) {
-      const { error } = await supabase.from('suggestions').delete().eq('id', id);
-      if (error) {
-        alert('Erreur suppression: ' + error.message);
-        return;
-      }
-      suggestions = suggestions.filter(s => s.id !== id);
-      render();
-    }
-
-    async function addComment(suggestionId, text) {
-      const payload = {
-        suggestion_id: suggestionId,
-        content: text,
-        author_pseudo: currentUser?.pseudo || null,
-        author_email: currentUser?.email || null
-      };
-      const { data, error } = await supabase
-        .from('comments')
-        .insert(payload)
-        .select()
-        .single();
-      if (error) {
-        alert('Erreur commentaire: ' + error.message);
-        return;
-      }
-      const s = suggestions.find(s => s.id === suggestionId);
-      if (s) {
-        s.comments.push(data);
-        render(); // re-render complet (simple)
+        alert('Erreur de mise à jour du statut');
+        console.error(error);
+      } else {
+        const idx = suggestions.findIndex(s => s.id === id);
+        if (idx !== -1) {
+          suggestions[idx].status = status;
+          render();
+        }
       }
     }
 
     /* ========= Rendu ========= */
     function render() {
-      const fStatus = filterStatus.value;
-      let list = fStatus ? suggestions.filter(s => s.status === fStatus) : suggestions;
+      const filterValue = filterStatus.value;
+      const filteredSuggestions = filterValue
+        ? suggestions.filter(s => s.status === filterValue)
+        : suggestions;
 
-      suggestionsList.innerHTML = '';
-      totalCount.textContent = `${list.length} suggestion${list.length>1?'s':''}`;
-      emptyMessage.style.display = list.length ? 'none' : 'block';
-
-      list.forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'suggestion';
-        const badgeClass = 'status-' + s.status.replace(' ','\\ ');
-
-        const canModerate = isAdmin;
-
-        div.innerHTML = `
-          <div class="suggestion-header">
-            <div>
-              <span class="status-badge ${badgeClass}">${escapeHtml(s.status)}</span>
+      if (filteredSuggestions.length) {
+        emptyMessage.style.display = 'none';
+        totalCount.innerHTML = `Suggestions : ${filteredSuggestions.length}`;
+        suggestionsList.innerHTML = filteredSuggestions.map(s => `
+          <div class="suggestion" data-id="${s.id}"> <!-- NOTE: ajout data-id -->
+            <div class="suggestion-header">
+              <div class="meta">
+                Posté par <strong>${escapeHtml(s.author_pseudo || '')}</strong> le ${formatDate(s.created_at)}
+              </div>
+              <div class="status-badge status-${s.status.replace(/\s+/g,'-')}">
+                ${s.status}
+              </div>
             </div>
-            <div class="meta">
-              ${s.author_pseudo ? 'Par <strong>'+escapeHtml(s.author_pseudo)+'</strong>' : '<strong>Utilisateur</strong>'}
-              ${s.created_at ? ' • <time>'+formatDate(s.created_at)+'</time>' : ''}
+            <div class="content">${escapeHtml(s.text)}</div>
+            <div class="actions">
+              ${isAdmin ? statusButtonsHTML(s.status) : ''}
+            </div>
+            <div class="comment-section">
+              <div class="comments-list">
+                ${s.comments.map(c => `
+                  <div class="comment">
+                    <strong>${escapeHtml(c.author_pseudo || '')}</strong> :
+                    <span>${escapeHtml(c.text)}</span><time>${formatDate(c.created_at)}</time>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="inline-form">
+                <input type="text" placeholder="Ajouter un commentaire..." data-suggestion-id="${s.id}">
+                <button data-action="add-comment">Commenter</button>
+              </div>
             </div>
           </div>
-          <p class="content">${escapeHtml(s.text)}</p>
+        `).join('');
+      } else {
+        emptyMessage.style.display = 'block';
+        totalCount.innerHTML = 'Suggestions : 0';
+      }
+    }
 
-          <div class="actions" data-id="${s.id}">
-            ${canModerate ? statusButtonsHTML(s.status) : ''}
-            ${canModerate ? '<button data-action="delete" class="danger">Supprimer</button>' : ''}
-          </div>
+    /* ========= Évènements ========= */
+    function setupEventListeners() {
+      filterStatus.addEventListener('change', () => render());
 
-          <div class="comment-section">
-            <strong>Commentaires (${s.comments.length})</strong>
-            <div class="comments">
-              ${s.comments.map(c => `
-                <div class="comment">
-                  <strong>${escapeHtml(c.author_pseudo || 'Anonyme')}</strong>
-                  <time>${formatDate(c.created_at)}</time><br>
-                  ${escapeHtml(c.content)}
-                </div>`).join('')}
-            </div>
-            <form class="inline-form" data-id="${s.id}">
-              <input type="text" placeholder="Ajouter un commentaire..." required />
-              <button type="submit">Envoyer</button>
-            </form>
-          </div>
-        `;
-        suggestionsList.appendChild(div);
+      suggestionForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const text = suggestionText.value.trim();
+        if (text.length < 10) {
+          alert('La suggestion doit faire au moins 10 caractères.');
+          return;
+        }
+        const statusToUse = isAdmin ? (initialStatus?.value || 'Planifié') : 'Planifié';
+        addSuggestion(text, statusToUse);
+        suggestionText.value = '';
       });
 
-      // Évènements commentaires
-      document.querySelectorAll('.inline-form').forEach(form => {
-        form.addEventListener('submit', e => {
-          e.preventDefault();
-            const id = Number(form.getAttribute('data-id'));
-            const input = form.querySelector('input');
-            const val = input.value.trim();
-            if (!val) return;
-            addComment(id, val);
-            input.value = '';
-        });
-      });
+      suggestionsList.addEventListener('click', async (e) => {
+        if (e.target.tagName === 'BUTTON' && e.target.dataset.action) {
+          const action = e.target.dataset.action;
+          const suggestionElement = e.target.closest('.suggestion');
+            const suggestionId = suggestionElement?.dataset.id;
 
-      // Actions admin
-      document.querySelectorAll('.actions').forEach(block => {
-        block.addEventListener('click', e => {
-          const btn = e.target.closest('button');
-          if (!btn) return;
-          const id = Number(block.getAttribute('data-id'));
-          const action = btn.getAttribute('data-action');
-          if (action === 'delete' && isAdmin) {
-            if (confirm('Supprimer cette suggestion ?')) deleteSuggestion(id);
-          } else if (action?.startsWith('status-') && isAdmin) {
-            const newStatus = action.replace('status-','');
-            updateSuggestionStatus(id, newStatus);
+          if (action.startsWith('status-') && suggestionId) {
+            const newStatus = action.replace('status-', '');
+            await updateStatus(suggestionId, newStatus);
           }
-        });
+        }
+
+        if (e.target.dataset.action === 'add-comment') {
+          const commentInput = e.target.previousElementSibling;
+          const suggestionId = commentInput.dataset.suggestionId;
+          const text = commentInput.value.trim();
+          if (text.length < 5) {
+            alert('Le commentaire doit faire au moins 5 caractères.');
+            return;
+          }
+          const { data, error } = await supabase
+            .from('comments')
+            .insert([{ text, suggestion_id: suggestionId, author_pseudo: currentUser?.pseudo }])
+            .select();
+          if (error) {
+            alert('Erreur lors de l\'ajout du commentaire');
+            console.error(error);
+          } else if (data && data[0]) {
+            const suggestion = suggestions.find(s => s.id === suggestionId);
+            if (suggestion) {
+              suggestion.comments.unshift(data[0]);
+              render();
+              commentInput.value = '';
+            }
+          }
+        }
       });
     }
 
-    /* ========= Events ========= */
-    suggestionForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const text = suggestionText.value.trim();
-      if (!text) return;
-      addSuggestion(text, initialStatus.value);
-      suggestionText.value = '';
-    });
-
-    filterStatus.addEventListener('change', render);
-
     /* ========= Initialisation ========= */
-    detectLocalUser();
-    await detectSupabaseUser();
-    loadSuggestionsFromSupabase();
+    async function init() {
+      detectLocalUser();
+      await detectSupabaseUser();
+      await loadSuggestionsFromSupabase();
+      setupEventListeners();
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
   </script>
 </head>
 <body>
   <header>
-    <div><a href="index.html">← Retour</a></div>
+    <h1>Suggestions</h1>
     <div id="currentUserInfo"></div>
   </header>
 
-  <h1>Suggestions</h1>
   <div class="container">
-
     <div class="board-header">
-      <div>
-        <span id="totalCount"></span>
-      </div>
       <div class="filter-bar">
         <select id="filterStatus">
-          <option value="">-- Filtrer par statut --</option>
+          <option value="">Filtrer par statut</option>
           <option value="Planifié">Planifié</option>
           <option value="En cours">En cours</option>
           <option value="Terminé">Terminé</option>
           <option value="Refusé">Refusé</option>
         </select>
       </div>
+      <div id="totalCount">Suggestions : 0</div>
     </div>
 
-    <form class="suggestion-form" id="suggestionForm">
-      <label for="suggestionText"><strong>Nouvelle suggestion :</strong></label>
-      <textarea id="suggestionText" placeholder="Décris ta suggestion..." required></textarea>
-      <div class="row">
-        <select id="initialStatus">
-          <option value="Planifié">Planifié</option>
-          <option value="En cours">En cours</option>
-          <option value="Terminé">Terminé</option>
-          <option value="Refusé">Refusé</option>
-        </select>
-        <button type="submit">Publier</button>
-      </div>
-    </form>
+    <div class="suggestion-form">
+      <form id="suggestionForm">
+        <textarea id="suggestionText" placeholder="Exprime ta suggestion..."></textarea>
+        <div class="row">
+          <!-- NOTE: wrapper pour pouvoir retirer facilement le select si non-admin -->
+          <div id="initialStatusWrapper">
+            <select id="initialStatus">
+              <option value="Planifié">Planifié</option>
+              <option value="En cours">En cours</option>
+              <option value="Terminé">Terminé</option>
+              <option value="Refusé">Refusé</option>
+            </select>
+          </div>
+          <button type="submit">Ajouter</button>
+        </div>
+      </form>
+    </div>
 
+    <div id="emptyMessage" class="no-data">Aucune suggestion pour le moment.</div>
     <div id="suggestionsList" class="suggestions-list"></div>
-    <div id="emptyMessage" class="no-data" style="display:none;">Aucune suggestion.</div>
-
   </div>
 </body>
 </html>
