@@ -10,6 +10,7 @@
     a, a:visited {color:#fff; text-decoration:none;}
     h1 {text-align:center; margin:20px 0;}
     .container {max-width:1000px; margin:0 auto 60px; padding:0 15px;}
+
     .board-header {display:flex; gap:8px; flex-wrap:wrap; justify-content:space-between; align-items:center;}
     .suggestion-form {background:#222; padding:15px; border-radius:10px; margin-bottom:25px;}
     .suggestion-form textarea {width:100%; min-height:70px; resize:vertical; padding:10px; border-radius:6px; border:1px solid #444; background:#2b2b2b; color:#fff; font-size:14px;}
@@ -29,7 +30,7 @@
     .status-Terminé {background:#1b5e20; color:#b2ffb2;}
     .status-Refusé {background:#6d0505; color:#ffb3b3;}
     .content {white-space:pre-wrap; line-height:1.4; font-size:15px; margin:0 0 8px;}
-    .actions {display:flex; gap:6px; flex-wrap:wrap;}
+    .actions {display:flex; gap:6px; flex-wrap:wrap; margin-bottom:4px;}
     .actions button, .inline-form button {background:#333; color:#eee; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:12px;}
     .actions button:hover, .inline-form button:hover {background:#555;}
     .comment-section {margin-top:10px; border-top:1px solid #333; padding-top:10px;}
@@ -39,12 +40,295 @@
     .inline-form {display:flex; gap:6px; margin-top:6px;}
     .inline-form input {flex:1; padding:8px; border-radius:6px; border:1px solid #444; background:#2b2b2b; color:#fff; font-size:13px;}
     .no-data {text-align:center; color:#777; padding:30px 0;}
-    .admin-badge {background:#e50914; padding:3px 8px; font-size:11px; border-radius:20px; font-weight:700;}
+    .admin-badge {background:#e50914; padding:3px 8px; font-size:11px; border-radius:20px; font-weight:700; margin-left:8px;}
     .filter-bar {display:flex; gap:8px; flex-wrap:wrap; margin:15px 0;}
     .filter-bar select {background:#2b2b2b; color:#fff; border:1px solid #444; padding:8px 10px; border-radius:6px;}
     .danger {background:#c62828 !important; color:#fff;}
     .danger:hover {background:#a11919 !important;}
+    .loading {text-align:center; padding:30px; color:#888;}
   </style>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    /* ========= Config Supabase ========= */
+    const supabase = createClient(
+      'https://wuagahavmbugmnuzsouf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+    );
+
+    /* ========= DOM ========= */
+    const suggestionsList = document.getElementById('suggestionsList');
+    const suggestionForm  = document.getElementById('suggestionForm');
+    const suggestionText  = document.getElementById('suggestionText');
+    const initialStatus   = document.getElementById('initialStatus');
+    const filterStatus    = document.getElementById('filterStatus');
+    const totalCount      = document.getElementById('totalCount');
+    const emptyMessage    = document.getElementById('emptyMessage');
+    const currentUserInfo = document.getElementById('currentUserInfo');
+
+    /* ========= État ========= */
+    let suggestions = [];  // {id,text,status,created_at,author_pseudo,author_email,comments:[]}
+    let currentUser = null;
+    let isAdmin = false;
+    let loading = false;
+
+    /* ========= Utils ========= */
+    function escapeHtml(str='') {
+      return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+    }
+    function formatDate(d) {
+      return new Date(d).toLocaleString('fr-FR',{dateStyle:'short', timeStyle:'short'});
+    }
+    const STATUSES = ['Planifié','En cours','Terminé','Refusé'];
+
+    function statusButtonsHTML(current) {
+      return STATUSES.map(st => `
+        <button data-action="status-${st}" ${st===current?'style="outline:2px solid #fff;"':''}>${st}</button>
+      `).join('');
+    }
+
+    function setLoading(state) {
+      loading = state;
+      if (state) {
+        suggestionsList.innerHTML = '<div class="loading">Chargement...</div>';
+      }
+    }
+
+    /* ========= Auth / User local ========= */
+    function detectLocalUser() {
+      try {
+        const cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        if (cu) {
+          currentUser = cu;
+          isAdmin = !!cu.isAdmin || cu.email === 'lolovp.portrets41@gmail.com';
+          currentUserInfo.innerHTML = `Connecté : <strong>${escapeHtml(cu.pseudo || '')}</strong>${isAdmin?'<span class="admin-badge">ADMIN</span>':''}`;
+        } else {
+          currentUserInfo.innerHTML = '<em>Non connecté (local)</em>';
+        }
+      } catch(e) {
+        currentUserInfo.innerHTML = '<em>Non connecté</em>';
+      }
+    }
+
+    async function detectSupabaseUser() {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user && !currentUser) { // si pas déjà un currentUser local
+        currentUser = {
+          pseudo: data.user.user_metadata?.username || data.user.email?.split('@')[0],
+          email: data.user.email
+        };
+        isAdmin = currentUser.email === 'lolovp.portrets41@gmail.com';
+        currentUserInfo.innerHTML = `Connecté : <strong>${escapeHtml(currentUser.pseudo)}</strong>${isAdmin?'<span class="admin-badge">ADMIN</span>':''}`;
+      }
+    }
+
+    /* ========= Chargement / Persistance Supabase ========= */
+    async function loadSuggestionsFromSupabase() {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('suggestions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        suggestionsList.innerHTML = '<div class="loading">Erreur de chargement</div>';
+        console.error(error);
+        setLoading(false);
+        return;
+      }
+
+      // Pour chaque suggestion charger ses commentaires
+      const ids = data.map(s => s.id);
+      let commentsMap = {};
+      if (ids.length) {
+        const { data: comms, error: cErr } = await supabase
+          .from('comments')
+          .select('*')
+          .in('suggestion_id', ids)
+          .order('created_at',{ascending:true});
+        if (!cErr) {
+          comms.forEach(c => {
+            if (!commentsMap[c.suggestion_id]) commentsMap[c.suggestion_id] = [];
+            commentsMap[c.suggestion_id].push(c);
+          });
+        }
+      }
+
+      suggestions = data.map(s => ({
+        ...s,
+        comments: commentsMap[s.id] || []
+      }));
+
+      setLoading(false);
+      render();
+    }
+
+    async function addSuggestion(text, status) {
+      const payload = {
+        text,
+        status,
+        author_pseudo: currentUser?.pseudo || null,
+        author_email: currentUser?.email || null
+      };
+      const { data, error } = await supabase
+        .from('suggestions')
+        .insert(payload)
+        .select()
+        .single();
+      if (error) {
+        alert('Erreur ajout: ' + error.message);
+        return;
+      }
+      data.comments = [];
+      suggestions.unshift(data);
+      render();
+    }
+
+    async function updateSuggestionStatus(id, newStatus) {
+      const { error } = await supabase
+        .from('suggestions')
+        .update({ status: newStatus })
+        .eq('id', id);
+      if (error) {
+        alert('Erreur statut: '+error.message);
+        return;
+      }
+      const s = suggestions.find(s => s.id === id);
+      if (s) s.status = newStatus;
+      render();
+    }
+
+    async function deleteSuggestion(id) {
+      const { error } = await supabase.from('suggestions').delete().eq('id', id);
+      if (error) {
+        alert('Erreur suppression: ' + error.message);
+        return;
+      }
+      suggestions = suggestions.filter(s => s.id !== id);
+      render();
+    }
+
+    async function addComment(suggestionId, text) {
+      const payload = {
+        suggestion_id: suggestionId,
+        content: text,
+        author_pseudo: currentUser?.pseudo || null,
+        author_email: currentUser?.email || null
+      };
+      const { data, error } = await supabase
+        .from('comments')
+        .insert(payload)
+        .select()
+        .single();
+      if (error) {
+        alert('Erreur commentaire: ' + error.message);
+        return;
+      }
+      const s = suggestions.find(s => s.id === suggestionId);
+      if (s) {
+        s.comments.push(data);
+        render(); // re-render complet (simple)
+      }
+    }
+
+    /* ========= Rendu ========= */
+    function render() {
+      const fStatus = filterStatus.value;
+      let list = fStatus ? suggestions.filter(s => s.status === fStatus) : suggestions;
+
+      suggestionsList.innerHTML = '';
+      totalCount.textContent = `${list.length} suggestion${list.length>1?'s':''}`;
+      emptyMessage.style.display = list.length ? 'none' : 'block';
+
+      list.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'suggestion';
+        const badgeClass = 'status-' + s.status.replace(' ','\\ ');
+
+        const canModerate = isAdmin;
+
+        div.innerHTML = `
+          <div class="suggestion-header">
+            <div>
+              <span class="status-badge ${badgeClass}">${escapeHtml(s.status)}</span>
+            </div>
+            <div class="meta">
+              ${s.author_pseudo ? 'Par <strong>'+escapeHtml(s.author_pseudo)+'</strong>' : '<strong>Utilisateur</strong>'}
+              ${s.created_at ? ' • <time>'+formatDate(s.created_at)+'</time>' : ''}
+            </div>
+          </div>
+          <p class="content">${escapeHtml(s.text)}</p>
+
+          <div class="actions" data-id="${s.id}">
+            ${canModerate ? statusButtonsHTML(s.status) : ''}
+            ${canModerate ? '<button data-action="delete" class="danger">Supprimer</button>' : ''}
+          </div>
+
+          <div class="comment-section">
+            <strong>Commentaires (${s.comments.length})</strong>
+            <div class="comments">
+              ${s.comments.map(c => `
+                <div class="comment">
+                  <strong>${escapeHtml(c.author_pseudo || 'Anonyme')}</strong>
+                  <time>${formatDate(c.created_at)}</time><br>
+                  ${escapeHtml(c.content)}
+                </div>`).join('')}
+            </div>
+            <form class="inline-form" data-id="${s.id}">
+              <input type="text" placeholder="Ajouter un commentaire..." required />
+              <button type="submit">Envoyer</button>
+            </form>
+          </div>
+        `;
+        suggestionsList.appendChild(div);
+      });
+
+      // Évènements commentaires
+      document.querySelectorAll('.inline-form').forEach(form => {
+        form.addEventListener('submit', e => {
+          e.preventDefault();
+            const id = Number(form.getAttribute('data-id'));
+            const input = form.querySelector('input');
+            const val = input.value.trim();
+            if (!val) return;
+            addComment(id, val);
+            input.value = '';
+        });
+      });
+
+      // Actions admin
+      document.querySelectorAll('.actions').forEach(block => {
+        block.addEventListener('click', e => {
+          const btn = e.target.closest('button');
+          if (!btn) return;
+          const id = Number(block.getAttribute('data-id'));
+          const action = btn.getAttribute('data-action');
+          if (action === 'delete' && isAdmin) {
+            if (confirm('Supprimer cette suggestion ?')) deleteSuggestion(id);
+          } else if (action?.startsWith('status-') && isAdmin) {
+            const newStatus = action.replace('status-','');
+            updateSuggestionStatus(id, newStatus);
+          }
+        });
+      });
+    }
+
+    /* ========= Events ========= */
+    suggestionForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = suggestionText.value.trim();
+      if (!text) return;
+      addSuggestion(text, initialStatus.value);
+      suggestionText.value = '';
+    });
+
+    filterStatus.addEventListener('change', render);
+
+    /* ========= Initialisation ========= */
+    detectLocalUser();
+    await detectSupabaseUser();
+    loadSuggestionsFromSupabase();
+  </script>
 </head>
 <body>
   <header>
@@ -88,215 +372,5 @@
     <div id="emptyMessage" class="no-data" style="display:none;">Aucune suggestion.</div>
 
   </div>
-
-<script>
-/**
- * =========================================
- * Données + Utilitaires
- * =========================================
- */
-const S_KEY = 'suggestions_v2'; // nouveau key (évite conflit ancienne version)
-let suggestions = JSON.parse(localStorage.getItem(S_KEY) || '[]');
-
-function save() {
-  localStorage.setItem(S_KEY, JSON.stringify(suggestions));
-}
-
-function generateId() {
-  return 'sug_' + Math.random().toString(36).slice(2,11);
-}
-
-function formatDate(d) {
-  const date = new Date(d);
-  return date.toLocaleString('fr-FR', { dateStyle:'short', timeStyle:'short' });
-}
-
-/**
- * =========================================
- * Gestion utilisateur courant
- * =========================================
- */
-let currentUser = null;
-try {
-  currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
-} catch(e){}
-const isAdmin = currentUser && currentUser.isAdmin === true;
-
-const currentUserInfo = document.getElementById('currentUserInfo');
-if (currentUser) {
-  currentUserInfo.innerHTML = `
-    Connecté : <strong>${currentUser.pseudo}</strong>
-    ${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}`;
-} else {
-  currentUserInfo.innerHTML = '<em>Non connecté</em>';
-}
-
-/**
- * =========================================
- * Éléments DOM
- * =========================================
- */
-const suggestionsList = document.getElementById('suggestionsList');
-const suggestionForm = document.getElementById('suggestionForm');
-const suggestionText = document.getElementById('suggestionText');
-const initialStatus = document.getElementById('initialStatus');
-const filterStatus = document.getElementById('filterStatus');
-const totalCount = document.getElementById('totalCount');
-const emptyMessage = document.getElementById('emptyMessage');
-
-/**
- * =========================================
- * Rendu
- * =========================================
- */
-function render() {
-  const fStatus = filterStatus.value;
-  const filtered = fStatus ? suggestions.filter(s => s.status === fStatus) : suggestions;
-
-  suggestionsList.innerHTML = '';
-  totalCount.textContent = `${filtered.length} suggestion${filtered.length>1?'s':''}`;
-  emptyMessage.style.display = filtered.length === 0 ? 'block' : 'none';
-
-  filtered
-    .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .forEach(s => {
-      const div = document.createElement('div');
-      div.className = 'suggestion';
-      const badgeClass = 'status-' + s.status.replace(' ','\\ ');
-      const canModerate = isAdmin;
-
-      div.innerHTML = `
-        <div class="suggestion-header">
-          <div>
-            <span class="status-badge ${badgeClass}">${s.status}</span>
-          </div>
-          <div class="meta">
-            Par <strong>${s.author?.pseudo || 'Anonyme'}</strong>
-            • <time>${formatDate(s.createdAt)}</time>
-          </div>
-        </div>
-        <p class="content">${escapeHtml(s.text)}</p>
-
-        <div class="actions" data-id="${s.id}">
-          ${canModerate ? statusButtonsHTML(s.status) : ''}
-          ${canModerate ? '<button data-action="delete" class="danger">Supprimer</button>' : ''}
-        </div>
-
-        <div class="comment-section">
-          <strong>Commentaires (${s.comments.length})</strong>
-          <div class="comments">
-            ${s.comments.map(c => `
-              <div class="comment">
-                <strong>${escapeHtml(c.author || 'Anonyme')}</strong>
-                <time>${formatDate(c.date)}</time><br>
-                ${escapeHtml(c.text)}
-              </div>`).join('')}
-          </div>
-          <form class="inline-form" data-id="${s.id}">
-            <input type="text" placeholder="Ajouter un commentaire..." required />
-            <button type="submit">Envoyer</button>
-          </form>
-        </div>
-      `;
-      suggestionsList.appendChild(div);
-    });
-
-  // Attacher events pour commentaires
-  document.querySelectorAll('.inline-form').forEach(form => {
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      const id = form.getAttribute('data-id');
-      const input = form.querySelector('input');
-      const val = input.value.trim();
-      if (!val) return;
-      const sug = suggestions.find(s => s.id === id);
-      sug.comments.push({
-        text: val,
-        date: new Date().toISOString(),
-        author: currentUser?.pseudo || 'Anonyme'
-      });
-      input.value = '';
-      save();
-      render();
-    });
-  });
-
-  // Attacher events modération
-  document.querySelectorAll('.actions').forEach(block => {
-    block.addEventListener('click', e => {
-      const btn = e.target.closest('button');
-      if (!btn) return;
-      const action = btn.getAttribute('data-action');
-      const id = block.getAttribute('data-id');
-      const sug = suggestions.find(s => s.id === id);
-      if (!sug) return;
-
-      if (action === 'delete' && isAdmin) {
-        if (confirm('Supprimer cette suggestion ?')) {
-          suggestions = suggestions.filter(s => s.id !== id);
-          save();
-          render();
-        }
-      } else if (action?.startsWith('status-') && isAdmin) {
-        const newStatus = action.replace('status-','');
-        sug.status = newStatus;
-        save();
-        render();
-      }
-    });
-  });
-}
-
-function statusButtonsHTML(current) {
-  const statuses = ['Planifié','En cours','Terminé','Refusé'];
-  return statuses.map(st => `
-    <button data-action="status-${st}" 
-      ${st === current ? 'style="outline:2px solid #fff;"' : ''}>
-      ${st}
-    </button>`).join('');
-}
-
-// Échapper HTML pour éviter injection
-function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, c => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[c]));
-}
-
-/**
- * =========================================
- * Événements
- * =========================================
- */
-suggestionForm.addEventListener('submit', e => {
-  e.preventDefault();
-  const text = suggestionText.value.trim();
-  if (!text) return;
-
-  suggestions.push({
-    id: generateId(),
-    text,
-    status: initialStatus.value,
-    createdAt: new Date().toISOString(),
-    author: {
-      pseudo: currentUser?.pseudo || 'Anonyme',
-      email: currentUser?.email || null
-    },
-    comments: []
-  });
-  suggestionText.value = '';
-  save();
-  render();
-});
-
-filterStatus.addEventListener('change', render);
-
-/**
- * =========================================
- * Initialisation
- * =========================================
- */
-render();
-</script>
 </body>
 </html>
