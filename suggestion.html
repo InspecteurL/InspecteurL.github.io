@@ -111,15 +111,20 @@
       }
     }
 
-    async function detectSupabaseUser() {
+ async function detectSupabaseUser() {
       const { data } = await supabase.auth.getUser();
-      if (data?.user && !currentUser) { // si pas déjà un currentUser local
+      if (data?.user && !currentUser) {
         currentUser = {
           pseudo: data.user.user_metadata?.username || data.user.email?.split('@')[0],
-          email: data.user.email
+            email: data.user.email
         };
         isAdmin = currentUser.email === 'lolovp.portrets41@gmail.com';
         currentUserInfo.innerHTML = `Connecté : <strong>${escapeHtml(currentUser.pseudo)}</strong>${isAdmin?'<span class="admin-badge">ADMIN</span>':''}`;
+      }
+
+      // NOTE: cacher le select si non admin (après détection)
+      if (!isAdmin && initialStatusWrapper) {
+        initialStatusWrapper.remove(); // retire complètement le sélecteur
       }
     }
 
