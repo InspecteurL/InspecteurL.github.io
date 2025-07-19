@@ -67,24 +67,59 @@
 </div>
 </div>
 
-    <div id="adblock-message" style="display:none; position:fixed; bottom:20px; right:20px; background:#fff; border:1px solid #ccc; padding:15px; z-index:9999;"> 
-        <p>Vous semblez ne pas avoir de bloqueur de pub... Installez 
-            <strong>Popup Blocker</strong> pour une navigation plus propre !</p>
-        <a href="https://chromewebstore.google.com/detail/ajjpfpfbgjcgghkgbcgmifkonjdldgkh?utm_source=item-share-cb" target="_blank" style="color:blue;"> Installer maintenant</a>
-    </div>
-    <script> 
-        // Vérifie si l'utilisateur a déjà vu la popup
-        const hasSeenPopup = localStorage.getItem("adblockPopupSeen");
-        if (!hasSeenPopup) { const bait = document.createElement("div"); 
-                            bait.className = "adsbox"; 
-                            bait.style.height = "1px"; 
-                            document.body.appendChild(bait); 
-                            setTimeout(() => { if (bait.offsetHeight) { 
-                                // AdBlock NON détecté, afficher la popup une seule fois 
-                                document.getElementById("adblock-message").style.display = "block"; 
-                                localStorage.setItem("adblockPopupSeen", "true"); } 
-                                              bait.remove(); }, 500); }
-    </script>
+<!-- POPUP AD-BLOCK -->
+<div id="adblock-message" style="display:none; position:fixed; bottom:20px; right:20px; background:#fff; border:1px solid #ccc; padding:15px; z-index:9999; box-shadow:0 0 10px rgba(0,0,0,0.1);">
+  <p>Vous semblez ne pas avoir de bloqueur de pub... 🤔 Pour une navigation plus propre, installez une extension adaptée à votre navigateur !</p>
+  <div id="extension-link" style="margin-top:10px;"></div>
+</div>
+
+<script>
+  const hasSeenPopup = localStorage.getItem("adblockPopupSeen");
+
+  if (!hasSeenPopup) {
+    const bait = document.createElement("div");
+    bait.className = "adsbox";
+    bait.style.height = "1px";
+    bait.style.position = "absolute";
+    bait.style.top = "-1000px";
+    document.body.appendChild(bait);
+
+    setTimeout(() => {
+      if (bait.offsetHeight) {
+        const ua = navigator.userAgent;
+        const messageBox = document.getElementById("adblock-message");
+        const linkBox = document.getElementById("extension-link");
+        let htmlContent = "";
+
+        if (ua.includes("Firefox")) {
+          htmlContent = `
+            <a href="https://addons.mozilla.org/en-US/firefox/addon/ghostery/" target="_blank" style="color:blue;">Installer Ghostery pour Firefox</a>
+          `;
+        } else if (ua.includes("Edg")) {
+          htmlContent = `
+            <a href="https://microsoftedge.microsoft.com/addons/detail/ublock-origin/cjpalhdlnbpafiamejdnhcphjbkeiagm" target="_blank" style="color:blue;">Installer uBlock Origin pour Edge</a>
+          `;
+        } else if (ua.includes("Chrome") && !ua.includes("Edg")) {
+          htmlContent = `
+            <a href="https://chromewebstore.google.com/detail/dkagmnnkfinalebballociekdnlaniem?utm_source=item-share-cb" style="color:blue;">Installer AdBlock pour Chrome</a><br>
+            <a href="https://chromewebstore.google.com/detail/ajjpfpfbgjcgghkgbcgmifkonjdldgkh?utm_source=item-share-cb" style="color:blue;">Installer Popup Blocker pour Chrome</a>
+          `;
+        } else if (ua.includes("Safari") && !ua.includes("Chrome")) {
+          htmlContent = `
+            <a href="https://support.apple.com/en-us/102524" target="_blank" style="color:blue;">Installer un bloqueur pour Safari</a>
+          `;
+        } else {
+          htmlContent = `<a href="https://ublockorigin.com/" target="_blank" style="color:blue;">Voir les extensions disponibles</a>`;
+        }
+
+        linkBox.innerHTML = htmlContent;
+        messageBox.style.display = "block";
+        localStorage.setItem("adblockPopupSeen", "true");
+      }
+      bait.remove();
+    }, 500);
+  }
+</script>
 
 
     <!-- Section des recommandations -->
