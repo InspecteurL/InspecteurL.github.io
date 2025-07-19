@@ -67,6 +67,24 @@
 </div>
 </div>
 
+    <div id="adblock-message" style="display:none; position:fixed; bottom:20px; right:20px; background:#fff; border:1px solid #ccc; padding:15px; z-index:9999;"> 
+        <p>Vous semblez ne pas avoir de bloqueur de pub... Installez 
+            <strong>uBlock Origin</strong> pour une navigation plus propre !</p>
+        <a href="https://ublockorigin.com/" target="_blank" style="color:blue;"> Installer maintenant</a>
+    </div>
+    <script> 
+        // Vérifie si l'utilisateur a déjà vu la popup
+        const hasSeenPopup = localStorage.getItem("adblockPopupSeen");
+        if (!hasSeenPopup) { const bait = document.createElement("div"); 
+                            bait.className = "adsbox"; 
+                            bait.style.height = "1px"; 
+                            document.body.appendChild(bait); 
+                            setTimeout(() => { if (bait.offsetHeight) { 
+                                // AdBlock NON détecté, afficher la popup une seule fois 
+                                document.getElementById("adblock-message").style.display = "block"; 
+                                localStorage.setItem("adblockPopupSeen", "true"); } 
+                                              bait.remove(); }, 500); }
+    </script>
 
 
     <!-- Section des recommandations -->
