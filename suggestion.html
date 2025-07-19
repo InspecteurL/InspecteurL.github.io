@@ -26,6 +26,7 @@
     .meta {font-size:12px; color:#bbb;}
     .status-badge {padding:4px 10px; font-size:12px; border-radius:20px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; display:inline-flex; align-items:center; gap:6px;}
     /* Classes de statuts normalisées (tirées de status-${nom.replace(/\s+/g,'-')}) */
+    .status-Attente {background : #c500ff; color: #FFFFFF;}
     .status-Planifié {background:#1d3557; color:#a8d4ff;}
     .status-En-cours {background:#5a189a; color:#e0c3ff;}
     .status-Terminé {background:#1b5e20; color:#b2ffb2;}
@@ -80,7 +81,7 @@
     function formatDate(d) {
       return new Date(d).toLocaleString('fr-FR',{dateStyle:'short', timeStyle:'short'});
     }
-    const STATUSES = ['Planifié','En cours','Terminé','Refusé'];
+    const STATUSES = ['En Attente','Planifié','En cours','Terminé','Refusé'];
 
     function statusButtonsHTML(current) {
       return STATUSES.map(st => `
