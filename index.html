@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -153,7 +152,7 @@
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'; // Ne jamais exposer de clés privées
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const form = document.getElementById('auth-form');
@@ -163,11 +162,18 @@
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
 
+        // Vérification pour le compte spécial lolovp
+        if (pseudo === 'lolovp' && email === 'lolovp.portrets41@gmail.com' && password === 'Vanille41') {
+            alert('Bienvenue lolovp ! Vous avez les droits de gestion des suggestions.');
+            localStorage.setItem('isLolovp', 'true');
+            window.location.href = 'suggestion.html';
+            return;
+        }
+
         // Vérification pour l'admin
         if (email === 'admin.arabe@gmail.com' && password === 'Arabeterroriste41') {
             alert('Bienvenue Admin !');
-            // Rediriger vers la page d'administration
-            window.location.href = 'suggestion.html'; // Remplace 'suggestion.html' par la page de ton choix
+            window.location.href = 'suggestion.html';
             return;
         }
 
@@ -180,7 +186,6 @@
         let { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
-            // Tentative d'inscription si l'email n'existe pas
             const result = await supabase.auth.signUp({ email, password });
             if (result.error) {
                 alert('Erreur : ' + result.error.message);
@@ -210,7 +215,6 @@
         alert(`Bienvenue ${pseudo} ! Vous êtes connecté.`);
     });
 </script>
-
 
 </body>
 </html>
