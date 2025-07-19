@@ -2,142 +2,301 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Suggestions</title>
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .suggestion { border: 1px solid #ccc; padding: 10px; margin: 8px 0; border-radius: 5px; }
-    .admin { color: #d9534f; font-weight: bold; }
-    select { margin-left: 10px; }
+    body { font-family: Arial, sans-serif; background:#181818; margin:0; color:#f1f1f1;}
+    header {background:#141414; padding:12px 20px; display:flex; justify-content:space-between; align-items:center;}
+    a, a:visited {color:#fff; text-decoration:none;}
+    h1 {text-align:center; margin:20px 0;}
+    .container {max-width:1000px; margin:0 auto 60px; padding:0 15px;}
+    .board-header {display:flex; gap:8px; flex-wrap:wrap; justify-content:space-between; align-items:center;}
+    .suggestion-form {background:#222; padding:15px; border-radius:10px; margin-bottom:25px;}
+    .suggestion-form textarea {width:100%; min-height:70px; resize:vertical; padding:10px; border-radius:6px; border:1px solid #444; background:#2b2b2b; color:#fff; font-size:14px;}
+    .row {display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+    .suggestion-form select, .suggestion-form button {padding:10px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:600;}
+    .suggestion-form select {background:#2b2b2b; color:#fff; border:1px solid #444;}
+    .suggestion-form button {background:#007bff; color:#fff;}
+    .suggestion-form button:hover {background:#0062c7;}
+
+    .suggestions-list {display:grid; gap:15px;}
+    .suggestion {background:#242424; border:1px solid #333; border-radius:10px; padding:14px; position:relative;}
+    .suggestion-header {display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom:8px;}
+    .meta {font-size:12px; color:#bbb;}
+    .status-badge {padding:4px 10px; font-size:12px; border-radius:20px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; display:inline-flex; align-items:center; gap:6px;}
+    .status-Planifié {background:#1d3557; color:#a8d4ff;}
+    .status-En\ cours {background:#5a189a; color:#e0c3ff;}
+    .status-Terminé {background:#1b5e20; color:#b2ffb2;}
+    .status-Refusé {background:#6d0505; color:#ffb3b3;}
+    .content {white-space:pre-wrap; line-height:1.4; font-size:15px; margin:0 0 8px;}
+    .actions {display:flex; gap:6px; flex-wrap:wrap;}
+    .actions button, .inline-form button {background:#333; color:#eee; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:12px;}
+    .actions button:hover, .inline-form button:hover {background:#555;}
+    .comment-section {margin-top:10px; border-top:1px solid #333; padding-top:10px;}
+    .comment {background:#2d2d2d; padding:6px 8px; border-radius:6px; font-size:13px; margin-bottom:6px;}
+    .comment strong {color:#fff;}
+    .comment time {color:#aaa; font-size:11px; margin-left:6px;}
+    .inline-form {display:flex; gap:6px; margin-top:6px;}
+    .inline-form input {flex:1; padding:8px; border-radius:6px; border:1px solid #444; background:#2b2b2b; color:#fff; font-size:13px;}
+    .no-data {text-align:center; color:#777; padding:30px 0;}
+    .admin-badge {background:#e50914; padding:3px 8px; font-size:11px; border-radius:20px; font-weight:700;}
+    .filter-bar {display:flex; gap:8px; flex-wrap:wrap; margin:15px 0;}
+    .filter-bar select {background:#2b2b2b; color:#fff; border:1px solid #444; padding:8px 10px; border-radius:6px;}
+    .danger {background:#c62828 !important; color:#fff;}
+    .danger:hover {background:#a11919 !important;}
   </style>
 </head>
 <body>
+  <header>
+    <div><a href="index.html">← Retour</a></div>
+    <div id="currentUserInfo"></div>
+  </header>
+
   <h1>Suggestions</h1>
-  
-  <div id="auth-section">
-    <button onclick="signIn()">Se connecter</button>
-    <button onclick="signOut()">Se déconnecter</button>
-    <p id="user-info"></p>
+  <div class="container">
+
+    <div class="board-header">
+      <div>
+        <span id="totalCount"></span>
+      </div>
+      <div class="filter-bar">
+        <select id="filterStatus">
+          <option value="">-- Filtrer par statut --</option>
+          <option value="Planifié">Planifié</option>
+          <option value="En cours">En cours</option>
+          <option value="Terminé">Terminé</option>
+          <option value="Refusé">Refusé</option>
+        </select>
+      </div>
+    </div>
+
+    <form class="suggestion-form" id="suggestionForm">
+      <label for="suggestionText"><strong>Nouvelle suggestion :</strong></label>
+      <textarea id="suggestionText" placeholder="Décris ta suggestion..." required></textarea>
+      <div class="row">
+        <select id="initialStatus">
+          <option value="Planifié">Planifié</option>
+          <option value="En cours">En cours</option>
+          <option value="Terminé">Terminé</option>
+          <option value="Refusé">Refusé</option>
+        </select>
+        <button type="submit">Publier</button>
+      </div>
+    </form>
+
+    <div id="suggestionsList" class="suggestions-list"></div>
+    <div id="emptyMessage" class="no-data" style="display:none;">Aucune suggestion.</div>
+
   </div>
 
-  <hr />
+<script>
+/**
+ * =========================================
+ * Données + Utilitaires
+ * =========================================
+ */
+const S_KEY = 'suggestions_v2'; // nouveau key (évite conflit ancienne version)
+let suggestions = JSON.parse(localStorage.getItem(S_KEY) || '[]');
 
-  <h2>Ajouter une suggestion</h2>
-  <textarea id="suggestion-input" placeholder="Votre suggestion..." rows="3" cols="50"></textarea><br/>
-  <button onclick="addSuggestion()">Soumettre</button>
+function save() {
+  localStorage.setItem(S_KEY, JSON.stringify(suggestions));
+}
 
-  <hr />
+function generateId() {
+  return 'sug_' + Math.random().toString(36).slice(2,11);
+}
 
-  <h2>Liste des suggestions</h2>
-  <div id="suggestions-list"></div>
+function formatDate(d) {
+  const date = new Date(d);
+  return date.toLocaleString('fr-FR', { dateStyle:'short', timeStyle:'short' });
+}
 
-  <script>
-    const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";  // Remplace par ton URL Supabase
-    const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";              // Remplace par ta clé anonyme
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+/**
+ * =========================================
+ * Gestion utilisateur courant
+ * =========================================
+ */
+let currentUser = null;
+try {
+  currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+} catch(e){}
+const isAdmin = currentUser && currentUser.isAdmin === true;
 
-    let currentUser = null;
-    let isAdmin = false;
+const currentUserInfo = document.getElementById('currentUserInfo');
+if (currentUser) {
+  currentUserInfo.innerHTML = `
+    Connecté : <strong>${currentUser.pseudo}</strong>
+    ${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}`;
+} else {
+  currentUserInfo.innerHTML = '<em>Non connecté</em>';
+}
 
-    // Vérifie la session dès le chargement
-    checkSession();
+/**
+ * =========================================
+ * Éléments DOM
+ * =========================================
+ */
+const suggestionsList = document.getElementById('suggestionsList');
+const suggestionForm = document.getElementById('suggestionForm');
+const suggestionText = document.getElementById('suggestionText');
+const initialStatus = document.getElementById('initialStatus');
+const filterStatus = document.getElementById('filterStatus');
+const totalCount = document.getElementById('totalCount');
+const emptyMessage = document.getElementById('emptyMessage');
 
-    async function checkSession() {
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user;
-      if (user) {
-        document.getElementById("user-info").innerText = `Connecté : ${user.email}`;
-        await checkIfAdmin(user.id);
-      } else {
-        document.getElementById("user-info").innerText = "Non connecté";
-      }
-      loadSuggestions();
-    }
+/**
+ * =========================================
+ * Rendu
+ * =========================================
+ */
+function render() {
+  const fStatus = filterStatus.value;
+  const filtered = fStatus ? suggestions.filter(s => s.status === fStatus) : suggestions;
 
-    async function signIn() {
-      const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
-      if (error) alert(error.message);
-    }
+  suggestionsList.innerHTML = '';
+  totalCount.textContent = `${filtered.length} suggestion${filtered.length>1?'s':''}`;
+  emptyMessage.style.display = filtered.length === 0 ? 'block' : 'none';
 
-    async function signOut() {
-      await supabase.auth.signOut();
-      currentUser = null;
-      isAdmin = false;
-      document.getElementById("user-info").innerText = "Non connecté";
-      loadSuggestions();
-    }
+  filtered
+    .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'suggestion';
+      const badgeClass = 'status-' + s.status.replace(' ','\\ ');
+      const canModerate = isAdmin;
 
-    async function checkIfAdmin(userId) {
-      const { data, error } = await supabase
-        .from('admin_users_cache')
-        .select('*')
-        .eq('id', userId);
-      if (error) console.error(error);
-      isAdmin = data && data.length > 0;
-    }
+      div.innerHTML = `
+        <div class="suggestion-header">
+          <div>
+            <span class="status-badge ${badgeClass}">${s.status}</span>
+          </div>
+          <div class="meta">
+            Par <strong>${s.author?.pseudo || 'Anonyme'}</strong>
+            • <time>${formatDate(s.createdAt)}</time>
+          </div>
+        </div>
+        <p class="content">${escapeHtml(s.text)}</p>
 
-    async function addSuggestion() {
-      if (!currentUser) {
-        alert("Veuillez vous connecter pour soumettre une suggestion.");
-        return;
-      }
-      const content = document.getElementById("suggestion-input").value.trim();
-      if (!content) return alert("Le contenu est vide !");
-      const { error } = await supabase
-        .from('suggestions')
-        .insert([{ user_id: currentUser.id, content }]);
-      if (error) {
-        console.error(error);
-        alert("Erreur lors de la soumission : " + error.message);
-      } else {
-        document.getElementById("suggestion-input").value = "";
-        loadSuggestions();
-      }
-    }
+        <div class="actions" data-id="${s.id}">
+          ${canModerate ? statusButtonsHTML(s.status) : ''}
+          ${canModerate ? '<button data-action="delete" class="danger">Supprimer</button>' : ''}
+        </div>
 
-    async function loadSuggestions() {
-      const { data, error } = await supabase
-        .from('suggestions')
-        .select('id, content, status, user_id');
-      if (error) {
-        console.error(error);
-        return;
-      }
-      const container = document.getElementById("suggestions-list");
-      container.innerHTML = "";
-      data.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "suggestion";
-        div.innerHTML = `
-          <p><strong>${item.content}</strong></p>
-          <p>Status : ${item.status}</p>
-        `;
+        <div class="comment-section">
+          <strong>Commentaires (${s.comments.length})</strong>
+          <div class="comments">
+            ${s.comments.map(c => `
+              <div class="comment">
+                <strong>${escapeHtml(c.author || 'Anonyme')}</strong>
+                <time>${formatDate(c.date)}</time><br>
+                ${escapeHtml(c.text)}
+              </div>`).join('')}
+          </div>
+          <form class="inline-form" data-id="${s.id}">
+            <input type="text" placeholder="Ajouter un commentaire..." required />
+            <button type="submit">Envoyer</button>
+          </form>
+        </div>
+      `;
+      suggestionsList.appendChild(div);
+    });
 
-        if (isAdmin) {
-          const select = document.createElement("select");
-          ["En attente","En cours","Planifié","Refusé","Terminé"].forEach(opt => {
-            const option = document.createElement("option");
-            option.value = opt;
-            option.text = opt;
-            if (item.status === opt) option.selected = true;
-            select.appendChild(option);
-          });
-          select.addEventListener("change", () => updateStatus(item.id, select.value));
-          div.appendChild(select);
-        }
-
-        container.appendChild(div);
+  // Attacher events pour commentaires
+  document.querySelectorAll('.inline-form').forEach(form => {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const id = form.getAttribute('data-id');
+      const input = form.querySelector('input');
+      const val = input.value.trim();
+      if (!val) return;
+      const sug = suggestions.find(s => s.id === id);
+      sug.comments.push({
+        text: val,
+        date: new Date().toISOString(),
+        author: currentUser?.pseudo || 'Anonyme'
       });
-    }
+      input.value = '';
+      save();
+      render();
+    });
+  });
 
-    async function updateStatus(id, status) {
-      const { error } = await supabase
-        .from('suggestions')
-        .update({ status })
-        .eq('id', id);
-      if (error) console.error(error);
-    }
-  </script>
+  // Attacher events modération
+  document.querySelectorAll('.actions').forEach(block => {
+    block.addEventListener('click', e => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const action = btn.getAttribute('data-action');
+      const id = block.getAttribute('data-id');
+      const sug = suggestions.find(s => s.id === id);
+      if (!sug) return;
+
+      if (action === 'delete' && isAdmin) {
+        if (confirm('Supprimer cette suggestion ?')) {
+          suggestions = suggestions.filter(s => s.id !== id);
+          save();
+          render();
+        }
+      } else if (action?.startsWith('status-') && isAdmin) {
+        const newStatus = action.replace('status-','');
+        sug.status = newStatus;
+        save();
+        render();
+      }
+    });
+  });
+}
+
+function statusButtonsHTML(current) {
+  const statuses = ['Planifié','En cours','Terminé','Refusé'];
+  return statuses.map(st => `
+    <button data-action="status-${st}" 
+      ${st === current ? 'style="outline:2px solid #fff;"' : ''}>
+      ${st}
+    </button>`).join('');
+}
+
+// Échapper HTML pour éviter injection
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+/**
+ * =========================================
+ * Événements
+ * =========================================
+ */
+suggestionForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const text = suggestionText.value.trim();
+  if (!text) return;
+
+  suggestions.push({
+    id: generateId(),
+    text,
+    status: initialStatus.value,
+    createdAt: new Date().toISOString(),
+    author: {
+      pseudo: currentUser?.pseudo || 'Anonyme',
+      email: currentUser?.email || null
+    },
+    comments: []
+  });
+  suggestionText.value = '';
+  save();
+  render();
+});
+
+filterStatus.addEventListener('change', render);
+
+/**
+ * =========================================
+ * Initialisation
+ * =========================================
+ */
+render();
+</script>
 </body>
 </html>
