@@ -200,46 +200,51 @@
   }
 
   // ----------- GESTION SON ----------- // >>> SON
-  const audioEl = document.getElementById('notif-audio');
-  const soundToggleBtn = document.getElementById('sound-toggle');
-  let soundEnabled = false;
-  let audioUnlocked = false;
-  let lastPlay = 0;
-  const SOUND_COOLDOWN = 800; // ms pour éviter spam
+const audioEl = document.getElementById('notif-audio');
+const soundToggleBtn = document.getElementById('sound-toggle');
+let audioUnlocked = false;
+let lastPlay = 0;
+const SOUND_COOLDOWN = 800; // ms pour éviter spam
 
-  // Débloque audio après première interaction (gesture utilisateur)
-  const unlockAudio = () => {
-    if (audioUnlocked) return;
-    // Stratégie : lecture silencieuse (ou currentTime=0) — si bloqué, ce n’est pas grave
-    audioEl.volume = 1;
-    audioEl.pause();
-    audioUnlocked = true;
-  };
-  ['click','keydown','touchstart'].forEach(evt => {
-    window.addEventListener(evt, unlockAudio, { once: true });
-  });
+// Récupère l'état du son dans localStorage (true/false)
+let soundEnabled = localStorage.getItem('soundEnabled') === 'true';
+soundToggleBtn.classList.toggle('active', soundEnabled);
+soundToggleBtn.textContent = soundEnabled ? '🔔 Son' : '🔕 Son';
 
-  soundToggleBtn.addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    soundToggleBtn.classList.toggle('active', soundEnabled);
-    soundToggleBtn.textContent = soundEnabled ? '🔔 Son' : '🔕 Son';
-  });
+// Débloque audio après première interaction (gesture utilisateur)
+const unlockAudio = () => {
+  if (audioUnlocked) return;
+  audioEl.volume = 1;
+  audioEl.pause();
+  audioUnlocked = true;
+};
+['click','keydown','touchstart'].forEach(evt => {
+  window.addEventListener(evt, unlockAudio, { once: true });
+});
 
-  function playNotificationSound() {
-    const now = Date.now();
-    if (!soundEnabled) return;
-    if (!audioUnlocked) return;
-    if (now - lastPlay < SOUND_COOLDOWN) return;
-    lastPlay = now;
-    try {
-      audioEl.currentTime = 0;
-      audioEl.play().catch(()=>{ /* ignoré si bloqué */ });
-    } catch(e) {}
-    if (navigator.vibrate) {
-      navigator.vibrate(60);
-    }
+soundToggleBtn.addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('soundEnabled', soundEnabled); // Sauvegarde état
+  soundToggleBtn.classList.toggle('active', soundEnabled);
+  soundToggleBtn.textContent = soundEnabled ? '🔔 Son' : '🔕 Son';
+});
+
+function playNotificationSound() {
+  const now = Date.now();
+  if (!soundEnabled) return;
+  if (!audioUnlocked) return;
+  if (now - lastPlay < SOUND_COOLDOWN) return;
+  lastPlay = now;
+  try {
+    audioEl.currentTime = 0;
+    audioEl.play().catch(()=>{ /* ignoré si bloqué */ });
+  } catch(e) {}
+  if (navigator.vibrate) {
+    navigator.vibrate(60);
   }
-  // ----------------------------------- // >>> SON
+}
+// ----------------------------------- // >>> SON
+
 
   const { data: sessionData } = await supabase.auth.getSession();
   const session = sessionData.session;
