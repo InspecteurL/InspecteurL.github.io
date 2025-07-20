@@ -214,6 +214,7 @@
           : "";
 
         userCard.innerHTML = `
+        <img src="${user.banner_url || 'default.jpg'}" alt="banner">
           <img src="${user.avatar_url || 'default.jpg'}" alt="avatar">
           <div class="name">${user.username || user.email}</div>
           <div class="status ${user.is_online ? 'online' : 'offline'}">${onlineStatus}</div>
