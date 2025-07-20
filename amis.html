@@ -120,6 +120,31 @@
     .user-card button:hover {
       background-color: #c40611;
     }
+    .user-card .banner {
+  width: 100%;
+  height: 120px; /* Hauteur de la bannière */
+  overflow: hidden;
+  border-radius: 10px 10px 0 0; /* Coins arrondis en haut */
+}
+
+.user-card .banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Remplir l'espace */
+}
+
+.user-card .avatar {
+  position: relative;
+  margin-top: -40px; /* Superposer l'avatar sur la bannière */
+}
+
+.user-card .avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #121212; /* Bordure pour séparer de la bannière */
+}
+
 
     @media (max-width: 768px) {
       .user-cards {
@@ -214,9 +239,13 @@
           : "";
 
         userCard.innerHTML = `
-        <img src="${user.banner_url || 'default.jpg'}" alt="banner">
-          <img src="${user.avatar_url || 'default.jpg'}" alt="avatar">
-          <div class="name">${user.username || user.email}</div>
+    <div class="banner">
+  <img src="${user.banner_url || 'default_banner.jpg'}" alt="banner">
+</div>
+<div class="avatar">
+  <img src="${user.avatar_url || 'default_avatar.jpg'}" alt="avatar">
+</div>
+<div class="name">${user.username || user.email}</div>
           <div class="status ${user.is_online ? 'online' : 'offline'}">${onlineStatus}</div>
           ${watching}
           <button data-id="${user.id}">Ajouter en ami</button>
