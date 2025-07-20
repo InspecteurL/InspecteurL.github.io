@@ -15,36 +15,27 @@
       display: flex;
       flex-direction: column;
     }
-    header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      background-color: #141414;
-      padding: 15px 20px;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #141414;
+  padding: 15px 20px;
+  z-index: 1000;
+}
+
+
+
+
     .back-button {
       color: #e50914;
       text-decoration: none;
       font-weight: bold;
       font-size: 18px;
     }
-    .sound-toggle {             /* >>> SON */
-      background: none;
-      border: 1px solid #333;
-      color: #fff;
-      cursor: pointer;
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    .sound-toggle.active {      /* >>> SON */
-      background: #00ff88;
-      color: #121212;
-      border-color: #00ff88;
-    }
+
     .container {
       flex-grow: 1;
       display: flex;
@@ -53,10 +44,12 @@
       max-width: 900px;
       margin: 0 auto;
     }
+
     h1 {
       text-align: center;
       margin: 20px 0;
     }
+
     #messages {
       flex-grow: 1;
       overflow-y: auto;
@@ -65,13 +58,21 @@
       flex-direction: column;
       gap: 15px;
     }
+
     .message-container {
       display: flex;
       align-items: flex-end;
       gap: 10px;
     }
-    .message-left { justify-content: flex-start; }
-    .message-right { justify-content: flex-end; }
+
+    .message-left {
+      justify-content: flex-start;
+    }
+
+    .message-right {
+      justify-content: flex-end;
+    }
+
     .message {
       background: #1e1e1e;
       padding: 12px 16px;
@@ -79,17 +80,29 @@
       max-width: 70%;
       word-wrap: break-word;
     }
-    .message-right .message { background: #333; }
-    .message strong { color: #00ff88; font-weight: bold; }
+
+    .message-right .message {
+      background: #333;
+    }
+
+    .message strong {
+      color: #00ff88;
+      font-weight: bold;
+    }
+
     .message small {
       display: block;
       font-size: 0.75rem;
       color: #aaa;
       margin-top: 4px;
     }
+
     .avatar {
-      width: 32px; height: 32px; border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
     }
+
     form {
       display: flex;
       gap: 10px;
@@ -97,6 +110,7 @@
       border-top: 1px solid #333;
       background-color: #141414;
     }
+
     input {
       flex-grow: 1;
       padding: 12px;
@@ -106,6 +120,7 @@
       border: none;
       font-size: 15px;
     }
+
     button {
       background: #00ff88;
       border: none;
@@ -115,407 +130,294 @@
       font-size: 14px;
       cursor: pointer;
     }
-    button:hover { background: #00e078; }
-    @media (max-width: 768px) {
-      .container { padding: 0 10px; }
-      .message { max-width: 85%; }
-      form { flex-direction: column; }
-      input, button { width: 100%; }
-      .message-container { gap: 8px; }
-      .avatar { width: 28px; height: 28px; }
+
+    button:hover {
+      background: #00e078;
     }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 10px;
+      }
+
+      .message {
+        max-width: 85%;
+      }
+
+      form {
+        flex-direction: column;
+      }
+
+      input, button {
+        width: 100%;
+      }
+
+      .message-container {
+        gap: 8px;
+      }
+
+      .avatar {
+        width: 28px;
+        height: 28px;
+      }
+    }
+
     .chat-header {
-      position: sticky;
-      top: 0;
-      background-color: #141414;
-      display: flex;
-      align-items: center;
-      padding: 10px 15px;
-      gap: 15px;
-      z-index: 100;
-      border-bottom: 1px solid #222;
-    }
-    .receiver-info { display: flex; align-items: center; gap: 10px; }
-    .avatar-header {
-      width: 36px; height: 36px; border-radius: 50%;
-    }
-    .receiver-name { font-size: 18px; font-weight: bold; color: white; }
-    @media (max-width: 768px) {
-      .avatar-header { width: 32px; height: 32px; }
-      .receiver-name { font-size: 16px; }
-      .back-button { font-size: 20px; }
-    }
+  position: sticky;
+  top: 0;
+  background-color: #141414;
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  gap: 15px;
+  z-index: 100;
+  border-bottom: 1px solid #222;
+}
+
+.back-button {
+  color: #e50914;
+  text-decoration: none;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.receiver-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-header {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.receiver-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .avatar-header {
+    width: 32px;
+    height: 32px;
+  }
+
+  .receiver-name {
+    font-size: 16px;
+  }
+
+  .back-button {
+    font-size: 20px;
+  }
+}
+
   </style>
 </head>
 <body>
 <header>
-  <a href="index.html" class="back-button">← Retour</a>
-  <!-- Bouton toggle son (ajout) -->
-  <button id="sound-toggle" class="sound-toggle" title="Activer/désactiver le son">🔕 Son</button> <!-- >>> SON -->
+  <a href="index.html" style="color: #e50914; text-decoration: none; font-weight: bold; font-size: 20px;">← Retour</a>
 </header>
 
-<div class="container">
-  <h1>💬 Chat</h1>
 
-  <div id="messages">
-    <!-- (Exemples statiques, peuvent être supprimés) -->
-    <div class="message-container message-left">
-      <img src="avatar1.jpg" class="avatar" />
-      <div class="message">
-        <strong>Lui</strong><br>
-        Salut ! Comment tu vas ?<br>
-        <small>14:12</small>
+
+  <div class="container">
+    <h1>💬 Chat</h1>
+
+    <div id="messages">
+      <!-- Messages dynamiques ici -->
+      <!-- Exemple : -->
+      <div class="message-container message-left">
+        <img src="avatar1.jpg" class="avatar" />
+        <div class="message">
+          <strong>Lui</strong><br>
+          Salut ! Comment tu vas ?<br>
+          <small>14:12</small>
+        </div>
+      </div>
+
+      <div class="message-container message-right">
+        <div class="message">
+          <strong>Moi</strong><br>
+          Ça va bien, merci !<br>
+          <small>14:13</small>
+        </div>
+        <img src="avatar2.jpg" class="avatar" />
       </div>
     </div>
-    <div class="message-container message-right">
-      <div class="message">
-        <strong>Moi</strong><br>
-        Ça va bien, merci !<br>
-        <small>14:13</small>
-      </div>
-      <img src="avatar2.jpg" class="avatar" />
-    </div>
+
+    <form id="chat-form">
+      <input type="text" id="message" placeholder="Votre message..." required />
+      <button type="submit">Envoyer</button>
+    </form>
   </div>
 
-  <form id="chat-form">
-    <input type="text" id="message" placeholder="Votre message..." required />
-    <button type="submit">Envoyer</button>
-  </form>
-</div>
 
-<!-- Audio notification (fichier à fournir) >>> SON -->
-<audio id="notif-audio" src="notif.mp3" preload="auto"></audio>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-  const supabase = createClient(
-    'https://wuagahavmbugmnuzsouf.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-  );
-
-  // Notifications navigateur
-  if ("Notification" in window && Notification.permission === "default") {
-    Notification.requestPermission();
-  }
-
-  // ----------- GESTION SON ----------- // >>> SON
-  const audioEl = document.getElementById('notif-audio');
-  const soundToggleBtn = document.getElementById('sound-toggle');
-  let audioUnlocked = false;
-  let lastPlay = 0;
-  const SOUND_COOLDOWN = 800; // ms pour éviter spam
-
-  // Récupère l'état du son dans localStorage (true/false)
-  let soundEnabled = localStorage.getItem('soundEnabled') === 'true';
-  soundToggleBtn.classList.toggle('active', soundEnabled);
-  soundToggleBtn.textContent = soundEnabled ? '🔔 Son' : '🔕 Son';
-
-  // Débloque audio après première interaction (gesture utilisateur)
-  const unlockAudio = () => {
-    if (audioUnlocked) return;
-    audioEl.volume = 1;
-    audioEl.pause();
-    audioUnlocked = true;
-  };
-  ['click','keydown','touchstart'].forEach(evt => {
-    window.addEventListener(evt, unlockAudio, { once: true });
-  });
-
-  soundToggleBtn.addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    localStorage.setItem('soundEnabled', soundEnabled); // Sauvegarde état
-    soundToggleBtn.classList.toggle('active', soundEnabled);
-    soundToggleBtn.textContent = soundEnabled ? '🔔 Son' : '🔕 Son';
-  });
-
-  function playNotificationSound() {
-    const now = Date.now();
-    if (!soundEnabled) return;
-    if (!audioUnlocked) return;
-    if (now - lastPlay < SOUND_COOLDOWN) return;
-    lastPlay = now;
-    try {
-      audioEl.currentTime = 0;
-      audioEl.play().catch(()=>{ /* ignoré si bloqué */ });
-    } catch(e) {}
-    if (navigator.vibrate) {
-      navigator.vibrate(60);
-    }
-  }
-  // ----------------------------------- // >>> SON
-
-  // ------------- NOTIFICATIONS VISUELLES -------------------
-  // Canal global pour les notifications
-  const bc = new BroadcastChannel('chat_notifications');
-
-  // Conteneur pour les toasts
-  let toastContainer = document.createElement('div');
-  toastContainer.id = 'toast-container';
-  document.body.appendChild(toastContainer);
-
-  // Styles améliorés pour les toasts
-  const style = document.createElement('style');
-  style.innerHTML = `
-    #toast-container {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 9999;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .toast {
-      display: flex;
-      align-items: center;
-      background: #333;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      opacity: 0;
-      transform: translateY(20px);
-      animation: toast-in 0.3s forwards, toast-out 0.3s 4.5s forwards;
-      max-width: 320px;
-    }
-    .toast img.avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      margin-right: 10px;
-      flex-shrink: 0;
-    }
-    .toast-content {
-      flex-grow: 1;
-    }
-    .toast-content strong {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 2px;
-    }
-    .toast button.close-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 18px;
-      margin-left: 8px;
-      cursor: pointer;
-      opacity: 0.7;
-    }
-    .toast button.close-btn:hover {
-      opacity: 1;
-    }
-    @keyframes toast-in {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    @keyframes toast-out {
-      to {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-    }
-  `;
-  document.head.appendChild(style);
-
-  function showToast({ from, content, avatar }) {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerHTML = `
-      <img class="avatar" src="${avatar || 'default.jpg'}" alt="${from}">
-      <div class="toast-content">
-        <strong>${from}</strong>
-        <span>${content}</span>
-      </div>
-      <button class="close-btn" title="Fermer">&times;</button>
-    `;
-
-    // Gestion du bouton Fermer
-    toast.querySelector('.close-btn').addEventListener('click', () => {
-      toast.remove();
-    });
-
-    toastContainer.appendChild(toast);
-
-    // Auto-suppression après 5 sec
-    setTimeout(() => {
-      toast.remove();
-    }, 5000);
-  }
-
-  bc.onmessage = (event) => {
-    const data = event.data;
-    if (data.type === 'new_message') {
-      showToast({
-        from: data.from,
-        content: data.content,
-        avatar: data.avatar
-      });
-    }
-  };
-
-
-  const { data: sessionData } = await supabase.auth.getSession();
-  const session = sessionData.session;
-  if (!session) {
-    document.body.innerHTML = "🔒 Connecte-toi pour chatter.";
-    throw new Error("Pas connecté");
-  }
-
-  const currentUserId = session.user.id;
-  const urlParams = new URLSearchParams(window.location.search);
-  const receiverId = urlParams.get("user");
-  if (!receiverId) {
-    document.body.innerHTML = "❌ Aucun destinataire spécifié.";
-    throw new Error("Missing receiver ID");
-  }
-
-  const messageList = document.getElementById("messages");
-  const chatForm = document.getElementById("chat-form");
-
-  let currentUsername = "Moi";
-  let currentAvatar = "default.jpg";
-  let receiverUsername = "Lui";
-  let receiverAvatar = "default.jpg";
-
-  async function loadCurrentUserInfo() {
-    const { data: userData } = await supabase
-      .from("profiles")
-      .select("username, avatar_url")
-      .eq("id", currentUserId)
-      .single();
-    if (userData) {
-      currentUsername = userData.username || "Moi";
-      currentAvatar = userData.avatar_url || "default.jpg";
-    }
-  }
-
-  async function loadReceiverInfo() {
-    const { data: receiverData } = await supabase
-      .from("profiles")
-      .select("username, avatar_url")
-      .eq("id", receiverId)
-      .single();
-    if (receiverData) {
-      receiverUsername = receiverData.username || "Lui";
-      receiverAvatar = receiverData.avatar_url || "default.jpg";
-      const header = document.querySelector("header");
-      const receiverSection = document.createElement("div");
-      receiverSection.innerHTML = `
-        <img src="${receiverAvatar}" alt="Avatar de ${receiverUsername}" style="width:50px;height:50px;border-radius:50%;margin-left:5px;">
-        <span style="font-size:18px;margin-left:5px;">${receiverUsername}</span>
-      `;
-      header.appendChild(receiverSection);
-    }
-  }
-
-  async function loadMessages() {
-    const { data: messages } = await supabase
-      .from("messages")
-      .select("*")
-      .or(`sender.eq.${currentUserId},receiver.eq.${currentUserId}`)
-      .order("created_at");
-
-    const filtered = messages.filter(
-      (m) =>
-        (m.sender === currentUserId && m.receiver === receiverId) ||
-        (m.sender === receiverId && m.receiver === currentUserId)
+    const supabase = createClient(
+      'https://wuagahavmbugmnuzsouf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
     );
 
-    messageList.innerHTML = "";
-    filtered.forEach((msg) => appendMessage(msg));
-    messageList.scrollTop = messageList.scrollHeight;
-  }
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
 
-  function appendMessage(msg) {
-    const isCurrentUser = msg.sender === currentUserId;
-    const username = isCurrentUser ? currentUsername : receiverUsername;
-    const avatar = isCurrentUser ? currentAvatar : receiverAvatar;
-    const dateObj = new Date(msg.created_at);
-    const date = dateObj.toLocaleDateString("fr-FR") + " à " +
-      dateObj.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-
-    const container = document.createElement("div");
-    container.className = `message-container ${isCurrentUser ? "message-right" : "message-left"}`;
-
-    const div = document.createElement("div");
-    div.className = "message";
-    div.innerHTML = `
-      <div><strong>${username}</strong> <small>${date}</small></div>
-      <div>${msg.content}</div>
-    `;
-
-    const avatarImg = document.createElement("img");
-    avatarImg.src = avatar;
-    avatarImg.className = "avatar";
-
-    if (isCurrentUser) {
-      container.appendChild(div);
-      container.appendChild(avatarImg);
-    } else {
-      container.appendChild(avatarImg);
-      container.appendChild(div);
+    if (!session) {
+      document.body.innerHTML = "🔒 Connecte-toi pour chatter.";
+      throw new Error("Pas connecté");
     }
 
-    messageList.appendChild(container);
-  }
+    const currentUserId = session.user.id;
+    const urlParams = new URLSearchParams(window.location.search);
+    const receiverId = urlParams.get("user");
 
-  await loadCurrentUserInfo();
-  await loadReceiverInfo();
-  await loadMessages();
+    if (!receiverId) {
+      document.body.innerHTML = "❌ Aucun destinataire spécifié.";
+      throw new Error("Missing receiver ID");
+    }
 
-  chatForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const input = document.getElementById("message");
-    const content = input.value;
-    if (!content.trim()) return;
+    const messageList = document.getElementById("messages");
+    const chatForm = document.getElementById("chat-form");
 
-    await supabase.from("messages").insert({
-      sender: currentUserId,
-      receiver: receiverId,
-      content: content,
+    let currentUsername = "Moi";
+    let currentAvatar = "default.jpg";
+    let receiverUsername = "Lui";
+    let receiverAvatar = "default.jpg";
+
+    async function loadCurrentUserInfo() {
+      const { data: userData } = await supabase
+        .from("profiles")
+        .select("username, avatar_url")
+        .eq("id", currentUserId)
+        .single();
+
+      if (userData) {
+        currentUsername = userData.username || "Moi";
+        currentAvatar = userData.avatar_url || "default.jpg";
+      }
+    }
+
+    async function loadReceiverInfo() {
+      const { data: receiverData } = await supabase
+        .from("profiles")
+        .select("username, avatar_url")
+        .eq("id", receiverId)
+        .single();
+
+      if (receiverData) {
+        receiverUsername = receiverData.username || "Lui";
+        receiverAvatar = receiverData.avatar_url || "default.jpg";
+        const header = document.querySelector("header");
+        const receiverSection = document.createElement("div");
+        receiverSection.innerHTML = ` 
+          <img src="${receiverAvatar}" alt="Avatar de ${receiverUsername}" style="width: 50px; height: 50px; border-radius: 50%; margin-left: 15px;">
+          <span style="font-size: 20px; margin-left: 10px;">${receiverUsername}</span>
+        `;
+        header.appendChild(receiverSection);
+      }
+    }
+
+    async function loadMessages() {
+      const { data: messages } = await supabase
+        .from("messages")
+        .select("*")
+        .or(`sender.eq.${currentUserId},receiver.eq.${currentUserId}`)
+        .order("created_at");
+
+      const filtered = messages.filter(
+        (m) =>
+          (m.sender === currentUserId && m.receiver === receiverId) ||
+          (m.sender === receiverId && m.receiver === currentUserId)
+      );
+
+      messageList.innerHTML = "";
+      filtered.forEach((msg) => {
+        const isCurrentUser = msg.sender === currentUserId;
+        const username = isCurrentUser ? currentUsername : receiverUsername;
+        const avatar = isCurrentUser ? currentAvatar : receiverAvatar;
+        const dateObj = new Date(msg.created_at);
+        const date = dateObj.toLocaleDateString("fr-FR") + " à " + dateObj.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
+        const container = document.createElement("div");
+        container.className = `message-container ${isCurrentUser ? "message-right" : "message-left"}`;
+
+        const div = document.createElement("div");
+        div.className = "message";
+        div.innerHTML = ` 
+          <div><strong>${username}</strong> <small>${date}</small></div>
+          <div>${msg.content}</div>
+        `;
+
+        const avatarImg = document.createElement("img");
+        avatarImg.src = avatar;
+        avatarImg.className = "avatar";
+
+        if (isCurrentUser) {
+          container.appendChild(div);
+          container.appendChild(avatarImg);
+        } else {
+          container.appendChild(avatarImg);
+          container.appendChild(div);
+        }
+
+        messageList.appendChild(container);
+      });
+
+      messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    await loadCurrentUserInfo();
+    await loadReceiverInfo();
+    await loadMessages();
+
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const content = document.getElementById("message").value;
+      if (!content.trim()) return;
+
+      await supabase.from("messages").insert({
+        sender: currentUserId,
+        receiver: receiverId,
+        content: content,
+      });
+
+      document.getElementById("message").value = "";
+      await loadMessages();
     });
 
-    input.value = "";
-    await loadMessages();
-  });
+    setInterval(loadMessages, 5000);
 
-  setInterval(loadMessages, 5000);
-
-  supabase
-    .channel('chat-messages')
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `receiver=eq.${currentUserId}`
-      },
-      async (payload) => {
-        await loadMessages();
-
-        // Notification visuelle si onglet caché
-        if (document.hidden && Notification.permission === "granted") {
-          new Notification("Nouveau message de " + receiverUsername, {
-            body: payload.new.content,
-            icon: receiverAvatar
-          });
+    supabase
+      .channel('chat-messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver=eq.${currentUserId}`
+        },
+        async (payload) => {
+          await loadMessages();
         }
+      )
+      .subscribe();
+    // Gestion du menu burger pour mobile
+    const burgerMenu = document.getElementById("burger-menu");
+    const navLinks = document.getElementById("nav-links");
 
-        // Lecture du son (onglet caché ou fenêtre inactive)
-        if (document.hidden || !document.hasFocus()) {
-          playNotificationSound();  // >>> SON
-        }
-      }
-    )
-    .subscribe();
+    burgerMenu.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+    });
 
-  // (Optionnel) Burger menu absent ici → safe check retiré
-</script>
+    // Remplacer dynamiquement dans JS après fetch
+document.querySelector(".avatar-header").src = receiverAvatar;
+document.querySelector(".receiver-name").textContent = receiverUsername;
+
+  </script>
 </body>
 </html>
