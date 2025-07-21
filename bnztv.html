@@ -77,6 +77,7 @@
       player.src = ep.src; // Utiliser l'URL d'intégration pour l'iframe
       animeTitle.textContent = ep.title;
       episodeInfo.textContent = ep.ep;
+      player.play(); // Lancer la lecture du nouvel épisode automatiquement
     }
 
     // Passe à l'épisode suivant à la fin
@@ -85,10 +86,10 @@
       loadEpisode(current);
     });
 
-    // Start button functionality
+    // Fonctionnement du bouton de démarrage
     startButton.addEventListener("click", () => {
       loadEpisode(current);
-      startButton.style.display = "none"; // Hide the button after starting the video
+      startButton.style.display = "none"; // Cacher le bouton après avoir commencé
     });
 
     // Ajout de la gestion des erreurs pour les blocages potentiels de contenu
