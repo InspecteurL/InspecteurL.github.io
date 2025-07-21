@@ -150,6 +150,8 @@
   </div>
 
   <script type="module">
+    let currentSeason = 1;
+
     /*************************************************
      * Supabase init
      *************************************************/
@@ -250,7 +252,7 @@ async function updateCurrentActivity(animeTitle, episodeIndex) {
       currently_watching: animeTitle,
       episode_number: episodeIndex + 1,
       episode_image: episode.image,
-      current_season: currentSeason // ✅ dynamique
+      current_season: currentSeason // 👈 ici on utilise bien la saison en cours
     })
     .eq("id", userId);
 
@@ -361,14 +363,15 @@ async function clearCurrentActivity() {
     /*************************************************
      * Changement de saison
      *************************************************/
-    seasonSelect.addEventListener("change", () => {
-      currentSeason = Number(seasonSelect.value);
-      currentEpisodeData = currentSeason === 2 ? episodeDataS2 : episodeDataS1;
-      currentEpisodeIndex = 0;
-      renderEpisodes();
-      // on efface l'activité si l'utilisateur change de saison sans lancer un épisode
-      clearCurrentActivity();
-    });
+seasonSelect.addEventListener("change", (e) => {
+  const val = e.target.value;
+  currentSeason = Number(val); // ✅ on met à jour la saison sélectionnée
+
+  // Si tu as d'autres datas à charger :
+  currentEpisodeData = episodeDataS1; // ou autre selon la saison
+  renderEpisodes();
+});
+
 
     /*************************************************
      * Exposer global (onclick HTML)
