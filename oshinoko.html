@@ -150,8 +150,6 @@
   </div>
 
   <script type="module">
-    let currentSeason = 1;
-
     /*************************************************
      * Supabase init
      *************************************************/
@@ -242,38 +240,29 @@
       return `${ANIME_TITLE} (Saison ${currentSeason})`;
     }
 
-async function updateCurrentActivity(animeTitle, episodeIndex) {
-  if (!userId) return;
-  const episode = currentEpisodeData[episodeIndex];
+    async function updateCurrentActivity(episodeIndex) {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: activityLabel(), // inclut saison
+          episode_number: episodeIndex + 1     // 1-based
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur update activité:", error);
+    }
 
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      currently_watching: animeTitle,
-      episode_number: episodeIndex + 1,
-      episode_image: episode.image,
-      current_season: currentSeason // 👈 ici on utilise bien la saison en cours
-    })
-    .eq("id", userId);
-
-  if (error) console.error("Erreur update activité:", error);
-}
-
-
-async function clearCurrentActivity() {
-  if (!userId) return;
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      currently_watching: null,
-      episode_number: null,
-      episode_image: null,
-      current_season: null
-    })
-    .eq("id", userId);
-
-  if (error) console.error("Erreur clear activité:", error);
-}
+    async function clearCurrentActivity() {
+      if (!userId) return;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          currently_watching: null,
+          episode_number: null
+        })
+        .eq("id", userId);
+      if (error) console.error("Erreur clear activité:", error);
+    }
 
     /*************************************************
      * Rendu des épisodes
@@ -363,15 +352,14 @@ async function clearCurrentActivity() {
     /*************************************************
      * Changement de saison
      *************************************************/
-seasonSelect.addEventListener("change", (e) => {
-  const val = e.target.value;
-  currentSeason = Number(val); // ✅ on met à jour la saison sélectionnée
-
-  // Si tu as d'autres datas à charger :
-  currentEpisodeData = episodeDataS1; // ou autre selon la saison
-  renderEpisodes();
-});
-
+    seasonSelect.addEventListener("change", () => {
+      currentSeason = Number(seasonSelect.value);
+      currentEpisodeData = currentSeason === 2 ? episodeDataS2 : episodeDataS1;
+      currentEpisodeIndex = 0;
+      renderEpisodes();
+      // on efface l'activité si l'utilisateur change de saison sans lancer un épisode
+      clearCurrentActivity();
+    });
 
     /*************************************************
      * Exposer global (onclick HTML)
