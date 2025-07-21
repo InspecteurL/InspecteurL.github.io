@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chaîne TV Anime</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0d0d0d;
+      color: white;
+      text-align: center;
+    }
+    header {
+      padding: 15px;
+      background: #222;
+      font-size: 24px;
+    }
+    video {
+      width: 100%;
+      max-height: 70vh;
+      background: black;
+    }
+    .info {
+      margin: 20px;
+    }
+    .info h2 {
+      margin: 0;
+      color: #ffcc00;
+    }
+  </style>
+</head>
+<body>
+  <header>Chaîne TV Anime</header>
+  
+  <!-- Player -->
+  <video id="tvPlayer" controls autoplay></video>
+  
+  <!-- Infos épisode -->
+  <div class="info">
+    <h2 id="animeTitle">Titre Anime</h2>
+    <p id="episodeInfo">Episode 1</p>
+  </div>
+  
+  <script>
+    // Playlist basée sur les pages que tu m'as envoyées (exemple)
+    const playlist = [
+      { title: "Erased", ep: "Episode 1", src: "episodes/naruto1.mp4" },
+      { title: "Erased", ep: "Episode 2", src: "episodes/naruto2.mp4" },
+      { title: "Erased", ep: "Episode 3", src: "episodes/naruto2.mp4" },
+      { title: "Death Parade", ep: "Episode 1", src: "episodes/onepiece1.mp4" },
+      { title: "Death Parade", ep: "Episode 2", src: "episodes/dragonball1.mp4" },
+      { title: "Death Parade", ep: "Episode 3", src: "episodes/dragonball1.mp4" }
+    ];
+
+    let current = 0;
+    const player = document.getElementById("tvPlayer");
+    const animeTitle = document.getElementById("animeTitle");
+    const episodeInfo = document.getElementById("episodeInfo");
+
+    function loadEpisode(index) {
+      const ep = playlist[index];
+      player.src = ep.src;
+      animeTitle.textContent = ep.title;
+      episodeInfo.textContent = ep.ep;
+      player.play();
+    }
+
+    // Passe à l'épisode suivant à la fin
+    player.addEventListener("ended", () => {
+      current = (current + 1) % playlist.length;
+      loadEpisode(current);
+    });
+
+    // Charger le premier épisode
+    loadEpisode(current);
+  </script>
+</body>
+</html>
