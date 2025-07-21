@@ -35,45 +35,78 @@
       font-size: 20px;
       color: var(--accent);
     }
+.friend-card {
+  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  transition: transform 0.3s ease;
+  position: relative;
+}
+
+.friend-card:hover {
+  transform: translateY(-6px);
+}
+
+/* Header stylé */
 .friend-header {
   position: relative;
-  width: 100%;
-  height: 160px;
-  background-color: #000;
-  border-radius: 10px 10px 0 0;
+  height: 180px;
   overflow: hidden;
+  background: black;
 }
 
 .friend-banner {
-  position: absolute;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: 1;
-  filter: brightness(0.6);
+  filter: brightness(0.5);
+  transition: filter 0.3s ease;
 }
 
+.friend-card:hover .friend-banner {
+  filter: brightness(0.7);
+}
+
+/* Avatar centré et en valeur */
 .friend-avatar {
   position: absolute;
-  z-index: 2;
   bottom: -40px;
-  left: 20px;
-  width: 80px;
-  height: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  border: 4px solid var(--bg-1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  background-color: #121212;
+  border: 3px solid var(--bg-1);
+  box-shadow: 0 0 12px rgba(255,255,255,0.3);
+  background-color: var(--bg-1);
+  object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
+.friend-card:hover .friend-avatar {
+  transform: translateX(-50%) scale(1.05);
+}
+
+/* Nom stylisé */
 .friend-username {
-  position: absolute;
-  z-index: 2;
-  bottom: 10px;
-  left: 110px;
-  font-size: 18px;
+  margin-top: 50px;
+  font-size: 20px;
   font-weight: bold;
-  color: white;
+  color: #ffffff;
+  text-align: center;
+}
+
+/* Statut online / offline */
+.friend-status {
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 10px;
+  color: var(--offline);
+}
+
+.friend-status.online {
+  color: var(--online);
 }
 
 
@@ -386,8 +419,9 @@ async function loadAcceptedFriends(userId) {
 <div class="friend-header">
   <img src="${bannerURL}" class="friend-banner" alt="Bannière">
   <img src="${avatarURL}" class="friend-avatar" alt="Avatar">
-  <div class="friend-username">${uname} ${status}</div>
 </div>
+<div class="friend-username">${uname}</div>
+<div class="friend-status ${isOnline ? 'online' : 'offline'}">${status.replace(/<\/?span[^>]*>/g, '')}</div>
 
 
       <div class="friend-card-content">
