@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom HTML5 Video Player</title>
+  <title>Netflix-Style Video Player</title>
   <style>
     body {
       margin: 0;
-      background: #121212;
+      background: #0c0c0c;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      font-family: Arial, sans-serif;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
     }
 
     .video-container {
       position: relative;
       width: 80%;
-      max-width: 900px;
+      max-width: 1000px;
       background: #000;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
     }
 
     video {
@@ -31,13 +31,41 @@
       border-radius: 12px;
     }
 
+    /* Loader Netflix-style */
+    .loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 6px;
+      z-index: 2;
+    }
+
+    .loader div {
+      width: 8px;
+      height: 8px;
+      background: #e50914;
+      border-radius: 50%;
+      animation: bounce 0.6s infinite alternate;
+    }
+
+    .loader div:nth-child(2) { animation-delay: 0.2s; }
+    .loader div:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-8px); }
+    }
+
+    /* Controls */
     .controls {
       position: absolute;
       bottom: 0;
       left: 0;
       width: 100%;
       background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-      padding: 10px;
+      padding: 12px;
       box-sizing: border-box;
       display: flex;
       align-items: center;
@@ -58,11 +86,12 @@
       cursor: pointer;
       color: white;
       font-size: 14px;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
     }
 
     .btn:hover {
       background: rgba(255,255,255,0.25);
+      transform: scale(1.05);
     }
 
     .progress-container {
@@ -76,10 +105,29 @@
 
     .progress {
       height: 100%;
-      background: #ff2e63;
+      background: #e50914;
       width: 0%;
       border-radius: 3px;
       transition: width 0.1s;
+    }
+
+    .thumbnail {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      transform: translateX(-50%);
+      padding: 2px;
+      background: rgba(0,0,0,0.7);
+      border-radius: 4px;
+      display: none;
+      pointer-events: none;
+    }
+
+    .thumbnail img {
+      width: 100px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 4px;
     }
 
     .time {
@@ -97,7 +145,7 @@
 
     .volume {
       width: 60px;
-      accent-color: #ff2e63;
+      accent-color: #e50914;
     }
 
     .fullscreen-btn {
@@ -107,11 +155,18 @@
 </head>
 <body>
   <div class="video-container">
-    <video id="video" src="https://vidmoly.to/embed-90xv2zvph97q.html"></video>
+    <div class="loader" id="loader">
+      <div></div><div></div><div></div>
+    </div>
+
+    <video id="video" preload="metadata" src="hellsunepun.mp4"></video>
     <div class="controls">
       <button id="playPause" class="btn">▶</button>
       <div class="progress-container" id="progressContainer">
         <div class="progress" id="progress"></div>
+        <div class="thumbnail" id="thumbnail">
+          <img src="thumbnail.jpg" alt="thumbnail preview">
+        </div>
       </div>
       <div class="time" id="time">0:00 / 0:00</div>
       <div class="volume-container">
@@ -124,6 +179,7 @@
 
   <script>
     const video = document.getElementById('video');
+    const loader = document.getElementById('loader');
     const playPauseBtn = document.getElementById('playPause');
     const progressContainer = document.getElementById('progressContainer');
     const progress = document.getElementById('progress');
@@ -131,6 +187,11 @@
     const volumeSlider = document.getElementById('volume');
     const muteBtn = document.getElementById('muteBtn');
     const fullscreenBtn = document.getElementById('fullscreen');
+    const thumbnail = document.getElementById('thumbnail');
+
+    // Loader
+    video.addEventListener('waiting', () => loader.style.display = 'flex');
+    video.addEventListener('playing', () => loader.style.display = 'none');
 
     // Lecture / Pause
     playPauseBtn.addEventListener('click', () => {
@@ -158,6 +219,21 @@
       video.currentTime = newTime;
     });
 
+    // Aperçu miniature
+    progressContainer.addEventListener('mousemove', (e) => {
+      const rect = progressContainer.getBoundingClientRect();
+      const offsetX = e.clientX - rect.left;
+      const hoverTime = (offsetX / progressContainer.offsetWidth) * video.duration;
+
+      thumbnail.style.display = 'block';
+      thumbnail.style.left = `${offsetX}px`;
+      // ICI tu peux changer la miniature selon hoverTime (sprite sheet ou autre)
+    });
+
+    progressContainer.addEventListener('mouseleave', () => {
+      thumbnail.style.display = 'none';
+    });
+
     // Volume
     volumeSlider.addEventListener('input', () => {
       video.volume = volumeSlider.value;
@@ -165,13 +241,8 @@
     });
 
     muteBtn.addEventListener('click', () => {
-      if (video.muted) {
-        video.muted = false;
-        muteBtn.textContent = '🔊';
-      } else {
-        video.muted = true;
-        muteBtn.textContent = '🔇';
-      }
+      video.muted = !video.muted;
+      muteBtn.textContent = video.muted ? '🔇' : '🔊';
     });
 
     // Plein écran
@@ -183,7 +254,7 @@
       }
     });
 
-    // Affichage du temps
+    // Temps
     function updateTimeDisplay() {
       const formatTime = (t) => {
         const minutes = Math.floor(t / 60);
@@ -197,4 +268,3 @@
   </script>
 </body>
 </html>
-
