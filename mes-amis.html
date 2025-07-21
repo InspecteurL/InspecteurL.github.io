@@ -39,7 +39,7 @@
   width: 100%;
   height: 120px;
   overflow: hidden;
-  border-radius: 12px 12px 0 0;
+  border-radius: 15px 15px 0 0;
 }
 
 .friend-card .banner img {
@@ -73,6 +73,7 @@
   font-size: 14px;
   color: #888;
   text-align: center;
+  margin-bottom: 10px;
 }
 
 .friend-card .status.online {
@@ -81,6 +82,11 @@
 
 .friend-card .status.offline {
   color: #888;
+}
+
+.friend-card .watching-activity {
+  text-align: center;
+  margin-bottom: 10px;
 }
 
 
@@ -403,29 +409,21 @@ async function loadAcceptedFriends(userId) {
     const div = document.createElement("div");
     div.className = "friend-card";
     div.innerHTML = `
-<div class="friend-visual">
-<div class="banner">
-  <img src="${bannerURL}" alt="Bannière">
-</div>
-<div class="avatar">
-  <img src="${avatarURL}" alt="Avatar">
-</div>
-<div class="name">${uname}</div>
-<div class="status ${isOnline ? 'online' : 'offline'}">${status.replace(/<\/?span[^>]*>/g, '')}</div>
+  <div class="banner">
+    <img src="${bannerURL}" alt="Bannière">
+  </div>
+  <div class="avatar">
+    <img src="${avatarURL}" alt="Avatar">
+  </div>
+  <div class="name">${uname}</div>
+  <div class="status ${isOnline ? 'online' : 'offline'}">${status.replace(/<\/?span[^>]*>/g, '')}</div>
+  ${watchingHTML}
+  <div class="friend-card-actions">
+    <button class="chat chat-btn">💬 Chat</button>
+    <button class="remove">❌ Supprimer</button>
+  </div>
+`;
 
-</div>
-
-
-
-      <div class="friend-card-content">
-        <div class="friend-name-line"><strong>${uname}</strong> ${status}</div>
-        ${watchingHTML}
-      </div>
-      <div class="friend-card-actions">
-        <button class="chat chat-btn">💬 Chat</button>
-        <button class="remove">❌ Supprimer</button>
-      </div>
-    `;
 
     div.querySelector(".remove").onclick = async () => {
       await supabase.from("friends").delete().eq("id", rel.id);
