@@ -241,23 +241,22 @@
       return `${ANIME_TITLE} (Saison ${currentSeason})`;
     }
 
-  async function updateCurrentActivity(animeTitle, episodeIndex) {
+  async function updateCurrentActivity(episodeIndex) {
   if (!userId) return;
   const episode = currentEpisodeData[episodeIndex];
 
   const { error } = await supabase
     .from("profiles")
     .update({
-      currently_watching: animeTitle,
+      currently_watching: `${ANIME_TITLE} (Saison ${currentSeason})`,
       episode_number: episodeIndex + 1,
-      episode_image: episode.image, // ✅ on ajoute cette ligne
-      current_season: 1 // facultatif si tu veux garder la saison
+      episode_image: episode.image,
+      current_season: currentSeason
     })
     .eq("id", userId);
 
   if (error) console.error("Erreur update activité:", error);
 }
-
 
 async function clearCurrentActivity() {
   if (!userId) return;
@@ -273,6 +272,7 @@ async function clearCurrentActivity() {
 
   if (error) console.error("Erreur clear activité:", error);
 }
+
 
     /*************************************************
      * Rendu épisodes
