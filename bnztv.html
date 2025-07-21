@@ -29,19 +29,30 @@
       margin: 0;
       color: #ffcc00;
     }
+    .start-button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #ffcc00;
+      color: black;
+      border: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <header>Chaîne TV Anime</header>
   
   <!-- Player -->
-  <video id="tvPlayer" controls autoplay></video>
+  <video id="tvPlayer" controls></video>
   
   <!-- Infos épisode -->
   <div class="info">
     <h2 id="animeTitle">Titre Anime</h2>
     <p id="episodeInfo">Episode 1</p>
   </div>
+
+  <!-- Start Button -->
+  <button id="startButton" class="start-button">Démarrer le Visionnage</button>
   
   <script>
     // Playlist basée sur les pages que tu m'as envoyées (exemple)
@@ -58,23 +69,28 @@
     const player = document.getElementById("tvPlayer");
     const animeTitle = document.getElementById("animeTitle");
     const episodeInfo = document.getElementById("episodeInfo");
+    const startButton = document.getElementById("startButton");
 
     function loadEpisode(index) {
       const ep = playlist[index];
       player.src = ep.src;
       animeTitle.textContent = ep.title;
       episodeInfo.textContent = ep.ep;
-      player.play();
     }
 
     // Passe à l'épisode suivant à la fin
     player.addEventListener("ended", () => {
       current = (current + 1) % playlist.length;
       loadEpisode(current);
+      player.play();  // Play next episode automatically
     });
 
-    // Charger le premier épisode
-    loadEpisode(current);
+    // Start button functionality
+    startButton.addEventListener("click", () => {
+      loadEpisode(current);
+      player.play(); // Start the video when the user clicks "Start"
+      startButton.style.display = "none"; // Hide the button after starting the video
+    });
   </script>
 </body>
 </html>
