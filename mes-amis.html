@@ -315,7 +315,7 @@
 
         const watchingTitle = friend.currently_watching;
         const epNum = friend.episode_number;
-        const epImg = friend.ep.image;
+        const epImg = friend.episode_image;
         const seasonNum = friend.current_season;
 
         let watchingHTML = "";
@@ -325,7 +325,7 @@
           const caption = `${seasonPart}${epPart}`.trim();
 
           const imgHTML = epImg
-            ? `<img class="watching-thumb" src="${epImg}" alt="Vignette épisode en cours"/>`
+            ? `<img class="watching-thumb" src="${epImg}" alt="Vignette épisode en cours" loading="lazy" />`
             : "";
 
           watchingHTML = ` 
