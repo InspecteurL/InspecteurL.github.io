@@ -266,18 +266,6 @@
             <button class="reject">Refuser</button>
           </div>
         `;
-           userCard.innerHTML = `
-    <div class="banner">
-  <img src="${user.banner_url || 'default_banner.jpg'}" alt="banner">
-</div>
-<div class="avatar">
-  <img src="${user.avatar_url || 'default_avatar.jpg'}" alt="avatar">
-</div>
-<div class="name">${user.username || user.email}</div>
-          <div class="status ${user.is_online ? 'online' : 'offline'}">${onlineStatus}</div>
-          ${watching}
-          <button data-id="${user.id}">Ajouter en ami</button>
-        `;
 
         div.querySelector(".accept").onclick = async () => {
           await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
