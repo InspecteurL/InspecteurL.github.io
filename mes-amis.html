@@ -38,34 +38,44 @@
 .friend-header {
   position: relative;
   width: 100%;
-  height: 140px;
-  overflow: hidden;
+  height: 160px;
+  background-color: #000;
   border-radius: 10px 10px 0 0;
+  overflow: hidden;
 }
 
 .friend-banner {
+  position: absolute;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(0.75);
+  z-index: 1;
+  filter: brightness(0.6);
 }
 
 .friend-avatar {
   position: absolute;
+  z-index: 2;
   bottom: -40px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 20px;
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 3px solid var(--bg-1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  transition: transform 0.3s ease;
+  border: 4px solid var(--bg-1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  background-color: #121212;
 }
 
-.friend-avatar:hover {
-  transform: translateX(-50%) scale(1.1);
+.friend-username {
+  position: absolute;
+  z-index: 2;
+  bottom: 10px;
+  left: 110px;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
 }
+
 
     .nav-links {
       list-style: none;
@@ -373,10 +383,12 @@ async function loadAcceptedFriends(userId) {
     const div = document.createElement("div");
     div.className = "friend-card";
     div.innerHTML = `
-    <div class="friend-header">
-  <img src="${bannerURL}" class="friend-banner" alt="bannière">
-  <img src="${avatarURL}" class="friend-avatar" alt="avatar">
+<div class="friend-header">
+  <img src="${bannerURL}" class="friend-banner" alt="Bannière">
+  <img src="${avatarURL}" class="friend-avatar" alt="Avatar">
+  <div class="friend-username">${uname} ${status}</div>
 </div>
+
 
       <div class="friend-card-content">
         <div class="friend-name-line"><strong>${uname}</strong> ${status}</div>
