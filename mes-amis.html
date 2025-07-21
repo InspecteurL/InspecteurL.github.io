@@ -444,39 +444,7 @@ div.innerHTML = `
 }
 
 await manageSession();
-    const channel = supabase.channel("friends-changes");
 
-channel
-  .on(
-    "postgres_changes",
-    {
-      event: "*",
-      schema: "public",
-      table: "friends",
-      filter: `requester=eq.${userId},requested=eq.${userId}`,
-    },
-    (payload) => {
-      console.log("Changement détecté :", payload);
-      manageSession(); // recharge les données côté UI
-    }
-  )
-  .subscribe();
-const profileChannel = supabase.channel("profiles-changes");
-
-profileChannel
-  .on(
-    "postgres_changes",
-    {
-      event: "UPDATE",
-      schema: "public",
-      table: "profiles",
-    },
-    (payload) => {
-      console.log("Changement profil détecté :", payload);
-      manageSession(); // met à jour l’affichage des amis
-    }
-  )
-  .subscribe();
 
 </script>
 </body>
