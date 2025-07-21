@@ -17,10 +17,11 @@
       background: #222;
       font-size: 24px;
     }
-    video {
+    iframe {
       width: 100%;
       max-height: 70vh;
       background: black;
+      border: none;
     }
     .info {
       margin: 20px;
@@ -42,8 +43,8 @@
 <body>
   <header>Chaîne TV Anime</header>
   
-  <!-- Player -->
-  <video id="tvPlayer" controls></video>
+  <!-- Player (iframe instead of video tag) -->
+  <iframe id="tvPlayer" allow="autoplay" frameborder="0"></iframe>
   
   <!-- Infos épisode -->
   <div class="info">
@@ -55,7 +56,7 @@
   <button id="startButton" class="start-button">Démarrer le Visionnage</button>
   
   <script>
-    // Playlist basée sur les pages que tu m'as envoyées (exemple)
+    // Playlist avec les liens d'intégration Vidmoly (ou autre service de streaming)
     const playlist = [
       { title: "Erased", ep: "Episode 1", src: "https://vidmoly.to/embed-90xv2zvph97q.html" },
       { title: "Erased", ep: "Episode 2", src: "https://vidmoly.to/embed-0l1t8bnd79a8.html" },
@@ -73,7 +74,7 @@
 
     function loadEpisode(index) {
       const ep = playlist[index];
-      player.src = ep.src;
+      player.src = ep.src; // Utiliser l'URL d'intégration pour l'iframe
       animeTitle.textContent = ep.title;
       episodeInfo.textContent = ep.ep;
     }
@@ -82,13 +83,11 @@
     player.addEventListener("ended", () => {
       current = (current + 1) % playlist.length;
       loadEpisode(current);
-      player.play();  // Play next episode automatically
     });
 
     // Start button functionality
     startButton.addEventListener("click", () => {
       loadEpisode(current);
-      player.play(); // Start the video when the user clicks "Start"
       startButton.style.display = "none"; // Hide the button after starting the video
     });
   </script>
