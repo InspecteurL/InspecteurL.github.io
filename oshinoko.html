@@ -249,8 +249,8 @@ async function updateCurrentActivity(animeTitle, episodeIndex) {
     .update({
       currently_watching: animeTitle,
       episode_number: episodeIndex + 1,
-      episode_image: episode.image, // ✅ on ajoute cette ligne
-      current_season: 1 // facultatif si tu veux garder la saison
+      episode_image: episode.image,
+      current_season: currentSeason // ✅ dynamique
     })
     .eq("id", userId);
 
