@@ -206,173 +206,173 @@
   </div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm';
 
+const supabase = createClient(
+  'https://wuagahavmbugmnuzsouf.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+);
 
-    const supabase = createClient(
-      'https://wuagahavmbugmnuzsouf.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-    );
+async function manageSession() {
+  const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
+  if (sessErr) console.error('Erreur session:', sessErr);
+  const session = sessionData?.session;
+  if (!session) {
+    document.body.innerHTML = "🔒 Vous devez être connecté.";
+    return;
+  }
+  const userId = session.user.id;
 
-    async function manageSession() {
-      const { data: sessionData, error: sessErr } = await supabase.auth.getSession();
-      if (sessErr) {
-        console.error('Erreur session:', sessErr);
-      }
-      const session = sessionData?.session;
-      if (!session) {
-        document.body.innerHTML = "🔒 Vous devez être connecté.";
-        return;
-      }
-      const userId = session.user.id;
+  await loadPendingRequests(userId);
+  await loadAcceptedFriends(userId);
+}
 
-      await loadPendingRequests(userId);
-      await loadAcceptedFriends(userId);
+async function loadPendingRequests(userId) {
+  const receivedContainer = document.getElementById("received-requests");
+  receivedContainer.innerHTML = "";
+
+  const { data: pendingRequests, error } = await supabase
+    .from("friends")
+    .select("id, status, requester:requester(id, username)")
+    .eq("requested", userId)
+    .eq("status", "pending");
+
+  if (error) {
+    console.error("Erreur fetch demandes:", error);
+    receivedContainer.innerText = "Erreur lors du chargement.";
+    return;
+  }
+
+  if (!pendingRequests || pendingRequests.length === 0) {
+    receivedContainer.innerText = "Aucune demande pour le moment.";
+    return;
+  }
+
+  for (const req of pendingRequests) {
+    const uname = req.requester?.username ?? "Utilisateur";
+    const div = document.createElement("div");
+    div.className = "friend-card";
+    div.innerHTML = `
+      <div class="friend-card-content">
+        <div class="friend-name-line"><strong>${uname}</strong> vous a envoyé une demande.</div>
+      </div>
+      <div class="friend-card-actions">
+        <button class="accept">Accepter</button>
+        <button class="reject">Refuser</button>
+      </div>
+    `;
+
+    div.querySelector(".accept").onclick = async () => {
+      await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
+      manageSession();
+    };
+
+    div.querySelector(".reject").onclick = async () => {
+      await supabase.from("friends").update({ status: "rejected" }).eq("id", req.id);
+      manageSession();
+    };
+
+    receivedContainer.appendChild(div);
+  }
+}
+
+async function loadAcceptedFriends(userId) {
+  const friendContainer = document.getElementById("accepted-friends");
+  friendContainer.innerHTML = "";
+
+  const { data: acceptedFriends, error } = await supabase
+    .from("friends")
+    .select(`
+      id, status,
+      requester:requester(
+        id, username, is_online, currently_watching, episode_number, episode_image, current_season, avatar_url, banner_url
+      ),
+      requested:requested(
+        id, username, is_online, currently_watching, episode_number, episode_image, current_season, avatar_url, banner_url
+      )
+    `)
+    .or(`requester.eq.${userId},requested.eq.${userId}`)
+    .eq("status", "accepted");
+
+  if (error) {
+    console.error("Erreur fetch amis:", error);
+    friendContainer.innerText = "Erreur lors du chargement.";
+    return;
+  }
+
+  if (!acceptedFriends || acceptedFriends.length === 0) {
+    friendContainer.innerText = "Vous n'avez pas encore d'amis.";
+    return;
+  }
+
+  for (const rel of acceptedFriends) {
+    const friend = (rel.requester.id === userId) ? rel.requested : rel.requester;
+    const avatarURL = friend.avatar_url || "default_avatar.jpg";
+    const bannerURL = friend.banner_url || "default_banner.jpg";
+
+    const uname = friend.username ?? "Utilisateur";
+    const isOnline = friend.is_online;
+    const status = isOnline
+      ? `<span class="online">🟢 En ligne</span>`
+      : `<span class="offline">🔴 Hors ligne</span>`;
+
+    const watchingTitle = friend.currently_watching;
+    const epNum = friend.episode_number;
+    const epImg = friend.episode_image;
+    const seasonNum = friend.current_season;
+
+    let watchingHTML = "";
+    if (watchingTitle) {
+      const seasonPart = seasonNum ? `S${seasonNum} - ` : "";
+      const epPart = (epNum != null) ? `Épisode ${epNum}` : "";
+      const caption = `${seasonPart}${epPart}`.trim();
+
+      const imgHTML = epImg
+        ? `<img class="watching-thumb" src="${epImg}" alt="Vignette épisode en cours" loading="lazy" />`
+        : "";
+
+      watchingHTML = `
+        <div class="watching-activity">
+          <div>🎬 Regarde : <strong>${watchingTitle}</strong>${caption ? " – " + caption : ""}</div>
+          ${imgHTML}
+        </div>
+      `;
     }
 
-    async function loadPendingRequests(userId) {
-      const receivedContainer = document.getElementById("received-requests");
-      receivedContainer.innerHTML = "";
+    const div = document.createElement("div");
+    div.className = "friend-card";
+    div.innerHTML = `
+      <div style="width: 100%; height: 120px; overflow: hidden; border-radius: 10px 10px 0 0;">
+        <img src="${bannerURL}" alt="bannière" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div style="margin-top: -40px; text-align: center;">
+        <img src="${avatarURL}" alt="avatar" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #121212;">
+      </div>
+      <div class="friend-card-content">
+        <div class="friend-name-line"><strong>${uname}</strong> ${status}</div>
+        ${watchingHTML}
+      </div>
+      <div class="friend-card-actions">
+        <button class="chat chat-btn">💬 Chat</button>
+        <button class="remove">❌ Supprimer</button>
+      </div>
+    `;
 
-      const { data: pendingRequests, error } = await supabase
-        .from("friends")
-        .select(
-          "id, status, requester:requester(id, username)"
-        )
-        .eq("requested", userId)
-        .eq("status", "pending");
+    div.querySelector(".remove").onclick = async () => {
+      await supabase.from("friends").delete().eq("id", rel.id);
+      manageSession();
+    };
 
-      if (error) {
-        console.error("Erreur fetch demandes:", error);
-        receivedContainer.innerText = "Erreur lors du chargement.";
-        return;
-      }
+    div.querySelector(".chat").onclick = () => {
+      window.location.href = `chat.html?user=${friend.id}`;
+    };
 
-      if (!pendingRequests || pendingRequests.length === 0) {
-        receivedContainer.innerText = "Aucune demande pour le moment.";
-        return;
-      }
+    friendContainer.appendChild(div);
+  }
+}
 
-      for (const req of pendingRequests) {
-        const uname = req.requester?.username ?? "Utilisateur";
-        const div = document.createElement("div");
-        div.className = "friend-card";
-        div.innerHTML = `
-          <div class="friend-card-content">
-            <div class="friend-name-line"><strong>${uname}</strong> vous a envoyé une demande.</div>
-          </div>
-          <div class="friend-card-actions">
-            <button class="accept">Accepter</button>
-            <button class="reject">Refuser</button>
-          </div>
-        `;
-
-        div.querySelector(".accept").onclick = async () => {
-          await supabase.from("friends").update({ status: "accepted" }).eq("id", req.id);
-          manageSession();
-        };
-
-        div.querySelector(".reject").onclick = async () => {
-          await supabase.from("friends").update({ status: "rejected" }).eq("id", req.id);
-          manageSession();
-        };
-
-        receivedContainer.appendChild(div);
-      }
-    }
-
-    async function loadAcceptedFriends(userId) {
-      const friendContainer = document.getElementById("accepted-friends");
-      friendContainer.innerHTML = "";
-
-      const { data: acceptedFriends, error } = await supabase
-        .from("friends")
-        select(
-  "id, status, requester:requester(id, username, is_online, currently_watching, episode_number, episode_image, current_season, avatar_url, banner_url), requested:requested(id, username, is_online, currently_watching, episode_number, episode_image, current_season, avatar_url, banner_url)"
-        )
-        .or(`requester.eq.${userId},requested.eq.${userId}`)
-        .eq("status", "accepted");
-
-      if (error) {
-        console.error("Erreur fetch amis:", error);
-        friendContainer.innerText = "Erreur lors du chargement.";
-        return;
-      }
-
-      if (!acceptedFriends || acceptedFriends.length === 0) {
-        friendContainer.innerText = "Vous n'avez pas encore d'amis.";
-        return;
-      }
-
-      for (const rel of acceptedFriends) {
-        const friend = (rel.requester.id === userId) ? rel.requested : rel.requester;
-        const avatarURL = friend.avatar_url || "default_avatar.jpg";
-        const bannerURL = friend.banner_url || "default_banner.jpg";
-
-
-        const uname = friend.username ?? "Utilisateur";
-        const isOnline = friend.is_online;
-        const status = isOnline
-          ? `<span class="online">🟢 En ligne</span>`
-          : `<span class="offline">🔴 Hors ligne</span>`;
-
-        const watchingTitle = friend.currently_watching;
-        const epNum = friend.episode_number;
-        const epImg = friend.episode_image;
-        const seasonNum = friend.current_season;
-
-        let watchingHTML = "";
-        if (watchingTitle) {
-          const seasonPart = seasonNum ? `S${seasonNum} - ` : "";
-          const epPart = (epNum != null) ? `Épisode ${epNum}` : "";
-          const caption = `${seasonPart}${epPart}`.trim();
-
-          const imgHTML = epImg
-            ? `<img class="watching-thumb" src="${epImg}" alt="Vignette épisode en cours" loading="lazy" />`
-            : "";
-
-          watchingHTML = ` 
-            <div class="watching-activity">
-              <div>🎬 Regarde : <strong>${watchingTitle}</strong>${caption ? " – " + caption : ""}</div>
-              ${imgHTML}
-            </div>
-          `;
-        }
-
-        const div = document.createElement("div");
-        div.className = "friend-card";
-        div.innerHTML = `
-        <div style="width: 100%; height: 120px; overflow: hidden; border-radius: 10px 10px 0 0;">
-  <img src="${bannerURL}" alt="bannière" style="width: 100%; height: 100%; object-fit: cover;">
-</div>
-<div style="margin-top: -40px; text-align: center;">
-  <img src="${avatarURL}" alt="avatar" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #121212;">
-</div>
-          <div class="friend-card-content">
-            <div class="friend-name-line"><strong>${uname}</strong> ${status}</div>
-            ${watchingHTML}
-          </div>
-          <div class="friend-card-actions">
-            <button class="chat chat-btn">💬 Chat</button>
-            <button class="remove">❌ Supprimer</button>
-          </div>
-        `;
-
-        div.querySelector(".remove").onclick = async () => {
-          await supabase.from("friends").delete().eq("id", rel.id);
-          manageSession();
-        };
-
-        div.querySelector(".chat").onclick = () => {
-          window.location.href = `chat.html?user=${friend.id}`;
-        };
-
-        friendContainer.appendChild(div);
-      }
-    }
-
-    await manageSession();
-    setInterval(manageSession, 10_000);
-  </script>
+await manageSession();
+setInterval(manageSession, 10000);
+</script>
 </body>
 </html>
