@@ -90,6 +90,12 @@
       loadEpisode(current);
       startButton.style.display = "none"; // Hide the button after starting the video
     });
+
+    // Ajout de la gestion des erreurs pour les blocages potentiels de contenu
+    window.addEventListener('error', function (e) {
+      console.log('Erreur chargement contenu:', e.message);
+      alert('Il semble y avoir un problème avec le chargement de la vidéo. Veuillez désactiver votre bloqueur de publicités ou essayer un autre navigateur.');
+    });
   </script>
 </body>
 </html>
