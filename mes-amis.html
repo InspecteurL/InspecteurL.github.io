@@ -39,7 +39,7 @@
   width: 100%;
   height: 120px;
   overflow: hidden;
-  border-radius: 10px 10px 0 0;
+  border-radius: 12px 12px 0 0;
 }
 
 .friend-card .banner img {
@@ -59,6 +59,28 @@
   height: 80px;
   border-radius: 50%;
   border: 3px solid #121212;
+}
+
+.friend-card .name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #e50914;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.friend-card .status {
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+}
+
+.friend-card .status.online {
+  color: #00ff88;
+}
+
+.friend-card .status.offline {
+  color: #888;
 }
 
 
@@ -388,6 +410,9 @@ async function loadAcceptedFriends(userId) {
 <div class="avatar">
   <img src="${avatarURL}" alt="Avatar">
 </div>
+<div class="name">${uname}</div>
+<div class="status ${isOnline ? 'online' : 'offline'}">${status.replace(/<\/?span[^>]*>/g, '')}</div>
+
 </div>
 
 
