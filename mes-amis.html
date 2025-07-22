@@ -455,13 +455,35 @@ async function loadAcceptedFriends(userId) {
 }
 
 function watchWithFriend(friend) {
-  alert(`Vous allez regarder avec ${friend.username} : ${friend.currently_watching}`);
-  // Ici tu peux lancer une iframe ou rediriger vers un lecteur synchronisé
+  const container = document.getElementById('player-container');
+  const iframe = document.getElementById('friend-player');
+  const title = document.getElementById('player-title');
+
+  // Si l'ami a une URL d'épisode
+  if (friend.episode_image) {
+    // Ici, on suppose que tu as une URL du lecteur dans friend.episode_image ou un autre champ
+    // Tu peux la remplacer par friend.player_url si dispo
+    iframe.src = friend.episode_image; // Remplace par l'URL de ton lecteur
+  } else {
+    iframe.src = "https://ton-lecteur-par-defaut.com";
+  }
+
+  title.innerText = `Vous regardez avec ${friend.username} : ${friend.currently_watching}`;
+  container.style.display = "block";
+
+  // Scroll jusqu'au lecteur
+  container.scrollIntoView({ behavior: 'smooth' });
 }
+
 
 await manageSession();
 setInterval(manageSession, 10000);
 
   </script>
+  <div id="player-container" style="display:none; margin-top:20px;">
+  <h2 id="player-title">Regarder avec votre ami</h2>
+  <iframe id="friend-player" src="" width="100%" height="500" style="border:none; border-radius:10px;"></iframe>
+</div>
+
 </body>
 </html>
