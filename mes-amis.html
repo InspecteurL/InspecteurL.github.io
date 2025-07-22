@@ -357,7 +357,10 @@ async function loadPendingRequests(userId) {
 
 async function loadAcceptedFriends(userId) {
   const friendContainer = document.getElementById("accepted-friends");
+  
   friendContainer.innerHTML = "";
+  div.querySelector(".watch").onclick = () => watchWithFriend(friend);
+
 
   const { data: acceptedFriends, error } = await supabase
     .from("friends")
@@ -434,11 +437,12 @@ async function loadAcceptedFriends(userId) {
       <div class="name">${uname}</div>
       <div class="status ${isOnline ? 'online' : 'offline'}">${status.replace(/<\/?span[^>]*>/g, '')}</div>
       ${watchingHTML}
-      <div class="friend-card-actions">
-        <button class="chat chat-btn">💬 Chat</button>
-        ${watchBtn}
-        <button class="remove">❌ Supprimer</button>
-      </div>
+     <div class="friend-card-actions">
+  <button class="chat chat-btn">💬 Chat</button>
+  <button class="watch">👀 Regarder avec lui</button>
+  <button class="remove">❌ Supprimer</button>
+</div>
+
     `;
 
     // Gestion des boutons
@@ -463,22 +467,19 @@ async function loadAcceptedFriends(userId) {
 
 function watchWithFriend(friend) {
   const container = document.getElementById('player-container');
-  const iframe = document.getElementById('friend-player');
+  const video = document.getElementById('friend-player');
   const title = document.getElementById('player-title');
 
-  // Si l'ami a une URL d'épisode
-  if (friend.episode_image) {
-    // Ici, on suppose que tu as une URL du lecteur dans friend.episode_image ou un autre champ
-    // Tu peux la remplacer par friend.player_url si dispo
-    iframe.src = friend.episode_image; // Remplace par l'URL de ton lecteur
-  } else {
-    iframe.src = "https://ton-lecteur-par-defaut.com";
-  }
+  // Ici tu dois avoir une URL vidéo (ex: friend.video_url)
+  // Pour l'instant, on met un lien de test
+  const videoURL = friend.video_url || "https://www.w3schools.com/html/mov_bbb.mp4";
 
-  title.innerText = `Vous regardez avec ${friend.username} : ${friend.currently_watching}`;
+  video.querySelector('source').src = videoURL;
+  video.load(); // Recharge la vidéo
+  video.play(); // Lance la lecture
+
+  title.innerText = `Vous regardez avec ${friend.username} : ${friend.currently_watching} (Épisode ${friend.episode_number})`;
   container.style.display = "block";
-
-  // Scroll jusqu'au lecteur
   container.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -487,10 +488,14 @@ await manageSession();
 setInterval(manageSession, 10000);
 
   </script>
-  <div id="player-container" style="display:none; margin-top:20px;">
+<div id="player-container" style="display:none; margin-top:20px; text-align:center;">
   <h2 id="player-title">Regarder avec votre ami</h2>
-  <iframe id="friend-player" src="" width="100%" height="500" style="border:none; border-radius:10px;"></iframe>
+  <video id="friend-player" width="100%" height="500" controls style="border-radius:10px; background:#000;">
+    <source src="" type="video/mp4">
+    Votre navigateur ne supporte pas la lecture vidéo.
+  </video>
 </div>
+
 
 </body>
 </html>
