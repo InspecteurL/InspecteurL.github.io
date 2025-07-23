@@ -1,150 +1,430 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" href="style.css">
-  <script type="text/javascript" src="script.js"></script>
-  <title>TSF - Steins Gate</title>
-</head>
-<body>
-  <ul>
-    <li><a class="active" href="index.html">Home</a></li>
-    <li><a href="journal.html">Journal</a></li>
-    <li><a href="profil.html">Découvrir</a></li>
-    <li><a href="trueprofil.html">Profil</a></li>
-    <li><a href="accueil.html">Feuilleter</a></li>
-  </ul>
-
-  <br><br>
-  <img src="https://static.wikia.nocookie.net/tokyo-revengers/images/4/42/Chibi_Revengers_%28logo%29.png/revision/latest?cb=20210819184434" width="50%">
-
-  <h1 id="episode-title">Saison 1 - Episode 1</h1>
-  <iframe id="episode-video" width=640 height=360 src="https://video.sibnet.ru/shell.php?videoid=4726047&share=1" allowfullscreen></iframe><br><br>
-
-  <button onclick="previousEpisode()">Épisode précédent</button>
-  <button onclick="nextEpisode()">Épisode suivant</button>
-  <select id="episode-selector" onchange="selectEpisode()">
-    <!-- Les options seront générées dynamiquement par le script JavaScript -->
-  </select>
-  <button onclick="lastEpisode()">Dernier épisode</button>
-
-  <br><br>
-
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Regardez tous les épisodes de Erased par saison. Streaming en ligne gratuit et rapide." />
+  <title>BNZ - Sakamoto Desu Ga</title>
   <style>
-    body{
-      background-color: #2e2b2b;
-    }
-
-    button{
-      width: 122px;
+    body {
+      background-image: linear-gradient(
+        to bottom,
+        #000000,
+        #201315,
+        #3a1d21,
+        #55272b,
+        #713333
+      );
       color: white;
-      background-color: blue;
-      height: 100px;
-      border: 35px;
-      border: blue;
-      font-size: 24px;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
     }
 
-    ul{
+    ul {
       list-style-type: none;
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background-color: transparent;
+      background-color: #1c1c1c;
     }
 
-    li{
+    li {
       float: left;
     }
 
-    li a{
+    li a {
       display: block;
       color: white;
       text-align: center;
       padding: 14px 16px;
       text-decoration: none;
-      font-size: 30px;
+      font-size: 20px;
     }
 
-    select {
-    width: 200px;
-    height: 30px;
-    background-color: #f8f9fa;
-    border: none;
-    padding: 5px;
-    font-size: 16px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  }
-
-  select:focus {
-    outline: none;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
-  }
-
-    li a:hover{
+    li a:hover {
       background-color: red;
+      border-radius: 5px;
+    }
+
+    .episode-card {
+      width: 250px;
+      margin: 10px;
+      background-image: linear-gradient(
+        to bottom,
+        #714e4e,
+        #6e5252,
+        #6b5757,
+        #675b5b,
+        #635f5f
+      );
+      padding: 10px;
       border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .episode-card:hover {
+      transform: scale(1.05);
+    }
+
+    .episode-card img {
+      width: 100%;
+      border-radius: 5px;
+    }
+
+    #episode-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    #video-container.show {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #episode-video {
+      width: 80%;
+      height: 60vh;
+      border: none;
+    }
+
+    #back-button,
+    #next-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: blue;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #loader {
+      color: white;
+      font-size: 20px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .episode-card {
+        width: 90%;
+      }
+
+      #episode-video {
+        width: 95%;
+        height: 40vh;
+      }
     }
   </style>
-  <script>
-   var currentEpisode = 1;
-var totalEpisodes = 11;
-var episodeLinks = [
-  "https://video.sibnet.ru/shell.php?videoid=4726047&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4726046&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4726045&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4726043&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4726042&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4726041&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4726040&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4726039&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4726038&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4726037&share=1",
-  "https://video.sibnet.ru/shell.php?videoid=4726036&share=1"
+</head>
+<body>
+  <!-- Navigation -->
+   <ul>
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="compte.html">Votre Compte</a></li>
+        <li><a href="mes-amis.html">Mes amis</a></li>
+        <li><a href="accueil.html">Feuilleter</a></li>
+    </ul>
+
+  <br /><br />
+  <div style="text-align:center;">
+    <img
+      src="https://media.vgm.io/products/35/4053/4053-1593942163.png"
+      width="50%"
+      alt="Logo Erased" />
+  </div>
+
+  <div style="text-align:center; margin: 20px;">
+    <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
+    <select
+      id="season-select"
+      style="padding: 10px; font-size: 16px; border-radius: 5px;">
+      <option value="1">Saison 1</option>
+      <!-- <option value="2">Saison 2</option>  Ajoute quand tu auras des données -->
+    </select>
+  </div>
+
+  <!-- Liste des épisodes -->
+  <div id="episode-list"></div>
+
+  <!-- Lecteur vidéo -->
+  <div id="video-container">
+    <iframe id="episode-video" allowfullscreen></iframe>
+    <div id="loader" style="display:none;">Chargement de la vidéo...</div>
+    <!-- IMPORTANT: onclick reste, fonctions exposées sur window -->
+    <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
+    <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
+  </div>
+
+  <script type="module">
+    /*************************************************
+     * Supabase init
+     *************************************************/
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabase = createClient(
+      "https://wuagahavmbugmnuzsouf.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
+
+    /*************************************************
+     * Données épisodes
+     *************************************************/
+const episodeDataS1 = [
+  { title: "Épisode 1",  description: "Sakamoto de la classe 1-2", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ts45cJe6zNwWVEnEpNYpsgHi98C.jpg", video: "https://vidmoly.net/embed-tt9crd9bepsa.html" },
+  { title: "Épisode 2",  description: "Je préfère protéger qu'être protégé", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/e6WFBWLzHLwQhRuWjMO7Ynhlqmz.jpg", video: "https://vidmoly.net/embed-04622s1y99n3.html" },
+  { title: "Épisode 3",  description: "Sakamoto le larbin", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/oyoQ9gVMgzClyuhkjSwfC9z6kSw.jpg", video: "https://vidmoly.net/embed-n306voas9wy0.html" },
+  { title: "Épisode 4",  description: "Sakamoto est un dévoyé ?", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/63IrlqMF0nkZupGwiNRpssnNWMe.jpg", video: "https://vidmoly.net/embed-9mj2vgglgdnf.html" },
+  { title: "Épisode 5",  description: "M. Hayabusa, le voyou charismatique", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/bwXtCk4OaiEQLmHmLi3We8mjJqJ.jpg", video: "https://vidmoly.net/embed-p3lygytlo6zq.html" },
+  { title: "Épisode 6",  description: "Les Règles du retour à la maison", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/chWzIYlDsZ972o4plqaHLAfHp5z.jpg", video: "https://vidmoly.net/embed-2uubgf2cl8cc.html" },
+  { title: "Épisode 7",  description: "Sakamoto est-il vraiment un dévoyé ?", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/jm8GEklEjgiOe87KDE8vLSseM0J.jpg", video: "https://vidmoly.net/embed-i095sopofmop.html" },
+  { title: "Épisode 8",  description: "Un festival bien sinistre", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/btoPaIjcTaHkfkvZgR4vf3teTDB.jpg", video: "https://vidmoly.net/embed-q2h6qpo4i5gq.html" },
+  { title: "Épisode 9",  description: "Comment j'ai rencontré Sakamoto", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/mY732nb8Wa1BTBWyOsZBEI1JKbf.jpg", video: "https://vidmoly.net/embed-adub4wwiqguj.html" },
+  { title: "Épisode 10", description: "Le Démon", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4PJIAyZ4syxVhMAstnkKPB6abeM.jpg", video: "https://vidmoly.net/embed-g1bhxagweqcw.html" },
+  { title: "Épisode 11", description: "Pas besoin de chaleur", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/kxzJQyPKwcvrtGT7KOzdF9w0uu1.jpg", video: "https://vidmoly.net/embed-rf3q3duqefxd.html" },
+  { title: "Épisode 12", description: "Adieu Sakamoto", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/t2bqfN18m6RKXnKIInNkTX3b3eE.jpg", video: "https://vidmoly.net/embed-72dblsnllnrp.html" }
 ];
 
-window.onload = function() {
-  // Générer les options pour le sélecteur d'épisodes
-  var selector = document.getElementById("episode-selector");
-  for (var i = 1; i <= totalEpisodes; i++) {
-    var option = document.createElement("option");
-    option.value = i;
-    option.text = "Saison 1 - Episode " + i;
-    selector.add(option);
-  }
+
+    /* Placeholder si tu ajoutes une S2 plus tard
+    const episodeDataS2 = [...];
+    */
+
+    /*************************************************
+     * État
+     *************************************************/
+    let currentEpisodeData = episodeDataS1;
+    let currentEpisodeIndex = 0;
+    let timeoutId = null;
+    let userId = null; // Récupéré via session
+    const ANIME_TITLE = "Erased"; // Ce qui sera écrit dans profiles.currently_watching
+
+    /*************************************************
+     * DOM refs
+     *************************************************/
+    const episodeList    = document.getElementById("episode-list");
+    const videoContainer = document.getElementById("video-container");
+    const videoIframe    = document.getElementById("episode-video");
+    const backButton     = document.getElementById("back-button");
+    const nextButton     = document.getElementById("next-button");
+    const loader         = document.getElementById("loader");
+    const seasonSelect   = document.getElementById("season-select");
+
+    /*************************************************
+     * Session utilisateur
+     *************************************************/
+    async function fetchSession() {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Erreur session Supabase:", error);
+        return null;
+      }
+      const session = sessionData?.session;
+      if (!session) {
+        console.warn("Pas de session (non connecté).");
+        return null;
+      }
+      return session.user.id;
+    }
+
+    // Initialise userId une fois
+    (async () => {
+      userId = await fetchSession();
+    })();
+
+    /*************************************************
+     * Activité: mise à jour / reset
+     * Table: profiles (comme dans ta page mes-amis)
+     *************************************************/
+async function updateCurrentActivity(animeTitle, episodeIndex) {
+  if (!userId) return;
+  const episode = currentEpisodeData[episodeIndex];
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      currently_watching: animeTitle,
+      episode_number: episodeIndex + 1,
+      episode_image: episode.image, // ✅ on ajoute cette ligne
+      current_season: 1 // facultatif si tu veux garder la saison
+    })
+    .eq("id", userId);
+
+  if (error) console.error("Erreur update activité:", error);
 }
 
-function previousEpisode() {
-  if (currentEpisode > 1) {
-    currentEpisode--;
-    updateEpisode();
-  }
+
+async function clearCurrentActivity() {
+  if (!userId) return;
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      currently_watching: null,
+      episode_number: null,
+      episode_image: null,
+      current_season: null
+    })
+    .eq("id", userId);
+
+  if (error) console.error("Erreur clear activité:", error);
 }
 
-function nextEpisode() {
-  if (currentEpisode < totalEpisodes) {
-    currentEpisode++;
-    updateEpisode();
-  }
-}
 
-function selectEpisode() {
-  currentEpisode = document.getElementById("episode-selector").value;
-  updateEpisode();
-}
+    /*************************************************
+     * Rendu des épisodes
+     *************************************************/
+    function renderEpisodes() {
+      episodeList.innerHTML = "";
+      currentEpisodeData.forEach((ep, index) => {
+        const card = document.createElement("div");
+        card.className = "episode-card";
+        card.innerHTML = `
+          <img src="${ep.image}" alt="Affiche ${ep.title} : ${ep.description}" />
+          <h3>${ep.title}</h3>
+          <p>${ep.description}</p>
+        `;
+        card.addEventListener("click", () => {
+          currentEpisodeIndex = index;
+          playEpisode(index);
+        });
+        episodeList.appendChild(card);
+      });
+    }
 
-function lastEpisode() {
-  currentEpisode = totalEpisodes;
-  updateEpisode();
-}
+    /*************************************************
+     * Lecture d'un épisode
+     *************************************************/
+    function playEpisode(index) {
+      // loader visible pendant chargement iframe
+      loader.style.display = "block";
 
-function updateEpisode() {
-  document.getElementById("episode-title").innerText = "Saison 1 - Episode " + currentEpisode;
-  document.getElementById("episode-video").src = episodeLinks[currentEpisode - 1];
-  document.getElementById("episode-selector").value = currentEpisode;
-}
+      // appliquer src (déclenche chargement)
+      videoIframe.src = currentEpisodeData[index].video;
+
+      // forcer affichage conteneur avant transition
+      videoContainer.classList.remove("show");
+      videoContainer.style.display = "flex";
+      requestAnimationFrame(() => {
+        videoContainer.classList.add("show");
+      });
+
+      // mettre à jour activité Supabase
+      updateCurrentActivity(ANIME_TITLE, index);
+
+      // masquer bouton suivant et reset timer
+      nextButton.style.display = "none";
+      if (timeoutId) clearTimeout(timeoutId);
+
+      // après 23 mn => proposer épisode suivant (si existe)
+      timeoutId = setTimeout(() => {
+        if (index < currentEpisodeData.length - 1) {
+          nextButton.style.display = "inline-block";
+        }
+      }, 1_380_000); // 23 min
+    }
+
+    /*************************************************
+     * Iframe chargée => cacher loader
+     *************************************************/
+    videoIframe.onload = () => {
+      loader.style.display = "none";
+    };
+
+    /*************************************************
+     * Épisode suivant
+     *************************************************/
+    function nextEpisode() {
+      if (currentEpisodeIndex < currentEpisodeData.length - 1) {
+        currentEpisodeIndex++;
+        playEpisode(currentEpisodeIndex);
+      }
+    }
+
+    /*************************************************
+     * Sortie vidéo (bouton Retour)
+     * IMPORTANT: accessible globalement pour onclick
+     *************************************************/
+    function exitFullscreenMode() {
+      // stop timer "épisode suivant"
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
+      // transition out
+      videoContainer.classList.remove("show");
+
+      // attendre la fin de la transition CSS (0.5s)
+      setTimeout(() => {
+        videoContainer.style.display = "none";
+
+        // stopper vidéo (vider src)
+        // Pour éviter que certains lecteurs tiers poursuivent audio,
+        // on bascule src vers about:blank avant clear:
+        videoIframe.src = "about:blank";
+        // flush complet
+        requestAnimationFrame(() => (videoIframe.src = ""));
+
+        // masquer bouton suivant & loader
+        nextButton.style.display = "none";
+        loader.style.display = "none";
+
+        // notifier Supabase: plus rien en cours
+        clearCurrentActivity();
+      }, 500);
+    }
+
+    /*************************************************
+     * Changement de saison
+     *************************************************/
+    seasonSelect.addEventListener("change", (e) => {
+      const val = e.target.value;
+      // Ajoute d'autres saisons ici si dispo
+      // const episodeDataS2 = [...]
+      // currentEpisodeData = val === "2" ? episodeDataS2 : episodeDataS1;
+      currentEpisodeData = episodeDataS1; // unique pour l'instant
+      renderEpisodes();
+    });
+
+    /*************************************************
+     * Exposer fonctions pour les attributs onclick HTML
+     * (nécessaire car script type="module" -> scope local)
+     *************************************************/
+    window.exitFullscreenMode = exitFullscreenMode;
+    window.nextEpisode = nextEpisode;
+
+    /*************************************************
+     * Initialisation
+     *************************************************/
+    renderEpisodes();
   </script>
 </body>
 </html>
