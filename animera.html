@@ -296,10 +296,15 @@
   /*************************************************
    * Rendu des épisodes
    *************************************************/
-  async function renderEpisodes() {
-    episodeList.innerHTML = "";
-    const episodes = await fetchEpisodes();
-    currentEpisodeData = episodes;
+async function renderEpisodes() {
+  episodeList.innerHTML = "";
+  const episodes = await fetchEpisodes();
+
+  console.log("🎬 Épisodes récupérés :", episodes); // 👈 Ajoute ceci
+
+  currentEpisodeData = episodes;
+  ...
+
 
     episodes.forEach((ep, index) => {
       const card = document.createElement("div");
