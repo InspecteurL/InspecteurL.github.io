@@ -239,24 +239,27 @@
   /*************************************************
    * Charger épisodes depuis Supabase
    *************************************************/
-  async function fetchEpisodes(season = 1) {
-    const { data, error } = await supabase
-      .from("episodes")
-      .select("*")
-      .eq("season", season)
-      .order("id", { ascending: true });
+async function fetchEpisodes(season = 1) {
+  const { data, error } = await supabase
+    .from("episodes")
+    .select("*")
+    .eq("season", season)
+    .eq("anime_title", ANIME_TITLE) // 👈 AJOUT ICI
+    .order("id", { ascending: true });
 
-    if (error) {
-      console.error("Erreur récupération épisodes:", error);
-      return [];
-    }
-    return data.map(ep => ({
-      title: ep.title,
-      description: ep.description,
-      image: ep.image_url,
-      video: ep.video_url
-    }));
+  if (error) {
+    console.error("Erreur récupération épisodes:", error);
+    return [];
   }
+
+  return data.map(ep => ({
+    title: ep.title,
+    description: ep.description,
+    image: ep.image_url,
+    video: ep.video_url
+  }));
+}
+
 
   /*************************************************
    * Activité: mise à jour / reset
@@ -301,6 +304,10 @@ async function renderEpisodes() {
   const episodes = await fetchEpisodes();
 
 console.log("Épisodes récupérés :", episodes);
+if (episodes.length === 0) {
+  episodeList.innerHTML = "<p>Aucun épisode trouvé.</p>";
+  return;
+}
 
 
   currentEpisodeData = episodes;
