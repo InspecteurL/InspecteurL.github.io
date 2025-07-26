@@ -300,10 +300,11 @@ async function renderEpisodes() {
   episodeList.innerHTML = "";
   const episodes = await fetchEpisodes();
 
-  console.log("🎬 Épisodes récupérés :", episodes); // 👈 Ajoute ceci
+console.log("Épisodes récupérés :", episodes);
+
 
   currentEpisodeData = episodes;
-  ...
+  
 
 
     episodes.forEach((ep, index) => {
