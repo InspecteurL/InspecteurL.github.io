@@ -1,25 +1,94 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Lecteur Vidéo Personnalisé</title>
-    <!-- CSS Video.js -->
-    <link href="https://vjs.zencdn.net/8.23.3/video-js.css" rel="stylesheet" />
-  </head>
-  <body>
-    <!-- Conteneur du lecteur -->
-    <video
-      id="monLecteur"
-      class="video-js vjs-default-skin"
-      controls
-      preload="auto"
-      width="640"
-      height="360"
-      data-setup='{}'>
-      <source src="https://vidmoly.to/embed-0l1t8bnd79a8.html" type="video/mp4" />
-      <!-- Si le lien ne fonctionne pas directement en MP4, l’iframe reste nécessaire -->
-    </video>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lecteur Multi-Sources</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
 
-    <!-- Script Video.js -->
-    <script src="https://vjs.zencdn.net/8.23.3/video.min.js"></script>
-  </body>
+    header {
+      background: #1e1e1e;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.5em;
+    }
+
+    .player-container {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 560px;
+      border: none;
+      border-radius: 10px;
+    }
+
+    .source-buttons {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .source-buttons button {
+      background: #292929;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .source-buttons button:hover {
+      background: #3a3a3a;
+    }
+
+    @media (max-width: 600px) {
+      iframe {
+        height: 280px;
+      }
+
+      .source-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    🎬 Mon Lecteur Multi-Sources
+  </header>
+
+  <div class="player-container">
+    <iframe id="video-iframe" src="https://vidmoly.net/embed-pdskeri5fko3.html" allowfullscreen></iframe>
+
+    <div class="source-buttons">
+      <button onclick="changeSource('https://vidmoly.net/embed-pdskeri5fko3.html')">VIDMOLY</button>
+      <button onclick="changeSource('https://vidmoly.net/embed-pdskeri5fko3.html')">MOON</button>
+      <button onclick="changeSource('https://www.yourupload.com/watch/d65PMT37iSpt')">YU</button>
+    </div>
+  </div>
+
+  <script>
+    function changeSource(url) {
+      const iframe = document.getElementById('video-iframe');
+      iframe.src = url;
+    }
+  </script>
+
+</body>
 </html>
