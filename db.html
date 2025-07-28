@@ -1,574 +1,495 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" href="style.css">
-  <script type="text/javascript"></script>
-  <title>TSF - Dragon Ball</title>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0" />
+  <title>BNZ - Dragon Ball</title>
+  <meta name="description" content="Regardez tous les épisodes de Jujutsu Kaisen par saison. Streaming en ligne gratuit et rapide." />
+  <style>
+    body {
+      background: linear-gradient(to bottom, #000066 0%, #66ff33 100%);
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #1c1c1c;
+    }
+    li { float: left; }
+    li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 20px;
+    }
+    li a:hover {
+      background-color: red;
+      border-radius: 5px;
+    }
+    .episode-card {
+      width: 250px;
+      margin: 10px;
+      background: linear-gradient(to bottom, #9999ff 0%, #ff00ff 100%);
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+    .episode-card:hover { transform: scale(1.05); }
+    .episode-card img {
+      width: 100%;
+      border-radius: 5px;
+    }
+    #episode-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+    #video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    #video-container.show {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+    #episode-video {
+      width: 80%;
+      height: 60vh;
+      border: none;
+    }
+    #back-button,
+    #next-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: blue;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .hidden { display: none; }
+  </style>
 </head>
-
 <body>
-  <ul>
-    <li><a class="active" href="index.html">Home</a></li>
-    <li><a  href="journal.html">Journal</a></li>
-    <li><a  href="profil.html">Découvrir</a></li>
-    <li><a  href="trueprofil.html">Profil</a></li>
-    <li><a  href="accueil.html">Feuilleter</a></li>
-</ul>
+   <ul>
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="compte.html">Votre Compte</a></li>
+        <li><a href="mes-amis.html">Mes amis</a></li>
+        <li><a href="accueil.html">Feuilleter</a></li>
+    </ul>
+  <br /><br />
+  <div style="text-align:center;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Jujutsu_Kaisen_logo.png" width="50%" alt="Logo Jujutsu Kaisen" />
+  </div>
 
-<br><br>
-  <img src="https://i.pinimg.com/originals/8a/6b/77/8a6b778ddbc5fd404f33274972439156.png
-  " width="50%">
-  <select id="saisonSelector" onchange="changerSaison()">
-    <option value="saison1">Saison 1</option>
-    <option value="saison2">Saison 2</option>
-    <option value="saison3">Saison 3</option>
-    <option value="saison4">Saison 4</option>
-    <option value="saison5">Saison 5</option>
-    <option value="saison6">Saison 6</option>
-  </select>
+  <div style="text-align:center; margin: 20px;">
+    <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
+    <select id="season-select" style="padding: 10px; font-size: 16px; border-radius: 5px;">
+      <option value="1">Saison 1</option>
+      <option value="2">Saison 2</option>
+      <option value="3">Saison 3</option>
+      <option value="4">Saison 4</option>
+      <option value="5">Saison 5</option>
+      <option value="6">Saison 6</option>
+    </select>
+  </div>
 
-  
-  <div id="un">
-    <h1>Saison 1 - Episode 1</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295592&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 2</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295594&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 3</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295595&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 4</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295596&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 5</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295597&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 6</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295598&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 7</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295599&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 8</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295600&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 9</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295601&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 10</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295603&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 11</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295604&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 12</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295605&share=1 allowfullscreen></iframe><br><br>
-    
-    <h1>Saison 1 - Episode 13</h1>
-    <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295606&share=1 allowfullscreen></iframe><br><br>
-    </div>
-    
-    <div id="deux">
-      <h1>Saison 1 - Episode 14</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295607&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Episode 15</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295608&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Episode 16</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295609&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Episode 17</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295610&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Episode 18</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295611&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Episode 19</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295612&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Episode 20</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295613&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Episode 21</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295614&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Episode 22</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295615&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Episode 23</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295616&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Episode 24</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295617&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Épisode 25</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295618&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Épisode 26</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295619&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Épisode 27</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295620&share=1 allowfullscreen></iframe><br><br>
-      
-      <h1>Saison 1 - Épisode 28</h1>
-      <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295621&share=1 allowfullscreen></iframe><br><br>
-      </div>
-      
-      <div id="trois">
-        <h1>Saison 1 - Épisode 29</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295622&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 34</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295627&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 35</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295628&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 36</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295629&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 37</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295631&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 38</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295632&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 39</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295633&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 40</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295634&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 41</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295635&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 42</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295636&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 43</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295637&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 44</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295638&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 45</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295644&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 46</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295640&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 47</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295641&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 48</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295642&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 49</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295643&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 50</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295645&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 51</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295646&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 52</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295647&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 53</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295648&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 54</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295649&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 55</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295650&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 56</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295651&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 57</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295652&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 58</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295654&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 59</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295655&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 60</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295656&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 61</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295657&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 62</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295659&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 63</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295660&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 64</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295663&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 65</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295664&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 66</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295665&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 67</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295668&share=1 allowfullscreen></iframe><br><br>
-        
-        <h1>Saison 1 - Épisode 68</h1>
-        <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295669&share=1 allowfullscreen></iframe><br><br>
-        </div>
-        
-        <div id="quatre">
-          <h1>Saison 1 - Épisode 69</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295670&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 70</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295671&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 71</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295672&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 72</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295673&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 73</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295674&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 74</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295675&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 75</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295676&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 76</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295679&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 77</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295681&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 78</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295682&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 84</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295688&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 85</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295689&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 86</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295690&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 87</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295691&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 88</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295692&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 89</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295693&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 90</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295694&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 91</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295695&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 92</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295696&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 93</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295697&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 94</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295698&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 95</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295699&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 96</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295700&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 97</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295701&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 98</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295702&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 99</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295703&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 100</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295704&share=1 allowfullscreen></iframe><br><br>
-          
-          <h1>Saison 1 - Épisode 101</h1>
-          <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295705&share=1 allowfullscreen></iframe><br><br>
-          </div>
-          
-          <div id="cinq">
-            <h1>Saison 1 - Épisode 102</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295706&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 103</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295707&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 104</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295708&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 105</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295709&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 106</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295710&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 107</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295711&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 108</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295712&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 109</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295713&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 110</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295714&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 111</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295715&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 112</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295716&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 113</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295717&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 114</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295718&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 115</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295719&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 116</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295720&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 117</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295722&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 118</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295723&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 119</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295724&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 120</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295725&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 121</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295727&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 122</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295728&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 123</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295729&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 124</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295730&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 125</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295732&share=1 allowfullscreen></iframe><br><br>
-            
-            <h1>Saison 1 - Épisode 126</h1>
-            <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295733&share=1 allowfullscreen></iframe><br><br>
-            
-            </div>
-            
-            <div id="six">
-              <h1>Saison 1 - Épisode 133</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295742&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 134</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295744&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 135</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295745&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 136</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295746&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 137</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295747&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 138</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295749&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 139</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295751&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 140</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295752&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 141</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295753&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 142</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295755&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 143</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295756&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 144</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295757&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 145</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295758&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 146</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295760&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 147</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295761&share=1 allowfullscreen></iframe><br><br>
-              
-              <h1>Saison 1 - Épisode 148</h1>
-              <iframe width=640 height=360 src=https://video.sibnet.ru/shell.php?videoid=5295762&share=1 allowfullscreen></iframe><br><br>
-              
-              </div>
-              
+  <div id="episode-list"></div>
 
-<!-- Fin de la liste des épisodes de la saison 1 de l'épisode 132 à l'épisode 153 -->
+  <div id="video-container">
+    <iframe id="episode-video" allowfullscreen></iframe>
+    <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
+    <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
+  </div>
+
+  <script type="module">
+    /*************************************************
+     * Supabase init
+     *************************************************/
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabase = createClient(
+      "https://wuagahavmbugmnuzsouf.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
+
+    /*************************************************
+     * Données épisodes
+     *************************************************/
+const episodeDataS1 = [
+  { title: "Épisode 1",  description: "Le Grand Départ", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6peKGfJ94EkUi6HuVt5MUcSNeJ3.jpg", video: "https://vidmoly.net/embed-kshbhm2m121e.html" },
+  { title: "Épisode 2",  description: "Les Premiers Pas", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ySt7z76P2QSVHp3Gxm3ppcfCdB6.jpg", video: "https://vidmoly.net/embed-4ucgx858zd8a.html" },
+  { title: "Épisode 3",  description: "Le Nuage supersonique de Tortue Géniale", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/esPk4qototb316mIjSA06U4geCY.jpg", video: "https://vidmoly.net/embed-loht6wws24il.html" },
+  { title: "Épisode 4",  description: "Le Grand Malfaisant", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/16BdfGeh908M2mNQ5UGdxurn8dD.jpg", video: "https://vidmoly.net/embed-bsxao6or8xf3.html" },
+  { title: "Épisode 5",  description: "Yamcha, l’enfant terrible du désert", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/b9HYf9UorX5S5upowm5AHT33P5u.jpg", video: "https://vidmoly.net/embed-9b1j3jli70i6.html" },
+  { title: "Épisode 6",  description: "Un drôle de bandit", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/s60AA8va7LtJ8LHW4Z9WzYFaWwG.jpg", video: "https://vidmoly.net/embed-2e933sgmlm6o.html" },
+  { title: "Épisode 7",  description: "La Montagne mystérieuse", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hl5wtYTxdp8NbKZvd0ggZC5pvqg.jpg", video: "https://vidmoly.net/embed-zcksh26jycqm.html" },
+  { title: "Épisode 8",  description: "L’Onde de choc du grand maître", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/itmzd73XH58cvnD6ADYR9Q91e0E.jpg", video: "https://vidmoly.net/embed-n0bvmecx6an7.html" },
+  { title: "Épisode 9",  description: "Les carottes sont cuites", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/2Tfy9RUcH7axVmgl60JtlBZkQl1.jpg", video: "https://vidmoly.net/embed-8wjzxl7y48yl.html" },
+  { title: "Épisode 10", description: "On a volé les boules de cristal", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/YpqU8lE5TNwyv9wIk7CbFdmffB.jpg", video: "https://vidmoly.net/embed-alarcdmmkv33.html" },
+  { title: "Épisode 11", description: "Le Réveil du dragon", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ySFrJ01YjsC3XshpBmFP0F9s1Ue.jpg", video: "https://vidmoly.net/embed-idgyj4761co7.html" },
+  { title: "Épisode 12", description: "Le Monstre de la pleine lune", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/xZZI96vtRLgA9nBM7Gx6k7avmq2.jpg", video: "https://vidmoly.net/embed-6mywepn4uiyr.html" },
+  { title: "Épisode 13", description: "La Métamorphose de Sangoku", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/tBCV4gItk8eakxtSfOOBBBSYSvZ.jpg", video: "https://vidmoly.net/embed-aeyi0qrqnhsm.html" }
+];
+
+const episodeDataS2 = [
+  { title: "Épisode 1",  description: "L’Apparition d'un rival", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/1TPw96nMzzICMEA8EXweMxIEES0.jpg", video: "https://vidmoly.net/embed-bnm7pl2gphjm.html" },
+  { title: "Épisode 2",  description: "Une fille mystérieuse", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4imSRzWgR6nhFr4ca47xpDR4z49.jpg", video: "https://vidmoly.net/embed-ufoud71zz37v.html" },
+  { title: "Épisode 3",  description: "Les Premiers Tests", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6TYjefA4LxhTSKzEu6GIvPN5H8c.jpg", video: "https://vidmoly.net/embed-mo97yie4pzyu.html" },
+  { title: "Épisode 4",  description: "Entraînement intensif", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iRMzsMgwbAXaCXlnxwGB6k9jlqk.jpg", video: "https://vidmoly.net/embed-1nh20z3l2hz2.html" },
+  { title: "Épisode 5",  description: "Entraînement selon Tortue Géniale", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4GNsv3ZEz8PEO0YMdYIyhMFt4bZ.jpg", video: "https://vidmoly.net/embed-n4tfhgl3z42o.html" },
+  { title: "Épisode 6",  description: "Le Grand Championnat", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dxZ6Q0ucrJg8mUpoTQQ3eQ5QRHv.jpg", video: "https://vidmoly.net/embed-bcu32dkb6jcy.html" },
+  { title: "Épisode 7",  description: "Que le meilleur gagne", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/kWZO6et19fI1FE7lXScRbIGnH3J.jpg", video: "https://vidmoly.net/embed-etwvq8ma4zfm.html" },
+  { title: "Épisode 8",  description: "Le Colosse", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/xjKbeB3nFKpRVNDZ4oRXSTZeVY2.jpg", video: "https://vidmoly.net/embed-wbfl9gom22b0.html" },
+  { title: "Épisode 9",  description: "Yamcha contre Jackie Chun", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dr6uIJfCjhApQnaelnCAsBUYDr0.jpg", video: "https://vidmoly.net/embed-5acbhdc6ohbn.html" },
+  { title: "Épisode 10", description: "Sangoku contre le dragon volant", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/o5kmcFAozFAPGrUvKw1fwiQmcSC.jpg", video: "https://vidmoly.net/embed-7lm5imu52gct.html" },
+  { title: "Épisode 11", description: "Le Combat désespéré de Krilin", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/8vzP8jkpCv3C5hGKvF7ZigZYUyd.jpg", video: "https://vidmoly.net/embed-4y6nxnz0cwe2.html" },
+  { title: "Épisode 12", description: "Quand le combat devient aérien", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/uk6v28NVLxNYwIjkmKDVZNB5oLI.jpg", video: "https://vidmoly.net/embed-fhmy2jnnl9fr.html" },
+  { title: "Épisode 13", description: "Le Combat final", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ewfHr2S3EajPKFEqJHh4ufMcGdi.jpg", video: "https://vidmoly.net/embed-vtum4zbhv60l.html" },
+  { title: "Épisode 14", description: "Sangoku en pleine crise", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/79NCwX2t170P4KWrLdDtGCerTNe.jpg", video: "https://vidmoly.net/embed-y0t5wcecrjxz.html" },
+  { title: "Épisode 15", description: "La Finale", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ohWHMpYRfUTc1s22GQYGJBCIV7O.jpg", video: "https://vidmoly.net/embed-h3dvyvwnnvqg.html" }
+];
+
+const episodeDataS3 = [
+  { title: "Épisode 1", description: "Le Lac magique", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/91SVzEmYvzm1yRzBwPllPWGVDTh.jpg", video: "https://vidmoly.net/embed-yt79qw1a29vn.html" },
+  { title: "Épisode 2", description: "Le général en chef ne plaisante pas", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4qkuKwyL08oI3kKJObYKy229yfj.jpg", video: "https://vidmoly.net/embed-uol9t27dki1h.html" },
+  { title: "Épisode 3", description: "Sangoku dans le grand nord", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/n9F1B7yy9PTo3lbvf4yci0qNFEq.jpg", video: "https://vidmoly.net/embed-nbolfjs5axki.html" },
+  { title: "Épisode 4", description: "Le Combat du sergent métallique", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/r0clzMp1FbhogdMLzPKMy6wTJMl.jpg", video: "https://vidmoly.net/embed-atyrx4cvgoqu.html" },
+  { title: "Épisode 5", description: "Ninja Murazaki fait son entrée", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/eFA5c5pCtOL8PfuJAglSyJ06Pai.jpg", video: "https://vidmoly.net/embed-xqrxfcgpgm4z.html" },
+  { title: "Épisode 6", description: "Cinq Murazakis contre Sangoku", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9EAtBPz5Y6Uyi1UJq0V2uRLX60H.jpg", video: "https://vidmoly.net/embed-jjpzp9cx7cgc.html" },
+  { title: "Épisode 7", description: "Le Robot au grand cœur", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6iqiF6Dfcb4rS64n0fBoH3oAfEW.jpg", video: "https://vidmoly.net/embed-jv8nqy0hc5bh.html" },
+  { title: "Épisode 8", description: "La Bête immonde", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4SibY6eH4whsgRd1JCCDr7q3jZp.jpg", video: "https://vidmoly.net/embed-kgc7c6jm466x.html" },
+  { title: "Épisode 9", description: "Le Dernier jour de la tour de contrôle", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/eYpSqdfbuPNiXGGhdMrPJwOpVol.jpg", video: "https://vidmoly.net/embed-w1jacc8opdxb.html" },
+  { title: "Épisode 10", description: "Le Secret du docteur Flatt", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lGToiAduQl5lLEtMtWmnfFyV83p.jpg", video: "https://vidmoly.net/embed-afqp2mflufdi.html" },
+  { title: "Épisode 11", description: "Sangoku découvre la ville", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/jU6zr9Lwx9d1iggH5e1hVGihyAB.jpg", video: "https://vidmoly.net/embed-xseyibetob47.html" },
+  { title: "Épisode 12", description: "Sangoku retrouve ses amis", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/A30Hy03V4USbOc4Fqeiy9bxrKwB.jpg", video: "https://vidmoly.net/embed-o5xef3nyed03.html" },
+  { title: "Épisode 13", description: "Bulma revient de loin", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4jyU1ud6s5rDdO7XUaGiarsDfP0.jpg", video: "https://vidmoly.net/embed-rb8xeolu6lei.html" },
+  { title: "Épisode 14", description: "Sur une île de Tortue Géniale", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/rJznk4vSH3lznu85oF5r2GySMs6.jpg", video: "https://vidmoly.net/embed-lh75fuwl5koh.html" },
+  { title: "Épisode 15", description: "Le général Blue passe à l'attaque", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/jCuO4Wtud3BRmCO2Em2zGWjgbEO.jpg", video: "https://vidmoly.net/embed-xwh5hn9vrvkh.html" },
+  { title: "Épisode 16", description: "Une grotte miraculeuse", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/tLK336RCTRZgBkYuZN1nCb0CbS3.jpg", video: "https://vidmoly.net/embed-wq69buzwr9kj.html" },
+  { title: "Épisode 17", description: "Les Pièges des pirates", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wz8kaOK0aavguwdeWVT7XGWgPlC.jpg", video: "https://vidmoly.net/embed-2atxgg6zcs2q.html" },
+  { title: "Épisode 18", description: "Le Robot pirate", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/g3C27svJGFT8pj1FqiXhKOx82uv.jpg", video: "https://vidmoly.net/embed-flreij89rltq.html" },
+  { title: "Épisode 19", description: "Le trésor existe", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/uZSuMKidnieO8I8CsnK5KsgJ1J1.jpg", video: "https://vidmoly.net/embed-0c11ev8nktxd.html" },
+  { title: "Épisode 20", description: "La Grotte aux mille dangers", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/4ObhYtWoTwYb2gV20nqrwVN84eB.jpg", video: "https://vidmoly.net/embed-4lbfwih1ju55.html" },
+  { title: "Épisode 21", description: "Sauve qui peut", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/gOYVunYRjWGRoRR0ybBhMu9W2mR.jpg", video: "https://vidmoly.net/embed-cqyuc0wvybgz.html" },
+  { title: "Épisode 22", description: "Vers les villages des jouets mécaniques", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/cacvBnVWhS4IEfugrG6oq3OM4qv.jpg", video: "https://vidmoly.net/embed-64eslqpal7ex.html" },
+  { title: "Épisode 23", description: "Comme sur un petit nuage", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5tcrVAk2VD1ahlDEnnF5QnVgsyZ.jpg", video: "https://vidmoly.net/embed-uiieuej6kgp3.html" },
+  { title: "Épisode 24", description: "Arale contre le Ruban Rouge", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ae68VEw1X9n1bJAsGZZaS0hYTXA.jpg", video: "https://vidmoly.net/embed-790126bdkjbs.html" },
+  { title: "Épisode 25", description: "Les Habitants de la terre sainte", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/8xEXAYhFOY6fpYasoFOcAK2UOt6.jpg", video: "https://vidmoly.net/embed-lg6p3d1llze9.html" },
+  { title: "Épisode 26", description: "Le Redoutable Taopaïpaï passe à l'action", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/urf0UXhUzxSFAVlBM4DkYJ4WkdD.jpg", video: "https://vidmoly.net/embed-5pci2w1f29hq.html" },
+  { title: "Épisode 27", description: "Sangoku se mesure à Taopaïpaï", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/pTzGpfWMEG8N4qVL3ycPLDXBBS0.jpg", video: "https://vidmoly.net/embed-pr9oj30dre5y.html" },
+  { title: "Épisode 28", description: "Le Maître des maîtres", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/2SRODlEUiZIkcJRZRDDvIrZeiUq.jpg", video: "https://vidmoly.net/embed-9xuin3h8o0ek.html" },
+  { title: "Épisode 29", description: "L'Eau sacrée", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/qrRLMf1pEkGQujiSXTLux5KfFrX.jpg", video: "https://vidmoly.net/embed-6brxlw8yg3lk.html" },
+  { title: "Épisode 30", description: "Le héros est de retour", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lyAPVWtA3EKsyxbSYiAXasR4TX.jpg", video: "https://vidmoly.net/embed-cqbp6ass883f.html" },
+  { title: "Épisode 31", description: "La Défaite de Taopaïpaï", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/dgcWepUVwYEDUaTYFWhsY3I89xN.jpg", video: "https://vidmoly.net/embed-xgiyrmr1ggxy.html" },
+  { title: "Épisode 32", description: "En route pour le quartier général", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/s577TlgEJlnpypse3Lv9lhxkWYT.jpg", video: "https://vidmoly.net/embed-2189ad119ek5.html" },
+  { title: "Épisode 33", description: "L’armée du Ruban Rouge est en déroute", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/v7fRkPZt31DTxJnmTqxqzzAOfjV.jpg", video: "https://vidmoly.net/embed-rh60w92rl4c5.html" },
+  { title: "Épisode 34", description: "La Fin du commandant Red", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/3uBtEtYul9GpEyPRev7Cb6i3vKA.jpg", video: "https://vidmoly.net/embed-yfweqdfj3vem.html" },
+  { title: "Épisode 35", description: "La Dernière Boule de cristal", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/tB7e7urlzVE0lHdEXNVgpVekua3.jpg", video: "https://vidmoly.net/embed-pinm6e2wtcfi.html" }
+];
+
+const episodeDataS4 = [
+  { title: "Épisode 1", description: "Baba", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/aiSbOBZIRRV5PdjBrVNTz1Tz5ow.jpg", video: "https://vidmoly.net/embed-555t1mrq258r.html" },
+  { title: "Épisode 2", description: "Les Cinq Adversaires", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wB5RvvrG88cWSlZpAiuZdIckFte.jpg", video: "https://vidmoly.net/embed-zjohlfeqwdof.html" },
+  { title: "Épisode 3", description: "La Fosse du diable", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lFR5kcq0cvYlJXmsTKMKZHKidFM.jpg", video: "https://vidmoly.net/embed-ku1ulekrsi89.html" },
+  { title: "Épisode 4", description: "Yamcha frôle la mort", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6lkw6gEa9jJ2xjJ9xm0rSC2ZlvP.jpg", video: "https://vidmoly.net/embed-jlbtd0w4rox9.html" },
+  { title: "Épisode 5", description: "Le Pouvoir mortel du diable", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/vRw8Grwok7p0zoVHE3BXiNcCtX8.jpg", video: "https://vidmoly.net/embed-ys36wk0v0aen.html" },
+  { title: "Épisode 6", description: "Le Cinquième Homme", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/fNA22fMfQ0jxVmyFBghzSA6S0Ol.jpg", video: "https://vidmoly.net/embed-dhfbfayo69pv.html" },
+  { title: "Épisode 7", description: "Un mystérieux adversaire", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/uBfU1pkZKtpEmLHUeeRM9ij6VTh.jpg", video: "https://vidmoly.net/embed-6rtcmxtc2gei.html" },
+  { title: "Épisode 8", description: "L’adversaire se démasque", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/meeCjjDcOhzCPyw7xAXDWZSDI7f.jpg", video: "https://vidmoly.net/embed-ae6fkom4fm4a.html" },
+  { title: "Épisode 9", description: "Les Tactiques de Pilaf", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/s7fefZbiqCGWO8aTUs5ueYLJbxV.jpg", video: "https://vidmoly.net/embed-4h9tjsg4g2ap.html" },
+  { title: "Épisode 10", description: "Le divin dragon revient", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/cNK33G80VkPIrfEXJFoo1CTW8mB.jpg", video: "https://vidmoly.net/embed-g1enrjab68pt.html" },
+  { title: "Épisode 11", description: "Le Champion toutes catégories", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/oTQfeQgKdgnGYamLguteRVwaxLJ.jpg", video: "https://vidmoly.net/embed-3ck5vhsfpg0j.html" },
+  { title: "Épisode 12", description: "Les Éliminatoires", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/91DC9b1MPLrlCOUyAnkj8iIvzMC.jpg", video: "https://vidmoly.net/embed-kj6bvzk3pkwm.html" },
+  { title: "Épisode 13", description: "Les Huit Meilleurs", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/s5aFESGvS7UVSucUyF3WZTZOA1q.jpg", video: "https://vidmoly.net/embed-cmjhqpqracu4.html" },
+  { title: "Épisode 14", description: "Yamcha contre Tenshinhan", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/xlzy1Qsi8JGByRYWhGCE3yijbr3.jpg", video: "https://vidmoly.net/embed-to0kahl8u890.html" },
+  { title: "Épisode 15", description: "Le Grand Tournoi d’arts martiaux", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/3G2uLYjiYrDQIu4pkFc7tbBMHIC.jpg", video: "https://vidmoly.net/embed-b1tc04jflb5c.html" },
+  { title: "Épisode 16", description: "Rencontre de la pleine lune", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/7ycnobpM15DlDgEI9jTsgZlDoD9.jpg", video: "https://vidmoly.net/embed-ktg4wftcy9xx.html" },
+  { title: "Épisode 17", description: "La Revanche de Taopaïpaï", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/shc250jE2bzC4MqBLUj0MOxSmnp.jpg", video: "https://vidmoly.net/embed-9akvkzh44ceu.html" },
+  { title: "Épisode 18", description: "Une idée de génie", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/mzFJUpIOpsZQTQyq3ZBleXupHMP.jpg", video: "https://vidmoly.net/embed-lyzylsaoboh4.html" },
+  { title: "Épisode 19", description: "Sangoku contre Ballouc", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hT1sptLWvwcOKeajfQrM0eTis0o.jpg", video: "https://vidmoly.net/embed-kgra6h1nmksh.html" },
+  { title: "Épisode 20", description: "Deux adversaires de grand talent", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/3tRN4u1w50OZzZzDn4CrXbeqDPs.jpg", video: "https://vidmoly.net/embed-7i3qae26400v.html" },
+  { title: "Épisode 21", description: "Une décision inattendue", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lDDfR0JhrjgMKlAj6H4Zaa740lq.jpg", video: "https://vidmoly.net/embed-oqcbq73157wv.html" },
+  { title: "Épisode 22", description: "Sangoku contre Krilin", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/yCYBUbMwk3v7X32IoMb6Xlp3fZ1.jpg", video: "https://vidmoly.net/embed-w3xqvknwnov2.html" },
+  { title: "Épisode 23", description: "Les Meilleurs Coups de Krilin", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/8RNszQuwgGCzaarWUfIOOHFpbMk.jpg", video: "https://vidmoly.net/embed-b62mag6gty55.html" },
+  { title: "Épisode 24", description: "Le Match final", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/68EZiCMq85w4OOztZyfneKfQriL.jpg", video: "https://vidmoly.net/embed-y2me7bl7cxxv.html" },
+  { title: "Épisode 25", description: "Une attaque de haute volée", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hLP8dmdPUJFybWapDabV1hXnt7n.jpg", video: "https://vidmoly.net/embed-rlccf4u5b9jx.html" },
+  { title: "Épisode 26", description: "Une fausse victoire", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iWKn4bVL3jgYbht1BzP5UPh7zBO.jpg", video: "https://vidmoly.net/embed-bmhfnah1edur.html" },
+  { title: "Épisode 27", description: "La Dernière Chance", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/Ihr9GpVCIzd8gRJGs3aes7xpIl.jpg", video: "https://vidmoly.net/embed-tpnn2628rsw5.html" },
+  { title: "Épisode 28", description: "La Grande Finale", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/jnOfAnd8lIep1j0Hy3DADQjuuuB.jpg", video: "https://vidmoly.net/embed-o1b0romedp8g.html" },
+  { title: "Épisode 29", description: "Un plan diabolique", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5QOZG5Y3iRuiwMuqMHZI2dZVABz.jpg", video: "https://vidmoly.net/embed-2r24itkv0ags.html" }
+];
+
+const episodeDataS5 = [
+  { title: "Épisode 1", description: "Le Temps de la terreur", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/a1ay6IKrXSLxTPBEuw5v4lbNIgC.jpg", video: "https://vidmoly.net/embed-14e3bfitqhno.html" },
+  { title: "Épisode 2", description: "Sangoku revient à la vie", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wPofZiA0KqqL2ZZJoj2VBC6SP7c.jpg", video: "https://vidmoly.net/embed-hn8wwlmc5ir4.html" },
+  { title: "Épisode 3", description: "L’Homme des bois", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/1FtsiakZLdH8sMez3GuDWS6W3JF.jpg", video: "https://vidmoly.net/embed-05qav1f1tw3n.html" },
+  { title: "Épisode 4", description: "Une nouvelle mission", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/2XCxQtTCqSFcFWwtC4hvVoLM83V.jpg", video: "https://vidmoly.net/embed-qf9qpyadsxkx.html" },
+  { title: "Épisode 5", description: "À la mémoire de Krilin", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/2Sae07okQjNA1wM73i0TUDYRaoT.jpg", video: "https://vidmoly.net/embed-mhs8n7to18n7.html" },
+  { title: "Épisode 6", description: "Satan se montre", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/a1PoINbzypFHJrNBi4WDsJll4m3.jpg", video: "https://vidmoly.net/embed-ud1e8jlwyrfb.html" },
+  { title: "Épisode 7", description: "Sangoku contre Satan Petit Cœur", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9gVMI3dhH9RS82VYj1zjblBNVY5.jpg", video: "https://vidmoly.net/embed-5yzkizfot6p4.html" },
+  { title: "Épisode 8", description: "Le Dernier Espoir", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/fXWUrCyfGevUFzPs3AgbCnODEH5.jpg", video: "https://vidmoly.net/embed-737ggvmjazye.html" },
+  { title: "Épisode 9", description: "Le Dernier Combat de Tortue Géniale", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/vIFRzbPRXKHqu7wevLYtGr7wNmC.jpg", video: "https://vidmoly.net/embed-jt1eee7swe1m.html" },
+  { title: "Épisode 10", description: "À la quête de l’éternelle jeunesse", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/qDJ2c0evVjEBsdGJa049l1qX8jN.jpg", video: "https://vidmoly.net/embed-nuyc8vqf9f2x.html" },
+  { title: "Épisode 11", description: "La Première Étape", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/xuAN1nrn26R5oNWnZCVqNeINLEA.jpg", video: "https://vidmoly.net/embed-4ezex9dl0eqp.html" },
+  { title: "Épisode 12", description: "Au sommet de la tour", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/fDLEBNC1H4BJfUk8VlSa48xaWpN.jpg", video: "https://vidmoly.net/embed-rea1fi9iyctt.html" },
+  { title: "Épisode 13", description: "Le Labyrinthe de glace", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/6M1UW0TjnilzphKad7b20FhXciH.jpg", video: "https://vidmoly.net/embed-efg4dc2pt65u.html" },
+  { title: "Épisode 14", description: "Tortue Géniale réapparaît", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/egjbr65n3dw9pxwnUnVEyX0SFq6.jpg", video: "https://vidmoly.net/embed-suze4vct1l37.html" },
+  { title: "Épisode 15", description: "Sangoku se réincarne", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/tYsEsVpZIgzEaRUCz4Hjq2HR7b9.jpg", video: "https://vidmoly.net/embed-47572sw9m7pu.html" },
+  { title: "Épisode 16", description: "La Détermination de Tenshinhan", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/pRSr0lMxYd0gMnQi62YpYp8dIfX.jpg", video: "https://vidmoly.net/embed-f1roi73lf9uz.html" },
+  { title: "Épisode 17", description: "Tenshinhan rencontre Satan", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5OvqUiYIhzjCsdqL9OFsfszxTgH.jpg", video: "https://vidmoly.net/embed-a9eme5w52di9.html" },
+  { title: "Épisode 18", description: "La Colère de Sangoku", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ArItjBYpfKNJK4z8HvRFk1CTdZB.jpg", video: "https://vidmoly.net/embed-1kl6gc8i3hnd.html" },
+  { title: "Épisode 19", description: "Un combat difficile", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5uvZ6GHbWNpiCeDw1wBBlNo7pIg.jpg", video: "https://vidmoly.net/embed-olpnooa0jmsh.html" },
+  { title: "Épisode 20", description: "La Fin de Satan", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/k7DYZvSP9QZHTmID8dOpVNBOmle.jpg", video: "https://vidmoly.net/embed-rs0gqmee82a2.html" },
+  { title: "Épisode 21", description: "À la recherche du bâton magique", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/fCpglBIGL1CUjl1OaGqugRT7sQE.jpg", video: "https://vidmoly.net/embed-t4uexv0y0a82.html" },
+  { title: "Épisode 22", description: "Le Temple dans les nuages", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/vjzIHgk2Cf2T5MwEnkdAem4x8Go.jpg", video: "https://vidmoly.net/embed-20g0qjhxpnwu.html" },
+  { title: "Épisode 23", description: "Dieu apparaît", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/iSHzMu9d8RqFSAdNOmcY2S8Q56z.jpg", video: "https://vidmoly.net/embed-dq5zaeai78j0.html" },
+  { title: "Épisode 24", description: "La Résurrection du dragon", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/AbqXZFagKgVekYtGRbQ2WbRtdb6.jpg", video: "https://vidmoly.net/embed-lpovoo62chxs.html" },
+  { title: "Épisode 25", description: "Les Retrouvailles", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/hMQBwKDfz25qKT5BJcKKWN1qCp3.jpg", video: "https://vidmoly.net/embed-62mbynk481cg.html" }
+];
+
+const episodeDataS6 = [
+  { title: "Épisode 1", description: "La Coupe du monde des arts martiaux", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/kt4XD7V1ZEZ31gihaY1FzOD48vM.jpg", video: "https://vidmoly.net/embed-iguksmj3hveh.html" },
+  { title: "Épisode 2", description: "Les Huit Meilleurs candidats", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/oZnD8kuXP0JQJFJzx6B7UTjGwQG.jpg", video: "https://vidmoly.net/embed-qog48jasmrp1.html" },
+  { title: "Épisode 3", description: "Le Maître ignorant", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/fNSNWPLVBhrVvipoCIqwTH7vVF4.jpg", video: "https://vidmoly.net/embed-a5uiig0kpige.html" },
+  { title: "Épisode 4", description: "Sangoku se marie", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/d6ZAK3SnNZHlfkWjoFkvclbNu26.jpg", video: "https://vidmoly.net/embed-5ihxvkhc5v2j.html" },
+  { title: "Épisode 5", description: "Shen, un candidat peu ordinaire", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/8LabH3Vs9MVyjsljZCbfESoGuVy.jpg", video: "https://vidmoly.net/embed-oxjcn3zzx4bn.html" },
+  { title: "Épisode 6", description: "Sangoku contre Tenshinhan, deuxième rencontre", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/pfyFWoKDPTsj96YFftlDgDd2jVX.jpg", video: "https://vidmoly.net/embed-b7cytd88uquf.html" },
+  { title: "Épisode 7", description: "Entraînement très spécial", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/flcvK9iIHP8BZF0WruVXI0sXvmU.jpg", video: "https://vidmoly.net/embed-vk2kbpszizs5.html" },
+  { title: "Épisode 8", description: "Tous pour un, un pour tous", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/rrGkLgSSZ2qQyaugBToOKtMAEi2.jpg", video: "https://vidmoly.net/embed-n2nqh6jg0ptq.html" },
+  { title: "Épisode 9", description: "Shen contre Petit Cœur Junior", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/7nR7EECC1RWu3lTYFqQwrvC58Tv.jpg", video: "https://vidmoly.net/embed-847xk3ylttqv.html" },
+  { title: "Épisode 10", description: "Pour l'avenir du monde", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/5LJ2EIyZ2FFzzHBhquoAFgT7cIf.jpg", video: "https://vidmoly.net/embed-aeqgmssywimw.html" },
+  { title: "Épisode 11", description: "Le Dernier Combat", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/3KuaUgHLW2I3LFrrj36fALFKgx1.jpg", video: "https://vidmoly.net/embed-ada1kw06bpt4.html" },
+  { title: "Épisode 12", description: "Le Géant du tournoi", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/lciXd6rdwAHWRiKYckPsv0LjDgS.jpg", video: "https://vidmoly.net/embed-x3x639npk7qe.html" },
+  { title: "Épisode 13", description: "La Loyauté de Sangoku", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/aim6mw1rlRVvWa3kJBrl0oBJTw5.jpg", video: "https://vidmoly.net/embed-cyrkdim9fz6r.html" },
+  { title: "Épisode 14", description: "Une épreuve difficile", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/jRrP7IVG21ojVO3pwiExOEU9hgf.jpg", video: "https://vidmoly.net/embed-rqgm7a2gsayn.html" },
+  { title: "Épisode 15", description: "La Victoire finale", image: "https://media.themoviedb.org/t/p/w454_and_h254_bestv2/cqaIBGems4o6es0f2eOdaEIX4Qc.jpg", video: "https://vidmoly.net/embed-bojn2za9royo.html" },
+];
 
 
+    /*************************************************
+     * État
+     *************************************************/
+    const ANIME_TITLE = "Jujutsu Kaisen";
+    let currentSeason = 1;
+    let currentEpisodeData = episodeDataS1;
+    let currentEpisodeIndex = 0;
+    let timeoutId = null;
+    let userId = null;
 
-</div>
+    /*************************************************
+     * DOM refs
+     *************************************************/
+    const episodeList    = document.getElementById("episode-list");
+    const videoContainer = document.getElementById("video-container");
+    const videoIframe    = document.getElementById("episode-video");
+    const nextButton     = document.getElementById("next-button");
+    const backButton     = document.getElementById("back-button");
+    const seasonSelect   = document.getElementById("season-select");
 
+    /*************************************************
+     * Session utilisateur
+     *************************************************/
+    async function fetchSession() {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Erreur session Supabase:", error);
+        return null;
+      }
+      const session = sessionData?.session;
+      if (!session) {
+        console.warn("Pas de session (non connecté).");
+        return null;
+      }
+      return session.user.id;
+    }
+    (async () => {
+      userId = await fetchSession();
+    })();
 
-
-
-<br><br>
-
-<style>
- #saisonSelector {
-        padding: 10px 20px;
-        font-size: 18px;
-        border: 2px solid #ccc;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        appearance: none; /* Masque le style de base du sélecteur */
-        -webkit-appearance: none; /* Pour les anciennes versions de Chrome et Safari */
-        -moz-appearance: none; /* Pour les anciennes versions de Firefox */
-        cursor: pointer;
-        outline: none;
-        transition: background-color 0.3s ease;
+    /*************************************************
+     * Activité Supabase (profiles)
+     *************************************************/
+    function activityLabel() {
+      return `${ANIME_TITLE} (Saison ${currentSeason})`;
     }
 
-    /* Style au survol du sélecteur déroulant */
-    #saisonSelector:hover {
-        background-color: #e0e0e0;
-    }
+  async function updateCurrentActivity(episodeIndex) {
+  if (!userId) return;
+  const episode = currentEpisodeData[episodeIndex];
 
-    /* Style lors de la sélection d'une option */
-    #saisonSelector:focus {
-        border-color: #007bff;
-    }
-    
-  body{
-    background-color: #2e2b2b;
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      currently_watching: `${ANIME_TITLE} (Saison ${currentSeason})`,
+      episode_number: episodeIndex + 1,
+      episode_image: episode.image,
+      current_season: currentSeason
+    })
+    .eq("id", userId);
+
+  if (error) console.error("Erreur update activité:", error);
+}
+
+async function clearCurrentActivity() {
+  if (!userId) return;
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      currently_watching: null,
+      episode_number: null,
+      episode_image: null,
+      current_season: null
+    })
+    .eq("id", userId);
+
+  if (error) console.error("Erreur clear activité:", error);
 }
 
 
-ul{
-                list-style-type: none;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-                background-color: transparent;
-            }
-            li{
-                float: left;
-            }
-            li a{
-                display: block;
-                color: white;
-                text-align: center;
-                padding: 14px 16px;
-                text-decoration: none;
-                font-size: 30px;
-            }
-            li a:hover{
-                background-color: red;
-                border-radius: 10px;
-            }
-                    .arcaneimg{
-                width: 1850px;
-                height: 1000px;
-            }
-           #deux{
-            display: none;
-           }
+    /*************************************************
+     * Rendu épisodes
+     *************************************************/
+    function renderEpisodes() {
+      episodeList.innerHTML = "";
+      currentEpisodeData.forEach((ep, index) => {
+        const card = document.createElement("div");
+        card.className = "episode-card";
+        card.innerHTML = `
+          <img src="${ep.image}" alt="${ep.title} : ${ep.description}">
+          <h3>${ep.title}</h3>
+          <p>${ep.description}</p>
+        `;
+        card.addEventListener("click", () => {
+          currentEpisodeIndex = index;
+          playEpisode(index);
+        });
+        episodeList.appendChild(card);
+      });
+    }
 
-           #trois{
-            display: none;
-           }
-           #quatre{
-            display: none;
-           }
+    /*************************************************
+     * Lecture épisode
+     *************************************************/
+    function playEpisode(index) {
+      videoIframe.src = currentEpisodeData[index].video;
 
-           #cinq{
-            display: none;
-           }
+      videoContainer.classList.remove("show");
+      videoContainer.style.display = "flex";
+      requestAnimationFrame(() => {
+        videoContainer.classList.add("show");
+      });
 
-           #six{
-            display: none;
-           }
+      // MAJ activité (avec saison)
+      updateCurrentActivity(index);
 
-</style>
-<script>
-  function changerSaison() {
-  var selector = document.getElementById('saisonSelector');
-  var selectedValue = selector.options[selector.selectedIndex].value;
+      // gestion bouton suivant
+      nextButton.style.display = "none";
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (index < currentEpisodeData.length - 1) {
+          nextButton.style.display = "inline-block";
+        }
+      }, 1_380_000); // 23 min
+    }
 
-  // Réinitialiser tous les affichages
-  document.getElementById('un').style.display = 'none';
-  document.getElementById('deux').style.display = 'none';
-  document.getElementById('trois').style.display = 'none';
-  document.getElementById('quatre').style.display = 'none';
-  document.getElementById('cinq').style.display = 'none';
-  document.getElementById('six').style.display = 'none';
+    /*************************************************
+     * Épisode suivant
+     *************************************************/
+    function nextEpisode() {
+      if (currentEpisodeIndex < currentEpisodeData.length - 1) {
+        currentEpisodeIndex++;
+        playEpisode(currentEpisodeIndex);
+        nextButton.style.display = "none";
+      }
+    }
 
-  // Affichage basé sur la saison sélectionnée
-  if (selectedValue === 'saison1') {
-    document.getElementById('un').style.display = 'block';
-  } else if (selectedValue === 'saison2') {
-    document.getElementById('deux').style.display = 'block';
-  } else if (selectedValue === 'saison3') {
-    document.getElementById('trois').style.display = 'block';
-  } else if (selectedValue === 'saison4') {
-    document.getElementById('quatre').style.display = 'block';
-  } else if (selectedValue === 'saison5') {
-    document.getElementById('cinq').style.display = 'block';
-  } else if (selectedValue === 'saison6') {
-    document.getElementById('six').style.display = 'block';
-  }
-}
+    /*************************************************
+     * Retour (fermer + clear activité)
+     *************************************************/
+    function exitFullscreenMode() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      videoContainer.classList.remove("show");
+      setTimeout(() => {
+        videoContainer.style.display = "none";
+        // tuer flux iframe
+        videoIframe.src = "about:blank";
+        requestAnimationFrame(() => (videoIframe.src = ""));
+        nextButton.style.display = "none";
+        clearCurrentActivity();
+      }, 500);
+    }
 
-// Au chargement initial, afficher la saison 1
-window.onload = function() {
-  changerSaison();
-};
+    /*************************************************
+     * Changement saison
+     *************************************************/
+    const allSeasons = [episodeDataS1, episodeDataS2, episodeDataS3, episodeDataS4, episodeDataS5, episodeDataS6];
+
+seasonSelect.addEventListener("change", () => {
+  currentSeason = Number(seasonSelect.value);
+  currentEpisodeData = allSeasons[currentSeason - 1] || [];
+  currentEpisodeIndex = 0;
+  renderEpisodes();
+  clearCurrentActivity();
+});
 
 
-</script>
+    /*************************************************
+     * Gestion visibilité bouton Retour en plein écran (optionnel)
+     *************************************************/
+    document.addEventListener("fullscreenchange", () => {
+      if (document.fullscreenElement) {
+        backButton.classList.add("hidden");
+      } else {
+        backButton.classList.remove("hidden");
+      }
+    });
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        backButton.classList.remove("hidden");
+      }
+    });
 
+    /*************************************************
+     * Exposer global (pour attributs onclick du HTML static)
+     *************************************************/
+    window.exitFullscreenMode = exitFullscreenMode;
+    window.nextEpisode = nextEpisode;
 
-
+    /*************************************************
+     * Init
+     *************************************************/
+    renderEpisodes();
+  </script>
 </body>
 </html>
