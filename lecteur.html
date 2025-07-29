@@ -3,76 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lecteur Vidéo Complet</title>
+  <title>Lecteur Vidéo HLS (Plein écran)</title>
   <style>
-    :root {
-      --bg-dark: #121212;
-      --text-dark: #ffffff;
-      --accent-dark: #ff3d00;
-
-      --bg-light: #f5f5f5;
-      --text-light: #111111;
-      --accent-light: #d32f2f;
-
-      --radius: 12px;
-      --padding: 0.5rem 1rem;
-    }
-
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #000;
+      overflow: hidden;
       font-family: sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-dark);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    body.light {
-      background-color: var(--bg-light);
-      color: var(--text-light);
     }
 
     .player {
-      width: 100%;
-      max-width: 800px;
       position: relative;
+      width: 100vw;
+      height: 100vh;
     }
 
     video {
       width: 100%;
-      border-radius: var(--radius);
+      height: 100%;
       object-fit: cover;
+      background: #000;
     }
 
     .controls {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      justify-content: space-between;
       align-items: center;
-      background: rgba(0, 0, 0, 0.6);
-      padding: var(--padding);
-      border-radius: 0 0 var(--radius) var(--radius);
-      backdrop-filter: blur(5px);
-    }
-
-    body.light .controls {
-      background: rgba(255, 255, 255, 0.8);
+      justify-content: space-between;
+      padding: 1rem;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+      color: white;
+      box-sizing: border-box;
     }
 
     button, input[type="range"] {
       background: none;
       border: none;
-      color: inherit;
+      color: white;
       font-size: 1rem;
       cursor: pointer;
-    }
-
-    input[type="range"] {
-      width: 100px;
     }
 
     .progress-container {
@@ -91,62 +64,36 @@
 
     .progress-bar {
       height: 100%;
-      background: var(--accent-dark);
+      background: #ff3d00;
       width: 0%;
-      transition: width 0.1s;
-    }
-
-    body.light .progress {
-      background: #ccc;
-    }
-
-    body.light .progress-bar {
-      background: var(--accent-light);
     }
 
     .time {
-      font-size: 0.85rem;
-      white-space: nowrap;
-    }
-
-    .theme-toggle {
-      margin-top: 1rem;
-      cursor: pointer;
       font-size: 0.9rem;
-      text-decoration: underline;
+      white-space: nowrap;
     }
   </style>
 </head>
 <body>
 
-  <h1>🎬 Lecteur Vidéo Personnalisé</h1>
-
   <div class="player">
-    <video id="video" poster="https://image.tmdb.org/t/p/w1920_and_h800_multi_faces/njaw7QZy5ni8ZDydx3b1EDpEfwk.jpg">
-      <video controls width="100%" height="auto">
-  <source src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" type="application/x-mpegURL">
-</video>
-
-      <track src="https://dl34.topstrime.online/hls2/14/00913/lang/fre/0b2kl29mucbv_fre/index.m3u8" kind="subtitles" srclang="fr" label="Français" default>
-      Ton navigateur ne supporte pas la vidéo.
+    <video id="video" autoplay muted playsinline>
+      <source src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" type="application/x-mpegURL">
+      Ton navigateur ne supporte pas la vidéo HLS.
     </video>
 
     <div class="controls">
       <button id="playPause">▶️</button>
       <div class="progress-container" id="progress">
-        <div class="progress">
-          <div class="progress-bar" id="progressBar"></div>
-        </div>
+        <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
       </div>
       <span class="time" id="time">00:00 / 00:00</span>
-      <input type="range" id="volume" min="0" max="1" step="0.05" value="1" title="Volume" />
+      <input type="range" id="volume" min="0" max="1" step="0.05" value="1" />
       <button id="pipBtn">📺</button>
       <button id="muteBtn">🔇</button>
       <button id="fullscreenBtn">⛶</button>
     </div>
   </div>
-
-  <div class="theme-toggle" id="toggleTheme">🌗 Basculer thème clair/sombre</div>
 
   <script>
     const video = document.getElementById('video');
@@ -158,7 +105,6 @@
     const volumeSlider = document.getElementById('volume');
     const muteBtn = document.getElementById('muteBtn');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const toggleTheme = document.getElementById('toggleTheme');
 
     function formatTime(sec) {
       const m = Math.floor(sec / 60);
@@ -167,6 +113,7 @@
     }
 
     function updateProgress() {
+      if (!video.duration) return;
       const percent = (video.currentTime / video.duration) * 100;
       progressBar.style.width = `${percent}%`;
       timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
@@ -221,42 +168,6 @@
 
     video.addEventListener('timeupdate', updateProgress);
     video.addEventListener('loadedmetadata', updateProgress);
-
-    toggleTheme.addEventListener('click', () => {
-      document.body.classList.toggle('light');
-    });
-
-    // Raccourcis clavier
-    document.addEventListener('keydown', (e) => {
-      if (e.target.tagName.toLowerCase() === 'input') return;
-      switch (e.key.toLowerCase()) {
-        case ' ':
-        case 'k':
-          e.preventDefault();
-          playPauseBtn.click();
-          break;
-        case 'm':
-          muteBtn.click();
-          break;
-        case 'f':
-          fullscreenBtn.click();
-          break;
-        case 'arrowright':
-          video.currentTime += 5;
-          break;
-        case 'arrowleft':
-          video.currentTime -= 5;
-          break;
-        case 'arrowup':
-          video.volume = Math.min(video.volume + 0.05, 1);
-          volumeSlider.value = video.volume;
-          break;
-        case 'arrowdown':
-          video.volume = Math.max(video.volume - 0.05, 0);
-          volumeSlider.value = video.volume;
-          break;
-      }
-    });
   </script>
 
 </body>
