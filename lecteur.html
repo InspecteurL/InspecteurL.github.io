@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="icon" href="data:,">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lecteur Vidéo HLS (Plein écran)</title>
+  <title>Lecteur Vidéo HLS</title>
+  <link rel="icon" href="data:,">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     html, body {
       margin: 0;
@@ -78,10 +79,7 @@
 <body>
 
   <div class="player">
-    <video id="video" autoplay muted playsinline>
-      <source src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" type="application/x-mpegURL">
-      Ton navigateur ne supporte pas la vidéo HLS.
-    </video>
+    <video id="video" muted playsinline></video>
 
     <div class="controls">
       <button id="playPause">▶️</button>
@@ -107,6 +105,25 @@
     const muteBtn = document.getElementById('muteBtn');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
 
+    const videoSrc = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
+
+    // Load HLS with fallback for native
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(videoSrc);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play();
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = videoSrc;
+      video.addEventListener('loadedmetadata', () => {
+        video.play();
+      });
+    } else {
+      alert('Votre navigateur ne prend pas en charge HLS.');
+    }
+
     function formatTime(sec) {
       const m = Math.floor(sec / 60);
       const s = Math.floor(sec % 60).toString().padStart(2, '0');
@@ -114,7 +131,7 @@
     }
 
     function updateProgress() {
-      if (!video.duration) return;
+      if (!video.duration || isNaN(video.duration)) return;
       const percent = (video.currentTime / video.duration) * 100;
       progressBar.style.width = `${percent}%`;
       timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
@@ -161,13 +178,12 @@
       }
     });
 
-progress.addEventListener('click', (e) => {
-  if (isNaN(video.duration)) return; // Ajout de cette ligne
-  const x = e.offsetX;
-  const width = progress.clientWidth;
-  video.currentTime = (x / width) * video.duration;
-});
-
+    progress.addEventListener('click', (e) => {
+      if (!video.duration || isNaN(video.duration)) return;
+      const x = e.offsetX;
+      const width = progress.clientWidth;
+      video.currentTime = (x / width) * video.duration;
+    });
 
     video.addEventListener('timeupdate', updateProgress);
     video.addEventListener('loadedmetadata', updateProgress);
