@@ -230,28 +230,42 @@ async function addSuggestion(text, status) {
       render();
     }
 
-    async function addComment(suggestionId, text) {
-      const payload = {
-        suggestion_id: suggestionId,
-        content: text,
-        author_pseudo: currentUser?.pseudo || null,
-        author_email: currentUser?.email || null
-      };
-      const { data, error } = await supabase
-        .from('comments')
-        .insert(payload)
-        .select()
-        .single();
-      if (error) {
-        alert('Erreur commentaire: ' + error.message);
-        return;
-      }
-      const s = suggestions.find(s => s.id === suggestionId);
-      if (s) {
-        s.comments.push(data);
-        render(); // re-render complet (simple)
-      }
-    }
+   async function addComment(suggestionId, text) {
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    alert("Utilisateur non connecté — impossible d'ajouter un commentaire.");
+    return;
+  }
+
+  const payload = {
+    suggestion_id: suggestionId,
+    content: text,
+    author_pseudo: currentUser?.pseudo || null,
+    author_email: currentUser?.email || null,
+    user_id: user.id  // 🔥 Obligatoire pour passer la RLS
+  };
+
+  const { data, error } = await supabase
+    .from('comments')
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) {
+    alert('Erreur commentaire: ' + error.message);
+    return;
+  }
+
+  const s = suggestions.find(s => s.id === suggestionId);
+  if (s) {
+    s.comments.push(data);
+    render(); // re-render complet (simple)
+  }
+}
 
     /* ========= Rendu ========= */
     function render() {
