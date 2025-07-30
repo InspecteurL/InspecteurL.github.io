@@ -246,7 +246,7 @@ async function addSuggestion(text, status) {
     content: text,
     author_pseudo: currentUser?.pseudo || null,
     author_email: currentUser?.email || null,
-    user_id: user.id  // 🔥 Obligatoire pour passer la RLS
+    user_id: user.id  // 🔥 Doit correspondre à la RLS
   };
 
   const { data, error } = await supabase
@@ -263,9 +263,10 @@ async function addSuggestion(text, status) {
   const s = suggestions.find(s => s.id === suggestionId);
   if (s) {
     s.comments.push(data);
-    render(); // re-render complet (simple)
+    render();
   }
 }
+
 
     /* ========= Rendu ========= */
     function render() {
