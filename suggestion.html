@@ -170,26 +170,41 @@
       render();
     }
 
-    async function addSuggestion(text, status) {
-      const payload = {
-        text,
-        status,
-        author_pseudo: currentUser?.pseudo || null,
-        author_email: currentUser?.email || null
-      };
-      const { data, error } = await supabase
-        .from('suggestions')
-        .insert(payload)
-        .select()
-        .single();
-      if (error) {
-        alert('Erreur ajout: ' + error.message);
-        return;
-      }
-      data.comments = [];
-      suggestions.unshift(data);
-      render();
-    }
+async function addSuggestion(text, status) {
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    alert("Utilisateur non connecté — impossible d'ajouter la suggestion.");
+    return;
+  }
+
+  const payload = {
+    text,
+    status,
+    author_pseudo: currentUser?.pseudo || null,
+    author_email: currentUser?.email || null,
+    user_id: user.id  // 🔥 Nécessaire pour que RLS accepte l'insertion
+  };
+
+  const { data, error } = await supabase
+    .from('suggestions')
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) {
+    alert('Erreur ajout: ' + error.message);
+    return;
+  }
+
+  data.comments = [];
+  suggestions.unshift(data);
+  render();
+}
+
 
     async function updateSuggestionStatus(id, newStatus) {
       const { error } = await supabase
