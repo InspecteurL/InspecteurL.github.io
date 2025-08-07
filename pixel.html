@@ -93,19 +93,22 @@
       user = session.user;
     }
 
-    async function loadPixels() {
-      const { data, error } = await supabase.from("pixels").select("x, y, color");
-      if (error) {
-        console.error("Erreur chargement pixels:", error);
-        return;
-      }
+ async function loadPixels() {
+  const { data, error } = await supabase.from("pixels").select("x, y, color");
+  if (error) {
+    console.error("Erreur chargement pixels:", error);
+    return;
+  }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      data.forEach(({ x, y, color }) => {
-        ctx.fillStyle = color;
-        ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
-      });
-    }
+  console.log("Pixels chargés :", data); // 👈 AJOUTE ÇA
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  data.forEach(({ x, y, color }) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+  });
+}
+
 
     function setupRealtime() {
       supabase
