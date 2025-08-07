@@ -1,202 +1,154 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>PixelZone</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="data:,">
+  <meta charset="UTF-8">
+  <title>Pixel Place Realtime</title>
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
+      background: #1e1e1e;
+      color: white;
+      font-family: sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
-    }
-    h1 {
-      margin-bottom: 1rem;
-    }
-    .toolbar {
-      display: flex;
-      gap: 1rem;
-      background: white;
-      padding: 10px 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-    }
-    .canvas-wrapper {
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      overflow: hidden;
     }
     canvas {
+      border: 1px solid #555;
       background: white;
+      image-rendering: pixelated;
       cursor: crosshair;
-      display: block;
     }
-    button {
-      padding: 6px 12px;
+    .controls {
+      margin: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .color-picker {
+      width: 40px;
+      height: 40px;
       border: none;
-      background: #007bff;
-      color: white;
-      border-radius: 4px;
       cursor: pointer;
     }
-    button:disabled {
-      background: #aaa;
-      cursor: not-allowed;
+    #pixel-count {
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>🎨 PixelZone</h1>
-  <div class="toolbar">
-    <input type="color" id="colorPicker" value="#ff0000" />
-    <span id="pixelCounter">6 pixels restants</span>
-    <button id="cooldownBtn" disabled>Cooldown...</button>
+  <h1>🎨 Pixel Place Realtime</h1>
+  <div class="controls">
+    <input type="color" id="color-picker" class="color-picker" value="#ff0000">
+    <span id="pixel-count">6 pixels restants</span>
   </div>
-  <div class="canvas-wrapper">
-    <canvas id="canvas" width="800" height="800"></canvas>
-  </div>
+  <canvas id="canvas" width="800" height="800"></canvas>
 
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
+    const PIXEL_SIZE = 10;
+    const MAX_PIXELS_PER_MIN = 6;
+
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const colorPicker = document.getElementById("color-picker");
+    const pixelCountDisplay = document.getElementById("pixel-count");
+
+    let scale = 1;
+    let pixelCount = 0;
+    let cooldown = false;
+    let user = { id: "anonymous" }; // simplifié pour usage sans auth
+
     const supabase = window.supabase.createClient(
       "https://wuagahavmbugmnuzsouf.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
     );
 
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const colorPicker = document.getElementById("colorPicker");
-    const pixelCounter = document.getElementById("pixelCounter");
-    const cooldownBtn = document.getElementById("cooldownBtn");
-
-    const PIXEL_SIZE = 10;
-    const MAX_PIXELS_PER_MIN = 6;
-    let pixelCount = 0;
-    let cooldown = false;
-    let user = null;
-    let scale = 1; // ✅ Correction ici
-
-    async function initAuth() {
-      let session = (await supabase.auth.getSession()).data.session;
-      if (!session) {
-        await supabase.auth.signInAnonymously();
-        session = (await supabase.auth.getSession()).data.session;
+    async function loadPixels() {
+      const { data, error } = await supabase.from("pixels").select("x, y, color");
+      if (error) {
+        console.error("Erreur chargement pixels:", error);
+        return;
       }
-      user = session.user;
-    }
 
- async function loadPixels() {
-  const { data, error } = await supabase.from("pixels").select("x, y, color");
-  if (error) {
-    console.error("Erreur chargement pixels:", error);
-    return;
-  }
-
-  console.log("Pixels chargés :", data); // 👈 AJOUTE ÇA
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  data.forEach(({ x, y, color }) => {
-    ctx.fillStyle = color;
-    ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
-  });
-}
-
-
-    function setupRealtime() {
-      supabase
-        .channel("realtime-pixels")
-        .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "pixels" },
-          (payload) => {
-            const { x, y, color } = payload.new;
-            ctx.fillStyle = color;
-            ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
-          }
-        )
-        .subscribe();
-    }
-
-    function startCooldown() {
-      cooldown = true;
-      cooldownBtn.disabled = true;
-      cooldownBtn.textContent = "Cooldown...";
-      setTimeout(() => {
-        cooldown = false;
-        cooldownBtn.disabled = false;
-        cooldownBtn.textContent = "Prêt";
-      }, 1000);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      data.forEach(({ x, y, color }) => {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+      });
     }
 
     function updateUI() {
-      pixelCounter.textContent = `${MAX_PIXELS_PER_MIN - pixelCount} pixels restants`;
+      pixelCountDisplay.textContent = `${MAX_PIXELS_PER_MIN - pixelCount} pixels restants`;
     }
 
-   async function placePixel(e) {
-  if (cooldown || pixelCount >= MAX_PIXELS_PER_MIN) return;
+    function startCooldown() {
+      if (pixelCount >= MAX_PIXELS_PER_MIN) {
+        cooldown = true;
+        setTimeout(() => {
+          pixelCount = 0;
+          cooldown = false;
+          updateUI();
+        }, 60 * 1000);
+      }
+    }
 
-  const rect = canvas.getBoundingClientRect();
+    async function placePixel(e) {
+      if (cooldown || pixelCount >= MAX_PIXELS_PER_MIN) return;
 
-  // Correction du calcul de position avec le zoom
-  const x = Math.floor((e.clientX - rect.left) / (PIXEL_SIZE * scale)) * PIXEL_SIZE;
-  const y = Math.floor((e.clientY - rect.top) / (PIXEL_SIZE * scale)) * PIXEL_SIZE;
+      const rect = canvas.getBoundingClientRect();
+      const canvasX = (e.clientX - rect.left) / scale;
+      const canvasY = (e.clientY - rect.top) / scale;
 
-  const color = colorPicker.value;
-  const { error } = await supabase.from("pixels").insert({ x, y, color, user_id: user.id });
+      const x = Math.floor(canvasX / PIXEL_SIZE) * PIXEL_SIZE;
+      const y = Math.floor(canvasY / PIXEL_SIZE) * PIXEL_SIZE;
 
-  if (error) {
-    console.error("Erreur insertion pixel:", error);
-    return;
-  }
+      const color = colorPicker.value;
 
-  pixelCount++;
-  updateUI();
-  startCooldown();
-}
+      const { error } = await supabase
+        .from("pixels")
+        .insert({ x, y, color, user_id: user.id });
 
+      if (error) {
+        console.error("Erreur insertion pixel:", error);
+        return;
+      }
 
       pixelCount++;
       updateUI();
       startCooldown();
     }
 
-    canvas.addEventListener("click", placePixel);
-
-    canvas.addEventListener("wheel", (e) => {
-      e.preventDefault();
-      const zoomFactor = 0.1;
-      if (e.deltaY < 0) {
-        scale += zoomFactor;
-      } else {
-        scale -= zoomFactor;
-      }
-      scale = Math.max(0.5, Math.min(scale, 5));
-      updateCanvas();
-    });
-
     function updateCanvas() {
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       loadPixels();
     }
 
-    initAuth().then(() => {
-      loadPixels();
-      setupRealtime();
-      setInterval(() => {
-        pixelCount = 0;
-        updateUI();
-      }, 60000); // 1 min
-      cooldownBtn.textContent = "Prêt";
-      cooldownBtn.disabled = false;
+    canvas.addEventListener("click", placePixel);
+
+    // Zoom à la molette
+    canvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      scale += delta;
+      scale = Math.max(0.5, Math.min(5, scale));
+      updateCanvas();
     });
+
+    // Écoute temps réel Supabase
+    supabase
+      .channel("realtime:pixels")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pixels" }, (payload) => {
+        const { x, y, color } = payload.new;
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+      })
+      .subscribe();
+
+    // Initialisation
+    updateCanvas();
+    updateUI();
   </script>
 </body>
 </html>
