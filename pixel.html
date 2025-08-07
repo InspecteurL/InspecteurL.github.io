@@ -56,17 +56,14 @@
 <body>
   <h1>🎨 PixelZone</h1>
   <div class="toolbar">
-    <!-- Sélecteur de couleur JSColor -->
-    <input class="jscolor" id="colorPicker" value="ff0000" />
+    <!-- Sélecteur de couleur simplifié -->
+    <input type="color" id="colorPicker" value="#ff0000" />
     <span id="pixelCounter">6 pixels restants</span>
     <button id="cooldownBtn" disabled>Cooldown...</button>
   </div>
   <div class="canvas-wrapper">
     <canvas id="canvas" width="800" height="800"></canvas>
   </div>
-
-  <!-- JSColor Color Picker -->
-  <script src="https://cdn.jsdelivr.net/npm/jscolor@2.4.5/jscolor.min.js"></script>
 
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -89,6 +86,7 @@
     let cooldown = false;
     let user = null;
 
+    // Authentification de l'utilisateur
     async function initAuth() {
       let session = (await supabase.auth.getSession()).data.session;
       if (!session) {
@@ -98,7 +96,7 @@
       user = session.user;
     }
 
-    // Charger les pixels depuis Supabase (apparaissent correctement maintenant)
+    // Charger les pixels depuis Supabase
     async function loadPixels() {
       const { data, error } = await supabase.from("pixels").select("x, y, color");
       if (error) {
@@ -111,6 +109,7 @@
       });
     }
 
+    // Configuration en temps réel pour l'affichage des pixels
     function setupRealtime() {
       supabase
         .channel("realtime-pixels")
@@ -134,13 +133,14 @@
         cooldown = false;
         cooldownBtn.disabled = false;
         cooldownBtn.textContent = "Prêt";
-      }, 1000); // Le cooldown sera de 1 seconde
+      }, 1000); // Délai d'une seconde pour le cooldown
     }
 
     function updateUI() {
       pixelCounter.textContent = `${MAX_PIXELS_PER_MIN - pixelCount} pixels restants`;
     }
 
+    // Fonction pour placer un pixel
     async function placePixel(e) {
       if (cooldown || pixelCount >= MAX_PIXELS_PER_MIN) return;
 
@@ -148,7 +148,7 @@
       const x = Math.floor((e.clientX - rect.left) / PIXEL_SIZE) * PIXEL_SIZE;
       const y = Math.floor((e.clientY - rect.top) / PIXEL_SIZE) * PIXEL_SIZE;
 
-      // Ajouter un pixel à la base de données
+      // Ajouter le pixel dans la base de données
       const color = colorPicker.value;
       const { error } = await supabase.from("pixels").insert({ x, y, color, user_id: user.id });
 
@@ -157,16 +157,15 @@
         return;
       }
 
-      // Augmenter le compteur de pixels
       pixelCount++;
       updateUI();
       startCooldown();
     }
 
-    // Événement de clic sur le canvas pour ajouter un pixel
+    // Événement pour placer un pixel au clic
     canvas.addEventListener("click", placePixel);
 
-    // Zoom seulement
+    // Zoom fonctionnel avec la molette
     canvas.addEventListener("wheel", (e) => {
       e.preventDefault();
       const zoomFactor = 0.1;
@@ -175,7 +174,7 @@
       } else {
         scale -= zoomFactor;
       }
-      scale = Math.max(0.5, Math.min(scale, 5)); // Limite du zoom entre 0.5 et 5
+      scale = Math.max(0.5, Math.min(scale, 5)); // Limiter le zoom entre 0.5 et 5
       updateCanvas();
     });
 
@@ -184,11 +183,11 @@
       loadPixels(); // Recharge les pixels après chaque zoom
     }
 
-    // Initialisation
+    // Initialisation de l'application
     initAuth().then(() => {
-      loadPixels(); // Charger les pixels initiaux
+      loadPixels(); // Charger les pixels au début
       setupRealtime(); // Écouter les événements en temps réel
-      setInterval(() => pixelCount = 0, 60 * 1000); // Réinitialiser le compteur de pixels chaque minute
+      setInterval(() => pixelCount = 0, 60 * 1000); // Réinitialiser les pixels chaque minute
       cooldownBtn.textContent = "Prêt";
       cooldownBtn.disabled = false;
     });
