@@ -66,8 +66,12 @@
     <canvas id="canvas" width="2000" height="2000"></canvas>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  const supabase = window.supabase.createClient(
+    "https://wuagahavmbugmnuzsouf.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+  );
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const colorPicker = document.getElementById("colorPicker");
@@ -79,8 +83,6 @@
     let pixelCount = 0;
     let cooldown = false;
     let user = null;
-
-    const supabase = supabase.createClient("https://wuagahavmbugmnuzsouf.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho");
 
     async function initAuth() {
       const { data: { session } } = await supabase.auth.getSession();
