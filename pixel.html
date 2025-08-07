@@ -56,6 +56,7 @@
 <body>
   <h1>🎨 PixelZone</h1>
   <div class="toolbar">
+    <!-- Sélecteur de couleur JSColor -->
     <input class="jscolor" id="colorPicker" value="ff0000" />
     <span id="pixelCounter">6 pixels restants</span>
     <button id="cooldownBtn" disabled>Cooldown...</button>
@@ -88,9 +89,6 @@
     let cooldown = false;
     let user = null;
 
-    const userArea = { x: 100, y: 100, width: 200, height: 200 }; // Zone de 200x200px pour chaque utilisateur
-    let scale = 1;
-
     async function initAuth() {
       let session = (await supabase.auth.getSession()).data.session;
       if (!session) {
@@ -100,8 +98,13 @@
       user = session.user;
     }
 
+    // Charger les pixels depuis Supabase (apparaissent correctement maintenant)
     async function loadPixels() {
-      const { data } = await supabase.from("pixels").select("x,y,color");
+      const { data, error } = await supabase.from("pixels").select("x, y, color");
+      if (error) {
+        console.error('Erreur de chargement des pixels', error);
+        return;
+      }
       data.forEach(({ x, y, color }) => {
         ctx.fillStyle = color;
         ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
@@ -131,7 +134,7 @@
         cooldown = false;
         cooldownBtn.disabled = false;
         cooldownBtn.textContent = "Prêt";
-      }, 1000);
+      }, 1000); // Le cooldown sera de 1 seconde
     }
 
     function updateUI() {
@@ -145,19 +148,23 @@
       const x = Math.floor((e.clientX - rect.left) / PIXEL_SIZE) * PIXEL_SIZE;
       const y = Math.floor((e.clientY - rect.top) / PIXEL_SIZE) * PIXEL_SIZE;
 
-      // Vérifie que le pixel est dans la zone autorisée
-      if (
-        x >= userArea.x && x < userArea.x + userArea.width &&
-        y >= userArea.y && y < userArea.y + userArea.height
-      ) {
-        const color = colorPicker.value;
-        await supabase.from("pixels").insert({ x, y, color, user_id: user.id });
+      // Ajouter un pixel à la base de données
+      const color = colorPicker.value;
+      const { error } = await supabase.from("pixels").insert({ x, y, color, user_id: user.id });
 
-        pixelCount++;
-        updateUI();
-        startCooldown();
+      if (error) {
+        console.error('Erreur lors de l\'ajout du pixel', error);
+        return;
       }
+
+      // Augmenter le compteur de pixels
+      pixelCount++;
+      updateUI();
+      startCooldown();
     }
+
+    // Événement de clic sur le canvas pour ajouter un pixel
+    canvas.addEventListener("click", placePixel);
 
     // Zoom seulement
     canvas.addEventListener("wheel", (e) => {
@@ -168,7 +175,7 @@
       } else {
         scale -= zoomFactor;
       }
-      scale = Math.max(0.5, Math.min(scale, 5));
+      scale = Math.max(0.5, Math.min(scale, 5)); // Limite du zoom entre 0.5 et 5
       updateCanvas();
     });
 
@@ -177,13 +184,11 @@
       loadPixels(); // Recharge les pixels après chaque zoom
     }
 
-    canvas.addEventListener("click", placePixel);
-
-    // Init
+    // Initialisation
     initAuth().then(() => {
-      loadPixels();
-      setupRealtime();
-      setInterval(() => pixelCount = 0, 60 * 1000); // Reset pixels every minute
+      loadPixels(); // Charger les pixels initiaux
+      setupRealtime(); // Écouter les événements en temps réel
+      setInterval(() => pixelCount = 0, 60 * 1000); // Réinitialiser le compteur de pixels chaque minute
       cooldownBtn.textContent = "Prêt";
       cooldownBtn.disabled = false;
     });
