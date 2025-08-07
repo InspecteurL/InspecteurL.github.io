@@ -58,7 +58,7 @@
 <body>
   <h1>🎨 PixelZone</h1>
   <div class="toolbar">
-    <input type="color" id="colorPicker" value="#ff0000" />
+    <input class="jscolor" id="colorPicker" value="ff0000" />
     <span id="pixelCounter">6 pixels restants</span>
     <button id="cooldownBtn" disabled>Cooldown...</button>
   </div>
@@ -66,8 +66,12 @@
     <canvas id="canvas" width="2000" height="2000"></canvas>
   </div>
 
+  <!-- JSColor Color Picker -->
+  <script src="https://cdn.jsdelivr.net/npm/jscolor@2.4.5/jscolor.min.js"></script>
+
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
   <script>
     const supabase = window.supabase.createClient(
       "https://wuagahavmbugmnuzsouf.supabase.co",
@@ -87,6 +91,12 @@
     let cooldown = false;
     let user = null;
 
+    const userArea = { x: 100, y: 100, width: 200, height: 200 }; // Zone de 200x200px pour chaque utilisateur
+    let scale = 1;
+    let offsetX = 0, offsetY = 0;
+    let isDragging = false;
+    let startX, startY;
+
     async function initAuth() {
       let session = (await supabase.auth.getSession()).data.session;
       if (!session) {
@@ -102,6 +112,7 @@
         ctx.fillStyle = color;
         ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
       });
+      drawUserArea(); // Dessine la zone autorisée
     }
 
     function setupRealtime() {
@@ -119,20 +130,10 @@
         .subscribe();
     }
 
-    async function placePixel(e) {
-      if (cooldown || pixelCount >= MAX_PIXELS_PER_MIN) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.floor((e.clientX - rect.left + wrapper.scrollLeft) / PIXEL_SIZE) * PIXEL_SIZE;
-      const y = Math.floor((e.clientY - rect.top + wrapper.scrollTop) / PIXEL_SIZE) * PIXEL_SIZE;
-
-      const color = colorPicker.value;
-
-      await supabase.from("pixels").insert({ x, y, color, user_id: user.id });
-
-      pixelCount++;
-      updateUI();
-      startCooldown();
+    function drawUserArea() {
+      ctx.strokeStyle = "rgba(0, 255, 0, 0.5)";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(userArea.x, userArea.y, userArea.width, userArea.height);
     }
 
     function startCooldown() {
@@ -150,9 +151,61 @@
       pixelCounter.textContent = `${MAX_PIXELS_PER_MIN - pixelCount} pixels restants`;
     }
 
-    function resetPixelCount() {
-      pixelCount = 0;
-      updateUI();
+    async function placePixel(e) {
+      if (cooldown || pixelCount >= MAX_PIXELS_PER_MIN) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.floor((e.clientX - rect.left + wrapper.scrollLeft) / PIXEL_SIZE) * PIXEL_SIZE;
+      const y = Math.floor((e.clientY - rect.top + wrapper.scrollTop) / PIXEL_SIZE) * PIXEL_SIZE;
+
+      // Vérifie que le pixel est dans la zone autorisée
+      if (
+        x >= userArea.x && x < userArea.x + userArea.width &&
+        y >= userArea.y && y < userArea.y + userArea.height
+      ) {
+        const color = colorPicker.value;
+        await supabase.from("pixels").insert({ x, y, color, user_id: user.id });
+
+        pixelCount++;
+        updateUI();
+        startCooldown();
+      }
+    }
+
+    // Zoom et déplacement
+    canvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const zoomFactor = 0.1;
+      if (e.deltaY < 0) {
+        scale += zoomFactor;
+      } else {
+        scale -= zoomFactor;
+      }
+      scale = Math.max(0.5, Math.min(scale, 5));
+      updateCanvas();
+    });
+
+    canvas.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      startX = e.clientX - offsetX;
+      startY = e.clientY - offsetY;
+    });
+
+    canvas.addEventListener("mousemove", (e) => {
+      if (isDragging) {
+        offsetX = e.clientX - startX;
+        offsetY = e.clientY - startY;
+        updateCanvas();
+      }
+    });
+
+    canvas.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+
+    function updateCanvas() {
+      ctx.setTransform(scale, 0, 0, scale, offsetX, offsetY);
+      loadPixels(); // Recharge les pixels après chaque zoom/déplacement
     }
 
     canvas.addEventListener("click", placePixel);
@@ -161,7 +214,7 @@
     initAuth().then(() => {
       loadPixels();
       setupRealtime();
-      setInterval(resetPixelCount, 60 * 1000);
+      setInterval(() => pixelCount = 0, 60 * 1000); // Reset pixels every minute
       cooldownBtn.textContent = "Prêt";
       cooldownBtn.disabled = false;
     });
