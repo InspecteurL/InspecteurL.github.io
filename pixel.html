@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelZone - Canvas Collaboratif</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1rem;
+    }
+    .canvas-wrapper {
+      overflow: auto;
+      max-width: 90vw;
+      max-height: 80vh;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background: white;
+    }
+    canvas {
+      cursor: crosshair;
+    }
+    .button {
+      padding: 0.5rem 1rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .button[disabled] {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 PixelZone</h1>
+  <div class="toolbar">
+    <input type="color" id="colorPicker" value="#ff0000" />
+    <span id="pixelCounter">6 pixels restants</span>
+    <button id="cooldownBtn" class="button" disabled>Cooldown...</button>
+  </div>
+  <div class="canvas-wrapper">
+    <canvas id="canvas" width="2000" height="2000"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const colorPicker = document.getElementById("colorPicker");
+    const pixelCounter = document.getElementById("pixelCounter");
+    const cooldownBtn = document.getElementById("cooldownBtn");
+
+    const PIXEL_SIZE = 10;
+    const MAX_PIXELS_PER_MIN = 6;
+    let pixelCount = 0;
+    let cooldown = false;
+    let user = null;
+
+    const supabase = supabase.createClient("https://wuagahavmbugmnuzsouf.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho");
+
+    async function initAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) await supabase.auth.signInAnonymously();
+      const { data } = await supabase.auth.getUser();
+      user = data.user;
+    }
+
+    async function loadPixels() {
+      const { data } = await supabase.from("pixels").select("x,y,color");
+      data.forEach(({ x, y, color }) => {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+      });
+    }
+
+    function setupRealtime() {
+      supabase
+        .channel("realtime-pixels")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "pixels" }, (payload) => {
+          const { x, y, color } = payload.new;
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+        })
+        .subscribe();
+    }
+
+    async function placePixel(e) {
+      if (cooldown || pixelCount >= MAX_PIXELS_PER_MIN) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.floor((e.clientX - rect.left) / PIXEL_SIZE) * PIXEL_SIZE;
+      const y = Math.floor((e.clientY - rect.top) / PIXEL_SIZE) * PIXEL_SIZE;
+
+      const color = colorPicker.value;
+      await supabase.from("pixels").insert({ x, y, color, user_id: user.id });
+      pixelCount++;
+      updateUI();
+      startCooldown();
+    }
+
+    function startCooldown() {
+      cooldown = true;
+      cooldownBtn.disabled = true;
+      cooldownBtn.textContent = "Cooldown...";
+      setTimeout(() => {
+        cooldown = false;
+        cooldownBtn.disabled = false;
+        cooldownBtn.textContent = "Prêt";
+      }, 1000);
+    }
+
+    function updateUI() {
+      pixelCounter.textContent = `${MAX_PIXELS_PER_MIN - pixelCount} pixels restants`;
+    }
+
+    function resetPixelCount() {
+      pixelCount = 0;
+      updateUI();
+    }
+
+    canvas.addEventListener("click", placePixel);
+
+    // Initialisation
+    initAuth().then(() => {
+      loadPixels();
+      setupRealtime();
+      setInterval(resetPixelCount, 60 * 1000);
+      cooldownBtn.textContent = "Prêt";
+      cooldownBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>
