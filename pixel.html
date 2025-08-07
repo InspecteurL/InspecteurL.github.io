@@ -103,6 +103,11 @@
         console.error('Erreur de chargement des pixels', error);
         return;
       }
+
+      // Effacer l'ancien contenu avant de redessiner
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Dessiner tous les pixels récupérés
       data.forEach(({ x, y, color }) => {
         ctx.fillStyle = color;
         ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
