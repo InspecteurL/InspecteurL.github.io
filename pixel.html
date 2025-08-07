@@ -39,6 +39,7 @@
     }
     canvas {
       cursor: crosshair;
+      background-color: white;
     }
     button {
       padding: 6px 12px;
@@ -78,6 +79,7 @@
     const colorPicker = document.getElementById("colorPicker");
     const pixelCounter = document.getElementById("pixelCounter");
     const cooldownBtn = document.getElementById("cooldownBtn");
+    const wrapper = document.querySelector(".canvas-wrapper");
 
     const PIXEL_SIZE = 10;
     const MAX_PIXELS_PER_MIN = 6;
@@ -121,8 +123,8 @@
       if (cooldown || pixelCount >= MAX_PIXELS_PER_MIN) return;
 
       const rect = canvas.getBoundingClientRect();
-      const x = Math.floor((e.clientX - rect.left) / PIXEL_SIZE) * PIXEL_SIZE;
-      const y = Math.floor((e.clientY - rect.top) / PIXEL_SIZE) * PIXEL_SIZE;
+      const x = Math.floor((e.clientX - rect.left + wrapper.scrollLeft) / PIXEL_SIZE) * PIXEL_SIZE;
+      const y = Math.floor((e.clientY - rect.top + wrapper.scrollTop) / PIXEL_SIZE) * PIXEL_SIZE;
 
       const color = colorPicker.value;
 
