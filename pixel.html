@@ -9,19 +9,17 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f9f9f9;
+      background: #f0f0f0;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 20px;
     }
     h1 {
-      font-size: 2rem;
       margin-bottom: 1rem;
     }
     .toolbar {
       display: flex;
-      align-items: center;
       gap: 1rem;
       background: white;
       padding: 10px 20px;
@@ -30,14 +28,14 @@
       margin-bottom: 20px;
     }
     .canvas-wrapper {
-      overflow: hidden;
       border: 2px solid #ccc;
       border-radius: 8px;
-      background: white;
+      overflow: hidden;
     }
     canvas {
+      background: white;
       cursor: crosshair;
-      background-color: white;
+      display: block;
     }
     button {
       padding: 6px 12px;
@@ -56,7 +54,6 @@
 <body>
   <h1>🎨 PixelZone</h1>
   <div class="toolbar">
-    <!-- Sélecteur de couleur simplifié -->
     <input type="color" id="colorPicker" value="#ff0000" />
     <span id="pixelCounter">6 pixels restants</span>
     <button id="cooldownBtn" disabled>Cooldown...</button>
@@ -85,8 +82,8 @@
     let pixelCount = 0;
     let cooldown = false;
     let user = null;
+    let scale = 1; // ✅ Correction ici
 
-    // Authentification de l'utilisateur
     async function initAuth() {
       let session = (await supabase.auth.getSession()).data.session;
       if (!session) {
@@ -96,25 +93,20 @@
       user = session.user;
     }
 
-    // Charger les pixels depuis Supabase
     async function loadPixels() {
       const { data, error } = await supabase.from("pixels").select("x, y, color");
       if (error) {
-        console.error('Erreur de chargement des pixels', error);
+        console.error("Erreur chargement pixels:", error);
         return;
       }
 
-      // Effacer l'ancien contenu du canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Dessiner tous les pixels récupérés depuis Supabase
       data.forEach(({ x, y, color }) => {
         ctx.fillStyle = color;
         ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
       });
     }
 
-    // Configuration en temps réel pour l'affichage des pixels
     function setupRealtime() {
       supabase
         .channel("realtime-pixels")
@@ -138,14 +130,13 @@
         cooldown = false;
         cooldownBtn.disabled = false;
         cooldownBtn.textContent = "Prêt";
-      }, 1000); // Délai d'une seconde pour le cooldown
+      }, 1000);
     }
 
     function updateUI() {
       pixelCounter.textContent = `${MAX_PIXELS_PER_MIN - pixelCount} pixels restants`;
     }
 
-    // Fonction pour placer un pixel
     async function placePixel(e) {
       if (cooldown || pixelCount >= MAX_PIXELS_PER_MIN) return;
 
@@ -153,12 +144,11 @@
       const x = Math.floor((e.clientX - rect.left) / PIXEL_SIZE) * PIXEL_SIZE;
       const y = Math.floor((e.clientY - rect.top) / PIXEL_SIZE) * PIXEL_SIZE;
 
-      // Ajouter le pixel dans la base de données
       const color = colorPicker.value;
       const { error } = await supabase.from("pixels").insert({ x, y, color, user_id: user.id });
 
       if (error) {
-        console.error('Erreur lors de l\'ajout du pixel', error);
+        console.error("Erreur insertion pixel:", error);
         return;
       }
 
@@ -167,10 +157,8 @@
       startCooldown();
     }
 
-    // Événement pour placer un pixel au clic
     canvas.addEventListener("click", placePixel);
 
-    // Zoom fonctionnel avec la molette
     canvas.addEventListener("wheel", (e) => {
       e.preventDefault();
       const zoomFactor = 0.1;
@@ -179,20 +167,22 @@
       } else {
         scale -= zoomFactor;
       }
-      scale = Math.max(0.5, Math.min(scale, 5)); // Limiter le zoom entre 0.5 et 5
+      scale = Math.max(0.5, Math.min(scale, 5));
       updateCanvas();
     });
 
     function updateCanvas() {
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
-      loadPixels(); // Recharge les pixels après chaque zoom
+      loadPixels();
     }
 
-    // Initialisation de l'application
     initAuth().then(() => {
-      loadPixels(); // Charger les pixels au début
-      setupRealtime(); // Écouter les événements en temps réel
-      setInterval(() => pixelCount = 0, 60 * 1000); // Réinitialiser les pixels chaque minute
+      loadPixels();
+      setupRealtime();
+      setInterval(() => {
+        pixelCount = 0;
+        updateUI();
+      }, 60000); // 1 min
       cooldownBtn.textContent = "Prêt";
       cooldownBtn.disabled = false;
     });
