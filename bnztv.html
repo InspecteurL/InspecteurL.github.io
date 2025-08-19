@@ -4,16 +4,48 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Custom Video Player</title>
-<!-- Charger la variable font Material Symbols une seule fois -->
+
+<!-- Une seule font pour toutes les icônes -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
 <style>
-body { 
-  margin: 0; 
-  background: #000; 
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
-  height: 100vh; 
+body {
+  margin: 0;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.video-container {
+  position: relative;
+  width: 90%;
+  max-width: 1200px;
+}
+
+video {
+  width: 100%;
+  display: block;
+}
+
+.controls {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  background: rgba(0,0,0,0.5);
+  padding: 10px;
+  border-radius: 10px;
+  align-items: center;
+  transition: opacity 0.3s;
+}
+
+.controls.hide {
+  opacity: 0;
 }
 
 .material-symbols-outlined {
@@ -21,51 +53,33 @@ body {
   cursor: pointer;
   color: white;
 }
-.controls {
-  display: flex;
-  gap: 15px;
-  background: rgba(0,0,0,0.5);
-  padding: 10px;
+
+.progress {
   position: absolute;
-  bottom: 10px;
-  width: 95%;
-  justify-content: center;
-  border-radius: 10px;
-}
-.video-container {
-  position: relative;
-  width: 800px;
-  margin: auto;
-}
-video {
-  width: 100%;
-  height: auto;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: rgba(255,255,255,0.3);
+  cursor: pointer;
 }
 
-.controls.hide { 
-  opacity: 0; 
-}
-.progress { 
-  position: absolute; 
-  bottom: 50px; 
-  left: 0; 
-  right: 0; 
-  height: 5px; 
-  background: rgba(255,255,255,0.3); 
-  cursor: pointer; 
-}
-
-.progress-bar { 
-  width: 0%; 
-  height: 100%; 
-  background: #fff; 
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: #fff;
 }
 </style>
 </head>
 <body>
 <div class="video-container">
   <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
-  <div class="controls">
+
+  <div class="progress" id="progress">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
+  <div class="controls" id="controls">
     <span id="backward" class="material-symbols-outlined">replay_10</span>
     <span id="play" class="material-symbols-outlined">play_arrow</span>
     <span id="forward" class="material-symbols-outlined">forward_10</span>
@@ -84,6 +98,7 @@ const progressBar = document.getElementById('progress-bar');
 const playBtn = document.getElementById('play');
 let hideTimeout;
 
+// Affiche ou cache les controls après inactivity
 function showControls() {
   controls.classList.remove('hide');
   document.body.style.cursor = 'default';
@@ -98,17 +113,20 @@ video.addEventListener('mousemove', showControls);
 document.addEventListener('mousemove', showControls);
 showControls();
 
+// Mise à jour de la barre de progression
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
 });
 
+// Cliquer sur la barre de progression
 progress.addEventListener('click', e => {
   const rect = progress.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
   video.currentTime = pos * video.duration;
 });
 
+// Boutons
 document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
 document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
 
@@ -122,7 +140,7 @@ playBtn.addEventListener('click', () => {
   }
 });
 
-document.getElementById('fullscreen').addEventListener('click', () => { 
+document.getElementById('fullscreen').addEventListener('click', () => {
   if (document.fullscreenElement) {
     document.exitFullscreen();
   } else {
