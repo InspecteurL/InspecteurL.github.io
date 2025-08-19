@@ -3,480 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lecteur vidéo – Pro</title>
-  <!-- hls.js for HLS (.m3u8) -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-  <!-- dash.js for MPEG-DASH (.mpd) -->
-  <script src="https://cdn.jsdelivr.net/npm/dashjs@4"></script>
+  <title>Lecteur Vidéo Simple</title>
   <style>
-    :root{
-      --bg:#0b0f17;--panel:#111827;--muted:#6b7280;--text:#e5e7eb;--accent:#60a5fa;--accent-2:#34d399;--warn:#fbbf24;--danger:#f87171;
-      --radius:16px;--shadow:0 10px 30px rgba(0,0,0,.35);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;background:linear-gradient(180deg,#0b0f17,#0b0f17 40%,#0a1220);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
-
-    .app{max-width:1100px;margin:32px auto;padding:16px}
-
-    .card{background:rgba(17,24,39,.85);border:1px solid rgba(255,255,255,.06);backdrop-filter: blur(6px);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-    .header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
-    .title{display:flex;gap:10px;align-items:center}
-    .dot{width:10px;height:10px;background:radial-gradient(circle at 30% 30%,#9ae6b4,#10b981);border-radius:99px;box-shadow:0 0 16px #10b981aa}
-    .muted{color:var(--muted)}
-
-    .player-wrap{position:relative;background:#000}
-    .theater .player-wrap{height:75vh}
-    .video{width:100%;max-height:68vh;background:#000}
-    .overlay-center{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
-    .big-play{width:86px;height:86px;border-radius:999px;border:1px solid rgba(255,255,255,.2);backdrop-filter: blur(2px);display:grid;place-items:center;box-shadow:0 8px 32px rgba(0,0,0,.4)}
-    .big-play svg{filter:drop-shadow(0 6px 20px rgba(0,0,0,.6))}
-    .hidden{display:none!important}
-
-    /* Controls */
-    .controls{position:relative;padding:10px;background:linear-gradient(180deg,rgba(0,0,0,.0),rgba(0,0,0,.5));}
-    .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .space{flex:1}
-    button,select,input[type="range"]{accent-color:var(--accent)}
-    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:#0c1322;color:var(--text);padding:8px 10px;border-radius:12px;cursor:pointer;transition:.2s}
-    .btn:hover{background:#0f1a2e}
-    .btn.ghost{background:transparent}
-    .btn.primary{background:linear-gradient(180deg,#2563eb,#1d4ed8);border-color:transparent}
-    .btn.success{background:linear-gradient(180deg,#059669,#047857);border-color:transparent}
-    .btn.warn{background:linear-gradient(180deg,#f59e0b,#d97706);border-color:transparent}
-    .time{font-variant-tabular-nums:tabular-nums}
-
-    /* Seek */
-    .seek-wrap{display:flex;align-items:center;gap:10px;padding:6px 0}
-    .seek{flex:1;-webkit-appearance:none;height:6px;background:linear-gradient(90deg,var(--accent) var(--progress,0%),#2b3344 var(--progress,0%));border-radius:999px}
-    .seek::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--accent)}
-    .volume{width:110px}
-
-    .footer{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px;border-top:1px solid rgba(255,255,255,.06)}
-    .pill{background:#0f172a;border:1px solid rgba(255,255,255,.08);padding:6px 10px;border-radius:999px}
-
-    .grid{display:grid;grid-template-columns:1fr;gap:12px}
-    @media (min-width:900px){.grid{grid-template-columns:2.2fr 1fr}}
-
-    .panel{padding:12px}
-    .panel h3{margin:0 0 8px;font-size:15px}
-    .panel label{display:block;font-size:12px;color:var(--muted);margin:8px 0 3px}
-    .panel input[type="text"], .panel input[type="number"], .panel select{width:100%;background:#0f1627;border:1px solid rgba(255,255,255,.08);color:var(--text);padding:8px 10px;border-radius:10px}
-
-    .tags{display:flex;flex-wrap:wrap;gap:8px}
-    .tag{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:#0e1627}
-
-    .toast{position:fixed;right:18px;bottom:18px;background:#0f172a;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);opacity:0;transform:translateY(8px);transition:.25s}
-    .toast.show{opacity:1;transform:translateY(0)}
-
-    .badge{padding:4px 8px;border-radius:8px;background:#0f172a;border:1px solid rgba(255,255,255,.08)}
-    .right{display:flex;align-items:center;gap:8px}
-
-    .skip-btn{font-size:12px}
-
-    .kbd{border:1px solid rgba(255,255,255,.1);border-bottom-width:3px;background:#0b1222;padding:2px 6px;border-radius:6px;font-size:12px}
+    body{margin:0;background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif}
+    .player{position:relative;width:80%;max-width:800px;background:#111;border-radius:12px;overflow:hidden;}
+    video{width:100%;height:auto;background:#000}
+    .controls{display:flex;justify-content:center;align-items:center;gap:14px;padding:10px;background:rgba(0,0,0,0.6)}
+    .controls span{cursor:pointer;font-size:20px;user-select:none;transition:0.2s}
+    .controls span:hover{color:#1e90ff}
+    .menu{position:absolute;bottom:55px;right:10px;background:#222;border-radius:8px;padding:8px;display:none;flex-direction:column;gap:6px}
+    .menu select{background:#111;color:#fff;border:1px solid #444;border-radius:6px;padding:4px}
   </style>
 </head>
 <body>
-  <div class="app card theater" id="app">
-    <div class="header">
-      <div class="title"><span class="dot"></span><strong>Lecteur vidéo – Pro</strong><span class="muted">(colle simplement l’URL du film)</span></div>
-      <div class="right">
-        <span class="badge" id="status">Prêt</span>
-        <button class="btn ghost" id="theaterBtn" title="Mode cinéma (T)">🎬</button>
-      </div>
+  <div class="player">
+    <video id="video" controls>
+      <source src="https://cinepizza.xyz/movies/Interstellar.mp4" type="application/x-mpegURL">
+    </video>
+    <div class="controls">
+      <span id="back">⏪</span>
+      <span id="play">▶️</span>
+      <span id="forward">⏩</span>
+      <span id="subs">💬</span>
+      <span id="sources">📂</span>
+      <span id="settings">⚙️</span>
     </div>
-
-    <div class="grid">
-      <div>
-        <div class="player-wrap">
-          <video id="video" class="video" playsinline></video>
-          <div class="overlay-center" id="overlay">
-            <button class="big-play btn primary" id="bigPlay" title="Lecture (K)">
-              <svg width="38" height="38" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/></svg>
-            </button>
-          </div>
-        </div>
-
-        <div class="controls">
-          <div class="row">
-            <button class="btn" id="play">⏯️</button>
-            <button class="btn" id="back10" title="-10s (J)">⏪ 10s</button>
-            <button class="btn" id="fwd10" title="+10s (L)">⏩ 10s</button>
-            <div class="space"></div>
-            <button class="btn" id="pipBtn" title="Picture-in-Picture (I)">🗔 PiP</button>
-            <button class="btn" id="fsBtn" title="Plein écran (F)">⛶ Plein écran</button>
-          </div>
-
-          <div class="seek-wrap">
-            <span class="time" id="current">00:00</span>
-            <input type="range" id="seek" class="seek" min="0" max="1000" value="0" />
-            <span class="time" id="duration">00:00</span>
-          </div>
-
-          <div class="row">
-            <button class="btn" id="mute">🔈</button>
-            <input type="range" id="volume" class="volume" min="0" max="1" step="0.01" value="1" />
-
-            <label class="muted">Vitesse</label>
-            <select id="speed" class="pill">
-              <option>0.5</option><option>0.75</option><option selected>1.0</option><option>1.25</option><option>1.5</option><option>1.75</option><option>2.0</option>
-            </select>
-
-            <label class="muted">Qualité</label>
-            <select id="quality" class="pill"><option value="auto">Auto</option></select>
-
-            <label class="muted">Sous-titres</label>
-            <select id="subs" class="pill"><option value="off">Off</option></select>
-
-            <div class="space"></div>
-            <button class="btn success skip-btn" id="skipIntro" title="Passer l’intro">⏭️ Intro</button>
-            <button class="btn warn skip-btn" id="skipCredits" title="Passer le générique">⏭️ Générique</button>
-          </div>
-        </div>
-
-        <div class="footer">
-          <div class="tags">
-            <span class="tag" id="techInfo">—</span>
-            <span class="tag">Raccourcis : <span class="kbd">J</span> <span class="kbd">K</span> <span class="kbd">L</span> · <span class="kbd">F</span> plein écran · <span class="kbd">I</span> PiP · <span class="kbd">←/→</span> ±5s · <span class="kbd">↑/↓</span> volume</span>
-          </div>
-          <div class="right">
-            <button class="btn" id="screenshotBtn" title="Capture (PNG)">📸 Capture</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h3>Source & options</h3>
-        <label>URL de la vidéo (.mp4, .m3u8, .mpd)</label>
-        <input id="sourceUrl" type="text" placeholder="Colle ici l’URL du film…" />
-        <div style="height:8px"></div>
-        <button class="btn primary" id="loadBtn">Charger la source</button>
-        <div style="height:12px"></div>
-        <label>URL des sous-titres (.vtt – optionnel)</label>
-        <input id="subsUrl" type="text" placeholder="https://exemple.com/soustitres.vtt" />
-        <div style="height:8px"></div>
-        <button class="btn" id="addSubsBtn">Ajouter les sous-titres</button>
-        <div style="height:12px"></div>
-        <label>Passer l’intro (secondes)</label>
-        <input id="introSec" type="number" min="0" value="0" />
-        <label>Passer le générique (secondes avant la fin)</label>
-        <input id="creditsSec" type="number" min="0" value="0" />
-        <div style="height:12px"></div>
-        <div class="tags">
-          <span class="tag">Glisser-déposer un fichier local pour lire</span>
-          <span class="tag">Reprise automatique via localStorage</span>
-          <span class="tag">Détection auto HLS/DASH/MP4</span>
-        </div>
-      </div>
+    <div class="menu" id="settingsMenu">
+      <label>Sous-titres : <select id="subsSelect"><option>Off</option></select></label>
+      <label>Sources : <select id="sourceSelect"><option>Démo</option></select></label>
+      <label>Piste audio : <select id="audioSelect"><option>Par défaut</option></select></label>
+      <label>Vitesse : <select id="speedSelect"><option>0.5</option><option>0.75</option><option selected>1.0</option><option>1.25</option><option>1.5</option><option>2.0</option></select></label>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
-
   <script>
-    /*********************
-     * CONFIG PAR DÉFAUT *
-     *********************/
-    const DEFAULTS = {
-      SOURCE_URL: "https://cinepizza.xyz/movies/Interstellar.mp4", // ⚠️ Mets ton lien ici (mp4/m3u8/mpd) si tu veux précharger
-      SUBTITLE_URL: "", // optionnel (.vtt)
-      SKIP_INTRO: 0,     // secondes à sauter au début
-      SKIP_CREDITS: 0    // secondes avant la fin
-    };
+    const video = document.getElementById('video');
+    const playBtn = document.getElementById('play');
+    const forward = document.getElementById('forward');
+    const back = document.getElementById('back');
+    const settings = document.getElementById('settings');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const speedSelect = document.getElementById('speedSelect');
 
-    // Raccourcis utilitaires
-    const $ = sel => document.querySelector(sel);
-    const $$ = sel => Array.from(document.querySelectorAll(sel));
+    playBtn.onclick = ()=>{ video.paused ? video.play() : video.pause(); };
+    forward.onclick = ()=> video.currentTime += 10;
+    back.onclick = ()=> video.currentTime -= 10;
 
-    const video = $('#video');
-    const seek = $('#seek');
-    const current = $('#current');
-    const duration = $('#duration');
-    const volume = $('#volume');
-    const playBtn = $('#play');
-    const muteBtn = $('#mute');
-    const speed = $('#speed');
-    const fsBtn = $('#fsBtn');
-    const pipBtn = $('#pipBtn');
-    const bigPlay = $('#bigPlay');
-    const overlay = $('#overlay');
-    const status = $('#status');
-    const qualitySel = $('#quality');
-    const subsSel = $('#subs');
-    const skipIntroBtn = $('#skipIntro');
-    const skipCreditsBtn = $('#skipCredits');
-    const theaterBtn = $('#theaterBtn');
-    const techInfo = $('#techInfo');
-    const screenshotBtn = $('#screenshotBtn');
+    video.onplay = ()=> playBtn.textContent = '⏸️';
+    video.onpause = ()=> playBtn.textContent = '▶️';
 
-    const sourceUrlInput = $('#sourceUrl');
-    const subsUrlInput = $('#subsUrl');
-    const loadBtn = $('#loadBtn');
-    const addSubsBtn = $('#addSubsBtn');
-    const introSecInput = $('#introSec');
-    const creditsSecInput = $('#creditsSec');
-
-    let hls = null; // hls.js instance
-    let dash = null; // dash.js instance
-    let lastKnownLevels = [];
-
-    const toast = (msg, ms=1800) => {
-      const el = $('#toast');
-      el.textContent = msg; el.classList.add('show');
-      setTimeout(()=>el.classList.remove('show'), ms);
-    };
-
-    const fmt = s => {
-      if (!isFinite(s)) return '00:00';
-      const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60); const sec = Math.floor(s%60);
-      return h>0 ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}` : `${m}:${String(sec).padStart(2,'0')}`;
-    };
-
-    const updateSeekGradient = () => {
-      const pct = (video.currentTime / (video.duration||1)) * 100;
-      seek.style.setProperty('--progress', pct + '%');
-    };
-
-    const saveProgress = () => {
-      const key = 'player:progress:' + (video.currentSrc || 'local');
-      try{localStorage.setItem(key, String(video.currentTime||0));}catch(e){}
-    };
-    const restoreProgress = () => {
-      const key = 'player:progress:' + (video.currentSrc || 'local');
-      try{
-        const t = parseFloat(localStorage.getItem(key)||'0');
-        if (t>0 && video.duration && (video.duration - t) > 5){ video.currentTime = t; toast('Reprise à ' + fmt(t)); }
-      }catch(e){}
-    };
-
-    const clearEngines = () => {
-      if (hls){ hls.destroy(); hls = null; }
-      if (dash){ dash.reset(); dash = null; }
-      video.src = '';
-      video.removeAttribute('src');
-      while (video.firstChild) video.removeChild(video.firstChild);
-    };
-
-    const detectType = (url) => {
-      const u = url.split('?')[0].toLowerCase();
-      if (u.endsWith('.m3u8')) return 'hls';
-      if (u.endsWith('.mpd')) return 'dash';
-      return 'mp4';
-    };
-
-    async function loadSource(url){
-      if(!url) return toast('Aucune URL');
-      status.textContent = 'Chargement…';
-      status.style.color = '';
-      clearEngines();
-      qualitySel.innerHTML = '<option value="auto">Auto</option>';
-      lastKnownLevels = [];
-
-      const type = detectType(url);
-      try{
-        if (type==='hls'){
-          if (video.canPlayType('application/vnd.apple.mpegurl')){
-            // Safari natif
-            video.src = url;
-          } else if (Hls.isSupported()){
-            hls = new Hls({enableWorker:true, backBufferLength:90});
-            hls.loadSource(url);
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, (_, data)=>{
-              lastKnownLevels = data.levels||[];
-              populateQualities(lastKnownLevels.map((l,i)=>({label: (l.height? l.height+'p' : (l.bitrate/1000|0)+'kbps'), index:i})));
-              status.textContent = 'OK (HLS)';
-              techInfo.textContent = `HLS • ${data.levels.length} qualités`;
-            });
-            hls.on(Hls.Events.LEVEL_SWITCHED, (_, data)=>{
-              const lvl = lastKnownLevels[data.level];
-              if(lvl) toast(`Qualité → ${lvl.height?lvl.height+'p':(lvl.bitrate/1000|0)+'kbps'}`);
-            });
-          } else {
-            video.src = url; // fallback – certains navigateurs gèrent
-          }
-        } else if (type==='dash'){
-          dash = dashjs.MediaPlayer().create();
-          dash.initialize(video, url, false);
-          dash.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, ()=>{
-            const abr = dash.getBitrateInfoListFor('video')||[];
-            populateQualities(abr.map((q,i)=>({label:(q.height? q.height+'p' : (q.bitrate/1000|0)+'kbps'), index:i})));
-            status.textContent = 'OK (DASH)';
-            techInfo.textContent = `DASH • ${abr.length} qualités`;
-          });
-        } else {
-          // mp4 ou autre
-          const src = document.createElement('source');
-          src.src = url; src.type = 'video/mp4';
-          video.appendChild(src);
-          status.textContent = 'OK (MP4)';
-          techInfo.textContent = 'MP4';
-        }
-
-        video.addEventListener('loadedmetadata', ()=>{
-          duration.textContent = fmt(video.duration);
-          restoreProgress();
-          updateSeekGradient();
-        }, {once:true});
-
-        video.addEventListener('play', ()=>{ overlay.classList.add('hidden'); playBtn.textContent='⏸️'; });
-        video.addEventListener('pause', ()=>{ overlay.classList.remove('hidden'); playBtn.textContent='▶️'; });
-
-        video.addEventListener('timeupdate', ()=>{
-          current.textContent = fmt(video.currentTime);
-          seek.value = String((video.currentTime / (video.duration||1))*1000|0);
-          updateSeekGradient();
-          saveProgress();
-          manageSkipButtons();
-        });
-
-        video.addEventListener('ended', ()=>{ toast('Lecture terminée'); });
-
-      } catch (e){
-        console.error(e);
-        status.textContent = 'Erreur'; status.style.color = 'var(--danger)';
-        toast('Impossible de charger la source (CORS ? format ?)');
-      }
-    }
-
-    function populateQualities(items){
-      qualitySel.innerHTML = '<option value="auto">Auto</option>' + items.map(it=>`<option value="${it.index}">${it.label}</option>`).join('');
-    }
-
-    function setQuality(idx){
-      if (idx==='auto'){ if(hls){ hls.currentLevel = -1; } if(dash){ dash.setAutoSwitchQualityFor('video', true);} return; }
-      const i = parseInt(idx,10);
-      if (hls){ hls.currentLevel = i; }
-      if (dash){ dash.setAutoSwitchQualityFor('video', false); dash.setQualityFor('video', i); }
-    }
-
-    function manageSkipButtons(){
-      const introSec = parseFloat(introSecInput.value||'0');
-      const creditsSec = parseFloat(creditsSecInput.value||'0');
-      skipIntroBtn.style.display = (video.currentTime < introSec && introSec>0) ? 'inline-flex' : 'none';
-      const remaining = (video.duration||0) - video.currentTime;
-      skipCreditsBtn.style.display = (creditsSec>0 && remaining <= creditsSec) ? 'inline-flex' : 'none';
-    }
-
-    // Events UI
-    playBtn.onclick = ()=> video.paused ? video.play() : video.pause();
-    bigPlay.onclick = ()=> video.play();
-    $('#back10').onclick = ()=> video.currentTime = Math.max(0, video.currentTime - 10);
-    $('#fwd10').onclick = ()=> video.currentTime = Math.min(video.duration||1e9, video.currentTime + 10);
-
-    seek.oninput = ()=>{
-      const t = (parseInt(seek.value,10)/1000) * (video.duration||0);
-      video.currentTime = t;
-      updateSeekGradient();
-    };
-
-    volume.oninput = ()=> video.volume = parseFloat(volume.value);
-    muteBtn.onclick = ()=>{ video.muted = !video.muted; muteBtn.textContent = video.muted? '🔇' : '🔈'; };
-    speed.onchange = ()=> video.playbackRate = parseFloat(speed.value);
-    fsBtn.onclick = ()=>{
-      const el = document.fullscreenElement ? document.exitFullscreen() : $('#app').requestFullscreen();
-    };
-    pipBtn.onclick = async ()=>{ try{ if(document.pictureInPictureElement){ await document.exitPictureInPicture(); } else { await video.requestPictureInPicture(); } }catch(e){ toast('PiP non supporté'); }};
-
-    qualitySel.onchange = ()=> setQuality(qualitySel.value);
-
-    // Sous-titres
-    function addSubtitles(url){
-      if(!url) return toast('URL sous-titres manquante');
-      // retirer anciennes pistes
-      $$('track').forEach(t=>t.remove());
-      const tr = document.createElement('track');
-      tr.kind = 'subtitles'; tr.label = 'FR'; tr.srclang='fr'; tr.src = url; tr.default = true;
-      video.appendChild(tr);
-      // menu
-      subsSel.innerHTML = '<option value="off">Off</option><option value="fr" selected>FR</option>';
-      subsSel.onchange = ()=>{
-        const on = subsSel.value !== 'off';
-        for(const t of video.textTracks){ t.mode = (on? 'showing':'disabled'); }
-      };
-      for(const t of video.textTracks){ t.mode = 'showing'; }
-      toast('Sous-titres ajoutés');
-    }
-
-    // Screenshot PNG
-    async function screenshot(){
-      try{
-        const canvas = document.createElement('canvas');
-        const scale = 1; // 1:1
-        canvas.width = video.videoWidth*scale; canvas.height = video.videoHeight*scale;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video,0,0,canvas.width,canvas.height);
-        const a = document.createElement('a');
-        a.href = canvas.toDataURL('image/png');
-        a.download = 'capture.png';
-        a.click();
-      }catch(e){ toast('Capture non supportée'); }
-    }
-
-    screenshotBtn.onclick = screenshot;
-
-    // Drag & drop fichiers locaux
-    document.addEventListener('dragover', e=>{ e.preventDefault(); });
-    document.addEventListener('drop', e=>{
-      e.preventDefault();
-      const f = e.dataTransfer.files[0]; if(!f) return;
-      const url = URL.createObjectURL(f);
-      loadSource(url);
-      sourceUrlInput.value = url;
-    });
-
-    // Clavier
-    document.addEventListener('keydown', e=>{
-      if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
-      const k = e.key.toLowerCase();
-      if(k===' ') { e.preventDefault(); playBtn.click(); }
-      else if(k==='j'){ $('#back10').click(); }
-      else if(k==='l'){ $('#fwd10').click(); }
-      else if(k==='k'){ playBtn.click(); }
-      else if(k==='f'){ fsBtn.click(); }
-      else if(k==='i'){ pipBtn.click(); }
-      else if(k==='t'){ theaterBtn.click(); }
-      else if(k==='arrowleft'){ video.currentTime = Math.max(0, video.currentTime-5); }
-      else if(k==='arrowright'){ video.currentTime = Math.min(video.duration||1e9, video.currentTime+5); }
-      else if(k==='arrowup'){ e.preventDefault(); video.volume = Math.min(1, video.volume+0.05); volume.value = video.volume; }
-      else if(k==='arrowdown'){ e.preventDefault(); video.volume = Math.max(0, video.volume-0.05); volume.value = video.volume; }
-    });
-
-    // Boutons panel
-    loadBtn.onclick = ()=> loadSource(sourceUrlInput.value.trim());
-    addSubsBtn.onclick = ()=> addSubtitles(subsUrlInput.value.trim());
-    skipIntroBtn.onclick = ()=>{ const s=parseFloat(introSecInput.value||'0'); if(s>0) video.currentTime = s; };
-    skipCreditsBtn.onclick = ()=>{ const s=parseFloat(creditsSecInput.value||'0'); if(s>0) video.currentTime = Math.max(0,(video.duration||0)-1); };
-
-    theaterBtn.onclick = ()=>{ $('#app').classList.toggle('theater'); };
-
-    // Observers
-    video.addEventListener('ratechange', ()=> toast(`Vitesse ×${video.playbackRate.toFixed(2)}`));
-
-    // Initialisation auto si DEFAULTS définis
-    window.addEventListener('DOMContentLoaded', ()=>{
-      // Précharger config
-      if (DEFAULTS.SOURCE_URL){ sourceUrlInput.value = DEFAULTS.SOURCE_URL; loadSource(DEFAULTS.SOURCE_URL); }
-      if (DEFAULTS.SUBTITLE_URL){ subsUrlInput.value = DEFAULTS.SUBTITLE_URL; }
-      if (DEFAULTS.SKIP_INTRO){ introSecInput.value = DEFAULTS.SKIP_INTRO; }
-      if (DEFAULTS.SKIP_CREDITS){ creditsSecInput.value = DEFAULTS.SKIP_CREDITS; }
-    });
-
-    // Observabilité basique
-    setInterval(()=>{
-      let info = '';
-      try{
-        const bw = (hls && hls.bandwidthEstimate) ? (hls.bandwidthEstimate/1000|0)+' kbps' : '';
-        const res = video.videoWidth? `${video.videoWidth}×${video.videoHeight}`:'';
-        const dropped = (video.getVideoPlaybackQuality && video.getVideoPlaybackQuality().droppedVideoFrames) || 0;
-        info = [res,bw, dropped?`drops:${dropped}`:''].filter(Boolean).join(' • ');
-      }catch(e){}
-      techInfo.textContent = info || '—';
-    }, 1000);
-
-    // Tip CORS
-    status.title = 'Si la source ne se charge pas, il peut s’agir d’un blocage CORS côté serveur.';
+    settings.onclick = ()=> settingsMenu.style.display = settingsMenu.style.display==='flex'?'none':'flex';
+    speedSelect.onchange = ()=> video.playbackRate = parseFloat(speedSelect.value);
   </script>
 </body>
 </html>
+
