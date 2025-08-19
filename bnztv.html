@@ -16,6 +16,7 @@
     .progress-filled{height:100%;background:#1e90ff;width:0;border-radius:3px}
     .menu{position:absolute;bottom:45px;right:10px;background:#222;border-radius:8px;padding:8px;display:none;flex-direction:column;gap:6px;z-index:10}
     .menu select{background:#111;color:#fff;border:1px solid #444;border-radius:6px;padding:4px}
+    .volume-slider{width:80px}
   </style>
 </head>
 <body>
@@ -24,7 +25,6 @@
       <source src="https://cinepizza.xyz/movies/Interstellar.mp4" type="video/mp4">
     </video>
 
-    <!-- Barre de contrôle -->
     <div class="controls">
       <div class="left-controls">
         <span id="back">⏪</span>
@@ -37,12 +37,11 @@
         <span id="subs">💬</span>
         <span id="sources">📂</span>
         <span id="settings">⚙️</span>
-        <span id="volume">🔊</span>
+        <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.05" value="1">
         <span id="fullscreen">⛶</span>
       </div>
     </div>
 
-    <!-- Menus -->
     <div class="menu" id="subsMenu">
       <label>Sous-titres : <select id="subsSelect"><option>Off</option><option>Français</option><option>Anglais</option></select></label>
     </div>
@@ -65,9 +64,7 @@
     const timeDisplay = document.getElementById('time');
     const progress = document.getElementById('progress');
     const progressFilled = document.getElementById('progressFilled');
-    const volumeBtn = document.getElementById('volume');
     const fullscreenBtn = document.getElementById('fullscreen');
-    const player = document.getElementById('player');
 
     const settingsBtn = document.getElementById('settings');
     const subsBtn = document.getElementById('subs');
@@ -77,6 +74,8 @@
     const sourcesMenu = document.getElementById('sourcesMenu');
     const speedSelect = document.getElementById('speedSelect');
     const sourceSelect = document.getElementById('sourceSelect');
+
+    const volumeSlider = document.getElementById('volumeSlider');
 
     function toggleMenu(menu){
       [settingsMenu, subsMenu, sourcesMenu].forEach(m => { if(m!==menu) m.style.display='none'; });
@@ -90,7 +89,6 @@
     video.onplay = ()=> playBtn.textContent = '⏸️';
     video.onpause = ()=> playBtn.textContent = '▶️';
 
-    // Progression
     video.ontimeupdate = ()=>{
       const percent = (video.currentTime / video.duration) * 100;
       progressFilled.style.width = percent + '%';
@@ -110,11 +108,8 @@
       video.currentTime = pos * video.duration;
     };
 
-    // Volume mute/unmute
-    volumeBtn.onclick = ()=>{
-      video.muted = !video.muted;
-      volumeBtn.textContent = video.muted ? '🔇' : '🔊';
-    };
+    // Volume
+    volumeSlider.oninput = ()=> video.volume = volumeSlider.value;
 
     // Plein écran
     fullscreenBtn.onclick = ()=>{
