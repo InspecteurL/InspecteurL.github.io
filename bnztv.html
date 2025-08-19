@@ -3,31 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lecteur Vidéo Simple</title>
+  <title>Lecteur Vidéo Custom</title>
   <style>
-    body{margin:0;background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif}
-    .player{position:relative;width:80%;max-width:800px;background:#111;border-radius:12px;overflow:hidden;}
-    video{width:100%;height:auto;background:#000}
-    .controls{display:flex;justify-content:center;align-items:center;gap:14px;padding:10px;background:rgba(0,0,0,0.6)}
-    .controls span{cursor:pointer;font-size:20px;user-select:none;transition:0.2s}
+    body{margin:0;background:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;color:#fff}
+    .player{position:relative;width:80%;max-width:900px;background:#000;overflow:hidden;border-radius:12px}
+    video{width:100%;height:auto;display:block;background:#000}
+    .controls{position:absolute;bottom:0;width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px;background:rgba(0,0,0,0.6);box-sizing:border-box}
+    .left-controls,.right-controls{display:flex;align-items:center;gap:12px}
+    .controls span{cursor:pointer;font-size:20px;user-select:none;transition:.2s}
     .controls span:hover{color:#1e90ff}
-    .menu{position:absolute;bottom:55px;right:10px;background:#222;border-radius:8px;padding:8px;display:none;flex-direction:column;gap:6px}
+    .progress{flex:1;height:6px;background:#444;margin:0 10px;border-radius:3px;cursor:pointer;position:relative}
+    .progress-filled{height:100%;background:#1e90ff;width:0;border-radius:3px}
+    .menu{position:absolute;bottom:45px;right:10px;background:#222;border-radius:8px;padding:8px;display:none;flex-direction:column;gap:6px;z-index:10}
     .menu select{background:#111;color:#fff;border:1px solid #444;border-radius:6px;padding:4px}
   </style>
 </head>
 <body>
   <div class="player">
-    <video id="video" controls>
+    <video id="video">
       <source src="https://cinepizza.xyz/movies/Interstellar.mp4" type="video/mp4">
     </video>
+
+    <!-- Barre de contrôle -->
     <div class="controls">
-      <span id="back">⏪</span>
-      <span id="play">▶️</span>
-      <span id="forward">⏩</span>
-      <span id="subs">💬</span>
-      <span id="sources">📂</span>
-      <span id="settings">⚙️</span>
+      <div class="left-controls">
+        <span id="back">⏪</span>
+        <span id="play">▶️</span>
+        <span id="forward">⏩</span>
+        <div class="progress" id="progress"><div class="progress-filled" id="progressFilled"></div></div>
+        <span id="time">0:00 / 0:00</span>
+      </div>
+      <div class="right-controls">
+        <span id="subs">💬</span>
+        <span id="sources">📂</span>
+        <span id="settings">⚙️</span>
+        <span id="volume">🔊</span>
+      </div>
     </div>
+
+    <!-- Menus -->
     <div class="menu" id="subsMenu">
       <label>Sous-titres : <select id="subsSelect"><option>Off</option><option>Français</option><option>Anglais</option></select></label>
     </div>
@@ -38,7 +52,6 @@
       </select></label>
     </div>
     <div class="menu" id="settingsMenu">
-      <label>Piste audio : <select id="audioSelect"><option>Par défaut</option></select></label>
       <label>Vitesse : <select id="speedSelect"><option>0.5</option><option>0.75</option><option selected>1.0</option><option>1.25</option><option>1.5</option><option>2.0</option></select></label>
     </div>
   </div>
@@ -48,7 +61,12 @@
     const playBtn = document.getElementById('play');
     const forward = document.getElementById('forward');
     const back = document.getElementById('back');
-    const settings = document.getElementById('settings');
+    const timeDisplay = document.getElementById('time');
+    const progress = document.getElementById('progress');
+    const progressFilled = document.getElementById('progressFilled');
+    const volumeBtn = document.getElementById('volume');
+
+    const settingsBtn = document.getElementById('settings');
     const subsBtn = document.getElementById('subs');
     const sourcesBtn = document.getElementById('sources');
     const settingsMenu = document.getElementById('settingsMenu');
@@ -69,15 +87,39 @@
     video.onplay = ()=> playBtn.textContent = '⏸️';
     video.onpause = ()=> playBtn.textContent = '▶️';
 
-    settings.onclick = ()=> toggleMenu(settingsMenu);
+    // Progression
+    video.ontimeupdate = ()=>{
+      const percent = (video.currentTime / video.duration) * 100;
+      progressFilled.style.width = percent + '%';
+      timeDisplay.textContent = formatTime(video.currentTime) + ' / ' + formatTime(video.duration);
+    };
+
+    function formatTime(sec){
+      if(isNaN(sec)) return '0:00';
+      const m = Math.floor(sec/60);
+      const s = Math.floor(sec%60).toString().padStart(2,'0');
+      return `${m}:${s}`;
+    }
+
+    progress.onclick = (e)=>{
+      const rect = progress.getBoundingClientRect();
+      const pos = (e.clientX - rect.left) / rect.width;
+      video.currentTime = pos * video.duration;
+    };
+
+    // Volume mute/unmute
+    volumeBtn.onclick = ()=>{
+      video.muted = !video.muted;
+      volumeBtn.textContent = video.muted ? '🔇' : '🔊';
+    };
+
+    // Menus
+    settingsBtn.onclick = ()=> toggleMenu(settingsMenu);
     subsBtn.onclick = ()=> toggleMenu(subsMenu);
     sourcesBtn.onclick = ()=> toggleMenu(sourcesMenu);
 
     speedSelect.onchange = ()=> video.playbackRate = parseFloat(speedSelect.value);
-    sourceSelect.onchange = ()=> {
-      video.src = sourceSelect.value;
-      video.play();
-    };
+    sourceSelect.onchange = ()=> { video.src = sourceSelect.value; video.play(); };
   </script>
 </body>
 </html>
