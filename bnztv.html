@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Custom Video Player</title>
 
-<!-- Une seule font pour toutes les icônes -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<!-- Material Symbols -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <style>
 body {
@@ -29,6 +29,23 @@ video {
   display: block;
 }
 
+/* Barre de progression */
+.progress {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: rgba(255,255,255,0.3);
+  cursor: pointer;
+}
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: #fff;
+}
+
+/* Contrôles */
 .controls {
   position: absolute;
   bottom: 10px;
@@ -40,34 +57,18 @@ video {
   background: rgba(0,0,0,0.5);
   padding: 10px;
   border-radius: 10px;
-  align-items: center;
   transition: opacity 0.3s;
+  opacity: 1;
 }
-
 .controls.hide {
   opacity: 0;
 }
 
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 36;
   cursor: pointer;
   color: white;
-}
-
-.progress {
-  position: absolute;
-  bottom: 60px;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: rgba(255,255,255,0.3);
-  cursor: pointer;
-}
-
-.progress-bar {
-  width: 0%;
-  height: 100%;
-  background: #fff;
+  font-size: 36px; /* taille plus grande pour le lecteur */
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 36;
 }
 </style>
 </head>
@@ -98,7 +99,7 @@ const progressBar = document.getElementById('progress-bar');
 const playBtn = document.getElementById('play');
 let hideTimeout;
 
-// Affiche ou cache les controls après inactivity
+// Afficher les contrôles et réinitialiser le timer
 function showControls() {
   controls.classList.remove('hide');
   document.body.style.cursor = 'default';
@@ -119,17 +120,16 @@ video.addEventListener('timeupdate', () => {
   progressBar.style.width = percent + '%';
 });
 
-// Cliquer sur la barre de progression
+// Changer la position de lecture via la barre
 progress.addEventListener('click', e => {
   const rect = progress.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
   video.currentTime = pos * video.duration;
 });
 
-// Boutons
+// Contrôles
 document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
 document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
-
 playBtn.addEventListener('click', () => {
   if (video.paused) {
     video.play();
@@ -139,14 +139,7 @@ playBtn.addEventListener('click', () => {
     playBtn.textContent = 'play_arrow';
   }
 });
-
-document.getElementById('fullscreen').addEventListener('click', () => {
-  if (document.fullscreenElement) {
-    document.exitFullscreen();
-  } else {
-    video.requestFullscreen();
-  }
-});
+document.getElementById('fullscreen').addEventListener('click', () => { video.requestFullscreen(); });
 </script>
 </body>
 </html>
