@@ -18,7 +18,7 @@
 <body>
   <div class="player">
     <video id="video" controls>
-      <source src="https://cinepizza.xyz/movies/Interstellar.mp4" type="application/x-mpegURL">
+      <source src="https://cinepizza.xyz/movies/Interstellar.mp4" type="video/mp4">
     </video>
     <div class="controls">
       <span id="back">⏪</span>
@@ -28,9 +28,16 @@
       <span id="sources">📂</span>
       <span id="settings">⚙️</span>
     </div>
+    <div class="menu" id="subsMenu">
+      <label>Sous-titres : <select id="subsSelect"><option>Off</option><option>Français</option><option>Anglais</option></select></label>
+    </div>
+    <div class="menu" id="sourcesMenu">
+      <label>Sources : <select id="sourceSelect">
+        <option value="https://cinepizza.xyz/movies/Interstellar.mp4">Interstellar</option>
+        <option value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">Démo HLS</option>
+      </select></label>
+    </div>
     <div class="menu" id="settingsMenu">
-      <label>Sous-titres : <select id="subsSelect"><option>Off</option></select></label>
-      <label>Sources : <select id="sourceSelect"><option>Démo</option></select></label>
       <label>Piste audio : <select id="audioSelect"><option>Par défaut</option></select></label>
       <label>Vitesse : <select id="speedSelect"><option>0.5</option><option>0.75</option><option selected>1.0</option><option>1.25</option><option>1.5</option><option>2.0</option></select></label>
     </div>
@@ -42,8 +49,18 @@
     const forward = document.getElementById('forward');
     const back = document.getElementById('back');
     const settings = document.getElementById('settings');
+    const subsBtn = document.getElementById('subs');
+    const sourcesBtn = document.getElementById('sources');
     const settingsMenu = document.getElementById('settingsMenu');
+    const subsMenu = document.getElementById('subsMenu');
+    const sourcesMenu = document.getElementById('sourcesMenu');
     const speedSelect = document.getElementById('speedSelect');
+    const sourceSelect = document.getElementById('sourceSelect');
+
+    function toggleMenu(menu){
+      [settingsMenu, subsMenu, sourcesMenu].forEach(m => { if(m!==menu) m.style.display='none'; });
+      menu.style.display = menu.style.display==='flex'?'none':'flex';
+    }
 
     playBtn.onclick = ()=>{ video.paused ? video.play() : video.pause(); };
     forward.onclick = ()=> video.currentTime += 10;
@@ -52,9 +69,15 @@
     video.onplay = ()=> playBtn.textContent = '⏸️';
     video.onpause = ()=> playBtn.textContent = '▶️';
 
-    settings.onclick = ()=> settingsMenu.style.display = settingsMenu.style.display==='flex'?'none':'flex';
+    settings.onclick = ()=> toggleMenu(settingsMenu);
+    subsBtn.onclick = ()=> toggleMenu(subsMenu);
+    sourcesBtn.onclick = ()=> toggleMenu(sourcesMenu);
+
     speedSelect.onchange = ()=> video.playbackRate = parseFloat(speedSelect.value);
+    sourceSelect.onchange = ()=> {
+      video.src = sourceSelect.value;
+      video.play();
+    };
   </script>
 </body>
 </html>
-
