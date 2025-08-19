@@ -10,8 +10,8 @@
     video{width:100%;height:100%;object-fit:cover;background:#000}
     .controls{width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px;background:rgba(0,0,0,0.6);box-sizing:border-box;position:absolute;bottom:0}
     .left-controls,.right-controls{display:flex;align-items:center;gap:12px}
-    .controls span{cursor:pointer;font-size:20px;user-select:none;transition:.2s}
-    .controls span:hover{color:#1e90ff}
+    .controls span{cursor:pointer;font-size:20px;user-select:none;transition:.2s;padding:4px 8px;background:rgba(255,255,255,0.1);border-radius:4px}
+    .controls span:hover{color:#1e90ff;background:rgba(255,255,255,0.2)}
     .progress{flex:1;height:6px;background:#444;margin:0 10px;border-radius:3px;cursor:pointer;position:relative}
     .progress-filled{height:100%;background:#1e90ff;width:0;border-radius:3px}
     .menu{position:absolute;bottom:45px;right:10px;background:#222;border-radius:8px;padding:8px;display:none;flex-direction:column;gap:6px;z-index:10}
@@ -27,18 +27,18 @@
 
     <div class="controls">
       <div class="left-controls">
-        <span id="back">⏪</span>
-        <span id="play">▶️</span>
-        <span id="forward">⏩</span>
+        <span id="back">Back 10s</span>
+        <span id="play">Play</span>
+        <span id="forward">Forward 10s</span>
         <div class="progress" id="progress"><div class="progress-filled" id="progressFilled"></div></div>
         <span id="time">0:00 / 0:00</span>
       </div>
       <div class="right-controls">
-        <span id="subs">💬</span>
-        <span id="sources">📂</span>
-        <span id="settings">⚙️</span>
+        <span id="subs">Subtitles</span>
+        <span id="sources">Sources</span>
+        <span id="settings">Settings</span>
         <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.05" value="1">
-        <span id="fullscreen">⛶</span>
+        <span id="fullscreen">Fullscreen</span>
       </div>
     </div>
 
@@ -86,8 +86,8 @@
     forward.onclick = ()=> video.currentTime += 10;
     back.onclick = ()=> video.currentTime -= 10;
 
-    video.onplay = ()=> playBtn.textContent = '⏸️';
-    video.onpause = ()=> playBtn.textContent = '▶️';
+    video.onplay = ()=> playBtn.textContent = 'Pause';
+    video.onpause = ()=> playBtn.textContent = 'Play';
 
     video.ontimeupdate = ()=>{
       const percent = (video.currentTime / video.duration) * 100;
@@ -102,17 +102,14 @@
       return `${m}:${s}`;
     }
 
-    // Barre de progression cliquable
     progress.onclick = (e)=>{
       const rect = progress.getBoundingClientRect();
       const pos = (e.clientX - rect.left) / rect.width;
       video.currentTime = pos * video.duration;
     };
 
-    // Volume
     volumeSlider.oninput = ()=> video.volume = volumeSlider.value;
 
-    // Plein écran
     fullscreenBtn.onclick = ()=>{
       if(!document.fullscreenElement){
         document.getElementById('player').requestFullscreen();
@@ -121,7 +118,6 @@
       }
     };
 
-    // Menus
     settingsBtn.onclick = ()=> toggleMenu(settingsMenu);
     subsBtn.onclick = ()=> toggleMenu(subsMenu);
     sourcesBtn.onclick = ()=> toggleMenu(sourcesMenu);
