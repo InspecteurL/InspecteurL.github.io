@@ -19,7 +19,7 @@
   </style>
 </head>
 <body>
-  <div class="player">
+  <div class="player" id="player">
     <video id="video">
       <source src="https://cinepizza.xyz/movies/Interstellar.mp4" type="video/mp4">
     </video>
@@ -38,6 +38,7 @@
         <span id="sources">📂</span>
         <span id="settings">⚙️</span>
         <span id="volume">🔊</span>
+        <span id="fullscreen">⛶</span>
       </div>
     </div>
 
@@ -65,6 +66,8 @@
     const progress = document.getElementById('progress');
     const progressFilled = document.getElementById('progressFilled');
     const volumeBtn = document.getElementById('volume');
+    const fullscreenBtn = document.getElementById('fullscreen');
+    const player = document.getElementById('player');
 
     const settingsBtn = document.getElementById('settings');
     const subsBtn = document.getElementById('subs');
@@ -111,6 +114,15 @@
     volumeBtn.onclick = ()=>{
       video.muted = !video.muted;
       volumeBtn.textContent = video.muted ? '🔇' : '🔊';
+    };
+
+    // Plein écran
+    fullscreenBtn.onclick = ()=>{
+      if(!document.fullscreenElement){
+        player.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
     };
 
     // Menus
