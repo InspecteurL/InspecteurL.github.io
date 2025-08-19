@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Custom Fullscreen Video Player</title>
+<title>Custom Video Player</title>
 
 <!-- Material Symbols -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -63,6 +63,7 @@ video {
 }
 .controls.hide {
   opacity: 0;
+  pointer-events: none;
 }
 
 .material-symbols-outlined {
@@ -112,10 +113,12 @@ function showControls() {
   hideTimeout = setTimeout(() => {
     controls.classList.add('hide');
     document.body.style.cursor = 'none';
-  }, 5000);
+  }, 3000); // disparaît après 3 secondes
 }
 
+// Événements pour montrer les contrôles
 video.addEventListener('mousemove', showControls);
+controls.addEventListener('mousemove', showControls);
 document.addEventListener('mousemove', showControls);
 showControls();
 
