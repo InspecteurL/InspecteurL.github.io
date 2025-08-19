@@ -16,47 +16,35 @@ body {
   height: 100vh; 
 }
 
-.video-container { 
-  position: relative; 
-  width: 90%; 
-  max-width: 1200px; 
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 36;
+  cursor: pointer;
+  color: white;
 }
-
-video { 
-  width: 100%; 
-  height: auto; 
-  display: block; 
+.controls {
+  display: flex;
+  gap: 15px;
+  background: rgba(0,0,0,0.5);
+  padding: 10px;
+  position: absolute;
+  bottom: 10px;
+  width: 95%;
+  justify-content: center;
+  border-radius: 10px;
 }
-
-.controls { 
-  position: absolute; 
-  bottom: 10px; 
-  left: 0; 
-  right: 0; 
-  display: flex; 
-  justify-content: center; 
-  gap: 10px; 
-  background: rgba(0,0,0,0.5); 
-  padding: 10px; 
-  border-radius: 10px; 
-  opacity: 1; 
-  transition: opacity 0.3s; 
+.video-container {
+  position: relative;
+  width: 800px;
+  margin: auto;
+}
+video {
+  width: 100%;
+  height: auto;
 }
 
 .controls.hide { 
   opacity: 0; 
 }
-
-.material-symbols-outlined { 
-  cursor: pointer; 
-  color: white; 
-  font-variation-settings: 
-    'FILL' 0, 
-    'wght' 400, 
-    'GRAD' 0, 
-    'opsz' 36; /* Taille des icônes */
-}
-
 .progress { 
   position: absolute; 
   bottom: 50px; 
@@ -77,12 +65,7 @@ video {
 <body>
 <div class="video-container">
   <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
-  
-  <div class="progress" id="progress">
-    <div class="progress-bar" id="progress-bar"></div>
-  </div>
-
-  <div class="controls" id="controls">
+  <div class="controls">
     <span id="backward" class="material-symbols-outlined">replay_10</span>
     <span id="play" class="material-symbols-outlined">play_arrow</span>
     <span id="forward" class="material-symbols-outlined">forward_10</span>
