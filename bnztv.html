@@ -4,65 +4,84 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Custom Video Player</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=settings" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=fullscreen" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=subtitles" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=cloud" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=forward_10" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=replay_10" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=play_arrow" />
+<!-- Charger la variable font Material Symbols une seule fois -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 <style>
-body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
-.video-container { position: relative; width: 90%; max-width: 1200px; }
-video { width: 100%; height: auto; display: block; }
-
-.controls {
-  position: absolute;
-  bottom: 10px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  background: rgba(0,0,0,0.5);
-  padding: 10px 20px;
-  border-radius: 10px;
-  opacity: 1;
-  transition: opacity 0.3s;
+body { 
+  margin: 0; 
+  background: #000; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  height: 100vh; 
 }
 
-.controls.hide { opacity: 0; }
-
-.material-symbols-outlined {
-  cursor: pointer;
-  color: white;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
-  font-size: 48px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.video-container { 
+  position: relative; 
+  width: 90%; 
+  max-width: 1200px; 
 }
 
-.progress {
-  position: absolute;
-  bottom: 70px;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: rgba(255,255,255,0.3);
-  cursor: pointer;
+video { 
+  width: 100%; 
+  height: auto; 
+  display: block; 
 }
 
-.progress-bar { width: 0%; height: 100%; background: #fff; }
+.controls { 
+  position: absolute; 
+  bottom: 10px; 
+  left: 0; 
+  right: 0; 
+  display: flex; 
+  justify-content: center; 
+  gap: 10px; 
+  background: rgba(0,0,0,0.5); 
+  padding: 10px; 
+  border-radius: 10px; 
+  opacity: 1; 
+  transition: opacity 0.3s; 
+}
+
+.controls.hide { 
+  opacity: 0; 
+}
+
+.material-symbols-outlined { 
+  cursor: pointer; 
+  color: white; 
+  font-variation-settings: 
+    'FILL' 0, 
+    'wght' 400, 
+    'GRAD' 0, 
+    'opsz' 36; /* Taille des icônes */
+}
+
+.progress { 
+  position: absolute; 
+  bottom: 50px; 
+  left: 0; 
+  right: 0; 
+  height: 5px; 
+  background: rgba(255,255,255,0.3); 
+  cursor: pointer; 
+}
+
+.progress-bar { 
+  width: 0%; 
+  height: 100%; 
+  background: #fff; 
+}
 </style>
 </head>
 <body>
 <div class="video-container">
   <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
+  
   <div class="progress" id="progress">
     <div class="progress-bar" id="progress-bar"></div>
   </div>
+
   <div class="controls" id="controls">
     <span id="backward" class="material-symbols-outlined">replay_10</span>
     <span id="play" class="material-symbols-outlined">play_arrow</span>
@@ -113,14 +132,14 @@ document.getElementById('backward').addEventListener('click', () => { video.curr
 playBtn.addEventListener('click', () => {
   if (video.paused) {
     video.play();
-    playBtn.textContent = '';
+    playBtn.textContent = 'pause';
   } else {
     video.pause();
     playBtn.textContent = 'play_arrow';
   }
 });
 
-document.getElementById('fullscreen').addEventListener('click', () => {
+document.getElementById('fullscreen').addEventListener('click', () => { 
   if (document.fullscreenElement) {
     document.exitFullscreen();
   } else {
