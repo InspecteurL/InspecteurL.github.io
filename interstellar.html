@@ -3,90 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Custom Video Player with Film Info</title>
+<title>Custom Video Player</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 <style>
-/* ---------------- GLOBAL ---------------- */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
   background: #000;
-  color: white;
-}
-
-/* ---------------- FICHE FILM ---------------- */
-.film-card {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  background-size: cover;
-  background-position: center;
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
-  text-align: center;
+  height: 100vh;
+  overflow: hidden;
 }
-.film-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-}
-.film-card-content {
-  position: relative;
-  z-index: 2;
-}
-.film-poster {
-  width: 200px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-.film-title {
-  font-size: 40px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-.film-info {
-  font-size: 18px;
-  margin-bottom: 20px;
-}
-.play-button {
-  font-size: 50px;
-  padding: 20px 40px;
-  background: linear-gradient(90deg, #ff4b2b, #ff416c);
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  color: white;
-  transition: transform 0.2s;
-}
-.play-button:hover {
-  transform: scale(1.1);
-}
-
-/* ---------------- LECTEUR VIDEO ---------------- */
-.video-container, #video-container {
-  display: none; /* caché au départ */
+.video-container {
   position: relative;
   width: 100%;
   max-width: 1200px;
   height: 100vh;
-  margin: auto;
-  background: black;
   display: flex;
   justify-content: center;
   align-items: center;
+  background: black;
 }
-video, #video {
+video {
   max-width: 100%;
   max-height: 100%;
   display: block;
   object-fit: contain;
 }
 
-/* ---------------- CONTROLES ---------------- */
-.controls, #controls {
+/* Progress bar wrapper */
+.progress-wrapper {
+  position: absolute;
+  bottom: 70px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 14px;
+  font-family: monospace;
+}
+.progress-wrapper.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Progress bar */
+.progress {
+  flex: 1;
+  height: 12px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff4b2b, #ff416c);
+  border-radius: 6px;
+}
+
+/* Controls */
+.controls {
   position: absolute;
   bottom: 10px;
   left: 0;
@@ -95,76 +76,44 @@ video, #video {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
   border-radius: 10px;
-  gap: 10px;
+  opacity: 1;
+  transition: opacity 0.3s;
 }
+.controls.hide { opacity: 0; pointer-events: none; }
+.controls-left, .controls-right { display: flex; align-items: center; gap: 20px; }
 
-.controls-left, .controls-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.center-play, .center-button {
+/* Floating play button */
+.center-play {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 60px;
+  font-size: 80px;
   color: white;
-  cursor: pointer;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
   border-radius: 50%;
   padding: 20px;
-  transition: transform 0.2s;
+  cursor: pointer;
+  transition: opacity 0.3s;
 }
-.center-play:hover, .center-button:hover {
-  transform: translate(-50%, -50%) scale(1.1);
-}
+.center-play.hide { opacity: 0; pointer-events: none; }
 
 .material-symbols-outlined {
   cursor: pointer;
   color: white;
   font-size: 35px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 35;
 }
 
-/* ---------------- PROGRESS ---------------- */
-.progress-wrapper, #progressWrapper {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  font-family: monospace;
-  cursor: pointer;
-}
-.progress, #progress {
-  flex: 1;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  position: relative;
-  overflow: hidden;
-}
-.progress-bar, #progress-bar {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #ff4b2b, #ff416c);
-  border-radius: 6px;
-}
-
-/* ---------------- VOLUME ---------------- */
-.volume-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+/* Volume slider */
+.volume-container { display: flex; align-items: center; gap: 10px; }
 #volume-slider {
   width: 100px;
   height: 5px;
   appearance: none;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255,255,255,0.3);
   border-radius: 5px;
   outline: none;
   cursor: pointer;
@@ -185,12 +134,12 @@ video, #video {
   cursor: pointer;
 }
 
-/* ---------------- MENUS ---------------- */
+/* Dropdown menus */
 .menu {
   position: absolute;
   bottom: 60px;
   right: 20px;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0,0,0,0.8);
   padding: 10px;
   border-radius: 8px;
   display: none;
@@ -204,34 +153,15 @@ video, #video {
   padding: 5px 10px;
   cursor: pointer;
   text-align: left;
-  transition: background 0.2s;
 }
 .menu button:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255,255,255,0.2);
 }
-
-/* ---------------- UTILITAIRES ---------------- */
-.hide {
-  display: none !important;
-}
-
 </style>
 </head>
 <body>
-
-<!-- ---------------- FICHE FILM ---------------- -->
-<div class="film-card" id="filmCard" style="background-image:url('https://cinepizza.xyz/posters/interstellar-bg.jpg')">
-  <div class="film-card-content">
-    <img class="film-poster" src="https://cinepizza.xyz/posters/interstellar.jpg" alt="Poster Interstellar">
-    <div class="film-title">Interstellar</div>
-    <div class="film-info">Année: 2014 | Genre: Sci-Fi | Durée: 2h49min</div>
-    <button id="playFilmBtn" class="play-button">▶ Lire le film</button>
-  </div>
-</div>
-
-<!-- ---------------- LECTEUR VIDEO ---------------- -->
-<div class="video-container" id="videoContainer">
-  <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4" poster="https://cinepizza.xyz/posters/interstellar.jpg"></video>
+<div class="video-container" id="video-container">
+  <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
 
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
@@ -272,22 +202,11 @@ video, #video {
     <button data-src="https://cinepizza.xyz/movies/Interstellar.mp4">Interstellar</button>
   </div>
 
-  <div id="subtitleMenu" class="menu"></div>
+  <div id="subtitleMenu" class="menu">
+  </div>
 </div>
 
 <script>
-// ---------------- AFFICHER LECTEUR ----------------
-const playFilmBtn = document.getElementById('playFilmBtn');
-const filmCard = document.getElementById('filmCard');
-const videoContainer = document.getElementById('videoContainer');
-
-playFilmBtn.addEventListener('click', () => {
-  filmCard.style.display = 'none';
-  videoContainer.style.display = 'flex';
-  video.play();
-});
-
-// ---------------- LECTEUR VIDEO (copié depuis ton code) ----------------
 const video = document.getElementById('video');
 const controls = document.getElementById('controls');
 const progressWrapper = document.getElementById('progressWrapper');
@@ -306,20 +225,15 @@ const sourceBtn = document.getElementById('source');
 const sourceMenu = document.getElementById('sourceMenu');
 const subtitleBtn = document.getElementById('subtitles');
 const subtitleMenu = document.getElementById('subtitleMenu');
-const fullscreenBtn = document.getElementById('fullscreen');
-const backwardBtn = document.getElementById('backward');
-const forwardBtn = document.getElementById('forward');
 
 let hideTimeout;
 video.controls = false;
 
-// ---------------------
 // Show / hide controls
-// ---------------------
 function showControls() {
   controls.classList.remove('hide');
   progressWrapper.classList.remove('hide');
-  if(video.paused) centerPlay.classList.remove('hide');
+  centerPlay.classList.remove('hide');
   document.body.style.cursor = 'default';
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(hideControls, 3000);
@@ -336,33 +250,24 @@ function hideControls() {
 document.addEventListener('mousemove', showControls);
 showControls();
 
-// ---------------------
 // Format time
-// ---------------------
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-// ---------------------
 // Update progress & time
-// ---------------------
-video.addEventListener('loadedmetadata', () => {
-  totalTimeEl.textContent = formatTime(video.duration);
-});
-
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
   currentTimeEl.textContent = formatTime(video.currentTime);
+  totalTimeEl.textContent = formatTime(video.duration);
 });
 
-// ---------------------
 // Play / pause
-// ---------------------
 function togglePlay() {
-  if(video.paused) video.play();
+  if (video.paused) video.play();
   else video.pause();
 }
 
@@ -371,26 +276,24 @@ centerPlay.addEventListener('click', togglePlay);
 
 video.addEventListener('play', () => {
   playBtn.textContent = 'pause';
+  centerPlay.textContent = 'pause';
   centerPlay.classList.add('hide');
 });
 
 video.addEventListener('pause', () => {
   playBtn.textContent = 'play_arrow';
+  centerPlay.textContent = 'play_arrow';
   centerPlay.classList.remove('hide');
 });
 
-// ---------------------
 // Seek
-// ---------------------
 progressWrapper.addEventListener('click', e => {
-  const rect = progressWrapper.getBoundingClientRect();
+  const rect = progress.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
   video.currentTime = pos * video.duration;
 });
 
-// ---------------------
 // Volume
-// ---------------------
 volumeSlider.addEventListener('input', () => {
   video.volume = volumeSlider.value;
   updateVolumeIcon();
@@ -400,15 +303,14 @@ volumeIcon.addEventListener('click', () => {
   else { video.volume = 1; volumeSlider.value = 1; }
   updateVolumeIcon();
 });
+
 function updateVolumeIcon() {
-  if(video.volume < 0.01) volumeIcon.textContent = 'volume_off';
+  if(video.volume === 0) volumeIcon.textContent = 'volume_off';
   else if(video.volume < 0.5) volumeIcon.textContent = 'volume_down';
   else volumeIcon.textContent = 'volume_up';
 }
 
-// ---------------------
 // Settings menu
-// ---------------------
 settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
 settingsMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -417,9 +319,7 @@ settingsMenu.querySelectorAll('button').forEach(btn => {
   });
 });
 
-// ---------------------
 // Source menu
-// ---------------------
 sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
 sourceMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -429,9 +329,7 @@ sourceMenu.querySelectorAll('button').forEach(btn => {
   });
 });
 
-// ---------------------
 // Subtitles menu
-// ---------------------
 subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
 subtitleMenu.addEventListener('click', e => {
   if(e.target.tagName === 'BUTTON'){
@@ -441,8 +339,6 @@ subtitleMenu.addEventListener('click', e => {
       const track = document.createElement('track');
       track.src = subUrl;
       track.kind = 'subtitles';
-      track.srclang = 'fr';
-      track.label = 'FR';
       track.default = true;
       video.appendChild(track);
     }
@@ -450,29 +346,21 @@ subtitleMenu.addEventListener('click', e => {
   }
 });
 
-// ---------------------
 // Fullscreen
-// ---------------------
-fullscreenBtn.addEventListener('click', () => {
+document.getElementById('fullscreen').addEventListener('click', () => {
   if(!document.fullscreenElement) container.requestFullscreen();
   else document.exitFullscreen();
 });
 
-// ---------------------
 // Backward / Forward
-// ---------------------
-backwardBtn.addEventListener('click', () => { video.currentTime -= 10; });
-forwardBtn.addEventListener('click', () => { video.currentTime += 10; });
+document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
+document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
 
-// ---------------------
-// Toggle menu helper
-// ---------------------
+// Toggle any menu
 function toggleMenu(menu){
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
-  menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m!==menu) m.style.display='none'; });
+  menu.style.display = menu.style.display==='flex' ? 'none' : 'flex';
 }
-
 </script>
-
 </body>
 </html>
