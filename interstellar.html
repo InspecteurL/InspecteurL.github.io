@@ -1,125 +1,186 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Interstellar - Lecture</title>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<title>Custom Video Player with Film Info</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 <style>
-  /* Reset & body */
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: Arial, sans-serif; color:#fff; background:#000; overflow-x:hidden; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #000;
+  color: white;
+}
 
-  /* Fond cinématique */
-  #background {
-    position: fixed; top:0; left:0; width:100%; height:100%;
-    background: url('https://image.tmdb.org/t/p/original/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg') center/cover no-repeat;
-    filter: brightness(0.3); z-index:-1;
-  }
+/* ---------------- FICHE FILM ---------------- */
+.film-card {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+}
+.film-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+}
+.film-card-content {
+  position: relative;
+  z-index: 2;
+}
+.film-poster {
+  width: 200px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.film-title {
+  font-size: 40px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.film-info {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+.play-button {
+  font-size: 50px;
+  padding: 20px 40px;
+  background: linear-gradient(90deg,#ff4b2b,#ff416c);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: white;
+  transition: transform 0.2s;
+}
+.play-button:hover { transform: scale(1.1); }
 
-  /* Container vidéo */
-  #video-container { position: relative; max-width: 900px; margin: 50px auto; }
+/* ---------------- LECTEUR VIDEO ---------------- */
+.video-container {
+  display: none; /* caché au départ */
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: black;
+}
+video {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  object-fit: contain;
+}
 
-  video { width:100%; border-radius: 10px; display: block; }
+/* Controls and progress (copié depuis ton code précédent) */
+.progress-wrapper { position: absolute; bottom: 70px; left: 20px; right: 20px; display: flex; align-items: center; gap: 10px; color: white; font-size: 14px; font-family: monospace; }
+.progress { flex:1; height:12px; background: rgba(255,255,255,0.2); border-radius:6px; overflow:hidden; cursor:pointer; }
+.progress-bar { width:0%; height:100%; background: linear-gradient(90deg,#ff4b2b,#ff416c); border-radius:6px; }
+.controls { position:absolute; bottom:10px; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:10px 20px; background: rgba(0,0,0,0.5); border-radius:10px; }
+.controls-left, .controls-right { display:flex; align-items:center; gap:20px; }
+.center-play { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:80px; color:white; background: rgba(0,0,0,0.5); border-radius:50%; padding:20px; cursor:pointer; }
+.material-symbols-outlined { cursor:pointer; color:white; font-size:35px; }
 
-  /* Bouton central play */
-  #centerPlay {
-    position: absolute; top:50%; left:50%; transform: translate(-50%, -50%);
-    font-family: 'Material Icons'; font-size:80px; cursor:pointer;
-    color:#fff; transition: 0.3s; background: rgba(0,0,0,0.5); padding:20px; border-radius:50%;
-  }
-
-  #centerPlay:hover { background: rgba(0,0,0,0.7); }
-
-  /* Controls */
-  #controls { position:absolute; bottom:10px; left:0; width:100%; display:flex; align-items:center; justify-content:space-between; padding:10px; background: rgba(0,0,0,0.4); border-radius:0 0 10px 10px; transition:0.3s; }
-  #controls.hide { opacity:0; pointer-events:none; }
-  #progressWrapper { position:absolute; bottom:50px; left:0; width:100%; height:5px; background: rgba(255,255,255,0.2); cursor:pointer; }
-  #progress-bar { width:0%; height:100%; background:#ff0000; }
-
-  /* Fiche du film */
-  #fiche {
-    max-width:900px; margin: 20px auto; padding:20px; background: rgba(0,0,0,0.6); border-radius:10px;
-  }
-  #fiche h1 { font-size:2em; margin-bottom:10px; }
-  #fiche p { line-height:1.5; }
-  #fiche .genres { font-style: italic; margin-top:5px; }
-
-  /* Menus */
-  .menu { position:absolute; bottom:60px; right:10px; display:none; flex-direction:column; background: rgba(0,0,0,0.8); border-radius:5px; padding:5px; }
-  .menu button { margin:5px; color:#fff; background:none; border:1px solid #fff; border-radius:5px; cursor:pointer; padding:5px 10px; }
-
-  /* Boutons du player */
-  .material-icons { cursor:pointer; margin:0 5px; }
-  #volume-slider { width:80px; }
-
+/* Volume slider */
+.volume-container { display:flex; align-items:center; gap:10px; }
+#volume-slider { width:100px; height:5px; appearance:none; background: rgba(255,255,255,0.3); border-radius:5px; outline:none; cursor:pointer; }
+#volume-slider::-webkit-slider-thumb { appearance:none; width:12px; height:12px; background:#ff416c; border-radius:50%; cursor:pointer; }
+#volume-slider::-moz-range-thumb { width:12px; height:12px; background:#ff416c; border-radius:50%; cursor:pointer; }
+.menu { position:absolute; bottom:60px; right:20px; background: rgba(0,0,0,0.8); padding:10px; border-radius:8px; display:none; flex-direction:column; gap:5px; }
+.menu button { background:transparent; border:none; color:white; padding:5px 10px; cursor:pointer; text-align:left; }
+.menu button:hover { background: rgba(255,255,255,0.2); }
 </style>
 </head>
 <body>
 
-<div id="background"></div>
-
-<div id="video-container">
-  <video id="video" poster="https://image.tmdb.org/t/p/original/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg">
-    <source src="https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4" type="video/mp4">
-    <!-- Sous-titres peuvent être ajoutés ici -->
-  </video>
-
-  <div id="centerPlay" class="material-icons">play_arrow</div>
-
-  <div id="progressWrapper"><div id="progress-bar"></div></div>
-
-  <div id="controls">
-    <div>
-      <span id="play" class="material-icons">play_arrow</span>
-      <span id="backward" class="material-icons">replay_10</span>
-      <span id="forward" class="material-icons">forward_10</span>
-      <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
-    </div>
-    <div>
-      <span id="volume-icon" class="material-icons">volume_up</span>
-      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
-      <span id="fullscreen" class="material-icons">fullscreen</span>
-      <span id="settings" class="material-icons">settings</span>
-      <span id="source" class="material-icons">videocam</span>
-      <span id="subtitles" class="material-icons">subtitles</span>
-    </div>
-
-    <div id="settingsMenu" class="menu">
-      <button data-speed="0.5">0.5x</button>
-      <button data-speed="1">1x</button>
-      <button data-speed="1.5">1.5x</button>
-      <button data-speed="2">2x</button>
-    </div>
-
-    <div id="sourceMenu" class="menu">
-      <button data-src="https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4">Sample MP4</button>
-    </div>
-
-    <div id="subtitleMenu" class="menu">
-      <button data-sub="">Aucun</button>
-    </div>
-
+<!-- ---------------- FICHE FILM ---------------- -->
+<div class="film-card" id="filmCard" style="background-image:url('https://cinepizza.xyz/posters/interstellar-bg.jpg')">
+  <div class="film-card-content">
+    <img class="film-poster" src="https://cinepizza.xyz/posters/interstellar.jpg" alt="Poster Interstellar">
+    <div class="film-title">Interstellar</div>
+    <div class="film-info">Année: 2014 | Genre: Sci-Fi | Durée: 2h49min</div>
+    <button id="playFilmBtn" class="play-button">▶ Lire le film</button>
   </div>
 </div>
 
-<div id="fiche">
-  <h1>Interstellar (2014)</h1>
-  <div class="genres">Science-fiction, Aventure, Drame</div>
-  <p>Un groupe d'explorateurs utilise un trou de ver récemment découvert pour dépasser les limites du voyage spatial humain et sauver l'humanité de la catastrophe sur Terre.</p>
+<!-- ---------------- LECTEUR VIDEO ---------------- -->
+<div class="video-container" id="videoContainer">
+  <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4" poster="https://cinepizza.xyz/posters/interstellar.jpg"></video>
+
+  <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
+
+  <div class="progress-wrapper" id="progressWrapper">
+    <span id="currentTime">0:00</span>
+    <div class="progress" id="progress">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <span id="totalTime">0:00</span>
+  </div>
+
+  <div class="controls" id="controls">
+    <div class="controls-left">
+      <span id="backward" class="material-symbols-outlined">replay_10</span>
+      <span id="play" class="material-symbols-outlined">play_arrow</span>
+      <span id="forward" class="material-symbols-outlined">forward_10</span>
+      <div class="volume-container">
+        <span id="volume-icon" class="material-symbols-outlined">volume_up</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
+      </div>
+    </div>
+    <div class="controls-right">
+      <span id="subtitles" class="material-symbols-outlined">subtitles</span>
+      <span id="source" class="material-symbols-outlined">cloud</span>
+      <span id="settings" class="material-symbols-outlined">settings</span>
+      <span id="fullscreen" class="material-symbols-outlined">fullscreen</span>
+    </div>
+  </div>
+
+  <div id="settingsMenu" class="menu">
+    <button data-speed="0.5">0.5x</button>
+    <button data-speed="1">1x</button>
+    <button data-speed="1.5">1.5x</button>
+    <button data-speed="2">2x</button>
+  </div>
+
+  <div id="sourceMenu" class="menu">
+    <button data-src="https://cinepizza.xyz/movies/Interstellar.mp4">Interstellar</button>
+  </div>
+
+  <div id="subtitleMenu" class="menu"></div>
 </div>
 
-<!-- Script du lecteur -->
 <script>
+// ---------------- AFFICHER LECTEUR ----------------
+const playFilmBtn = document.getElementById('playFilmBtn');
+const filmCard = document.getElementById('filmCard');
+const videoContainer = document.getElementById('videoContainer');
+
+playFilmBtn.addEventListener('click', () => {
+  filmCard.style.display = 'none';
+  videoContainer.style.display = 'flex';
+  video.play();
+});
+
+// ---------------- LECTEUR VIDEO (copié depuis ton code) ----------------
 const video = document.getElementById('video');
 const controls = document.getElementById('controls');
 const progressWrapper = document.getElementById('progressWrapper');
+const progress = document.getElementById('progress');
 const progressBar = document.getElementById('progress-bar');
 const currentTimeEl = document.getElementById('currentTime');
 const totalTimeEl = document.getElementById('totalTime');
 const playBtn = document.getElementById('play');
 const centerPlay = document.getElementById('centerPlay');
-const container = document.getElementById('video-container');
+const container = document.getElementById('videoContainer');
 const volumeSlider = document.getElementById('volume-slider');
 const volumeIcon = document.getElementById('volume-icon');
 const settingsBtn = document.getElementById('settings');
@@ -132,84 +193,93 @@ const subtitleMenu = document.getElementById('subtitleMenu');
 let hideTimeout;
 video.controls = false;
 
-function showControls(){
+// Show / hide controls
+function showControls() {
   controls.classList.remove('hide');
   progressWrapper.classList.remove('hide');
-  document.body.style.cursor='default';
+  centerPlay.classList.remove('hide');
+  document.body.style.cursor = 'default';
   clearTimeout(hideTimeout);
-  hideTimeout = setTimeout(hideControls,3000);
+  hideTimeout = setTimeout(hideControls, 3000);
 }
-function hideControls(){
+function hideControls() {
   controls.classList.add('hide');
   progressWrapper.classList.add('hide');
-  document.body.style.cursor='none';
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display='none');
+  centerPlay.classList.add('hide');
+  document.body.style.cursor = 'none';
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
 }
-function formatTime(sec){
-  const m=Math.floor(sec/60);
-  const s=Math.floor(sec%60);
+document.addEventListener('mousemove', showControls);
+showControls();
+
+// Format time
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
   return `${m}:${s.toString().padStart(2,'0')}`;
 }
-video.addEventListener('timeupdate',()=>{
-  const percent=(video.currentTime/video.duration)*100;
-  progressBar.style.width=percent+'%';
-  currentTimeEl.textContent=formatTime(video.currentTime);
-  totalTimeEl.textContent=formatTime(video.duration);
+
+// Update progress & time
+video.addEventListener('timeupdate', () => {
+  const percent = (video.currentTime / video.duration) * 100;
+  progressBar.style.width = percent + '%';
+  currentTimeEl.textContent = formatTime(video.currentTime);
+  totalTimeEl.textContent = formatTime(video.duration);
 });
-function togglePlay(){ video.paused ? video.play() : video.pause(); }
+
+// Play / pause
+function togglePlay() {
+  if(video.paused) video.play();
+  else video.pause();
+}
 playBtn.addEventListener('click', togglePlay);
-centerPlay.addEventListener('click', startVideoFromPoster);
-video.addEventListener('play',()=>{
-  playBtn.textContent='pause';
-  centerPlay.textContent='pause';
+centerPlay.addEventListener('click', togglePlay);
+video.addEventListener('play', () => {
+  playBtn.textContent = 'pause';
+  centerPlay.textContent = 'pause';
   centerPlay.classList.add('hide');
-  showControls();
 });
-video.addEventListener('pause',()=>{
-  playBtn.textContent='play_arrow';
-  centerPlay.textContent='play_arrow';
+video.addEventListener('pause', () => {
+  playBtn.textContent = 'play_arrow';
+  centerPlay.textContent = 'play_arrow';
   centerPlay.classList.remove('hide');
 });
-function startVideoFromPoster(){
-  centerPlay.classList.add('hide');
-  video.play().then(()=>{ showControls(); });
-}
-progressWrapper.addEventListener('click', e=>{
-  const rect=progressWrapper.getBoundingClientRect();
-  const pos=(e.clientX-rect.left)/rect.width;
-  video.currentTime=pos*video.duration;
+
+// Seek
+progressWrapper.addEventListener('click', e => {
+  const rect = progress.getBoundingClientRect();
+  const pos = (e.clientX - rect.left)/rect.width;
+  video.currentTime = pos*video.duration;
 });
-volumeSlider.addEventListener('input',()=>{
-  video.volume=volumeSlider.value;
-  updateVolumeIcon();
-});
-volumeIcon.addEventListener('click',()=>{
+
+// Volume
+volumeSlider.addEventListener('input', () => { video.volume = volumeSlider.value; updateVolumeIcon(); });
+volumeIcon.addEventListener('click', () => {
   if(video.volume>0){ video.volume=0; volumeSlider.value=0; }
   else { video.volume=1; volumeSlider.value=1; }
   updateVolumeIcon();
 });
-function updateVolumeIcon(){
+function updateVolumeIcon() {
   if(video.volume===0) volumeIcon.textContent='volume_off';
   else if(video.volume<0.5) volumeIcon.textContent='volume_down';
   else volumeIcon.textContent='volume_up';
 }
-settingsBtn.addEventListener('click',()=>toggleMenu(settingsMenu));
+
+// Settings menu
+settingsBtn.addEventListener('click', ()=>toggleMenu(settingsMenu));
 settingsMenu.querySelectorAll('button').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    video.playbackRate=parseFloat(btn.dataset.speed);
-    settingsMenu.style.display='none';
-  });
+  btn.addEventListener('click', ()=>{ video.playbackRate=parseFloat(btn.dataset.speed); settingsMenu.style.display='none'; });
 });
-sourceBtn.addEventListener('click',()=>toggleMenu(sourceMenu));
+
+// Source menu
+sourceBtn.addEventListener('click', ()=>toggleMenu(sourceMenu));
 sourceMenu.querySelectorAll('button').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    video.src=btn.dataset.src;
-    video.play();
-    sourceMenu.style.display='none';
-  });
+  btn.addEventListener('click', ()=>{ video.src=btn.dataset.src; video.play(); sourceMenu.style.display='none'; });
 });
-subtitleBtn.addEventListener('click',()=>toggleMenu(subtitleMenu));
-subtitleMenu.addEventListener('click',e=>{
+
+// Subtitles menu
+subtitleBtn.addEventListener('click', ()=>toggleMenu(subtitleMenu));
+subtitleMenu.addEventListener('click', e=>{
   if(e.target.tagName==='BUTTON'){
     const subUrl=e.target.dataset.sub;
     video.querySelectorAll('track').forEach(t=>t.remove());
@@ -221,18 +291,22 @@ subtitleMenu.addEventListener('click',e=>{
     subtitleMenu.style.display='none';
   }
 });
-document.getElementById('fullscreen').addEventListener('click',()=>{
+
+// Fullscreen
+document.getElementById('fullscreen').addEventListener('click', ()=> {
   if(!document.fullscreenElement) container.requestFullscreen();
   else document.exitFullscreen();
 });
-document.getElementById('backward').addEventListener('click',()=>{ video.currentTime-=10; });
-document.getElementById('forward').addEventListener('click',()=>{ video.currentTime+=10; });
+
+// Backward / Forward
+document.getElementById('backward').addEventListener('click', ()=>{ video.currentTime-=10; });
+document.getElementById('forward').addEventListener('click', ()=>{ video.currentTime+=10; });
+
+// Toggle menu helper
 function toggleMenu(menu){
   [settingsMenu, sourceMenu, subtitleMenu].forEach(m=>{ if(m!==menu) m.style.display='none'; });
-  menu.style.display = menu.style.display==='flex' ? 'none' : 'flex';
+  menu.style.display = menu.style.display==='flex'?'none':'flex';
 }
-document.addEventListener('mousemove',showControls);
-showControls();
 </script>
 
 </body>
