@@ -213,10 +213,11 @@ video {
 <script>
 const video = document.getElementById('video');
 const controls = document.getElementById('controls');
-const progressWrapper = document.getElementById('progress-wrapper');
+const progress = document.getElementById('progress');
 const progressBar = document.getElementById('progress-bar');
-const currentTimeEl = document.getElementById('current-time');
-const totalTimeEl = document.getElementById('total-time');
+const currentTime = document.getElementById('currentTime');
+const totalTime = document.getElementById('totalTime');
+const timeIndicator = document.getElementById('timeIndicator');
 const playBtn = document.getElementById('play');
 const centerPlay = document.getElementById('centerPlay');
 const container = document.getElementById('video-container');
@@ -230,26 +231,26 @@ const subtitleBtn = document.getElementById('subtitles');
 const subtitleMenu = document.getElementById('subtitleMenu');
 
 let hideTimeout;
+
 video.controls = false;
 
-// Show/hide controls automatically
+// Show/hide controls
 function showControls() {
   controls.classList.remove('hide');
-  progressWrapper.classList.remove('hide');
+  progress.classList.remove('hide');
   centerPlay.classList.remove('hide');
   document.body.style.cursor = 'default';
   clearTimeout(hideTimeout);
-  hideTimeout = setTimeout(hideControls, 3000);
+  hideTimeout = setTimeout(() => {
+    controls.classList.add('hide');
+    progress.classList.add('hide');
+    centerPlay.classList.add('hide');
+    document.body.style.cursor = 'none';
+    settingsMenu.style.display = 'none';
+    sourceMenu.style.display = 'none';
+    subtitleMenu.style.display = 'none';
+  }, 3000);
 }
-
-function hideControls() {
-  controls.classList.add('hide');
-  progressWrapper.classList.add('hide');
-  centerPlay.classList.add('hide');
-  document.body.style.cursor = 'none';
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => m.style.display = 'none');
-}
-
 document.addEventListener('mousemove', showControls);
 showControls();
 
@@ -257,40 +258,32 @@ showControls();
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
+  return `${m}:${s.toString().padStart(2,'0')}`;
 }
 
+
 // Update progress bar and times
-video.addEventListener('loadedmetadata', () => {
-  totalTimeEl.textContent = formatTime(video.duration);
-});
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
   currentTimeEl.textContent = formatTime(video.currentTime);
+  totalTimeEl.textContent = formatTime(video.duration);
 });
+
 
 // Play/pause
 function togglePlay() {
-  if (video.paused) video.play();
+  if(video.paused) video.play();
   else video.pause();
 }
-
 playBtn.addEventListener('click', togglePlay);
 centerPlay.addEventListener('click', togglePlay);
-
-video.addEventListener('play', () => {
-  playBtn.textContent = 'pause';
-  centerPlay.classList.add('hide');
-});
-video.addEventListener('pause', () => {
-  playBtn.textContent = 'play_arrow';
-  centerPlay.classList.remove('hide');
-});
+video.addEventListener('play', () => { playBtn.textContent='pause'; centerPlay.classList.add('hide'); });
+video.addEventListener('pause', () => { playBtn.textContent='play_arrow'; centerPlay.classList.remove('hide'); });
 
 // Seek
-progressWrapper.addEventListener('click', e => {
-  const rect = progressWrapper.getBoundingClientRect();
+progress.addEventListener('click', e => {
+  const rect = progress.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
   video.currentTime = pos * video.duration;
 });
@@ -301,71 +294,70 @@ volumeSlider.addEventListener('input', () => {
   updateVolumeIcon();
 });
 volumeIcon.addEventListener('click', () => {
-  if (video.volume > 0) { video.volume = 0; volumeSlider.value = 0; }
-  else { video.volume = 1; volumeSlider.value = 1; }
+  if(video.volume>0){ video.volume=0; volumeSlider.value=0; }
+  else { video.volume=1; volumeSlider.value=1; }
   updateVolumeIcon();
 });
 function updateVolumeIcon() {
-  if (video.volume === 0) volumeIcon.textContent = 'volume_off';
-  else if (video.volume < 0.5) volumeIcon.textContent = 'volume_down';
-  else volumeIcon.textContent = 'volume_up';
+  if(video.volume==0) volumeIcon.textContent='volume_off';
+  else if(video.volume<0.5) volumeIcon.textContent='volume_down';
+  else volumeIcon.textContent='volume_up';
 }
 
 // Settings menu
 settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
-settingsMenu.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
+settingsMenu.querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
     video.playbackRate = parseFloat(btn.dataset.speed);
-    settingsMenu.style.display = 'none';
+    settingsMenu.style.display='none';
   });
 });
 
 // Source menu
 sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
-sourceMenu.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
+sourceMenu.querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
     video.src = btn.dataset.src;
     video.play();
-    sourceMenu.style.display = 'none';
+    sourceMenu.style.display='none';
   });
 });
 
 // Subtitles menu
 subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
 subtitleMenu.addEventListener('click', e => {
-  if (e.target.tagName === 'BUTTON') {
+  if(e.target.tagName==='BUTTON'){
     const subUrl = e.target.dataset.sub;
     const tracks = video.querySelectorAll('track');
-    tracks.forEach(t => t.remove());
-    if (subUrl) {
+    tracks.forEach(t=>t.remove());
+    if(subUrl){
       const track = document.createElement('track');
       track.src = subUrl;
       track.kind = 'subtitles';
       track.default = true;
       video.appendChild(track);
     }
-    subtitleMenu.style.display = 'none';
+    subtitleMenu.style.display='none';
   }
 });
 
 // Fullscreen
 document.getElementById('fullscreen').addEventListener('click', () => {
-  if (!document.fullscreenElement) container.requestFullscreen();
+  if(!document.fullscreenElement) container.requestFullscreen();
   else document.exitFullscreen();
 });
 
 // Backward/Forward
-document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
-document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
+document.getElementById('backward').addEventListener('click', ()=>{ video.currentTime -= 10; });
+document.getElementById('forward').addEventListener('click', ()=>{ video.currentTime += 10; });
 
 // Toggle menu helper
-function toggleMenu(menu) {
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => {
-    if (m !== menu) m.style.display = 'none';
+function toggleMenu(menu){
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(m=>{
+    if(m!==menu) m.style.display='none';
   });
-  menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+  menu.style.display = menu.style.display==='flex'?'none':'flex';
 }
 </script>
-
 </body>
 </html>
