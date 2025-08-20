@@ -33,10 +33,10 @@ video {
   max-width: 100%;
   max-height: 100%;
   display: block;
-  object-fit: contain; /* garde les proportions mais centre mieux */
+  object-fit: contain;
 }
 
-/* Progress bar entre la vidéo et les boutons */
+/* Progress bar */
 .progress {
   position: absolute;
   bottom: 70px;
@@ -60,7 +60,7 @@ video {
   pointer-events: none;
 }
 
-/* Bottom controls */
+/* Controls */
 .controls {
   position: absolute;
   bottom: 10px;
@@ -82,10 +82,11 @@ video {
 
 .controls-left, .controls-right {
   display: flex;
+  align-items: center;
   gap: 20px;
 }
 
-/* Floating center button */
+/* Floating play button */
 .center-play {
   position: absolute;
   top: 50%;
@@ -110,6 +111,38 @@ video {
   font-size: 35px;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 35;
 }
+
+/* Volume slider */
+.volume-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#volume-slider {
+  width: 100px;
+  height: 5px;
+  appearance: none;
+  background: rgba(255,255,255,0.3);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+}
+#volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+#volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -119,18 +152,25 @@ video {
   <!-- Center play button -->
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
-  <!-- Progress bar placée entre la vidéo et les boutons -->
+  <!-- Progress bar -->
   <div class="progress" id="progress">
     <div class="progress-bar" id="progress-bar"></div>
   </div>
 
-  <!-- Bottom controls -->
+  <!-- Controls -->
   <div class="controls" id="controls">
     <div class="controls-left">
       <span id="backward" class="material-symbols-outlined">replay_10</span>
       <span id="play" class="material-symbols-outlined">play_arrow</span>
       <span id="forward" class="material-symbols-outlined">forward_10</span>
+
+      <!-- Volume -->
+      <div class="volume-container">
+        <span id="volume-icon" class="material-symbols-outlined">volume_up</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
+      </div>
     </div>
+
     <div class="controls-right">
       <span id="subtitles" class="material-symbols-outlined">subtitles</span>
       <span id="source" class="material-symbols-outlined">cloud</span>
@@ -148,11 +188,13 @@ const progressBar = document.getElementById('progress-bar');
 const playBtn = document.getElementById('play');
 const centerPlay = document.getElementById('centerPlay');
 const container = document.getElementById('video-container');
+const volumeSlider = document.getElementById('volume-slider');
+const volumeIcon = document.getElementById('volume-icon');
 let hideTimeout;
 
 video.controls = false;
 
-// Show/hide controls + progress
+// Show/hide controls
 function showControls() {
   controls.classList.remove('hide');
   progress.classList.remove('hide');
@@ -166,26 +208,21 @@ function showControls() {
     document.body.style.cursor = 'none';
   }, 3000);
 }
-
-video.addEventListener('mousemove', showControls);
-controls.addEventListener('mousemove', showControls);
-progress.addEventListener('mousemove', showControls);
 document.addEventListener('mousemove', showControls);
 showControls();
 
-// Progress bar update
+// Update progress
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
 });
-
 progress.addEventListener('click', e => {
   const rect = progress.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
   video.currentTime = pos * video.duration;
 });
 
-// Play/pause toggle
+// Play/pause
 function togglePlay() {
   if (video.paused) {
     video.play();
@@ -210,6 +247,30 @@ document.getElementById('fullscreen').addEventListener('click', () => {
     container.requestFullscreen();
   } else {
     document.exitFullscreen();
+  }
+});
+
+// Volume
+volumeSlider.addEventListener('input', () => {
+  video.volume = volumeSlider.value;
+  if (video.volume === 0) {
+    volumeIcon.textContent = 'volume_off';
+  } else if (video.volume < 0.5) {
+    volumeIcon.textContent = 'volume_down';
+  } else {
+    volumeIcon.textContent = 'volume_up';
+  }
+});
+
+volumeIcon.addEventListener('click', () => {
+  if (video.muted) {
+    video.muted = false;
+    volumeSlider.value = video.volume;
+    volumeIcon.textContent = video.volume > 0.5 ? 'volume_up' : 'volume_down';
+  } else {
+    video.muted = true;
+    volumeIcon.textContent = 'volume_off';
+    volumeSlider.value = 0;
   }
 });
 </script>
