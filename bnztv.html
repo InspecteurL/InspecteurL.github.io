@@ -17,7 +17,6 @@ body {
   align-items: center;
   height: 100vh;
 }
-
 .video-container {
   position: relative;
   width: 100%;
@@ -28,51 +27,43 @@ body {
   align-items: center;
   background: black;
 }
-
 video {
   max-width: 100%;
   max-height: 100%;
   display: block;
   object-fit: contain;
 }
-
-/* Progress wrapper with time */
-.progress-wrapper {
+/* Progress bar */
+.progress {
   position: absolute;
   bottom: 70px;
   left: 0;
   right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  color: white;
-  font-size: 14px;
-  font-family: monospace;
-  transition: opacity 0.3s;
-}
-.progress-wrapper.hide {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Progress bar */
-.progress {
-  flex: 1;
-  margin: 0 10px;
-  height: 10px;
+  height: 12px;
   background: rgba(255,255,255,0.2);
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 6px;
   overflow: hidden;
+  transition: opacity 0.3s;
 }
 .progress-bar {
   width: 0%;
   height: 100%;
   background: linear-gradient(90deg, #ff4b2b, #ff416c);
-  border-radius: 5px;
+  border-radius: 6px;
 }
-
+.progress.hide { opacity: 0; pointer-events: none; }
+/* Time indicator */
+.time-indicator {
+  position: absolute;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-family: sans-serif;
+  font-size: 14px;
+  pointer-events: none;
+}
 /* Controls */
 .controls {
   position: absolute;
@@ -88,17 +79,8 @@ video {
   opacity: 1;
   transition: opacity 0.3s;
 }
-.controls.hide {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.controls-left, .controls-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
+.controls.hide { opacity: 0; pointer-events: none; }
+.controls-left, .controls-right { display: flex; align-items: center; gap: 20px; }
 /* Floating play button */
 .center-play {
   position: absolute;
@@ -113,10 +95,7 @@ video {
   cursor: pointer;
   transition: opacity 0.3s;
 }
-.center-play.hide {
-  opacity: 0;
-  pointer-events: none;
-}
+.center-play.hide { opacity: 0; pointer-events: none; }
 
 .material-symbols-outlined {
   cursor: pointer;
@@ -126,11 +105,7 @@ video {
 }
 
 /* Volume slider */
-.volume-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.volume-container { display: flex; align-items: center; gap: 10px; }
 #volume-slider {
   width: 100px;
   height: 5px;
@@ -188,14 +163,13 @@ video {
   <!-- Center play button -->
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
-  <!-- Progress bar with time -->
-  <div class="progress-wrapper" id="progressWrapper">
-    <span id="currentTime">0:00</span>
-    <div class="progress" id="progress">
-      <div class="progress-bar" id="progress-bar"></div>
-    </div>
-    <span id="totalTime">0:00</span>
+  <!-- Progress bar -->
+  <div class="progress" id="progress">
+    <div class="progress-bar" id="progress-bar"></div>
   </div>
+
+  <!-- Time indicator -->
+  <div id="timeIndicator" class="time-indicator">0:00 / 0:00</div>
 
   <!-- Controls -->
   <div class="controls" id="controls">
@@ -203,14 +177,12 @@ video {
       <span id="backward" class="material-symbols-outlined">replay_10</span>
       <span id="play" class="material-symbols-outlined">play_arrow</span>
       <span id="forward" class="material-symbols-outlined">forward_10</span>
-
       <!-- Volume -->
       <div class="volume-container">
         <span id="volume-icon" class="material-symbols-outlined">volume_up</span>
         <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
       </div>
     </div>
-
     <div class="controls-right">
       <span id="subtitles" class="material-symbols-outlined">subtitles</span>
       <span id="source" class="material-symbols-outlined">cloud</span>
@@ -219,7 +191,7 @@ video {
     </div>
   </div>
 
-  <!-- Settings menu -->
+  <!-- Menus -->
   <div id="settingsMenu" class="menu">
     <button data-speed="0.5">0.5x</button>
     <button data-speed="1">1x</button>
@@ -227,161 +199,141 @@ video {
     <button data-speed="2">2x</button>
   </div>
 
-  <!-- Source input -->
-  <input type="file" id="sourceInput" accept="video/*" style="display:none">
-  <input type="file" id="subtitleInput" accept=".vtt" style="display:none">
+  <div id="sourceMenu" class="menu">
+    <button data-src="https://cinepizza.xyz/movies/Interstellar.mp4">Interstellar</button>
+    <!-- Ajoute d'autres vidéos ici -->
+  </div>
+
+  <div id="subtitleMenu" class="menu">
+    <!-- Exemple: -->
+    <!-- <button data-sub="https://example.com/subtitles_fr.vtt">FR</button> -->
+  </div>
 </div>
 
 <script>
 const video = document.getElementById('video');
 const controls = document.getElementById('controls');
-const progressWrapper = document.getElementById('progressWrapper');
 const progress = document.getElementById('progress');
 const progressBar = document.getElementById('progress-bar');
+const timeIndicator = document.getElementById('timeIndicator');
 const playBtn = document.getElementById('play');
 const centerPlay = document.getElementById('centerPlay');
 const container = document.getElementById('video-container');
 const volumeSlider = document.getElementById('volume-slider');
 const volumeIcon = document.getElementById('volume-icon');
+
 const settingsBtn = document.getElementById('settings');
 const settingsMenu = document.getElementById('settingsMenu');
 const sourceBtn = document.getElementById('source');
-const sourceInput = document.getElementById('sourceInput');
+const sourceMenu = document.getElementById('sourceMenu');
 const subtitleBtn = document.getElementById('subtitles');
-const subtitleInput = document.getElementById('subtitleInput');
-const currentTimeEl = document.getElementById('currentTime');
-const totalTimeEl = document.getElementById('totalTime');
+const subtitleMenu = document.getElementById('subtitleMenu');
+
 let hideTimeout;
 
 video.controls = false;
 
-// Format time
-function formatTime(time) {
-  const minutes = Math.floor(time / 60);
-  const seconds = Math.floor(time % 60).toString().padStart(2, '0');
-  return `${minutes}:${seconds}`;
-}
-
 // Show/hide controls
 function showControls() {
   controls.classList.remove('hide');
-  progressWrapper.classList.remove('hide');
+  progress.classList.remove('hide');
   centerPlay.classList.remove('hide');
   document.body.style.cursor = 'default';
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(() => {
     controls.classList.add('hide');
-    progressWrapper.classList.add('hide');
+    progress.classList.add('hide');
     centerPlay.classList.add('hide');
     document.body.style.cursor = 'none';
     settingsMenu.style.display = 'none';
+    sourceMenu.style.display = 'none';
+    subtitleMenu.style.display = 'none';
   }, 3000);
 }
 document.addEventListener('mousemove', showControls);
 showControls();
 
-// Update progress
+// Update progress & time
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
-  currentTimeEl.textContent = formatTime(video.currentTime);
+  timeIndicator.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
 });
-video.addEventListener('loadedmetadata', () => {
-  totalTimeEl.textContent = formatTime(video.duration);
-});
+
+// Play/pause
+function togglePlay() {
+  if(video.paused) video.play();
+  else video.pause();
+}
+playBtn.addEventListener('click', togglePlay);
+centerPlay.addEventListener('click', togglePlay);
+video.addEventListener('play', () => { playBtn.textContent='pause'; centerPlay.classList.add('hide'); });
+video.addEventListener('pause', () => { playBtn.textContent='play_arrow'; centerPlay.classList.remove('hide'); });
+
+// Seek
 progress.addEventListener('click', e => {
   const rect = progress.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
   video.currentTime = pos * video.duration;
 });
 
-// Play/pause
-function togglePlay() {
-  if (video.paused) {
-    video.play();
-    playBtn.textContent = 'pause';
-    centerPlay.textContent = 'pause';
-  } else {
-    video.pause();
-    playBtn.textContent = 'play_arrow';
-    centerPlay.textContent = 'play_arrow';
-  }
-}
-playBtn.addEventListener('click', togglePlay);
-centerPlay.addEventListener('click', togglePlay);
-
-// Forward/backward
-document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
-document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
-
-// Fullscreen
-document.getElementById('fullscreen').addEventListener('click', () => {
-  if (!document.fullscreenElement) {
-    container.requestFullscreen();
-  } else {
-    document.exitFullscreen();
-  }
-});
-
 // Volume
-volumeSlider.addEventListener('input', () => {
-  video.volume = volumeSlider.value;
-  if (video.volume === 0) {
-    volumeIcon.textContent = 'volume_off';
-  } else if (video.volume < 0.5) {
-    volumeIcon.textContent = 'volume_down';
-  } else {
-    volumeIcon.textContent = 'volume_up';
-  }
-});
+volumeSlider.addEventListener('input', () => { video.volume = volumeSlider.value; });
 volumeIcon.addEventListener('click', () => {
-  if (video.muted) {
-    video.muted = false;
-    volumeSlider.value = video.volume;
-    volumeIcon.textContent = video.volume > 0.5 ? 'volume_up' : 'volume_down';
-  } else {
-    video.muted = true;
-    volumeIcon.textContent = 'volume_off';
-    volumeSlider.value = 0;
-  }
+  if(video.volume>0){ video.volume=0; volumeSlider.value=0; }
+  else { video.volume=1; volumeSlider.value=1; }
 });
 
-// Settings menu
+// Speed / Settings
 settingsBtn.addEventListener('click', () => {
-  settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+  settingsMenu.style.display = settingsMenu.style.display==='flex'?'none':'flex';
 });
-settingsMenu.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
+settingsMenu.querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click', ()=> {
     video.playbackRate = btn.dataset.speed;
-    settingsMenu.style.display = 'none';
   });
 });
 
-// Change video source
-sourceBtn.addEventListener('click', () => sourceInput.click());
-sourceInput.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (file) {
-    const url = URL.createObjectURL(file);
-    video.src = url;
+// Source
+sourceBtn.addEventListener('click', () => {
+  sourceMenu.style.display = sourceMenu.style.display==='flex'?'none':'flex';
+});
+sourceMenu.querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click', ()=> {
+    video.src = btn.dataset.src;
     video.play();
-  }
+  });
 });
 
 // Subtitles
-subtitleBtn.addEventListener('click', () => subtitleInput.click());
-subtitleInput.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (file) {
-    const url = URL.createObjectURL(file);
-    const track = document.createElement('track');
-    track.kind = 'subtitles';
-    track.label = 'French';
-    track.srclang = 'fr';
-    track.src = url;
-    track.default = true;
-    video.appendChild(track);
+subtitleBtn.addEventListener('click', () => {
+  subtitleMenu.style.display = subtitleMenu.style.display==='flex'?'none':'flex';
+});
+subtitleMenu.addEventListener('click', e => {
+  if(e.target.tagName==='BUTTON'){
+    const tracks = video.querySelectorAll('track');
+    tracks.forEach(t=>t.remove());
+    const subUrl = e.target.dataset.sub;
+    if(subUrl){
+      const track = document.createElement('track');
+      track.src = subUrl;
+      track.kind = 'subtitles';
+      track.default = true;
+      video.appendChild(track);
+    }
   }
+});
+
+// Fullscreen
+document.getElementById('fullscreen').addEventListener('click', () => {
+  if(!document.fullscreenElement) container.requestFullscreen();
+  else document.exitFullscreen();
 });
 </script>
 </body>
