@@ -22,15 +22,15 @@ body {
   position: relative;
   width: 90%;
   max-width: 1200px;
+  background: black;
 }
 
 video {
   width: 100%;
   display: block;
-  background: black;
 }
 
-/* Barre de progression */
+/* Progress bar */
 .progress {
   position: absolute;
   bottom: 60px;
@@ -46,22 +46,46 @@ video {
   background: #fff;
 }
 
-/* Contrôles */
+/* Bottom controls bar */
 .controls {
   position: absolute;
   bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   display: flex;
-  justify-content: center;
-  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
   background: rgba(0,0,0,0.5);
-  padding: 10px 15px;
   border-radius: 10px;
-  transition: opacity 0.3s;
   opacity: 1;
+  transition: opacity 0.3s;
 }
 .controls.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.controls-left, .controls-right {
+  display: flex;
+  gap: 20px;
+}
+
+/* Floating center button */
+.center-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  color: white;
+  background: rgba(0,0,0,0.5);
+  border-radius: 50%;
+  padding: 20px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+.center-play.hide {
   opacity: 0;
   pointer-events: none;
 }
@@ -69,8 +93,8 @@ video {
 .material-symbols-outlined {
   cursor: pointer;
   color: white;
-  font-size: 40px; /* plus grand */
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 40;
+  font-size: 35px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 35;
 }
 </style>
 </head>
@@ -78,18 +102,27 @@ video {
 <div class="video-container" id="video-container">
   <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
 
+  <!-- Progress bar -->
   <div class="progress" id="progress">
     <div class="progress-bar" id="progress-bar"></div>
   </div>
 
+  <!-- Center play button -->
+  <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
+
+  <!-- Bottom controls -->
   <div class="controls" id="controls">
-    <span id="backward" class="material-symbols-outlined">replay_10</span>
-    <span id="play" class="material-symbols-outlined">play_arrow</span>
-    <span id="forward" class="material-symbols-outlined">forward_10</span>
-    <span id="subtitles" class="material-symbols-outlined">subtitles</span>
-    <span id="source" class="material-symbols-outlined">cloud</span>
-    <span id="settings" class="material-symbols-outlined">settings</span>
-    <span id="fullscreen" class="material-symbols-outlined">fullscreen</span>
+    <div class="controls-left">
+      <span id="backward" class="material-symbols-outlined">replay_10</span>
+      <span id="play" class="material-symbols-outlined">play_arrow</span>
+      <span id="forward" class="material-symbols-outlined">forward_10</span>
+    </div>
+    <div class="controls-right">
+      <span id="subtitles" class="material-symbols-outlined">subtitles</span>
+      <span id="source" class="material-symbols-outlined">cloud</span>
+      <span id="settings" class="material-symbols-outlined">settings</span>
+      <span id="fullscreen" class="material-symbols-outlined">fullscreen</span>
+    </div>
   </div>
 </div>
 
@@ -99,30 +132,31 @@ const controls = document.getElementById('controls');
 const progress = document.getElementById('progress');
 const progressBar = document.getElementById('progress-bar');
 const playBtn = document.getElementById('play');
+const centerPlay = document.getElementById('centerPlay');
 const container = document.getElementById('video-container');
 let hideTimeout;
 
-// Supprimer l'interface native
 video.controls = false;
 
-// Afficher les contrôles et réinitialiser le timer
+// Show/hide controls
 function showControls() {
   controls.classList.remove('hide');
+  centerPlay.classList.remove('hide');
   document.body.style.cursor = 'default';
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(() => {
     controls.classList.add('hide');
+    centerPlay.classList.add('hide');
     document.body.style.cursor = 'none';
-  }, 3000); // disparaît après 3 secondes
+  }, 3000);
 }
 
-// Événements pour montrer les contrôles
 video.addEventListener('mousemove', showControls);
 controls.addEventListener('mousemove', showControls);
 document.addEventListener('mousemove', showControls);
 showControls();
 
-// Barre de progression
+// Progress bar update
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
@@ -134,18 +168,24 @@ progress.addEventListener('click', e => {
   video.currentTime = pos * video.duration;
 });
 
-// Boutons
-document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
-document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
-playBtn.addEventListener('click', () => {
+// Play/pause toggle
+function togglePlay() {
   if (video.paused) {
     video.play();
     playBtn.textContent = 'pause';
+    centerPlay.textContent = 'pause';
   } else {
     video.pause();
     playBtn.textContent = 'play_arrow';
+    centerPlay.textContent = 'play_arrow';
   }
-});
+}
+playBtn.addEventListener('click', togglePlay);
+centerPlay.addEventListener('click', togglePlay);
+
+// Forward/backward
+document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
+document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
 
 // Fullscreen
 document.getElementById('fullscreen').addEventListener('click', () => {
