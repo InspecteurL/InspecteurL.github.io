@@ -30,10 +30,10 @@ video {
   display: block;
 }
 
-/* Progress bar */
+/* Progress bar tout en bas */
 .progress {
   position: absolute;
-  bottom: 60px;
+  bottom: 0;
   left: 0;
   right: 0;
   height: 5px;
@@ -51,10 +51,10 @@ video {
   pointer-events: none;
 }
 
-/* Bottom controls bar */
+/* Bottom controls juste au-dessus */
 .controls {
   position: absolute;
-  bottom: 10px;
+  bottom: 10px; /* au-dessus de la barre */
   left: 0;
   right: 0;
   display: flex;
@@ -107,7 +107,7 @@ video {
 <div class="video-container" id="video-container">
   <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
 
-  <!-- Progress bar -->
+  <!-- Progress bar tout en bas -->
   <div class="progress" id="progress">
     <div class="progress-bar" id="progress-bar"></div>
   </div>
@@ -115,7 +115,7 @@ video {
   <!-- Center play button -->
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
-  <!-- Bottom controls -->
+  <!-- Bottom controls juste au-dessus -->
   <div class="controls" id="controls">
     <div class="controls-left">
       <span id="backward" class="material-symbols-outlined">replay_10</span>
