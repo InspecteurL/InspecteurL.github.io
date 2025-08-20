@@ -213,6 +213,7 @@ video {
 <script>
 const video = document.getElementById('video');
 const controls = document.getElementById('controls');
+const progressWrapper = document.getElementById('progressWrapper');
 const progress = document.getElementById('progress');
 const progressBar = document.getElementById('progress-bar');
 const currentTimeEl = document.getElementById('currentTime');
@@ -236,14 +237,18 @@ video.controls = false;
 // Show / hide controls
 // ---------------------
 function showControls() {
-  [controls, progress, centerPlay, currentTimeEl, totalTimeEl].forEach(el => el.classList.remove('hide'));
+  controls.classList.remove('hide');
+  progressWrapper.classList.remove('hide');
+  centerPlay.classList.remove('hide');
   document.body.style.cursor = 'default';
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(hideControls, 3000);
 }
 
 function hideControls() {
-  [controls, progress, centerPlay, currentTimeEl, totalTimeEl].forEach(el => el.classList.add('hide'));
+  controls.classList.add('hide');
+  progressWrapper.classList.add('hide');
+  centerPlay.classList.add('hide');
   document.body.style.cursor = 'none';
   [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
 }
@@ -293,7 +298,7 @@ video.addEventListener('pause', () => {
 // ---------------------
 // Seek
 // ---------------------
-progress.addEventListener('click', e => {
+progressWrapper.addEventListener('click', e => {
   const rect = progress.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
   video.currentTime = pos * video.duration;
