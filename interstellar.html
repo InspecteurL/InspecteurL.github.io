@@ -72,29 +72,133 @@ video {
 }
 
 /* --- Barre de progression et contrôles --- */
-.progress-wrapper { position: absolute; bottom: 70px; left: 20px; right: 20px; display: flex; align-items: center; gap: 10px; color: white; font-size: 14px; font-family: monospace; }
-.progress { flex: 1; height: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; overflow: hidden; cursor: pointer; }
-.progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #ff4b2b, #ff416c); border-radius: 6px; }
-.controls { position: absolute; bottom: 10px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.5); border-radius: 10px; opacity: 1; transition: opacity 0.3s; }
-.controls-left, .controls-right { display: flex; align-items: center; gap: 20px; }
-.center-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; color: white; background: rgba(0,0,0,0.5); border-radius: 50%; padding: 20px; cursor: pointer; transition: opacity 0.3s; }
-.center-play.hide { opacity: 0; pointer-events: none; }
-.material-symbols-outlined { cursor: pointer; color: white; font-size: 35px; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 35; }
-.volume-container { display: flex; align-items: center; gap: 10px; }
-#volume-slider { width: 100px; height: 5px; appearance: none; background: rgba(255,255,255,0.3); border-radius: 5px; outline: none; cursor: pointer; }
-#volume-slider::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; background: #ff416c; border-radius: 50%; cursor: pointer; }
-#volume-slider::-moz-range-thumb { width: 12px; height: 12px; background: #ff416c; border-radius: 50%; cursor: pointer; }
-.menu { position: absolute; bottom: 60px; right: 20px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; display: none; flex-direction: column; gap: 5px; }
-.menu button { background: transparent; border: none; color: white; padding: 5px 10px; cursor: pointer; text-align: left; }
-.menu button:hover { background: rgba(255,255,255,0.2); }
-  /* --- Disparition automatique --- */
+.progress-wrapper {
+  position: absolute;
+  bottom: 70px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 14px;
+  font-family: monospace;
+}
+.progress {
+  flex: 1;
+  height: 12px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff4b2b, #ff416c);
+  border-radius: 6px;
+}
+.controls {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 10px;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+.controls-left, .controls-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.center-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  color: white;
+  background: rgba(0,0,0,0.5);
+  border-radius: 50%;
+  padding: 20px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+.center-play.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+.material-symbols-outlined {
+  cursor: pointer;
+  color: white;
+  font-size: 35px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 35;
+}
+.volume-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#volume-slider {
+  width: 100px;
+  height: 5px;
+  appearance: none;
+  background: rgba(255,255,255,0.3);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+}
+#volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+#volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.menu {
+  position: absolute;
+  bottom: 60px;
+  right: 20px;
+  background: rgba(0,0,0,0.8);
+  padding: 10px;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+}
+.menu button {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+.menu button:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* --- Disparition automatique --- */
 .hide {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
   transition: opacity 0.4s ease;
 }
-
 .controls,
 .progress-wrapper,
 #centerPlay {
@@ -102,8 +206,8 @@ video {
   visibility: visible;
   transition: opacity 0.4s ease;
 }
-
 </style>
+
 </head>
 <body>
 
