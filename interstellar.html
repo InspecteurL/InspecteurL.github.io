@@ -171,9 +171,17 @@ const sourceBtn = document.getElementById('source');
 const sourceMenu = document.getElementById('sourceMenu');
 const subtitleBtn = document.getElementById('subtitles');
 const subtitleMenu = document.getElementById('subtitleMenu');
+const btnWatch = document.getElementById('btnWatch'); // ✅ bouton fiche film
 
 let hideTimeout;
 video.controls = false;
+
+// ✅ Bouton "Lire le film"
+btnWatch.addEventListener('click', () => {
+  videoContainer.style.display = 'flex';   // on affiche le lecteur
+  video.play();                            // on lance directement la vidéo
+  showControls();                          // on montre les contrôles au début
+});
 
 // ---------------------
 // Show / hide controls
@@ -189,7 +197,6 @@ function showControls() {
 }
 
 function hideControls() {
-  // si la vidéo est en pause, on garde le bouton central visible
   if (!video.paused) {
     centerPlay.classList.add('hide');
   }
@@ -199,12 +206,11 @@ function hideControls() {
   [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
 }
 
-// montrer les contrôles dès qu'il y a une interaction
 document.addEventListener('mousemove', showControls);
 document.addEventListener('keydown', showControls);
 video.addEventListener('click', showControls);
 
-showControls(); // affichage initial
+showControls();
 
 // ---------------------
 // Format time
@@ -245,7 +251,7 @@ video.addEventListener('play', () => {
 video.addEventListener('pause', () => {
   playBtn.textContent = 'play_arrow';
   centerPlay.textContent = 'play_arrow';
-  centerPlay.classList.remove('hide'); // en pause → bouton central toujours visible
+  centerPlay.classList.remove('hide');
   showControls();
 });
 
@@ -340,6 +346,7 @@ function toggleMenu(menu){
   [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
   menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
 }
+
 </script>
 
 
