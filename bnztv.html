@@ -62,6 +62,25 @@ video {
   font-size: 14px;
   pointer-events: none;
 }
+  .progress-wrapper {
+  position: absolute;
+  bottom: 70px; /* juste au-dessus des contrôles */
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  color: white;
+  font-size: 14px;
+  font-family: monospace;
+  transition: opacity 0.3s;
+}
+.progress-wrapper.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Controls */
 .controls {
   position: absolute;
@@ -159,10 +178,14 @@ video {
   <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
 
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
-
+<!-- Progress bar with time -->
+<div class="progress-wrapper" id="progressWrapper">
+  <span id="currentTime">0:00</span>
   <div class="progress" id="progress">
     <div class="progress-bar" id="progress-bar"></div>
   </div>
+  <span id="totalTime">0:00</span>
+</div>
 
   <div id="timeIndicator" class="time-indicator">0:00 / 0:00</div>
 
