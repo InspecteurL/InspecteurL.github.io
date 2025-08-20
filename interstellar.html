@@ -171,16 +171,16 @@ const sourceBtn = document.getElementById('source');
 const sourceMenu = document.getElementById('sourceMenu');
 const subtitleBtn = document.getElementById('subtitles');
 const subtitleMenu = document.getElementById('subtitleMenu');
-const btnWatch = document.getElementById('btnWatch'); // ✅ bouton fiche film
+const btnWatch = document.getElementById('btnWatch');
 
 let hideTimeout;
 video.controls = false;
 
 // ✅ Bouton "Lire le film"
 btnWatch.addEventListener('click', () => {
-  videoContainer.style.display = 'flex';   // on affiche le lecteur
-  video.play();                            // on lance directement la vidéo
-  showControls();                          // on montre les contrôles au début
+  videoContainer.style.display = 'flex';
+  video.play();
+  showControls();
 });
 
 // ---------------------
@@ -346,10 +346,7 @@ function toggleMenu(menu){
   [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
   menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
 }
-
 </script>
-
-
 
 </body>
 </html>
