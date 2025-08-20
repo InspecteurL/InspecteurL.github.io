@@ -162,7 +162,7 @@ btnWatch.addEventListener('click', () => {
   video.play();
 });
 
-// --- Lecteur complet (reprise de ton code existant) ---
+// --- Lecteur complet ---
 const controls = document.getElementById('controls');
 const progressWrapper = document.getElementById('progressWrapper');
 const progress = document.getElementById('progress');
@@ -185,7 +185,9 @@ const forwardBtn = document.getElementById('forward');
 
 let hideTimeout;
 
-// --- Contrôles visibilité ---
+// ---------------------
+// Montrer / cacher les contrôles et menus
+// ---------------------
 function showControls() {
   controls.classList.remove('hide');
   progressWrapper.classList.remove('hide');
@@ -194,6 +196,7 @@ function showControls() {
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(hideControls, 3000);
 }
+
 function hideControls() {
   controls.classList.add('hide');
   progressWrapper.classList.add('hide');
@@ -201,14 +204,21 @@ function hideControls() {
   document.body.style.cursor = 'none';
   [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
 }
+
+// Afficher les contrôles au mouvement de souris ou interaction clavier
 document.addEventListener('mousemove', showControls);
+document.addEventListener('keydown', showControls);
 showControls();
 
+// ---------------------
+// Format temps et barre de progression
+// ---------------------
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
   return `${m}:${s.toString().padStart(2,'0')}`;
 }
+
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
@@ -216,34 +226,52 @@ video.addEventListener('timeupdate', () => {
   totalTimeEl.textContent = formatTime(video.duration);
 });
 
-function togglePlay() {
-  if(video.paused) video.play();
-  else video.pause();
-}
-playBtn.addEventListener('click', togglePlay);
-centerPlay.addEventListener('click', togglePlay);
-video.addEventListener('play', () => { playBtn.textContent = 'pause'; centerPlay.classList.add('hide'); });
-video.addEventListener('pause', () => { playBtn.textContent = 'play_arrow'; centerPlay.classList.remove('hide'); });
-
 progress.addEventListener('click', (e) => {
   const rect = progress.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
   video.currentTime = pos * video.duration;
 });
 
+// ---------------------
+// Play / pause et bouton central
+// ---------------------
+function togglePlay() {
+  if(video.paused) video.play();
+  else video.pause();
+}
+
+playBtn.addEventListener('click', togglePlay);
+centerPlay.addEventListener('click', togglePlay);
+
+video.addEventListener('play', () => {
+  playBtn.textContent = 'pause';
+  centerPlay.classList.add('hide');
+});
+
+video.addEventListener('pause', () => {
+  playBtn.textContent = 'play_arrow';
+  centerPlay.classList.remove('hide');
+});
+
+// ---------------------
+// Volume
+// ---------------------
 volumeSlider.addEventListener('input', () => {
   video.volume = volumeSlider.value;
   volumeIcon.textContent = video.volume > 0 ? 'volume_up' : 'volume_off';
 });
 
-settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
-sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
-subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
-
+// ---------------------
+// Menus settings / source / subtitle
+// ---------------------
 function toggleMenu(menu) {
   [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m!==menu) m.style.display='none'; });
   menu.style.display = menu.style.display==='flex' ? 'none' : 'flex';
 }
+
+settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
+sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
+subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
 
 settingsMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => { video.playbackRate = parseFloat(btn.dataset.speed); });
@@ -256,6 +284,9 @@ sourceMenu.querySelectorAll('button').forEach(btn => {
   });
 });
 
+// ---------------------
+// Fullscreen / skip
+// ---------------------
 fullscreenBtn.addEventListener('click', () => {
   if(!document.fullscreenElement) videoContainer.requestFullscreen();
   else document.exitFullscreen();
@@ -264,6 +295,7 @@ fullscreenBtn.addEventListener('click', () => {
 backwardBtn.addEventListener('click', () => { video.currentTime -= 10; });
 forwardBtn.addEventListener('click', () => { video.currentTime += 10; });
 </script>
+
 
 </body>
 </html>
