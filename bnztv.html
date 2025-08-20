@@ -31,17 +31,33 @@ video {
   display: block;
   object-fit: contain;
 }
-/* Progress bar */
-.progress {
+
+/* Progress bar wrapper */
+.progress-wrapper {
   position: absolute;
   bottom: 70px;
-  left: 0;
-  right: 0;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px; /* espace entre temps et barre */
+  color: white;
+  font-size: 14px;
+  font-family: monospace;
+}
+.progress-wrapper.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Progress bar */
+.progress {
+  flex: 1; /* prend tout l’espace restant entre les temps */
   height: 12px;
   background: rgba(255,255,255,0.2);
-  cursor: pointer;
   border-radius: 6px;
   overflow: hidden;
+  cursor: pointer;
   transition: opacity 0.3s;
 }
 .progress-bar {
@@ -51,35 +67,6 @@ video {
   border-radius: 6px;
 }
 .progress.hide { opacity: 0; pointer-events: none; }
-/* Time indicator */
-.time-indicator {
-  position: absolute;
-  bottom: 85px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: white;
-  font-family: sans-serif;
-  font-size: 14px;
-  pointer-events: none;
-}
-  .progress-wrapper {
-  position: absolute;
-  bottom: 70px; /* juste au-dessus des contrôles */
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  color: white;
-  font-size: 14px;
-  font-family: monospace;
-  transition: opacity 0.3s;
-}
-.progress-wrapper.hide {
-  opacity: 0;
-  pointer-events: none;
-}
 
 /* Controls */
 .controls {
@@ -98,6 +85,7 @@ video {
 }
 .controls.hide { opacity: 0; pointer-events: none; }
 .controls-left, .controls-right { display: flex; align-items: center; gap: 20px; }
+
 /* Floating play button */
 .center-play {
   position: absolute;
