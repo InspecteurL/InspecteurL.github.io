@@ -13,7 +13,22 @@ body {
   background: url('https://c4.wallpaperflare.com/wallpaper/1023/915/631/nasa-space-suit-digital-art-space-wallpaper-preview.jpg') no-repeat center center fixed;
   background-size: cover;
   color: #fff;
+  position: relative;
+  z-index: 0;
 }
+
+/* Overlay sombre */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* 👈 règle l’opacité (0.6 = 60%) */
+  z-index: -1; /* reste derrière le contenu */
+}
+
    ul {
       list-style-type: none;
       margin: 0;
