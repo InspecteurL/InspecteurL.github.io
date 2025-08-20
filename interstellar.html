@@ -184,14 +184,15 @@ const backwardBtn = document.getElementById('backward');
 const forwardBtn = document.getElementById('forward');
 
 let hideTimeout;
+video.controls = false;
 
 // ---------------------
-// Montrer / cacher les contrôles et menus
+// Show / hide controls
 // ---------------------
 function showControls() {
   controls.classList.remove('hide');
   progressWrapper.classList.remove('hide');
-  if(video.paused) centerPlay.classList.remove('hide'); // bouton central seulement si pause
+  if(video.paused) centerPlay.classList.remove('hide');
   document.body.style.cursor = 'default';
   [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
   clearTimeout(hideTimeout);
@@ -206,14 +207,14 @@ function hideControls() {
   [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
 }
 
-// Réaffichage contrôles sur interaction
+// Réaffichage des contrôles sur interaction
 ['mousemove','keydown','click'].forEach(evt => {
   document.addEventListener(evt, showControls);
 });
 showControls();
 
 // ---------------------
-// Format temps et barre de progression
+// Format time
 // ---------------------
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
@@ -221,6 +222,9 @@ function formatTime(sec) {
   return `${m}:${s.toString().padStart(2,'0')}`;
 }
 
+// ---------------------
+// Update progress & time
+// ---------------------
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
@@ -228,14 +232,8 @@ video.addEventListener('timeupdate', () => {
   totalTimeEl.textContent = formatTime(video.duration);
 });
 
-progress.addEventListener('click', (e) => {
-  const rect = progress.getBoundingClientRect();
-  const pos = (e.clientX - rect.left) / rect.width;
-  video.currentTime = pos * video.duration;
-});
-
 // ---------------------
-// Play / pause et bouton central
+// Play / pause
 // ---------------------
 function togglePlay() {
   if(video.paused) video.play();
@@ -247,12 +245,23 @@ centerPlay.addEventListener('click', togglePlay);
 
 video.addEventListener('play', () => {
   playBtn.textContent = 'pause';
+  centerPlay.textContent = 'pause';
   centerPlay.classList.add('hide');
 });
 
 video.addEventListener('pause', () => {
   playBtn.textContent = 'play_arrow';
+  centerPlay.textContent = 'play_arrow';
   centerPlay.classList.remove('hide');
+});
+
+// ---------------------
+// Seek
+// ---------------------
+progressWrapper.addEventListener('click', e => {
+  const rect = progress.getBoundingClientRect();
+  const pos = (e.clientX - rect.left) / rect.width;
+  video.currentTime = pos * video.duration;
 });
 
 // ---------------------
@@ -260,42 +269,83 @@ video.addEventListener('pause', () => {
 // ---------------------
 volumeSlider.addEventListener('input', () => {
   video.volume = volumeSlider.value;
-  volumeIcon.textContent = video.volume > 0 ? 'volume_up' : 'volume_off';
+  updateVolumeIcon();
+});
+volumeIcon.addEventListener('click', () => {
+  if(video.volume > 0){ video.volume = 0; volumeSlider.value = 0; }
+  else { video.volume = 1; volumeSlider.value = 1; }
+  updateVolumeIcon();
 });
 
-// ---------------------
-// Menus settings / source / subtitle
-// ---------------------
-function toggleMenu(menu) {
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m!==menu) m.style.display='none'; });
-  menu.style.display = menu.style.display==='flex' ? 'none' : 'flex';
+function updateVolumeIcon() {
+  if(video.volume === 0) volumeIcon.textContent = 'volume_off';
+  else if(video.volume < 0.5) volumeIcon.textContent = 'volume_down';
+  else volumeIcon.textContent = 'volume_up';
 }
 
+// ---------------------
+// Settings menu
+// ---------------------
 settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
-sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
-subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
-
 settingsMenu.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => { video.playbackRate = parseFloat(btn.dataset.speed); });
-});
-
-sourceMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => {
-    video.src = btn.dataset.src;
-    video.play();
+    video.playbackRate = parseFloat(btn.dataset.speed);
+    settingsMenu.style.display = 'none';
   });
 });
 
 // ---------------------
-// Fullscreen / skip
+// Source menu
+// ---------------------
+sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
+sourceMenu.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    video.src = btn.dataset.src;
+    video.play();
+    sourceMenu.style.display = 'none';
+  });
+});
+
+// ---------------------
+// Subtitles menu
+// ---------------------
+subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
+subtitleMenu.addEventListener('click', e => {
+  if(e.target.tagName === 'BUTTON'){
+    const subUrl = e.target.dataset.sub;
+    video.querySelectorAll('track').forEach(t => t.remove());
+    if(subUrl){
+      const track = document.createElement('track');
+      track.src = subUrl;
+      track.kind = 'subtitles';
+      track.default = true;
+      video.appendChild(track);
+    }
+    subtitleMenu.style.display = 'none';
+  }
+});
+
+// ---------------------
+// Fullscreen
 // ---------------------
 fullscreenBtn.addEventListener('click', () => {
   if(!document.fullscreenElement) videoContainer.requestFullscreen();
   else document.exitFullscreen();
 });
 
+// ---------------------
+// Backward / Forward
+// ---------------------
 backwardBtn.addEventListener('click', () => { video.currentTime -= 10; });
 forwardBtn.addEventListener('click', () => { video.currentTime += 10; });
+
+// ---------------------
+// Toggle menu helper
+// ---------------------
+function toggleMenu(menu){
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
+  menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+}
 </script>
 
 
