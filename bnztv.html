@@ -215,8 +215,8 @@ const video = document.getElementById('video');
 const controls = document.getElementById('controls');
 const progress = document.getElementById('progress');
 const progressBar = document.getElementById('progress-bar');
-const currentTimeEl = document.getElementById('currentTime'); // corrigé
-const totalTimeEl = document.getElementById('totalTime');     // corrigé
+const currentTimeEl = document.getElementById('currentTime');
+const totalTimeEl = document.getElementById('totalTime');
 const playBtn = document.getElementById('play');
 const centerPlay = document.getElementById('centerPlay');
 const container = document.getElementById('video-container');
@@ -230,7 +230,6 @@ const subtitleBtn = document.getElementById('subtitles');
 const subtitleMenu = document.getElementById('subtitleMenu');
 
 let hideTimeout;
-
 video.controls = false;
 
 // Show/hide controls
@@ -240,16 +239,17 @@ function showControls() {
   centerPlay.classList.remove('hide');
   document.body.style.cursor = 'default';
   clearTimeout(hideTimeout);
-  hideTimeout = setTimeout(() => {
-    controls.classList.add('hide');
-    progress.classList.add('hide');
-    centerPlay.classList.add('hide');
-    document.body.style.cursor = 'none';
-    settingsMenu.style.display = 'none';
-    sourceMenu.style.display = 'none';
-    subtitleMenu.style.display = 'none';
-  }, 3000);
+  hideTimeout = setTimeout(hideControls, 3000); // appelle la fonction pour tout cacher
 }
+
+function hideControls() {
+  controls.classList.add('hide');
+  progress.classList.add('hide');
+  centerPlay.classList.add('hide');
+  document.body.style.cursor = 'none';
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
+}
+
 document.addEventListener('mousemove', showControls);
 showControls();
 
@@ -267,8 +267,6 @@ video.addEventListener('timeupdate', () => {
   currentTimeEl.textContent = formatTime(video.currentTime);
   totalTimeEl.textContent = formatTime(video.duration);
 });
-
-
 
 // Play/pause
 function togglePlay() {
@@ -308,7 +306,7 @@ settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
 settingsMenu.querySelectorAll('button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     video.playbackRate = parseFloat(btn.dataset.speed);
-    settingsMenu.style.display='none';
+    hideControls(); // on cache tout après sélection
   });
 });
 
@@ -318,7 +316,7 @@ sourceMenu.querySelectorAll('button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     video.src = btn.dataset.src;
     video.play();
-    sourceMenu.style.display='none';
+    hideControls();
   });
 });
 
@@ -336,7 +334,7 @@ subtitleMenu.addEventListener('click', e => {
       track.default = true;
       video.appendChild(track);
     }
-    subtitleMenu.style.display='none';
+    hideControls();
   }
 });
 
@@ -352,11 +350,11 @@ document.getElementById('forward').addEventListener('click', ()=>{ video.current
 
 // Toggle menu helper
 function toggleMenu(menu){
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(m=>{
-    if(m!==menu) m.style.display='none';
-  });
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(m=>{ if(m!==menu) m.style.display='none'; });
   menu.style.display = menu.style.display==='flex'?'none':'flex';
+  showControls(); // reset le timer à chaque ouverture
 }
+
 </script>
 </body>
 </html>
