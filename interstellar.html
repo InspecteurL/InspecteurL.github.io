@@ -253,17 +253,22 @@ video {
   visibility: visible;
   transition: opacity 0.4s ease;
 }
+  #navbar {
+  display: block; /* visible par défaut */
+}
+
 </style>
 
 
 </head>
 <body>
-  <ul>
-        <li><a class="active" href="index.html">Home</a></li>
-        <li><a href="compte.html">Votre Compte</a></li>
-        <li><a href="mes-amis.html">Mes amis</a></li>
-        <li><a href="accueil.html">Feuilleter</a></li>
-    </ul>
+ <ul id="navbar">
+  <li><a class="active" href="index.html">Home</a></li>
+  <li><a href="compte.html">Votre Compte</a></li>
+  <li><a href="mes-amis.html">Mes amis</a></li>
+  <li><a href="accueil.html">Feuilleter</a></li>
+</ul>
+
 <!-- --- Fiche du film --- -->
 <div class="container">
   <div class="fiche">
@@ -347,6 +352,24 @@ const subtitleBtn = document.getElementById('subtitles');
 const subtitleMenu = document.getElementById('subtitleMenu');
 const btnWatch = document.getElementById('btnWatch');
 const backButton = document.getElementById('backButton');
+const navbar = document.getElementById('navbar');
+
+// Quand on clique sur "Lire le film" → cacher la navbar
+btnWatch.addEventListener('click', () => {
+  videoContainer.style.display = 'flex';
+  video.play();
+  showControls();
+  navbar.style.display = 'none'; // 👈 cache la navbar
+});
+
+// Quand on clique sur "Retour à la fiche" → montrer la navbar
+backButton.addEventListener('click', () => {
+  video.pause();
+  video.currentTime = 0;
+  videoContainer.style.display = 'none';
+  if (document.fullscreenElement) document.exitFullscreen();
+  navbar.style.display = 'block'; // 👈 réaffiche la navbar
+});
 
 let hideTimeout;
 video.controls = false;
