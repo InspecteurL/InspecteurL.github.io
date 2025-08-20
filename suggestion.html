@@ -49,7 +49,7 @@
     .danger:hover {background:#a11919 !important;}
     .loading {text-align:center; padding:30px; color:#888;}
   </style>
-  <script type="module">
+<script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     /* ========= Config Supabase ========= */
@@ -112,20 +112,19 @@
       }
     }
 
- async function detectSupabaseUser() {
+    async function detectSupabaseUser() {
       const { data } = await supabase.auth.getUser();
       if (data?.user && !currentUser) {
         currentUser = {
           pseudo: data.user.user_metadata?.username || data.user.email?.split('@')[0],
-            email: data.user.email
+          email: data.user.email
         };
         isAdmin = currentUser.email === 'lolovp.portrets41@gmail.com';
         currentUserInfo.innerHTML = `Connecté : <strong>${escapeHtml(currentUser.pseudo)}</strong>${isAdmin?'<span class="admin-badge">ADMIN</span>':''}`;
       }
 
-      // NOTE: cacher le select si non admin (après détection)
       if (!isAdmin && initialStatusWrapper) {
-        initialStatusWrapper.remove(); // retire complètement le sélecteur
+        initialStatusWrapper.remove();
       }
     }
 
@@ -144,7 +143,6 @@
         return;
       }
 
-      // Pour chaque suggestion charger ses commentaires
       const ids = data.map(s => s.id);
       let commentsMap = {};
       if (ids.length) {
@@ -170,41 +168,50 @@
       render();
     }
 
-async function addSuggestion(text, status) {
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
+    /* ========= Ajout suggestion ========= */
+    async function addSuggestion(text, status) {
+      const {
+        data: { user },
+        error: userError
+      } = await supabase.auth.getUser();
 
-  if (userError || !user) {
-    alert("Utilisateur non connecté — impossible d'ajouter la suggestion.");
-    return;
-  }
+      let payload;
 
-  const payload = {
-    text,
-    status,
-    author_pseudo: currentUser?.pseudo || null,
-    author_email: currentUser?.email || null,
-    user_id: user.id  // 🔥 Nécessaire pour que RLS accepte l'insertion
-  };
+      if (user && !userError) {
+        // Utilisateur connecté
+        payload = {
+          text,
+          status,
+          author_pseudo: currentUser?.pseudo || user.user_metadata?.username || user.email?.split('@')[0],
+          author_email: currentUser?.email || user.email,
+          user_id: user.id
+        };
+      } else {
+        // Invité
+        payload = {
+          text,
+          status,
+          author_pseudo: "Invité",
+          author_email: null,
+          user_id: null
+        };
+      }
 
-  const { data, error } = await supabase
-    .from('suggestions')
-    .insert(payload)
-    .select()
-    .single();
+      const { data, error } = await supabase
+        .from('suggestions')
+        .insert(payload)
+        .select()
+        .single();
 
-  if (error) {
-    alert('Erreur ajout: ' + error.message);
-    return;
-  }
+      if (error) {
+        alert('Erreur ajout: ' + error.message);
+        return;
+      }
 
-  data.comments = [];
-  suggestions.unshift(data);
-  render();
-}
-
+      data.comments = [];
+      suggestions.unshift(data);
+      render();
+    }
 
     async function updateSuggestionStatus(id, newStatus) {
       const { error } = await supabase
@@ -230,43 +237,50 @@ async function addSuggestion(text, status) {
       render();
     }
 
-   async function addComment(suggestionId, text) {
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
+    /* ========= Ajout commentaire ========= */
+    async function addComment(suggestionId, text) {
+      const {
+        data: { user },
+        error: userError
+      } = await supabase.auth.getUser();
 
-  if (userError || !user) {
-    alert("Utilisateur non connecté — impossible d'ajouter un commentaire.");
-    return;
-  }
+      let payload;
 
-  const payload = {
-    suggestion_id: suggestionId,
-    content: text,
-    author_pseudo: currentUser?.pseudo || null,
-    author_email: currentUser?.email || null,
-    user_id: user.id  // 🔥 Doit correspondre à la RLS
-  };
+      if (user && !userError) {
+        payload = {
+          suggestion_id: suggestionId,
+          content: text,
+          author_pseudo: currentUser?.pseudo || user.user_metadata?.username || user.email?.split('@')[0],
+          author_email: currentUser?.email || user.email,
+          user_id: user.id
+        };
+      } else {
+        payload = {
+          suggestion_id: suggestionId,
+          content: text,
+          author_pseudo: "Invité",
+          author_email: null,
+          user_id: null
+        };
+      }
 
-  const { data, error } = await supabase
-    .from('comments')
-    .insert(payload)
-    .select()
-    .single();
+      const { data, error } = await supabase
+        .from('comments')
+        .insert(payload)
+        .select()
+        .single();
 
-  if (error) {
-    alert('Erreur commentaire: ' + error.message);
-    return;
-  }
+      if (error) {
+        alert('Erreur commentaire: ' + error.message);
+        return;
+      }
 
-  const s = suggestions.find(s => s.id === suggestionId);
-  if (s) {
-    s.comments.push(data);
-    render();
-  }
-}
-
+      const s = suggestions.find(s => s.id === suggestionId);
+      if (s) {
+        s.comments.push(data);
+        render();
+      }
+    }
 
     /* ========= Rendu ========= */
     function render() {
@@ -320,20 +334,18 @@ async function addSuggestion(text, status) {
         suggestionsList.appendChild(div);
       });
 
-      // Évènements commentaires
       document.querySelectorAll('.inline-form').forEach(form => {
         form.addEventListener('submit', e => {
           e.preventDefault();
-            const id = Number(form.getAttribute('data-id'));
-            const input = form.querySelector('input');
-            const val = input.value.trim();
-            if (!val) return;
-            addComment(id, val);
-            input.value = '';
+          const id = Number(form.getAttribute('data-id'));
+          const input = form.querySelector('input');
+          const val = input.value.trim();
+          if (!val) return;
+          addComment(id, val);
+          input.value = '';
         });
       });
 
-      // Actions admin
       document.querySelectorAll('.actions').forEach(block => {
         block.addEventListener('click', e => {
           const btn = e.target.closest('button');
@@ -365,7 +377,8 @@ async function addSuggestion(text, status) {
     detectLocalUser();
     await detectSupabaseUser();
     loadSuggestionsFromSupabase();
-  </script>
+</script>
+
 </head>
 <body>
   <header>
