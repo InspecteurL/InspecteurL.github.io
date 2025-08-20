@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Custom Video Player</title>
+<title>Lecteur Vidéo Perso</title>
 
-<!-- Material Symbols -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<!-- Google Material Symbols -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
 
 <style>
 body {
@@ -17,50 +17,17 @@ body {
   align-items: center;
   height: 100vh;
 }
-
 .video-container {
   position: relative;
-  width: 100%;
+  width: 90%;
   max-width: 1200px;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   background: black;
 }
-
 video {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: auto;
   display: block;
-  object-fit: contain;
 }
-
-/* Progress bar */
-.progress {
-  position: absolute;
-  bottom: 70px;
-  left: 0;
-  right: 0;
-  height: 10px;
-  background: rgba(255,255,255,0.2);
-  cursor: pointer;
-  border-radius: 5px;
-  overflow: hidden;
-  transition: opacity 0.3s;
-}
-.progress-bar {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #ff4b2b, #ff416c);
-  border-radius: 5px;
-}
-.progress.hide {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Controls */
 .controls {
   position: absolute;
   bottom: 10px;
@@ -69,99 +36,66 @@ video {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
+  gap: 10px;
   background: rgba(0,0,0,0.5);
+  padding: 8px 12px;
   border-radius: 10px;
   opacity: 1;
   transition: opacity 0.3s;
 }
-.controls.hide {
-  opacity: 0;
-  pointer-events: none;
-}
-
+.controls.hide { opacity: 0; }
 .controls-left, .controls-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-/* Floating play button */
-.center-play {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 80px;
-  color: white;
-  background: rgba(0,0,0,0.5);
-  border-radius: 50%;
-  padding: 20px;
-  cursor: pointer;
-  transition: opacity 0.3s;
-}
-.center-play.hide {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.material-symbols-outlined {
-  cursor: pointer;
-  color: white;
-  font-size: 35px;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 35;
-}
-
-/* Volume slider */
-.volume-container {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-#volume-slider {
-  width: 100px;
-  height: 5px;
-  appearance: none;
-  background: rgba(255,255,255,0.3);
-  border-radius: 5px;
-  outline: none;
+.material-symbols-outlined {
   cursor: pointer;
+  color: white;
+  font-size: 28px;
+  user-select: none;
 }
-#volume-slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 12px;
-  height: 12px;
-  background: #ff416c;
-  border-radius: 50%;
-  cursor: pointer;
-}
-#volume-slider::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  background: #ff416c;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-/* Dropdown menus */
-.menu {
+.progress {
   position: absolute;
   bottom: 60px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: rgba(255,255,255,0.3);
+  cursor: pointer;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: #fff;
+}
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.volume-control input[type=range] {
+  width: 80px;
+}
+.menu {
+  position: absolute;
+  bottom: 70px;
   right: 20px;
-  background: rgba(0,0,0,0.8);
-  padding: 10px;
-  border-radius: 8px;
   display: none;
   flex-direction: column;
-  gap: 5px;
+  background: rgba(0,0,0,0.8);
+  border-radius: 8px;
+  padding: 6px;
 }
 .menu button {
   background: transparent;
   border: none;
   color: white;
-  padding: 5px 10px;
-  cursor: pointer;
+  padding: 6px;
   text-align: left;
+  cursor: pointer;
 }
 .menu button:hover {
   background: rgba(255,255,255,0.2);
@@ -169,31 +103,25 @@ video {
 </style>
 </head>
 <body>
-<div class="video-container" id="video-container">
-  <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
+<div class="video-container">
+  <video id="video" src="https://cinepizza.xyz/movies/Interstellar_1080p.mp4"></video>
 
-  <!-- Center play button -->
-  <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
-
-  <!-- Progress bar -->
+  <!-- Progression -->
   <div class="progress" id="progress">
     <div class="progress-bar" id="progress-bar"></div>
   </div>
 
-  <!-- Controls -->
+  <!-- Contrôles -->
   <div class="controls" id="controls">
     <div class="controls-left">
       <span id="backward" class="material-symbols-outlined">replay_10</span>
       <span id="play" class="material-symbols-outlined">play_arrow</span>
       <span id="forward" class="material-symbols-outlined">forward_10</span>
-
-      <!-- Volume -->
-      <div class="volume-container">
-        <span id="volume-icon" class="material-symbols-outlined">volume_up</span>
-        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
+      <div class="volume-control">
+        <span id="volumeIcon" class="material-symbols-outlined">volume_up</span>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1">
       </div>
     </div>
-
     <div class="controls-right">
       <span id="subtitles" class="material-symbols-outlined">subtitles</span>
       <span id="source" class="material-symbols-outlined">cloud</span>
@@ -202,7 +130,7 @@ video {
     </div>
   </div>
 
-  <!-- Settings menu -->
+  <!-- Menus -->
   <div id="settingsMenu" class="menu">
     <button data-speed="0.5">0.5x</button>
     <button data-speed="1">1x</button>
@@ -210,9 +138,17 @@ video {
     <button data-speed="2">2x</button>
   </div>
 
-  <!-- Source input -->
-  <input type="file" id="sourceInput" accept="video/*" style="display:none">
-  <input type="file" id="subtitleInput" accept=".vtt" style="display:none">
+  <div id="sourcesMenu" class="menu">
+    <button data-src="https://cinepizza.xyz/movies/Interstellar_1080p.mp4">1080p</button>
+    <button data-src="https://cinepizza.xyz/movies/Interstellar_720p.mp4">720p</button>
+    <button data-src="https://cinepizza.xyz/movies/Interstellar_480p.mp4">480p</button>
+  </div>
+
+  <div id="subtitlesMenu" class="menu">
+    <button data-sub="none">Aucun</button>
+    <button data-sub="subs/interstellar_fr.vtt">Français</button>
+    <button data-sub="subs/interstellar_en.vtt">English</button>
+  </div>
 </div>
 
 <script>
@@ -221,39 +157,41 @@ const controls = document.getElementById('controls');
 const progress = document.getElementById('progress');
 const progressBar = document.getElementById('progress-bar');
 const playBtn = document.getElementById('play');
-const centerPlay = document.getElementById('centerPlay');
-const container = document.getElementById('video-container');
-const volumeSlider = document.getElementById('volume-slider');
-const volumeIcon = document.getElementById('volume-icon');
-const settingsBtn = document.getElementById('settings');
-const settingsMenu = document.getElementById('settingsMenu');
-const sourceBtn = document.getElementById('source');
-const sourceInput = document.getElementById('sourceInput');
-const subtitleBtn = document.getElementById('subtitles');
-const subtitleInput = document.getElementById('subtitleInput');
+const volumeSlider = document.getElementById('volumeSlider');
+const volumeIcon = document.getElementById('volumeIcon');
 let hideTimeout;
 
-video.controls = false;
-
-// Show/hide controls
+// Afficher / cacher les contrôles
 function showControls() {
   controls.classList.remove('hide');
-  progress.classList.remove('hide');
-  centerPlay.classList.remove('hide');
+  progress.style.opacity = "1";
   document.body.style.cursor = 'default';
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(() => {
     controls.classList.add('hide');
-    progress.classList.add('hide');
-    centerPlay.classList.add('hide');
+    progress.style.opacity = "0";
     document.body.style.cursor = 'none';
-    settingsMenu.style.display = 'none';
-  }, 3000);
+  }, 4000);
 }
 document.addEventListener('mousemove', showControls);
 showControls();
 
-// Update progress
+// Lecture / pause
+playBtn.addEventListener('click', () => {
+  if (video.paused) {
+    video.play();
+    playBtn.textContent = 'pause';
+  } else {
+    video.pause();
+    playBtn.textContent = 'play_arrow';
+  }
+});
+
+// Avance / retour
+document.getElementById('forward').addEventListener('click', () => video.currentTime += 10);
+document.getElementById('backward').addEventListener('click', () => video.currentTime -= 10);
+
+// Barre de progression
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
@@ -264,92 +202,89 @@ progress.addEventListener('click', e => {
   video.currentTime = pos * video.duration;
 });
 
-// Play/pause
-function togglePlay() {
-  if (video.paused) {
-    video.play();
-    playBtn.textContent = 'pause';
-    centerPlay.textContent = 'pause';
-  } else {
-    video.pause();
-    playBtn.textContent = 'play_arrow';
-    centerPlay.textContent = 'play_arrow';
-  }
-}
-playBtn.addEventListener('click', togglePlay);
-centerPlay.addEventListener('click', togglePlay);
-
-// Forward/backward
-document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
-document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
-
-// Fullscreen
-document.getElementById('fullscreen').addEventListener('click', () => {
-  if (!document.fullscreenElement) {
-    container.requestFullscreen();
-  } else {
-    document.exitFullscreen();
-  }
-});
-
 // Volume
 volumeSlider.addEventListener('input', () => {
   video.volume = volumeSlider.value;
-  if (video.volume === 0) {
-    volumeIcon.textContent = 'volume_off';
-  } else if (video.volume < 0.5) {
-    volumeIcon.textContent = 'volume_down';
-  } else {
-    volumeIcon.textContent = 'volume_up';
-  }
+  volumeIcon.textContent = video.volume == 0 ? 'volume_off' : 'volume_up';
 });
 volumeIcon.addEventListener('click', () => {
   if (video.muted) {
     video.muted = false;
     volumeSlider.value = video.volume;
-    volumeIcon.textContent = video.volume > 0.5 ? 'volume_up' : 'volume_down';
+    volumeIcon.textContent = 'volume_up';
   } else {
     video.muted = true;
-    volumeIcon.textContent = 'volume_off';
     volumeSlider.value = 0;
+    volumeIcon.textContent = 'volume_off';
   }
 });
 
-// Settings menu
-settingsBtn.addEventListener('click', () => {
+// Menus
+const settingsMenu = document.getElementById('settingsMenu');
+const sourcesMenu = document.getElementById('sourcesMenu');
+const subtitlesMenu = document.getElementById('subtitlesMenu');
+
+function closeMenus() {
+  settingsMenu.style.display = 'none';
+  sourcesMenu.style.display = 'none';
+  subtitlesMenu.style.display = 'none';
+}
+document.getElementById('settings').addEventListener('click', () => {
   settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+  sourcesMenu.style.display = 'none';
+  subtitlesMenu.style.display = 'none';
 });
+document.getElementById('source').addEventListener('click', () => {
+  sourcesMenu.style.display = sourcesMenu.style.display === 'flex' ? 'none' : 'flex';
+  settingsMenu.style.display = 'none';
+  subtitlesMenu.style.display = 'none';
+});
+document.getElementById('subtitles').addEventListener('click', () => {
+  subtitlesMenu.style.display = subtitlesMenu.style.display === 'flex' ? 'none' : 'flex';
+  settingsMenu.style.display = 'none';
+  sourcesMenu.style.display = 'none';
+});
+
+// Vitesse
 settingsMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => {
     video.playbackRate = btn.dataset.speed;
-    settingsMenu.style.display = 'none';
+    closeMenus();
   });
 });
 
-// Change video source
-sourceBtn.addEventListener('click', () => sourceInput.click());
-sourceInput.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (file) {
-    const url = URL.createObjectURL(file);
-    video.src = url;
+// Sources
+sourcesMenu.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    video.src = btn.dataset.src;
     video.play();
-  }
+    closeMenus();
+  });
 });
 
-// Subtitles
-subtitleBtn.addEventListener('click', () => subtitleInput.click());
-subtitleInput.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (file) {
-    const url = URL.createObjectURL(file);
-    const track = document.createElement('track');
-    track.kind = 'subtitles';
-    track.label = 'French';
-    track.srclang = 'fr';
-    track.src = url;
-    track.default = true;
-    video.appendChild(track);
+// Sous-titres
+subtitlesMenu.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    video.querySelectorAll('track').forEach(t => t.remove());
+    if (btn.dataset.sub !== 'none') {
+      const track = document.createElement('track');
+      track.kind = 'subtitles';
+      track.label = btn.textContent;
+      track.srclang = btn.textContent.substring(0,2).toLowerCase();
+      track.src = btn.dataset.sub;
+      track.default = true;
+      video.appendChild(track);
+    }
+    closeMenus();
+  });
+});
+
+// Plein écran
+document.getElementById('fullscreen').addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    video.parentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
   }
 });
 </script>
