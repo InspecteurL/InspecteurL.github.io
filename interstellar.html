@@ -153,16 +153,7 @@ video {
 </div>
 
 <script>
-// --- Bouton fiche -> lecteur ---
-const btnWatch = document.getElementById('btnWatch');
-const videoContainer = document.getElementById('videoContainer');
 const video = document.getElementById('video');
-btnWatch.addEventListener('click', () => {
-  videoContainer.style.display = 'flex';
-  video.play();
-});
-
-// --- Lecteur complet ---
 const controls = document.getElementById('controls');
 const progressWrapper = document.getElementById('progressWrapper');
 const progress = document.getElementById('progress');
@@ -171,6 +162,7 @@ const currentTimeEl = document.getElementById('currentTime');
 const totalTimeEl = document.getElementById('totalTime');
 const playBtn = document.getElementById('play');
 const centerPlay = document.getElementById('centerPlay');
+const container = document.getElementById('video-container');
 const volumeSlider = document.getElementById('volume-slider');
 const volumeIcon = document.getElementById('volume-icon');
 const settingsBtn = document.getElementById('settings');
@@ -179,9 +171,6 @@ const sourceBtn = document.getElementById('source');
 const sourceMenu = document.getElementById('sourceMenu');
 const subtitleBtn = document.getElementById('subtitles');
 const subtitleMenu = document.getElementById('subtitleMenu');
-const fullscreenBtn = document.getElementById('fullscreen');
-const backwardBtn = document.getElementById('backward');
-const forwardBtn = document.getElementById('forward');
 
 let hideTimeout;
 video.controls = false;
@@ -192,9 +181,8 @@ video.controls = false;
 function showControls() {
   controls.classList.remove('hide');
   progressWrapper.classList.remove('hide');
-  if(video.paused) centerPlay.classList.remove('hide');
+  centerPlay.classList.remove('hide');
   document.body.style.cursor = 'default';
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(hideControls, 3000);
 }
@@ -207,10 +195,7 @@ function hideControls() {
   [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
 }
 
-// Réaffichage des contrôles sur interaction
-['mousemove','keydown','click'].forEach(evt => {
-  document.addEventListener(evt, showControls);
-});
+document.addEventListener('mousemove', showControls);
 showControls();
 
 // ---------------------
@@ -219,7 +204,7 @@ showControls();
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2,'0')}`;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 // ---------------------
@@ -236,17 +221,17 @@ video.addEventListener('timeupdate', () => {
 // Play / pause
 // ---------------------
 function togglePlay() {
-  if(video.paused) video.play();
+  if (video.paused) video.play();
   else video.pause();
 }
 
 playBtn.addEventListener('click', togglePlay);
 centerPlay.addEventListener('click', togglePlay);
 
+// Update icons
 video.addEventListener('play', () => {
   playBtn.textContent = 'pause';
   centerPlay.textContent = 'pause';
-  centerPlay.classList.add('hide');
 });
 
 video.addEventListener('pause', () => {
@@ -328,16 +313,16 @@ subtitleMenu.addEventListener('click', e => {
 // ---------------------
 // Fullscreen
 // ---------------------
-fullscreenBtn.addEventListener('click', () => {
-  if(!document.fullscreenElement) videoContainer.requestFullscreen();
+document.getElementById('fullscreen').addEventListener('click', () => {
+  if(!document.fullscreenElement) container.requestFullscreen();
   else document.exitFullscreen();
 });
 
 // ---------------------
 // Backward / Forward
 // ---------------------
-backwardBtn.addEventListener('click', () => { video.currentTime -= 10; });
-forwardBtn.addEventListener('click', () => { video.currentTime += 10; });
+document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
+document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
 
 // ---------------------
 // Toggle menu helper
