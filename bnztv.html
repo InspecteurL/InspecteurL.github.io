@@ -40,7 +40,7 @@ video {
   right: 20px;
   display: flex;
   align-items: center;
-  gap: 10px; /* espace entre temps et barre */
+  gap: 10px;
   color: white;
   font-size: 14px;
   font-family: monospace;
@@ -52,13 +52,12 @@ video {
 
 /* Progress bar */
 .progress {
-  flex: 1; /* prend tout l’espace restant entre les temps */
+  flex: 1;
   height: 12px;
   background: rgba(255,255,255,0.2);
   border-radius: 6px;
   overflow: hidden;
   cursor: pointer;
-  transition: opacity 0.3s;
 }
 .progress-bar {
   width: 0%;
@@ -66,7 +65,6 @@ video {
   background: linear-gradient(90deg, #ff4b2b, #ff416c);
   border-radius: 6px;
 }
-.progress.hide { opacity: 0; pointer-events: none; }
 
 /* Controls */
 .controls {
@@ -166,15 +164,15 @@ video {
   <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
 
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
-<!-- Progress bar with time -->
-<div class="progress-wrapper" id="progressWrapper">
-  <span id="currentTime">0:00</span>
-  <div class="progress" id="progress">
-    <div class="progress-bar" id="progress-bar"></div>
+
+  <div class="progress-wrapper" id="progressWrapper">
+    <span id="currentTime">0:00</span>
+    <div class="progress" id="progress">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <span id="totalTime">0:00</span>
   </div>
-  <span id="totalTime">0:00</span>
-</div>
-  
+
   <div class="controls" id="controls">
     <div class="controls-left">
       <span id="backward" class="material-symbols-outlined">replay_10</span>
@@ -193,7 +191,6 @@ video {
     </div>
   </div>
 
-  <!-- Menus -->
   <div id="settingsMenu" class="menu">
     <button data-speed="0.5">0.5x</button>
     <button data-speed="1">1x</button>
@@ -206,7 +203,6 @@ video {
   </div>
 
   <div id="subtitleMenu" class="menu">
-    <!-- Example: <button data-sub="https://example.com/subtitles_fr.vtt">FR</button> -->
   </div>
 </div>
 
@@ -233,9 +229,7 @@ const subtitleMenu = document.getElementById('subtitleMenu');
 let hideTimeout;
 video.controls = false;
 
-// ---------------------
 // Show / hide controls
-// ---------------------
 function showControls() {
   controls.classList.remove('hide');
   progressWrapper.classList.remove('hide');
@@ -256,18 +250,14 @@ function hideControls() {
 document.addEventListener('mousemove', showControls);
 showControls();
 
-// ---------------------
 // Format time
-// ---------------------
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-// ---------------------
 // Update progress & time
-// ---------------------
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
@@ -275,43 +265,35 @@ video.addEventListener('timeupdate', () => {
   totalTimeEl.textContent = formatTime(video.duration);
 });
 
-// ---------------------
 // Play / pause
-// ---------------------
 function togglePlay() {
   if (video.paused) video.play();
   else video.pause();
 }
 
-// Clicks
 playBtn.addEventListener('click', togglePlay);
 centerPlay.addEventListener('click', togglePlay);
 
-// Update icons
 video.addEventListener('play', () => {
   playBtn.textContent = 'pause';
-  centerPlay.textContent = 'pause'; // <-- Change ici
-  centerPlay.classList.add('hide'); // facultatif : cacher le bouton central en lecture
+  centerPlay.textContent = 'pause';
+  centerPlay.classList.add('hide');
 });
 
 video.addEventListener('pause', () => {
   playBtn.textContent = 'play_arrow';
-  centerPlay.textContent = 'play_arrow'; // <-- Change ici
-  centerPlay.classList.remove('hide'); // montrer le bouton central si vidéo en pause
+  centerPlay.textContent = 'play_arrow';
+  centerPlay.classList.remove('hide');
 });
 
-// ---------------------
 // Seek
-// ---------------------
 progressWrapper.addEventListener('click', e => {
   const rect = progress.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
   video.currentTime = pos * video.duration;
 });
 
-// ---------------------
 // Volume
-// ---------------------
 volumeSlider.addEventListener('input', () => {
   video.volume = volumeSlider.value;
   updateVolumeIcon();
@@ -328,9 +310,7 @@ function updateVolumeIcon() {
   else volumeIcon.textContent = 'volume_up';
 }
 
-// ---------------------
 // Settings menu
-// ---------------------
 settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
 settingsMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -339,9 +319,7 @@ settingsMenu.querySelectorAll('button').forEach(btn => {
   });
 });
 
-// ---------------------
 // Source menu
-// ---------------------
 sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
 sourceMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -351,9 +329,7 @@ sourceMenu.querySelectorAll('button').forEach(btn => {
   });
 });
 
-// ---------------------
 // Subtitles menu
-// ---------------------
 subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
 subtitleMenu.addEventListener('click', e => {
   if(e.target.tagName === 'BUTTON'){
@@ -370,28 +346,21 @@ subtitleMenu.addEventListener('click', e => {
   }
 });
 
-// ---------------------
 // Fullscreen
-// ---------------------
 document.getElementById('fullscreen').addEventListener('click', () => {
   if(!document.fullscreenElement) container.requestFullscreen();
   else document.exitFullscreen();
 });
 
-// ---------------------
 // Backward / Forward
-// ---------------------
 document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
 document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
 
-// ---------------------
-// Toggle menu helper
-// ---------------------
+// Toggle any menu
 function toggleMenu(menu){
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
-  menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m!==menu) m.style.display='none'; });
+  menu.style.display = menu.style.display==='flex' ? 'none' : 'flex';
 }
 </script>
-
 </body>
 </html>
