@@ -36,28 +36,41 @@ video {
   object-fit: contain;
 }
 
-/* Progress bar */
-.progress {
+/* Progress wrapper with time */
+.progress-wrapper {
   position: absolute;
   bottom: 70px;
   left: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  color: white;
+  font-size: 14px;
+  font-family: monospace;
+  transition: opacity 0.3s;
+}
+.progress-wrapper.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Progress bar */
+.progress {
+  flex: 1;
+  margin: 0 10px;
   height: 10px;
   background: rgba(255,255,255,0.2);
   cursor: pointer;
   border-radius: 5px;
   overflow: hidden;
-  transition: opacity 0.3s;
 }
 .progress-bar {
   width: 0%;
   height: 100%;
   background: linear-gradient(90deg, #ff4b2b, #ff416c);
   border-radius: 5px;
-}
-.progress.hide {
-  opacity: 0;
-  pointer-events: none;
 }
 
 /* Controls */
@@ -175,9 +188,13 @@ video {
   <!-- Center play button -->
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
-  <!-- Progress bar -->
-  <div class="progress" id="progress">
-    <div class="progress-bar" id="progress-bar"></div>
+  <!-- Progress bar with time -->
+  <div class="progress-wrapper" id="progressWrapper">
+    <span id="currentTime">0:00</span>
+    <div class="progress" id="progress">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <span id="totalTime">0:00</span>
   </div>
 
   <!-- Controls -->
@@ -218,6 +235,7 @@ video {
 <script>
 const video = document.getElementById('video');
 const controls = document.getElementById('controls');
+const progressWrapper = document.getElementById('progressWrapper');
 const progress = document.getElementById('progress');
 const progressBar = document.getElementById('progress-bar');
 const playBtn = document.getElementById('play');
@@ -231,20 +249,29 @@ const sourceBtn = document.getElementById('source');
 const sourceInput = document.getElementById('sourceInput');
 const subtitleBtn = document.getElementById('subtitles');
 const subtitleInput = document.getElementById('subtitleInput');
+const currentTimeEl = document.getElementById('currentTime');
+const totalTimeEl = document.getElementById('totalTime');
 let hideTimeout;
 
 video.controls = false;
 
+// Format time
+function formatTime(time) {
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60).toString().padStart(2, '0');
+  return `${minutes}:${seconds}`;
+}
+
 // Show/hide controls
 function showControls() {
   controls.classList.remove('hide');
-  progress.classList.remove('hide');
+  progressWrapper.classList.remove('hide');
   centerPlay.classList.remove('hide');
   document.body.style.cursor = 'default';
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(() => {
     controls.classList.add('hide');
-    progress.classList.add('hide');
+    progressWrapper.classList.add('hide');
     centerPlay.classList.add('hide');
     document.body.style.cursor = 'none';
     settingsMenu.style.display = 'none';
@@ -257,6 +284,10 @@ showControls();
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
+  currentTimeEl.textContent = formatTime(video.currentTime);
+});
+video.addEventListener('loadedmetadata', () => {
+  totalTimeEl.textContent = formatTime(video.duration);
 });
 progress.addEventListener('click', e => {
   const rect = progress.getBoundingClientRect();
