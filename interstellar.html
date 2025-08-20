@@ -191,8 +191,9 @@ let hideTimeout;
 function showControls() {
   controls.classList.remove('hide');
   progressWrapper.classList.remove('hide');
-  centerPlay.classList.remove('hide');
+  if(video.paused) centerPlay.classList.remove('hide'); // bouton central seulement si pause
   document.body.style.cursor = 'default';
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(hideControls, 3000);
 }
@@ -205,9 +206,10 @@ function hideControls() {
   [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
 }
 
-// Afficher les contrôles au mouvement de souris ou interaction clavier
-document.addEventListener('mousemove', showControls);
-document.addEventListener('keydown', showControls);
+// Réaffichage contrôles sur interaction
+['mousemove','keydown','click'].forEach(evt => {
+  document.addEventListener(evt, showControls);
+});
 showControls();
 
 // ---------------------
