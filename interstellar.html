@@ -71,6 +71,25 @@ video {
   object-fit: contain;
 }
 
+/* --- Bouton retour --- */
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  z-index: 1100;
+}
+.back-button:hover {
+  background: rgba(255, 65, 108, 0.8);
+}
+
 /* --- Barre de progression et contrôles --- */
 .progress-wrapper {
   position: absolute;
@@ -201,12 +220,14 @@ video {
 }
 .controls,
 .progress-wrapper,
-#centerPlay {
+#centerPlay,
+.back-button {
   opacity: 1;
   visibility: visible;
   transition: opacity 0.4s ease;
 }
 </style>
+
 
 </head>
 <body>
@@ -228,6 +249,7 @@ video {
 
 <!-- --- Lecteur vidéo --- -->
 <div class="video-container" id="videoContainer">
+  <button class="back-button" id="backButton">← Retour à la fiche</button>
   <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
@@ -292,6 +314,7 @@ const sourceMenu = document.getElementById('sourceMenu');
 const subtitleBtn = document.getElementById('subtitles');
 const subtitleMenu = document.getElementById('subtitleMenu');
 const btnWatch = document.getElementById('btnWatch');
+const backButton = document.getElementById('backButton');
 
 let hideTimeout;
 video.controls = false;
