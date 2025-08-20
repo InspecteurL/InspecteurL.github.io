@@ -362,7 +362,13 @@ backButton.addEventListener('click', () => {
   video.pause();
   video.currentTime = 0;
   videoContainer.style.display = 'none';
+
+  // Si on est en fullscreen, quitter
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  }
 });
+
 
 // ---------------------
 // Format time
