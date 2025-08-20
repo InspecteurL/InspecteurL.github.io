@@ -333,6 +333,7 @@ function showControls() {
   controls.classList.remove('hide');
   progressWrapper.classList.remove('hide');
   centerPlay.classList.remove('hide');
+  backButton.classList.remove('hide');
   document.body.style.cursor = 'default';
 
   clearTimeout(hideTimeout);
@@ -342,9 +343,11 @@ function showControls() {
 function hideControls() {
   if (!video.paused) {
     centerPlay.classList.add('hide');
+    
   }
   controls.classList.add('hide');
   progressWrapper.classList.add('hide');
+  backButton.classList.add('hide');
   document.body.style.cursor = 'none';
   [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
 }
