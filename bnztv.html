@@ -22,7 +22,7 @@ body {
   position: relative;
   width: 100%;
   max-width: 1200px;
-  height: 100vh; /* occupe toute la hauteur */
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -118,7 +118,6 @@ video {
   align-items: center;
   gap: 10px;
 }
-
 #volume-slider {
   width: 100px;
   height: 5px;
@@ -142,6 +141,30 @@ video {
   background: #ff416c;
   border-radius: 50%;
   cursor: pointer;
+}
+
+/* Dropdown menus */
+.menu {
+  position: absolute;
+  bottom: 60px;
+  right: 20px;
+  background: rgba(0,0,0,0.8);
+  padding: 10px;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+}
+.menu button {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+.menu button:hover {
+  background: rgba(255,255,255,0.2);
 }
 </style>
 </head>
@@ -178,6 +201,18 @@ video {
       <span id="fullscreen" class="material-symbols-outlined">fullscreen</span>
     </div>
   </div>
+
+  <!-- Settings menu -->
+  <div id="settingsMenu" class="menu">
+    <button data-speed="0.5">0.5x</button>
+    <button data-speed="1">1x</button>
+    <button data-speed="1.5">1.5x</button>
+    <button data-speed="2">2x</button>
+  </div>
+
+  <!-- Source input -->
+  <input type="file" id="sourceInput" accept="video/*" style="display:none">
+  <input type="file" id="subtitleInput" accept=".vtt" style="display:none">
 </div>
 
 <script>
@@ -190,6 +225,12 @@ const centerPlay = document.getElementById('centerPlay');
 const container = document.getElementById('video-container');
 const volumeSlider = document.getElementById('volume-slider');
 const volumeIcon = document.getElementById('volume-icon');
+const settingsBtn = document.getElementById('settings');
+const settingsMenu = document.getElementById('settingsMenu');
+const sourceBtn = document.getElementById('source');
+const sourceInput = document.getElementById('sourceInput');
+const subtitleBtn = document.getElementById('subtitles');
+const subtitleInput = document.getElementById('subtitleInput');
 let hideTimeout;
 
 video.controls = false;
@@ -206,6 +247,7 @@ function showControls() {
     progress.classList.add('hide');
     centerPlay.classList.add('hide');
     document.body.style.cursor = 'none';
+    settingsMenu.style.display = 'none';
   }, 3000);
 }
 document.addEventListener('mousemove', showControls);
@@ -261,7 +303,6 @@ volumeSlider.addEventListener('input', () => {
     volumeIcon.textContent = 'volume_up';
   }
 });
-
 volumeIcon.addEventListener('click', () => {
   if (video.muted) {
     video.muted = false;
@@ -271,6 +312,44 @@ volumeIcon.addEventListener('click', () => {
     video.muted = true;
     volumeIcon.textContent = 'volume_off';
     volumeSlider.value = 0;
+  }
+});
+
+// Settings menu
+settingsBtn.addEventListener('click', () => {
+  settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+});
+settingsMenu.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    video.playbackRate = btn.dataset.speed;
+    settingsMenu.style.display = 'none';
+  });
+});
+
+// Change video source
+sourceBtn.addEventListener('click', () => sourceInput.click());
+sourceInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) {
+    const url = URL.createObjectURL(file);
+    video.src = url;
+    video.play();
+  }
+});
+
+// Subtitles
+subtitleBtn.addEventListener('click', () => subtitleInput.click());
+subtitleInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) {
+    const url = URL.createObjectURL(file);
+    const track = document.createElement('track');
+    track.kind = 'subtitles';
+    track.label = 'French';
+    track.srclang = 'fr';
+    track.src = url;
+    track.default = true;
+    video.appendChild(track);
   }
 });
 </script>
