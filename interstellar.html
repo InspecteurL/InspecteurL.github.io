@@ -358,6 +358,13 @@ video.addEventListener('click', showControls);
 
 showControls();
 
+  // --- Cacher le lecteur et retourner à la fiche quand on clique sur le bouton ---
+backButton.addEventListener('click', () => {
+  video.pause();
+  video.currentTime = 0;
+  videoContainer.style.display = 'none';
+});
+
 // ---------------------
 // Format time
 // ---------------------
