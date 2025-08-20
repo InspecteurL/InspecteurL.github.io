@@ -87,6 +87,22 @@ video {
 .menu { position: absolute; bottom: 60px; right: 20px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; display: none; flex-direction: column; gap: 5px; }
 .menu button { background: transparent; border: none; color: white; padding: 5px 10px; cursor: pointer; text-align: left; }
 .menu button:hover { background: rgba(255,255,255,0.2); }
+  /* --- Disparition automatique --- */
+.hide {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.4s ease;
+}
+
+.controls,
+.progress-wrapper,
+#centerPlay {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease;
+}
+
 </style>
 </head>
 <body>
