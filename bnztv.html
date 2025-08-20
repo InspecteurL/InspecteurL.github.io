@@ -20,20 +20,26 @@ body {
 
 .video-container {
   position: relative;
-  width: 90%;
+  width: 100%;
   max-width: 1200px;
+  height: 100vh; /* occupe toute la hauteur */
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: black;
 }
 
 video {
-  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
   display: block;
+  object-fit: contain; /* garde les proportions mais centre mieux */
 }
 
 /* Progress bar entre la vidéo et les boutons */
 .progress {
   position: absolute;
-  bottom: 70px; /* placée au-dessus des boutons */
+  bottom: 70px;
   left: 0;
   right: 0;
   height: 10px;
