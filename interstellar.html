@@ -153,7 +153,9 @@ video {
 </div>
 
 <script>
+<script>
 const video = document.getElementById('video');
+const videoContainer = document.getElementById('videoContainer'); // ✅ corrigé
 const controls = document.getElementById('controls');
 const progressWrapper = document.getElementById('progressWrapper');
 const progress = document.getElementById('progress');
@@ -162,7 +164,6 @@ const currentTimeEl = document.getElementById('currentTime');
 const totalTimeEl = document.getElementById('totalTime');
 const playBtn = document.getElementById('play');
 const centerPlay = document.getElementById('centerPlay');
-const container = document.getElementById('video-container');
 const volumeSlider = document.getElementById('volume-slider');
 const volumeIcon = document.getElementById('volume-icon');
 const settingsBtn = document.getElementById('settings');
@@ -174,6 +175,14 @@ const subtitleMenu = document.getElementById('subtitleMenu');
 
 let hideTimeout;
 video.controls = false;
+
+// ✅ Bouton Lire le film
+document.getElementById('btnWatch').addEventListener('click', () => {
+  videoContainer.style.display = 'flex';   // on affiche le lecteur
+  video.play();                            // on lance directement la vidéo
+  showControls();                          // on force l'affichage des contrôles au début
+});
+
 
 // ---------------------
 // Show / hide controls
