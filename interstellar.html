@@ -154,7 +154,7 @@ video {
 
 <script>
 const video = document.getElementById('video');
-const videoContainer = document.getElementById('videoContainer'); // ✅ corrigé
+const videoContainer = document.getElementById('videoContainer');
 const controls = document.getElementById('controls');
 const progressWrapper = document.getElementById('progressWrapper');
 const progress = document.getElementById('progress');
@@ -175,14 +175,6 @@ const subtitleMenu = document.getElementById('subtitleMenu');
 let hideTimeout;
 video.controls = false;
 
-// ✅ Bouton Lire le film
-document.getElementById('btnWatch').addEventListener('click', () => {
-  videoContainer.style.display = 'flex';   // on affiche le lecteur
-  video.play();                            // on lance directement la vidéo
-  showControls();                          // on force l'affichage des contrôles au début
-});
-
-
 // ---------------------
 // Show / hide controls
 // ---------------------
@@ -191,20 +183,28 @@ function showControls() {
   progressWrapper.classList.remove('hide');
   centerPlay.classList.remove('hide');
   document.body.style.cursor = 'default';
+
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(hideControls, 3000);
 }
 
 function hideControls() {
+  // si la vidéo est en pause, on garde le bouton central visible
+  if (!video.paused) {
+    centerPlay.classList.add('hide');
+  }
   controls.classList.add('hide');
   progressWrapper.classList.add('hide');
-  centerPlay.classList.add('hide');
   document.body.style.cursor = 'none';
   [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
 }
 
+// montrer les contrôles dès qu'il y a une interaction
 document.addEventListener('mousemove', showControls);
-showControls();
+document.addEventListener('keydown', showControls);
+video.addEventListener('click', showControls);
+
+showControls(); // affichage initial
 
 // ---------------------
 // Format time
@@ -236,16 +236,17 @@ function togglePlay() {
 playBtn.addEventListener('click', togglePlay);
 centerPlay.addEventListener('click', togglePlay);
 
-// Update icons
 video.addEventListener('play', () => {
   playBtn.textContent = 'pause';
   centerPlay.textContent = 'pause';
+  showControls();
 });
 
 video.addEventListener('pause', () => {
   playBtn.textContent = 'play_arrow';
   centerPlay.textContent = 'play_arrow';
-  centerPlay.classList.remove('hide');
+  centerPlay.classList.remove('hide'); // en pause → bouton central toujours visible
+  showControls();
 });
 
 // ---------------------
@@ -322,7 +323,7 @@ subtitleMenu.addEventListener('click', e => {
 // Fullscreen
 // ---------------------
 document.getElementById('fullscreen').addEventListener('click', () => {
-  if(!document.fullscreenElement) videoContainer.requestFullscreen(); // ✅ corrigé
+  if(!document.fullscreenElement) videoContainer.requestFullscreen();
   else document.exitFullscreen();
 });
 
@@ -340,6 +341,7 @@ function toggleMenu(menu){
   menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
 }
 </script>
+
 
 
 </body>
