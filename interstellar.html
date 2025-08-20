@@ -6,6 +6,7 @@
 <title>Custom Video Player with Film Info</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 <style>
+/* ---------------- GLOBAL ---------------- */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -30,7 +31,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
 }
 .film-card-content {
   position: relative;
@@ -53,51 +54,167 @@ body {
 .play-button {
   font-size: 50px;
   padding: 20px 40px;
-  background: linear-gradient(90deg,#ff4b2b,#ff416c);
+  background: linear-gradient(90deg, #ff4b2b, #ff416c);
   border: none;
   border-radius: 10px;
   cursor: pointer;
   color: white;
   transition: transform 0.2s;
 }
-.play-button:hover { transform: scale(1.1); }
+.play-button:hover {
+  transform: scale(1.1);
+}
 
 /* ---------------- LECTEUR VIDEO ---------------- */
-.video-container {
+.video-container, #video-container {
   display: none; /* caché au départ */
   position: relative;
   width: 100%;
   max-width: 1200px;
   height: 100vh;
+  margin: auto;
+  background: black;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: black;
 }
-video {
+video, #video {
   max-width: 100%;
   max-height: 100%;
   display: block;
   object-fit: contain;
 }
 
-/* Controls and progress (copié depuis ton code précédent) */
-.progress-wrapper { position: absolute; bottom: 70px; left: 20px; right: 20px; display: flex; align-items: center; gap: 10px; color: white; font-size: 14px; font-family: monospace; }
-.progress { flex:1; height:12px; background: rgba(255,255,255,0.2); border-radius:6px; overflow:hidden; cursor:pointer; }
-.progress-bar { width:0%; height:100%; background: linear-gradient(90deg,#ff4b2b,#ff416c); border-radius:6px; }
-.controls { position:absolute; bottom:10px; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:10px 20px; background: rgba(0,0,0,0.5); border-radius:10px; }
-.controls-left, .controls-right { display:flex; align-items:center; gap:20px; }
-.center-play { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:80px; color:white; background: rgba(0,0,0,0.5); border-radius:50%; padding:20px; cursor:pointer; }
-.material-symbols-outlined { cursor:pointer; color:white; font-size:35px; }
+/* ---------------- CONTROLES ---------------- */
+.controls, #controls {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  gap: 10px;
+}
 
-/* Volume slider */
-.volume-container { display:flex; align-items:center; gap:10px; }
-#volume-slider { width:100px; height:5px; appearance:none; background: rgba(255,255,255,0.3); border-radius:5px; outline:none; cursor:pointer; }
-#volume-slider::-webkit-slider-thumb { appearance:none; width:12px; height:12px; background:#ff416c; border-radius:50%; cursor:pointer; }
-#volume-slider::-moz-range-thumb { width:12px; height:12px; background:#ff416c; border-radius:50%; cursor:pointer; }
-.menu { position:absolute; bottom:60px; right:20px; background: rgba(0,0,0,0.8); padding:10px; border-radius:8px; display:none; flex-direction:column; gap:5px; }
-.menu button { background:transparent; border:none; color:white; padding:5px 10px; cursor:pointer; text-align:left; }
-.menu button:hover { background: rgba(255,255,255,0.2); }
+.controls-left, .controls-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.center-play, .center-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 60px;
+  color: white;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  padding: 20px;
+  transition: transform 0.2s;
+}
+.center-play:hover, .center-button:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.material-symbols-outlined {
+  cursor: pointer;
+  color: white;
+  font-size: 35px;
+}
+
+/* ---------------- PROGRESS ---------------- */
+.progress-wrapper, #progressWrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-family: monospace;
+  cursor: pointer;
+}
+.progress, #progress {
+  flex: 1;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.progress-bar, #progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff4b2b, #ff416c);
+  border-radius: 6px;
+}
+
+/* ---------------- VOLUME ---------------- */
+.volume-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#volume-slider {
+  width: 100px;
+  height: 5px;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+}
+#volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+#volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* ---------------- MENUS ---------------- */
+.menu {
+  position: absolute;
+  bottom: 60px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+}
+.menu button {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+}
+.menu button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---------------- UTILITAIRES ---------------- */
+.hide {
+  display: none !important;
+}
+
 </style>
 </head>
 <body>
@@ -189,6 +306,9 @@ const sourceBtn = document.getElementById('source');
 const sourceMenu = document.getElementById('sourceMenu');
 const subtitleBtn = document.getElementById('subtitles');
 const subtitleMenu = document.getElementById('subtitleMenu');
+const fullscreenBtn = document.getElementById('fullscreen');
+const backwardBtn = document.getElementById('backward');
+const forwardBtn = document.getElementById('forward');
 
 let hideTimeout;
 video.controls = false;
@@ -199,7 +319,7 @@ video.controls = false;
 function showControls() {
   controls.classList.remove('hide');
   progressWrapper.classList.remove('hide');
-  centerPlay.classList.remove('hide');
+  if(video.paused) centerPlay.classList.remove('hide');
   document.body.style.cursor = 'default';
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(hideControls, 3000);
@@ -228,43 +348,42 @@ function formatTime(sec) {
 // ---------------------
 // Update progress & time
 // ---------------------
+video.addEventListener('loadedmetadata', () => {
+  totalTimeEl.textContent = formatTime(video.duration);
+});
+
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
   currentTimeEl.textContent = formatTime(video.currentTime);
-  totalTimeEl.textContent = formatTime(video.duration);
 });
 
 // ---------------------
 // Play / pause
 // ---------------------
 function togglePlay() {
-  if (video.paused) video.play();
+  if(video.paused) video.play();
   else video.pause();
 }
 
-// Clicks
 playBtn.addEventListener('click', togglePlay);
 centerPlay.addEventListener('click', togglePlay);
 
-// Update icons
 video.addEventListener('play', () => {
   playBtn.textContent = 'pause';
-  centerPlay.textContent = 'pause'; // <-- Change ici
-  centerPlay.classList.add('hide'); // facultatif : cacher le bouton central en lecture
+  centerPlay.classList.add('hide');
 });
 
 video.addEventListener('pause', () => {
   playBtn.textContent = 'play_arrow';
-  centerPlay.textContent = 'play_arrow'; // <-- Change ici
-  centerPlay.classList.remove('hide'); // montrer le bouton central si vidéo en pause
+  centerPlay.classList.remove('hide');
 });
 
 // ---------------------
 // Seek
 // ---------------------
 progressWrapper.addEventListener('click', e => {
-  const rect = progress.getBoundingClientRect();
+  const rect = progressWrapper.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
   video.currentTime = pos * video.duration;
 });
@@ -281,9 +400,8 @@ volumeIcon.addEventListener('click', () => {
   else { video.volume = 1; volumeSlider.value = 1; }
   updateVolumeIcon();
 });
-
 function updateVolumeIcon() {
-  if(video.volume === 0) volumeIcon.textContent = 'volume_off';
+  if(video.volume < 0.01) volumeIcon.textContent = 'volume_off';
   else if(video.volume < 0.5) volumeIcon.textContent = 'volume_down';
   else volumeIcon.textContent = 'volume_up';
 }
@@ -323,6 +441,8 @@ subtitleMenu.addEventListener('click', e => {
       const track = document.createElement('track');
       track.src = subUrl;
       track.kind = 'subtitles';
+      track.srclang = 'fr';
+      track.label = 'FR';
       track.default = true;
       video.appendChild(track);
     }
@@ -333,7 +453,7 @@ subtitleMenu.addEventListener('click', e => {
 // ---------------------
 // Fullscreen
 // ---------------------
-document.getElementById('fullscreen').addEventListener('click', () => {
+fullscreenBtn.addEventListener('click', () => {
   if(!document.fullscreenElement) container.requestFullscreen();
   else document.exitFullscreen();
 });
@@ -341,8 +461,8 @@ document.getElementById('fullscreen').addEventListener('click', () => {
 // ---------------------
 // Backward / Forward
 // ---------------------
-document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
-document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
+backwardBtn.addEventListener('click', () => { video.currentTime -= 10; });
+forwardBtn.addEventListener('click', () => { video.currentTime += 10; });
 
 // ---------------------
 // Toggle menu helper
@@ -351,6 +471,7 @@ function toggleMenu(menu){
   [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
   menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
 }
+
 </script>
 
 </body>
