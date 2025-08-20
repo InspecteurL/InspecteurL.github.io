@@ -283,16 +283,21 @@ function togglePlay() {
   else video.pause();
 }
 
+// Clicks
 playBtn.addEventListener('click', togglePlay);
 centerPlay.addEventListener('click', togglePlay);
 
+// Update icons
 video.addEventListener('play', () => {
   playBtn.textContent = 'pause';
-  centerPlay.classList.add('hide');
+  centerPlay.textContent = 'pause'; // <-- Change ici
+  centerPlay.classList.add('hide'); // facultatif : cacher le bouton central en lecture
 });
+
 video.addEventListener('pause', () => {
   playBtn.textContent = 'play_arrow';
-  centerPlay.classList.remove('hide');
+  centerPlay.textContent = 'play_arrow'; // <-- Change ici
+  centerPlay.classList.remove('hide'); // montrer le bouton central si vidéo en pause
 });
 
 // ---------------------
