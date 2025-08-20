@@ -343,7 +343,6 @@ function showControls() {
 function hideControls() {
   if (!video.paused) {
     centerPlay.classList.add('hide');
-    
   }
   controls.classList.add('hide');
   progressWrapper.classList.add('hide');
@@ -358,7 +357,7 @@ video.addEventListener('click', showControls);
 
 showControls();
 
-  // --- Cacher le lecteur et retourner à la fiche quand on clique sur le bouton ---
+// --- Cacher le lecteur et retourner à la fiche quand on clique sur le bouton ---
 backButton.addEventListener('click', () => {
   video.pause();
   video.currentTime = 0;
@@ -499,6 +498,7 @@ function toggleMenu(menu){
   [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
   menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
 }
+
 </script>
 
 </body>
