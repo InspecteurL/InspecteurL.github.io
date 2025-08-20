@@ -215,9 +215,8 @@ const video = document.getElementById('video');
 const controls = document.getElementById('controls');
 const progress = document.getElementById('progress');
 const progressBar = document.getElementById('progress-bar');
-const currentTimeE1 = document.getElementById('currentTime');
-const totalTimeE1 = document.getElementById('totalTime');
-const timeIndicator = document.getElementById('timeIndicator');
+const currentTimeEl = document.getElementById('currentTime'); // corrigé
+const totalTimeEl = document.getElementById('totalTime');     // corrigé
 const playBtn = document.getElementById('play');
 const centerPlay = document.getElementById('centerPlay');
 const container = document.getElementById('video-container');
@@ -261,7 +260,6 @@ function formatTime(sec) {
   return `${m}:${s.toString().padStart(2,'0')}`;
 }
 
-
 // Update progress bar and times
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
@@ -269,6 +267,7 @@ video.addEventListener('timeupdate', () => {
   currentTimeEl.textContent = formatTime(video.currentTime);
   totalTimeEl.textContent = formatTime(video.duration);
 });
+
 
 
 // Play/pause
