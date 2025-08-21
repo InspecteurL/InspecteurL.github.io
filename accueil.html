@@ -1249,83 +1249,82 @@ if (searchInputEarly) {
   searchInputEarly.addEventListener('input', applySearchFilter);
 }
 
-// Protège si le carrousel n'existe pas
+// Sélection des slides et des points
 var slides = document.querySelectorAll(".slides");
 var dot = document.querySelectorAll(".dot");
 
+if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
+  let index = 0;
 
-const slideData = [
-  {
-    title: "Call of the Night",
-    synopsis: "Un adolescent insomniaque rencontre une vampire mystérieuse dans une ville éclairée par la nuit.",
-    button: "Découvrir Call of the Night",
-    link: "cotn.html"
-  },
-  {
-    title: "Cyberpunk Edgerunners",
-    synopsis: "Dans un futur dystopique, un jeune rebelle rejoint un groupe de mercenaires cybernétiques.",
-    button: "Explorer Cyberpunk",
-    link: "cyber.html"
-  },
-  {
-    title: "Death Parade",
-    synopsis: "Après la mort, des âmes sont envoyées dans un bar pour jouer à des jeux... qui décideront de leur sort.",
-    button: "Voir Death Parade",
-    link: "deathparade.html"
-  },
-  {
-    title: "Erased",
-    synopsis: "Un homme remonte dans le temps pour empêcher une série d'enlèvements et sauver sa mère.",
-    button: "Voyager avec Erased",
-    link: "animera.html"
-  },
-  {
-    title: "Steins;Gate",
-    synopsis: "Un scientifique excentrique découvre le voyage dans le temps à l'aide d'un micro-ondes modifié.",
-    button: "Plonger dans Steins;Gate",
-    link: "steinsgate.html"
+  const slideData = [
+    {
+      title: "Call of the Night",
+      synopsis: "Un adolescent insomniaque rencontre une vampire mystérieuse dans une ville éclairée par la nuit.",
+      button: "Découvrir Call of the Night",
+      link: "cotn.html"
+    },
+    {
+      title: "Cyberpunk Edgerunners",
+      synopsis: "Dans un futur dystopique, un jeune rebelle rejoint un groupe de mercenaires cybernétiques.",
+      button: "Explorer Cyberpunk",
+      link: "cyber.html"
+    },
+    {
+      title: "Death Parade",
+      synopsis: "Après la mort, des âmes sont envoyées dans un bar pour jouer à des jeux... qui décideront de leur sort.",
+      button: "Voir Death Parade",
+      link: "deathparade.html"
+    },
+    {
+      title: "Erased",
+      synopsis: "Un homme remonte dans le temps pour empêcher une série d'enlèvements et sauver sa mère.",
+      button: "Voyager avec Erased",
+      link: "animera.html"
+    },
+    {
+      title: "Steins;Gate",
+      synopsis: "Un scientifique excentrique découvre le voyage dans le temps à l'aide d'un micro-ondes modifié.",
+      button: "Plonger dans Steins;Gate",
+      link: "steinsgate.html"
+    }
+  ];
+
+  function changeSlide() {
+    if (index < 0) index = slides.length - 1;
+    if (index >= slides.length) index = 0;
+
+    slides.forEach((slide, i) => {
+      slide.style.display = i === index ? "block" : "none";
+      dot[i].classList.toggle("active", i === index);
+    });
+
+    const data = slideData[index];
+    const titleEl = document.getElementById('slide-title');
+    const synopsisEl = document.getElementById('slide-synopsis');
+    const btnEl = document.getElementById('slide-button');
+
+    if (titleEl) titleEl.textContent = data.title;
+    if (synopsisEl) synopsisEl.textContent = data.synopsis;
+    if (btnEl) {
+      btnEl.textContent = data.button;
+      btnEl.onclick = () => window.location.href = data.link;
+    }
+
+    index++;
+    setTimeout(changeSlide, 6000);
   }
-];
 
-
-
-function changeSlide(){
-  if(index < 0){
-    index = slides.length - 1;
-  }
-
-  if(index > slides.length - 1){
-    index = 0;
-  }
-
-  for(let i = 0; i < slides.length; i++){
-    slides[i].style.display = "none";
-    dot[i].classList.remove("active");
-  }
-
-  slides[index].style.display = "block";
-  dot[index].classList.add("active");
-
-  // Mettre à jour titre, synopsis et bouton
-  const data = slideData[index];
-  document.getElementById('slide-title').textContent = data.title;
-  document.getElementById('slide-synopsis').textContent = data.synopsis;
-  const btn = document.getElementById('slide-button');
-  btn.textContent = data.button;
-  btn.onclick = () => window.location.href = data.link;
-
-  index++;
-
-  setTimeout(changeSlide, 6000); // pour ralentir le carrousel
+  changeSlide();
+} else {
+  console.warn("Carrousel non trouvé ou slides/dots manquants !");
 }
-
-changeSlide();
 
 
     </script>
 
 </body>
 </html>
+
 
 
 
