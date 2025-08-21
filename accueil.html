@@ -1039,6 +1039,46 @@ function injectFavoriteBadges() {
     }
   });
 }
+        function injectStatusBadges() {
+  document.querySelectorAll('.movieimg').forEach(card => {
+    if (!card.querySelector('.status-badge')) {
+      const badge = document.createElement('span');
+      badge.className = 'status-badge';
+      badge.style.display = 'none';
+      badge.style.position = 'absolute';
+      badge.style.right = '8px';
+      badge.style.bottom = '8px';
+      badge.style.padding = '2px 6px';
+      badge.style.borderRadius = '12px';
+      badge.style.fontSize = '12px';
+      badge.style.background = '#444';
+      badge.style.color = '#fff';
+      // Pour être sûr que le badge soit bien positionné
+      if (getComputedStyle(card).position === 'static') {
+        card.style.position = 'relative';
+      }
+      card.appendChild(badge);
+    }
+  });
+}
+
+function renderStatuses() {
+  const animes = JSON.parse(localStorage.getItem('animes')) || [];
+  document.querySelectorAll('.movieimg').forEach(card => {
+    const title = card.dataset.title;
+    const data = animes.find(a => a.title === title);
+    const badge = card.querySelector('.status-badge');
+    if (!badge) return;
+    if (data && data.status) {
+      badge.textContent = data.status;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.textContent = '';
+      badge.style.display = 'none';
+    }
+  });
+}
+
 
 // -------------------- NOTES --------------------
 function rateAnime(title, rating) {
@@ -1078,24 +1118,31 @@ function setupContextMenu() {
     });
   });
 
-  document.querySelectorAll('.context-menu-item[data-status]').forEach(item => {
-    item.addEventListener('click', function () {
-      const animes = JSON.parse(localStorage.getItem('animes')) || [];
-      const title = menu.dataset.title;
-      const genre = menu.dataset.genre;
-      const img = menu.dataset.img;
-      const status = this.dataset.status;
-      const index = animes.findIndex(a => a.title === title);
-      if (index !== -1) {
-        animes[index].status = status;
-      } else {
-        animes.push({ title, genre, img, status });
-      }
-      localStorage.setItem('animes', JSON.stringify(animes));
-      applyFilters();
-      menu.style.display = 'none';
-    });
+document.querySelectorAll('.context-menu-item[data-status]').forEach(item => {
+  item.addEventListener('click', function (e) {
+    e.stopPropagation();
+    const title = menu.dataset.title;
+    const genre = menu.dataset.genre;
+    const img = menu.dataset.img;
+    const status = this.dataset.status;
+
+    let animes = JSON.parse(localStorage.getItem('animes')) || [];
+    const index = animes.findIndex(a => a.title === title);
+
+    if (index !== -1) {
+      animes[index] = { ...animes[index], title, genre, img, status };
+    } else {
+      animes.push({ title, genre, img, status, favorite: false });
+    }
+
+    localStorage.setItem('animes', JSON.stringify(animes));
+
+    renderStatuses();   // ✅ met à jour les badges immédiatement
+    applyFilters();     // ✅ prend en compte le filtre actif
+    menu.style.display = 'none';
   });
+});
+
 
   window.addEventListener('click', () => menu.style.display = 'none');
 }
@@ -1173,16 +1220,13 @@ function setupImport() {
 }
 
 
-document.getElementById('searchInput').addEventListener('input', applySearchFilter);
-
-
-
-
 
 document.addEventListener("DOMContentLoaded", () => {
   injectFavoriteBadges();
+  injectStatusBadges();   // ✅ ajout
   renderFavorites();
   renderRatings();
+  renderStatuses();       // ✅ ajout
   setupContextMenu();
   setupImport();
   applyFilters();
@@ -1191,10 +1235,24 @@ document.addEventListener("DOMContentLoaded", () => {
   updateProgressBar();
   loadRandomPosters();
 
-  document.getElementById('genreFilter').addEventListener('change', applyFilters);
-  document.getElementById('statusFilter').addEventListener('change', applyFilters);
-  document.getElementById('searchInput').addEventListener('input', applySearchFilter);
+  const gf = document.getElementById('genreFilter');
+  if (gf) gf.addEventListener('change', applyFilters);
+  const sf = document.getElementById('statusFilter');
+  if (sf) sf.addEventListener('change', applyFilters);
+  const si = document.getElementById('searchInput');
+  if (si) si.addEventListener('input', applySearchFilter);
 });
+
+    // Protège si #searchInput n'existe pas
+const searchInputEarly = document.getElementById('searchInput');
+if (searchInputEarly) {
+  searchInputEarly.addEventListener('input', applySearchFilter);
+}
+
+// Protège si le carrousel n'existe pas
+var slides = document.querySelectorAll(".slides");
+var dot = document.querySelectorAll(".dot");
+
 
 const slideData = [
   {
@@ -1229,9 +1287,7 @@ const slideData = [
   }
 ];
 
-var index = 0;
-var slides = document.querySelectorAll(".slides");
-var dot = document.querySelectorAll(".dot");
+
 
 function changeSlide(){
   if(index < 0){
@@ -1270,5 +1326,6 @@ changeSlide();
 
 </body>
 </html>
+
 
 
