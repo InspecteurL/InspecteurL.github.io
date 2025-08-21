@@ -81,18 +81,29 @@ body::before {
 .fiche-info p {
   line-height: 1.5;
 }
+/* Styles du bouton */
 .btn-watch {
-  background: linear-gradient(90deg, #ff4b2b, #ff416c);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px; /* espace entre l'icône et le texte */
+  padding: 10px 20px;
+  background-color: #ff3d00;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
   border: none;
-  padding: 15px 30px;
-  color: #fff;
-  font-size: 18px;
   border-radius: 8px;
   cursor: pointer;
-  margin-top: 20px;
-  transition: transform 0.2s;
+  transition: background-color 0.2s, transform 0.2s;
 }
-.btn-watch:hover { transform: scale(1.05); }
+
+.btn-watch:hover {
+  background-color: #ff5722;
+}
+
+.btn-watch:hover .material-symbols-outlined {
+  transform: scale(1.2); /* l'icône grossit légèrement au survol */
+}
 
 /* --- Conteneur du lecteur --- */
 .video-container {
