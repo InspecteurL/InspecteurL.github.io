@@ -479,7 +479,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // ----- Sélection des éléments -----
   const cards = document.querySelectorAll('.card');
   const videoContainer = document.getElementById('videoContainer');
   const video = document.getElementById('video');
@@ -502,9 +501,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const forwardBtn = document.getElementById('forward');
   const backwardBtn = document.getElementById('backward');
 
-  let hls; // instance HLS.js
+  let hls;
 
-  // ----- Fonction d’ouverture / fermeture vidéo -----
   function openVideo() {
     videoContainer.style.display = 'flex';
     showControls();
@@ -515,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
     video.currentTime = 0;
     videoContainer.style.display = 'none';
     if(document.fullscreenElement) document.exitFullscreen();
-    if(hls && hls.media) { // sécurité HLS
+    if(hls && hls.media) {
       hls.destroy();
       hls = null;
     }
@@ -523,7 +521,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   backButton.addEventListener('click', closeVideo);
 
-  // ----- Lecture vidéo -----
   function playMovie(src) {
     openVideo();
 
@@ -535,22 +532,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if(src.endsWith('.m3u8')) {
       if(video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = src;
+        video.play().catch(err => console.warn(err));
       } else if(Hls.isSupported()) {
         hls = new Hls();
         hls.loadSource(src);
         hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play().catch(err => console.warn(err));
+        });
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          console.error('HLS.js error', data);
+        });
       } else {
         alert("Votre navigateur ne supporte pas HLS (.m3u8)");
-        return;
       }
     } else {
       video.src = src;
+      video.play().catch(err => console.warn(err));
     }
-
-    video.play();
   }
 
-  // ----- Gestion des cartes -----
   cards.forEach(card => {
     card.addEventListener('click', () => {
       const videoSrc = card.dataset.video;
@@ -558,7 +559,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ----- Play / Pause -----
   function togglePlay() {
     if(video.paused) video.play();
     else video.pause();
@@ -580,7 +580,6 @@ document.addEventListener('DOMContentLoaded', () => {
     showControls();
   });
 
-  // ----- Avancer / Reculer -----
   forwardBtn.addEventListener('click', () => {
     if (!isNaN(video.duration)) video.currentTime = Math.min(video.currentTime + 10, video.duration);
   });
@@ -589,7 +588,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isNaN(video.duration)) video.currentTime = Math.max(video.currentTime - 10, 0);
   });
 
-  // ----- Progression -----
   function formatTime(sec) {
     const m = Math.floor(sec / 60);
     const s = Math.floor(sec % 60);
@@ -613,7 +611,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ----- Volume -----
   volumeSlider.addEventListener('input', () => {
     video.volume = volumeSlider.value;
     updateVolumeIcon();
@@ -631,7 +628,6 @@ document.addEventListener('DOMContentLoaded', () => {
     else volumeIcon.textContent = 'volume_up';
   }
 
-  // ----- Menus -----
   settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
   settingsMenu.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -647,13 +643,11 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
   }
 
-  // ----- Plein écran -----
   document.getElementById('fullscreen').addEventListener('click', () => {
     if(!document.fullscreenElement) videoContainer.requestFullscreen();
     else document.exitFullscreen();
   });
 
-  // ----- Affichage / masquage contrôles -----
   let hideTimeout;
   video.controls = false;
 
@@ -681,6 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
   video.addEventListener('click', showControls);
   showControls();
 });
+
 
 
 </script>
