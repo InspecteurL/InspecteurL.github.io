@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catalogue BNZ</title>
   <style>
+    :root{
+      --card-w: clamp(160px, 20vw, 200px); /* empêche les cartes de grossir en filtrant/recherchant */
+    }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -12,18 +15,15 @@
       color: white;
     }
 
-      ul {
+    /* NAV */
+    ul {
       list-style-type: none;
       margin: 0;
       padding: 0;
       overflow: hidden;
       background-color: #1c1c1c;
     }
-
-    li {
-      float: left;
-    }
-
+    li { float: left; }
     li a {
       display: block;
       color: white;
@@ -32,26 +32,20 @@
       text-decoration: none;
       font-size: 20px;
     }
-
     li a:hover {
       background-color: red;
       border-radius: 5px;
     }
 
-
     header {
       text-align: center;
       padding: 2rem 1rem 1rem;
     }
-
     header h1 {
       font-size: 2.5rem;
       margin-bottom: 0.5rem;
     }
-
-    header p {
-      color: #ccc;
-    }
+    header p { color: #ccc; }
 
     /* Barre de recherche */
     .search-bar {
@@ -59,7 +53,6 @@
       justify-content: center;
       margin: 1rem auto 2rem;
     }
-
     .search-bar input {
       width: 80%;
       max-width: 400px;
@@ -78,7 +71,6 @@
       gap: 10px;
       margin-bottom: 2rem;
     }
-
     .filters button {
       padding: 0.6rem 1.2rem;
       border: none;
@@ -88,17 +80,15 @@
       cursor: pointer;
       transition: 0.3s;
     }
-
     .filters button.active,
-    .filters button:hover {
-      background: crimson;
-    }
+    .filters button:hover { background: crimson; }
 
-    /* Grille */
+    /* Catalogue (flex pour garder taille fixe) */
     .grid {
-      display: grid;
+      display: flex;
+      flex-wrap: wrap;
       gap: 1.5rem;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      justify-content: center;
       padding: 0 2rem 2rem;
     }
 
@@ -109,34 +99,28 @@
       box-shadow: 0 5px 15px rgba(0,0,0,0.5);
       transition: transform 0.3s;
       text-align: center;
-    }
 
-    .movieimg:hover {
-      transform: scale(1.05);
+      width: var(--card-w);
+      flex: 0 0 var(--card-w); /* taille stable même quand il reste peu d’éléments */
     }
+    .movieimg:hover { transform: scale(1.05); }
 
     .movieimg img {
       width: 100%;
       height: 280px;
       object-fit: cover;
       border-bottom: 2px solid #333;
+      display: block;
     }
-
     .movieimg h2 {
       margin: 0.5rem 0;
       font-size: 1.1rem;
     }
-
     .movieimg span {
       color: #aaa;
       font-size: 0.9rem;
       display: block;
       margin-bottom: 0.5rem;
-    }
-
-    .rating-stars {
-      margin-bottom: 1rem;
-      height: 15px;
     }
 
     /* Message Aucun résultat */
@@ -147,16 +131,21 @@
       display: none;
       padding-bottom: 2rem;
     }
+
+    @media (max-width: 400px){
+      :root{ --card-w: 46vw; } /* 2 colonnes sur très petit écran */
+      .movieimg img{ height: 48vw; }
+    }
   </style>
 </head>
 <body>
   <header>
-     <ul id="navbar">
-  <li><a class="active" href="index.html">Home</a></li>
-  <li><a href="compte.html">Votre Compte</a></li>
-  <li><a href="mes-amis.html">Mes amis</a></li>
-  <li><a href="accueil.html">Feuilleter</a></li>
-</ul>
+    <ul id="navbar">
+      <li><a class="active" href="index.html">Home</a></li>
+      <li><a href="compte.html">Votre Compte</a></li>
+      <li><a href="mes-amis.html">Mes amis</a></li>
+      <li><a href="accueil.html">Feuilleter</a></li>
+    </ul>
     <h1>🎬 Catalogue Bunker Zata</h1>
     <p>Découvrez nos derniers films et séries selon vos envies</p>
   </header>
@@ -186,6 +175,7 @@
   <!-- Grille -->
   <div class="grid" id="movieGrid">
 
+    <!-- ===== FILMS ===== -->
     <div class="movieimg" data-title="The Gorge" data-genre="Romance">
       <a href="thegorge.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/1Np511QIqSs0s3iDpWXPbuY4o5o.jpg" alt="The Gorge"></a>
       <h2>The Gorge</h2>
@@ -210,14 +200,14 @@
       <span>Animation</span>
     </div>
 
-        <div class="movieimg" data-title="Cars 2" data-genre="Animation">
-      <a href="carsdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/qCoaNNfH6lS7qkZDYhWkQpiQpnM.jpg" alt="Cars2"></a>
+    <div class="movieimg" data-title="Cars 2" data-genre="Animation">
+      <a href="carsdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/qCoaNNfH6lS7qkZDYhWkQpiQpnM.jpg" alt="Cars 2"></a>
       <h2>Cars 2</h2>
       <span>Animation</span>
     </div>
 
-        <div class="movieimg" data-title="Cars 3" data-genre="Animation">
-      <a href="carstrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4Qbfp1oDsZChdfUX6IPLsEVBQ6s.jpg" alt="Cars3"></a>
+    <div class="movieimg" data-title="Cars 3" data-genre="Animation">
+      <a href="carstrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4Qbfp1oDsZChdfUX6IPLsEVBQ6s.jpg" alt="Cars 3"></a>
       <h2>Cars 3</h2>
       <span>Animation</span>
     </div>
@@ -240,8 +230,8 @@
       <span>Aventure</span>
     </div>
 
-        <div class="movieimg" data-title="Avatar2" data-genre="Aventure">
-      <a href="avatardeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/kQYx143yujkwyjJdZH2skOGeQfA.jpg" alt="Avatar2"></a>
+    <div class="movieimg" data-title="Avatar : La Voie de l'eau" data-genre="Aventure">
+      <a href="avatardeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/kQYx143yujkwyjJdZH2skOGeQfA.jpg" alt="Avatar 2"></a>
       <h2>Avatar : La Voie de l'eau</h2>
       <span>Aventure</span>
     </div>
@@ -270,8 +260,8 @@
       <span>Science-Fiction</span>
     </div>
 
-        <div class="movieimg" data-title="Dune : Deuxième partie" data-genre="Science-Fiction">
-      <a href="dunedeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/iRNbRAIGQQr5diGnjpwJFm0dgt4.jpg" alt="Dune2"></a>
+    <div class="movieimg" data-title="Dune : Deuxième partie" data-genre="Science-Fiction">
+      <a href="dunedeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/iRNbRAIGQQr5diGnjpwJFm0dgt4.jpg" alt="Dune 2"></a>
       <h2>Dune : Deuxième partie</h2>
       <span>Science-Fiction</span>
     </div>
@@ -288,13 +278,13 @@
       <span>Science-Fiction</span>
     </div>
 
-        <div class="movieimg" data-title="Retour vers le futur II" data-genre="Science-Fiction">
+    <div class="movieimg" data-title="Retour vers le futur II" data-genre="Science-Fiction">
       <a href="retourverslefuturdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/k6gtdFRwPaodriCiMw2zhpUa2xI.jpg" alt="Retour vers le futur II"></a>
       <h2>Retour vers le futur II</h2>
       <span>Science-Fiction</span>
     </div>
 
-        <div class="movieimg" data-title="Retour vers le futur III" data-genre="Science-Fiction">
+    <div class="movieimg" data-title="Retour vers le futur III" data-genre="Science-Fiction">
       <a href="retourverslefuturtrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4pqYyszHxhYHbhwCElM6jHrZ5Zg.jpg" alt="Retour vers le futur III"></a>
       <h2>Retour vers le futur III</h2>
       <span>Science-Fiction</span>
@@ -312,6 +302,91 @@
       <span>Comédie</span>
     </div>
 
+    <!-- ===== ANIMES (data-genre='Anime' + sous-genre affiché) ===== -->
+    <div class="movieimg" data-title="Erased" data-genre="Anime" data-subgenre="Seinen">
+      <a href="animera.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/hPbDYrLaSHnbo8egg0p7SYOm6bK.jpg" alt="Erased"></a>
+      <h2>Erased</h2>
+      <span>Anime — Seinen</span>
+    </div>
+
+    <div class="movieimg" data-title="Steins ; Gate" data-genre="Anime" data-subgenre="Seinen">
+      <a href="steinsgate.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/5zxePQEsUKLYDh2kpXGQAeInjUU.jpg" alt="Steins ; Gate"></a>
+      <h2>Steins ; Gate</h2>
+      <span>Anime — Seinen</span>
+    </div>
+
+    <div class="movieimg" data-title="Call Of The Night" data-genre="Anime" data-subgenre="Shonen">
+      <a href="cotn.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/rDhwDG2ii8c3nCcfUNp6mogGQ93.jpg" alt="Call Of The Night"></a>
+      <h2>Call Of The Night</h2>
+      <span>Anime — Shonen</span>
+    </div>
+
+    <div class="movieimg" data-title="Cyberpunk Edgerunners" data-genre="Anime" data-subgenre="Seinen">
+      <a href="cyber.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7jSWOc6jWSw5hZ78HB8Hw3pJxuk.jpg" alt="Cyberpunk Edgerunners"></a>
+      <h2>Cyberpunk Edgerunners</h2>
+      <span>Anime — Seinen</span>
+    </div>
+
+    <div class="movieimg" data-title="Platinum End" data-genre="Anime" data-subgenre="Shonen">
+      <a href="platinum.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/rS17loSa3LM1HxO1MhGf5B3iCDS.jpg" alt="Platinum End"></a>
+      <h2>Platinum End</h2>
+      <span>Anime — Shonen</span>
+    </div>
+
+    <div class="movieimg" data-title="Hell's Paradise" data-genre="Anime" data-subgenre="Shonen">
+      <a href="hell.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/1V9I7SvZbYoMbSvdtnlkkq9SB1k.jpg" alt="Hell's Paradise (Jigokuraku)"></a>
+      <h2>Hell's Paradise</h2>
+      <span>Anime — Shonen</span>
+    </div>
+
+    <div class="movieimg" data-title="Sakamoto Desu Ga" data-genre="Anime" data-subgenre="Shonen">
+      <a href="sakamotodesu.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/qaV8q1PflyGaQTc2sYlS3zxvFdW.jpg" alt="Sakamoto Desu Ga"></a>
+      <h2>Sakamoto Desu Ga</h2>
+      <span>Anime — Shonen</span>
+    </div>
+
+    <div class="movieimg" data-title="Death Note" data-genre="Anime" data-subgenre="Shonen">
+      <a href="dnote.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/9gcQDYtFuQV4115jkQIdBX54d0g.jpg" alt="Death Note"></a>
+      <h2>Death Note</h2>
+      <span>Anime — Shonen</span>
+    </div>
+
+    <div class="movieimg" data-title="Oshi no Ko" data-genre="Anime" data-subgenre="Seinen">
+      <a href="oshinoko.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/ozJvrtYnLDz0wpOTx61Qs5t3ZEJ.jpg" alt="Oshi no Ko"></a>
+      <h2>Oshi no Ko</h2>
+      <span>Anime — Seinen</span>
+    </div>
+
+    <div class="movieimg" data-title="Death Parade" data-genre="Anime" data-subgenre="Seinen">
+      <a href="deathparade.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/rBoJhqTxJUINuFAa2rL9E8Aj7eB.jpg" alt="Death Parade"></a>
+      <h2>Death Parade</h2>
+      <span>Anime — Seinen</span>
+    </div>
+
+    <div class="movieimg" data-title="Blue Period" data-genre="Anime" data-subgenre="Shonen">
+      <a href="blueperiod.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/cyCMX96AoqT9igMbE0a6njreAEd.jpg" alt="Blue Period"></a>
+      <h2>Blue Period</h2>
+      <span>Anime — Shonen</span>
+    </div>
+
+    <div class="movieimg" data-title="Steins ; Gate 0" data-genre="Anime" data-subgenre="Seinen">
+      <a href="steinsgatezero.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/75w7GE9K7T5wvy3OGN9gauSoBOZ.jpg" alt="Steins ; Gate 0"></a>
+      <h2>Steins ; Gate 0</h2>
+      <span>Anime — Seinen</span>
+    </div>
+
+    <div class="movieimg" data-title="Jujutsu Kaisen" data-genre="Anime" data-subgenre="Shonen">
+      <a href="jjk.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/aoJZMbn4WAaaEjqOP4r0F7lzpeP.jpg" alt="Jujutsu Kaisen"></a>
+      <h2>Jujutsu Kaisen</h2>
+      <span>Anime — Shonen</span>
+    </div>
+
+    <div class="movieimg" data-title="Dragon Ball" data-genre="Anime" data-subgenre="Shonen">
+      <a href="db.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/3sYSO2ZBGRKXxrl6E1WlxNVY0lE.jpg" alt="Dragon Ball"></a>
+      <h2>Dragon Ball</h2>
+      <span>Anime — Shonen</span>
+    </div>
+
   </div>
 
   <script>
@@ -325,7 +400,7 @@
 
       movies.forEach(movie => {
         if (genre === 'Tous' || movie.dataset.genre === genre) {
-          movie.style.display = 'block';
+          movie.style.display = '';
           visibleCount++;
         } else {
           movie.style.display = 'none';
@@ -341,9 +416,10 @@
       let visibleCount = 0;
 
       movies.forEach(movie => {
-        const title = movie.dataset.title.toLowerCase();
-        if (title.includes(input)) {
-          movie.style.display = 'block';
+        const title = (movie.dataset.title || '').toLowerCase();
+        const sub = (movie.dataset.subgenre || '').toLowerCase();
+        if (title.includes(input) || sub.includes(input)) {
+          movie.style.display = '';
           visibleCount++;
         } else {
           movie.style.display = 'none';
