@@ -513,7 +513,7 @@ const sourceBtn = document.getElementById('source');
 const sourceMenu = document.getElementById('sourceMenu');
 const subtitleBtn = document.getElementById('subtitles');
 const subtitleMenu = document.getElementById('subtitleMenu');
-const btnWatch = document.getElementById('btnWatch');
+const watchBtn = document.getElementById("btnWatch");
 const backButton = document.getElementById('backButton');
 const navbar = document.getElementById('navbar');
 const burgerBtn = document.getElementById('burgerBtn');
@@ -543,11 +543,10 @@ backButton.addEventListener('click', () => {
 let hideTimeout;
 video.controls = false;
 
-// ✅ Bouton "Lire le film"
-btnWatch.addEventListener('click', () => {
-  videoContainer.style.display = 'flex';
+// Ouvrir le lecteur
+watchBtn.addEventListener("click", () => {
+  videoContainer.style.display = "flex";
   video.play();
-  showControls();
 });
 
 // ---------------------
