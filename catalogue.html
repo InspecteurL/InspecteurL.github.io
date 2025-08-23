@@ -71,7 +71,7 @@
     .grid {
       display: grid;
       gap: 1.5rem;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       padding: 0 2rem 2rem;
     }
 
@@ -111,6 +111,15 @@
       margin-bottom: 1rem;
       height: 15px;
     }
+
+    /* Message Aucun résultat */
+    #noResults {
+      text-align: center;
+      font-size: 1.2rem;
+      color: #bbb;
+      display: none;
+      padding-bottom: 2rem;
+    }
   </style>
 </head>
 <body>
@@ -137,6 +146,9 @@
     <button onclick="filterMovies('Fantastique')">Fantastique</button>
   </div>
 
+  <!-- Message Aucun résultat -->
+  <div id="noResults">Aucun film trouvé.</div>
+
   <!-- Grille -->
   <div class="grid" id="movieGrid">
 
@@ -144,105 +156,90 @@
       <a href="thegorge.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/1Np511QIqSs0s3iDpWXPbuY4o5o.jpg" alt="The Gorge"></a>
       <h2>The Gorge</h2>
       <span>Romance</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Interstellar" data-genre="Science-Fiction">
       <a href="interstellar.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/tYaC23U62BOJRNVIlFGT6iowEwj.jpg" alt="Interstellar"></a>
       <h2>Interstellar</h2>
       <span>Science-Fiction</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Your Name" data-genre="Animation">
       <a href="yourname.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zyHjvVRgKOt9wgVx4ikp2kGArGF.jpg" alt="Your Name"></a>
       <h2>Your Name</h2>
       <span>Animation</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Cars : Quatre roues" data-genre="Animation">
       <a href="carsun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4P0NYzeNFqddAjllEICPAbd0iiu.jpg" alt="Cars"></a>
       <h2>Cars : Quatre roues</h2>
       <span>Animation</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Matrix" data-genre="Action">
       <a href="matrix.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pEoqbqtLc4CcwDUDqxmEDSWpWTZ.jpg" alt="Matrix"></a>
       <h2>Matrix</h2>
       <span>Action</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Tenet" data-genre="Thriller">
       <a href="tenet.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/cRDUa63MeEpOWdqZeXqReDz7KTx.jpg" alt="Tenet"></a>
       <h2>Tenet</h2>
       <span>Thriller</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Avatar" data-genre="Aventure">
       <a href="avatarun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7N8L80OaG8EBTDdRBjGqT8PBzCM.jpg" alt="Avatar"></a>
       <h2>Avatar</h2>
       <span>Aventure</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Fast & Furious : Tokyo Drift" data-genre="Action">
       <a href="fastandftokyodrift.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pji0QbsaA6lhk1eQc2EfeBsXU4y.jpg" alt="Tokyo Drift"></a>
       <h2>Fast & Furious : Tokyo Drift</h2>
       <span>Action</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Suzume" data-genre="Animation">
       <a href="suzume.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/hOJYwkVSgXtE3BJFN0bRPKdLJLj.jpg" alt="Suzume"></a>
       <h2>Suzume</h2>
       <span>Animation</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="F1 Le Film" data-genre="Action">
       <a href="fun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/2crZHK9muPUcgHsiwoW9xb6421j.jpg" alt="F1 Le Film"></a>
       <h2>F1® Le Film</h2>
       <span>Action</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Dune : Première partie" data-genre="Science-Fiction">
       <a href="duneun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/anDuUygHsWrbxqOEQ8H1ZkYTaL9.jpg" alt="Dune"></a>
       <h2>Dune : Première partie</h2>
       <span>Science-Fiction</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="The Mask" data-genre="Comédie">
       <a href="themask.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/5OBK9sksRSyrwrcMtxpdxql75Sw.jpg" alt="The Mask"></a>
       <h2>The Mask</h2>
       <span>Comédie</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Retour vers le futur" data-genre="Science-Fiction">
       <a href="retourverslefuturun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gggA0GBaFumhfZzRxOgyRk5Zob5.jpg" alt="Retour vers le futur"></a>
       <h2>Retour vers le futur</h2>
       <span>Science-Fiction</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Pokémon Détective Pikachu" data-genre="Fantastique">
       <a href="detpikachu.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gsoZQqBX04yXe5nXNKyILy9fuuF.jpg" alt="Détective Pikachu"></a>
       <h2>Pokémon Détective Pikachu</h2>
       <span>Fantastique</span>
-      <div class="rating-stars"></div>
     </div>
 
     <div class="movieimg" data-title="Charlie et la Chocolaterie" data-genre="Comédie">
       <a href="charliechocolaterie.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/eLNqcXXz0V2FdjyViR8o4uCTd9n.jpg" alt="Charlie et la Chocolaterie"></a>
       <h2>Charlie et la Chocolaterie</h2>
       <span>Comédie</span>
-      <div class="rating-stars"></div>
     </div>
 
   </div>
@@ -254,27 +251,36 @@
       event.target.classList.add('active');
 
       const movies = document.querySelectorAll('.movieimg');
+      let visibleCount = 0;
+
       movies.forEach(movie => {
         if (genre === 'Tous' || movie.dataset.genre === genre) {
           movie.style.display = 'block';
+          visibleCount++;
         } else {
           movie.style.display = 'none';
         }
       });
+
+      document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
     }
 
     function searchMovies() {
       const input = document.getElementById('searchInput').value.toLowerCase();
       const movies = document.querySelectorAll('.movieimg');
+      let visibleCount = 0;
 
       movies.forEach(movie => {
         const title = movie.dataset.title.toLowerCase();
         if (title.includes(input)) {
           movie.style.display = 'block';
+          visibleCount++;
         } else {
           movie.style.display = 'none';
         }
       });
+
+      document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
     }
   </script>
 </body>
