@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catalogue - BNZ</title>
+  <title>Catalogue Streaming</title>
   <style>
     body {
       margin: 0;
@@ -58,36 +58,55 @@
       padding: 0 2rem 2rem;
     }
 
-    .card {
+    .movieimg {
       background: #222;
       border-radius: 15px;
       overflow: hidden;
       box-shadow: 0 5px 15px rgba(0,0,0,0.5);
       transition: transform 0.3s;
-    }
-
-    .card:hover {
-      transform: scale(1.05);
-    }
-
-    .card img {
-      width: 100%;
-      height: 280px;
-      object-fit: cover;
-    }
-
-    .card .info {
-      padding: 1rem;
       text-align: center;
     }
 
-    .card .info h3 {
-      margin: 0.5rem 0;
+    .movieimg:hover {
+      transform: scale(1.05);
     }
 
-    .card .info p {
+    .myimages {
+      position: relative;
+    }
+
+    .movieimg img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      border-bottom: 2px solid #333;
+    }
+
+    .favorite-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 1.2rem;
+      background: rgba(0,0,0,0.6);
+      border-radius: 50%;
+      padding: 5px;
+    }
+
+    .movieimg h2 {
+      margin: 0.5rem 0;
+      font-size: 1.1rem;
+    }
+
+    .movieimg span {
       color: #aaa;
       font-size: 0.9rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .rating-stars {
+      margin-bottom: 1rem;
+      height: 15px; /* espace réservé si tu veux ajouter des étoiles */
     }
   </style>
 </head>
@@ -100,60 +119,168 @@
   <!-- Filtres -->
   <div class="filters">
     <button class="active" onclick="filterMovies('Tous')">Tous</button>
-    <button onclick="filterMovies('Sci-Fi')">Sci-Fi</button>
-    <button onclick="filterMovies('Action')">Action</button>
     <button onclick="filterMovies('Romance')">Romance</button>
-    <button onclick="filterMovies('Fantasy')">Fantasy</button>
+    <button onclick="filterMovies('Science-Fiction')">Science-Fiction</button>
+    <button onclick="filterMovies('Animation')">Animation</button>
+    <button onclick="filterMovies('Action')">Action</button>
+    <button onclick="filterMovies('Thriller')">Thriller</button>
+    <button onclick="filterMovies('Aventure')">Aventure</button>
+    <button onclick="filterMovies('Comédie')">Comédie</button>
+    <button onclick="filterMovies('Fantastique')">Fantastique</button>
   </div>
 
   <!-- Grille -->
   <div class="grid" id="movieGrid">
-    <div class="card" data-genre="Sci-Fi">
-      <img src="https://image.tmdb.org/t/p/w500/qmDpIHrmpJINaRKAfWQfftjCdyi.jpg" alt="Inception">
-      <div class="info">
-        <h3>Inception</h3>
-        <p>Sci-Fi</p>
+
+    <!-- Films -->
+    <div class="movieimg" data-genre="Romance">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="thegorge.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/1Np511QIqSs0s3iDpWXPbuY4o5o.jpg" alt="The Gorge"></a>
       </div>
+      <h2>The Gorge</h2>
+      <span>Romance</span>
+      <div class="rating-stars"></div>
     </div>
 
-    <div class="card" data-genre="Sci-Fi">
-      <img src="https://image.tmdb.org/t/p/w500/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg" alt="Interstellar">
-      <div class="info">
-        <h3>Interstellar</h3>
-        <p>Sci-Fi</p>
+    <div class="movieimg" data-genre="Science-Fiction">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="interstellar.html"><img src="images/interstellar.jpg" alt="Interstellar"></a>
       </div>
+      <h2>Interstellar</h2>
+      <span>Science-Fiction</span>
+      <div class="rating-stars"></div>
     </div>
 
-    <div class="card" data-genre="Action">
-      <img src="https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg" alt="The Dark Knight">
-      <div class="info">
-        <h3>The Dark Knight</h3>
-        <p>Action</p>
+    <div class="movieimg" data-genre="Animation">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="yourname.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zyHjvVRgKOt9wgVx4ikp2kGArGF.jpg" alt="Your Name"></a>
       </div>
+      <h2>Your Name</h2>
+      <span>Animation</span>
+      <div class="rating-stars"></div>
     </div>
 
-    <div class="card" data-genre="Romance">
-      <img src="https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg" alt="La La Land">
-      <div class="info">
-        <h3>La La Land</h3>
-        <p>Romance</p>
+    <div class="movieimg" data-genre="Animation">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="carsun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4P0NYzeNFqddAjllEICPAbd0iiu.jpg" alt="Cars"></a>
       </div>
+      <h2>Cars : Quatre roues</h2>
+      <span>Animation</span>
+      <div class="rating-stars"></div>
     </div>
 
-    <div class="card" data-genre="Fantasy">
-      <img src="https://image.tmdb.org/t/p/w500/jRXYjXNq0Cs2TcJjLkki24MLp7u.jpg" alt="Avatar">
-      <div class="info">
-        <h3>Avatar</h3>
-        <p>Fantasy</p>
+    <div class="movieimg" data-genre="Action">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="matrix.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pEoqbqtLc4CcwDUDqxmEDSWpWTZ.jpg" alt="Matrix"></a>
       </div>
+      <h2>Matrix</h2>
+      <span>Action</span>
+      <div class="rating-stars"></div>
     </div>
 
-    <div class="card" data-genre="Action">
-      <img src="https://image.tmdb.org/t/p/w500/ty8TGRuvJLPUmAR1H1nRIsgwvim.jpg" alt="Gladiator">
-      <div class="info">
-        <h3>Gladiator</h3>
-        <p>Action</p>
+    <div class="movieimg" data-genre="Thriller">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="tenet.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/cRDUa63MeEpOWdqZeXqReDz7KTx.jpg" alt="Tenet"></a>
       </div>
+      <h2>Tenet</h2>
+      <span>Thriller</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Aventure">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="avatarun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7N8L80OaG8EBTDdRBjGqT8PBzCM.jpg" alt="Avatar"></a>
+      </div>
+      <h2>Avatar</h2>
+      <span>Aventure</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Action">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="fastandftokyodrift.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pji0QbsaA6lhk1eQc2EfeBsXU4y.jpg" alt="F&F Tokyo Drift"></a>
+      </div>
+      <h2>Fast & Furious : Tokyo Drift</h2>
+      <span>Action</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Animation">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="suzume.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/hOJYwkVSgXtE3BJFN0bRPKdLJLj.jpg" alt="Suzume"></a>
+      </div>
+      <h2>Suzume</h2>
+      <span>Animation</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Action">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="fun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/2crZHK9muPUcgHsiwoW9xb6421j.jpg" alt="F1 Le Film"></a>
+      </div>
+      <h2>F1® Le Film</h2>
+      <span>Action</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Science-Fiction">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="duneun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/anDuUygHsWrbxqOEQ8H1ZkYTaL9.jpg" alt="Dune"></a>
+      </div>
+      <h2>Dune : Première partie</h2>
+      <span>Science-Fiction</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Comédie">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="themask.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/5OBK9sksRSyrwrcMtxpdxql75Sw.jpg" alt="The Mask"></a>
+      </div>
+      <h2>The Mask</h2>
+      <span>Comédie</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Science-Fiction">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="retourverslefuturun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gggA0GBaFumhfZzRxOgyRk5Zob5.jpg" alt="Retour vers le futur"></a>
+      </div>
+      <h2>Retour vers le futur</h2>
+      <span>Science-Fiction</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Fantastique">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="detpikachu.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gsoZQqBX04yXe5nXNKyILy9fuuF.jpg" alt="Détective Pikachu"></a>
+      </div>
+      <h2>Pokémon Détective Pikachu</h2>
+      <span>Fantastique</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Comédie">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="charliechocolaterie.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/eLNqcXXz0V2FdjyViR8o4uCTd9n.jpg" alt="Charlie et la Chocolaterie"></a>
+      </div>
+      <h2>Charlie et la Chocolaterie</h2>
+      <span>Comédie</span>
+      <div class="rating-stars"></div>
     </div>
   </div>
 
@@ -163,7 +290,7 @@
       buttons.forEach(btn => btn.classList.remove('active'));
       event.target.classList.add('active');
 
-      const movies = document.querySelectorAll('.card');
+      const movies = document.querySelectorAll('.movieimg');
       movies.forEach(movie => {
         if (genre === 'Tous' || movie.dataset.genre === genre) {
           movie.style.display = 'block';
