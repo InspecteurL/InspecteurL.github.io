@@ -1,1436 +1,304 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Feuilleter</title>
-    <link rel="icon" href="BNZ.jpg" type="image/x-icon">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body onload="generateOptions(); loadEpisode(0); updateProgressBar();">
-    
-
-    <!-- Modale de lecture d'épisode -->
-    <div id="episodePopup" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeBtn">&times;</span>
-            <h1 id="episodeTitle">Épisode 1</h1>
-            <iframe id="videoPlayer" src="" allowfullscreen></iframe>
-            <div class="controls">
-                <button onclick="previousEpisode()">Épisode précédent</button>
-                <button onclick="nextEpisode()">Épisode suivant</button>
-                <select id="episodeSelector" onchange="loadEpisode(this.value)"></select>
-            </div>
-        </div>
-    </div>
-
-
-
-    <!-- Barre de navigation -->
-    <ul>
-        <li><a class="active" href="index.html">Home</a></li>
-        <li><a href="mes-amis.html">Mes Amis</a></li>
-        <li><a href="compte.html">Votre Compte</a></li>
-        <li><a href="lecteurtest.html">Donées Animes</a></li>
-        <div class="searchbar" style="text-align: center; margin: 20px;">
-    <input type="text" id="searchInput" class="search-large" placeholder="🔍 Rechercher un anime...">
-
-</div>
-    </ul>
-<div id="slider-wrapper" style="position: relative;">
-<div id="slider">  
-<div class="slides">  
-  <img src="https://a-static.besthdwallpaper.com/call-of-the-night-wallpaper-3554x1999-101681_53.jpg" width="100%" />
- </div>
-  
-  <div class="slides">  
-  <img src="https://c4.wallpaperflare.com/wallpaper/293/1013/173/cyberpunk-edgerunners-lucy-edgerunners-cyberpunk-hd-wallpaper-preview.jpg" width="100%" />
-</div>
-  
-  <div class="slides">  
-  <img src="https://www.baltana.com/files/wallpapers-30/Death-Parade-Wallpaper-HD-108220.jpg" width="100%" />
-</div> 
-  
-   <div class="slides">  
-  <img src="https://wallpapers.com/images/featured/erased-ruo8n2tf6sfg6s23.jpg" width="100%" />
-</div> 
-  
-<div class="slides">  
-  <img src="https://www.pixelstalk.net/wp-content/uploads/images6/Steins-Gate-HD-Wallpaper-Free-download.png" width="100%" />
-</div>  
-  
-  <div id="dot"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
- </div>
- <div id="slide-info" style="text-align: center; color: white; padding: 20px;">
-  <h2 id="slide-title"></h2>
-  <p id="slide-synopsis" style="max-width: 800px; margin: 0 auto;"></p>
-  <button id="slide-button" style="padding: 10px 20px; font-size: 16px; border-radius: 10px; background: red; color: white; border: none; cursor: pointer;"></button>
-</div>
-</div>
-
-<!-- POPUP AD-BLOCK -->
-<div id="adblock-message" style="display:none; position:fixed; bottom:20px; right:20px; background:#fff; border:1px solid #ccc; padding:15px; z-index:9999; box-shadow:0 0 10px rgba(0,0,0,0.1);">
-  <p>Vous semblez ne pas avoir de bloqueur de pub... 🤔 Pour une navigation plus propre, installez une extension adaptée à votre navigateur !</p>
-  <div id="extension-link" style="margin-top:10px;"></div>
-</div>
-
-<script>
-  const hasSeenPopup = localStorage.getItem("adblockPopupSeen");
-
-  if (!hasSeenPopup) {
-    const bait = document.createElement("div");
-    bait.className = "adsbox";
-    bait.style.height = "1px";
-    bait.style.position = "absolute";
-    bait.style.top = "-1000px";
-    document.body.appendChild(bait);
-
-    setTimeout(() => {
-      if (bait.offsetHeight) {
-        const ua = navigator.userAgent;
-        const messageBox = document.getElementById("adblock-message");
-        const linkBox = document.getElementById("extension-link");
-        let htmlContent = "";
-
-        if (ua.includes("Firefox")) {
-          htmlContent = `
-            <a href="https://addons.mozilla.org/en-US/firefox/addon/ghostery/" target="_blank" style="color:blue;">Installer Ghostery pour Firefox</a>
-          `;
-        } else if (ua.includes("Edg")) {
-          htmlContent = `
-            <a href="https://microsoftedge.microsoft.com/addons/detail/ublock-origin/cjpalhdlnbpafiamejdnhcphjbkeiagm" target="_blank" style="color:blue;">Installer uBlock Origin pour Edge</a>
-          `;
-        } else if (ua.includes("Chrome") && !ua.includes("Edg")) {
-          htmlContent = `
-            <a href="https://chromewebstore.google.com/detail/dkagmnnkfinalebballociekdnlaniem?utm_source=item-share-cb" style="color:blue;">Installer AdBlock pour Chrome</a><br>
-            <a href="https://chromewebstore.google.com/detail/ajjpfpfbgjcgghkgbcgmifkonjdldgkh?utm_source=item-share-cb" style="color:blue;">Installer Popup Blocker pour Chrome</a>
-          `;
-        } else if (ua.includes("Safari") && !ua.includes("Chrome")) {
-          htmlContent = `
-            <a href="https://support.apple.com/en-us/102524" target="_blank" style="color:blue;">Installer un bloqueur pour Safari</a>
-          `;
-        } else {
-          htmlContent = `<a href="https://ublockorigin.com/" target="_blank" style="color:blue;">Voir les extensions disponibles</a>`;
-        }
-
-        linkBox.innerHTML = htmlContent;
-        messageBox.style.display = "block";
-        localStorage.setItem("adblockPopupSeen", "true");
-      }
-      bait.remove();
-    }, 500);
-  }
-</script>
-
-
-    <!-- Section des recommandations -->
-    <section class="moviesection">
-        <h2>Nos Recommandations Animes</h2>
-        <hr class="rounded">
-        <div class="moviecontainer" id="movies">
-            <!-- Chaque bloc d'anime -->
-            <div class="movieimg" data-title="Erased" data-genre="Seinen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="animera.html"><img id="erased" alt="Erased"></a>
-    </div>
-    <h2>Erased</h2>
-    <span>Seinen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Steins ; Gate" data-genre="Seinen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="steinsgate.html"><img id="steinsgate" alt="Steins ; Gate"></a>
-    </div>
-    <h2>Steins ; Gate</h2>
-    <span>Seinen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Call Of The Night" data-genre="Shonen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="cotn.html"><img id="cotn" alt="Call Of The Night"></a>
-    </div>
-    <h2>Call Of The Night</h2>
-    <span>Shonen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Cyberpunk Edgerunners" data-genre="Seinen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="cyber.html"><img id="cyberpunk" alt="Cyberpunk Edgerunners"></a>
-    </div>
-    <h2>Cyberpunk Edgerunners</h2>
-    <span>Seinen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Platinum End" data-genre="Shonen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="platinum.html"><img id="platinumend" alt="Platinum End"></a>
-    </div>
-    <h2>Platinum End</h2>
-    <span>Shonen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Hell's Paradise" data-genre="Shonen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="hell.html"><img id="hellsparadise" alt="Hell's Paradise"></a>
-    </div>
-    <h2>Hell's Paradise</h2>
-    <span>Shonen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Sakamoto Desu Ga" data-genre="Shonen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="sakamotodesu.html"><img id="sakamoto" alt="Sakamoto Desu Ga"></a>
-    </div>
-    <h2>Sakamoto Desu Ga</h2>
-    <span>Shonen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Death Note" data-genre="Shonen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="dnote.html"><img id="deathnote" alt="Death Note"></a>
-    </div>
-    <h2>Death Note</h2>
-    <span>Shonen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Oshi no Ko" data-genre="Seinen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="oshinoko.html"><img id="oshinoko" alt="Oshi no Ko"></a>
-    </div>
-    <h2>Oshi no Ko</h2>
-    <span>Seinen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Death Parade" data-genre="Seinen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="deathparade.html"><img id="deathparade" alt="Death Parade"></a>
-    </div>
-    <h2>Death Parade</h2>
-    <span>Seinen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Blue Period" data-genre="Shonen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="blueperiod.html"><img id="blueperiod" alt="Blue Period"></a>
-    </div>
-    <h2>Blue Period</h2>
-    <span>Shonen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Steins ; Gate 0" data-genre="Seinen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="steinsgatezero.html"><img id="steinsgate0" alt="Steins ; Gate 0"></a>
-    </div>
-    <h2>Steins ; Gate 0</h2>
-    <span>Seinen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Jujutsu Kaisen" data-genre="Shonen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="jjk.html"><img id="jujutsukaisen" alt="Jujutsu Kaisen"></a>
-    </div>
-    <h2>Jujutsu Kaisen</h2>
-    <span>Shonen</span>
-    <div class="rating-stars"></div>
-</div>
-<div class="movieimg" data-title="Dragon Ball" data-genre="Shonen">
-    <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="db.html"><img id="dragonball" alt="Dragon Ball"></a>
-    </div>
-    <h2>Dragon Ball</h2>
-    <span>Shonen</span>
-    <div class="rating-stars"></div>
-</div>
-        </div>
-  <h1 class="line">Nos Recommandations Films</h1>
-<div class="moviecontainer" id="film-movies">
-
-    <div class="movieimg" data-title="The Gorge" data-genre="Romance">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="thegorge.html"><img id="thegorge" src="https://media.themoviedb.org/t/p/w440_and_h660_face/1Np511QIqSs0s3iDpWXPbuY4o5o.jpg" alt="The Gorge"></a>
-        </div>
-        <h2>The Gorge</h2>
-        <span>Romance</span>
-        <div class="rating-stars"></div>
-    </div>
-
-    <div class="movieimg" data-title="Interstellar" data-genre="Science-Fiction">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="interstellar.html"><img id="interstellar" src="images/interstellar.jpg" alt="Interstellar"></a>
-        </div>
-        <h2>Interstellar</h2>
-        <span>Science-Fiction</span>
-        <div class="rating-stars"></div>
-    </div>
-
-    <div class="movieimg" data-title="Your Name" data-genre="Animation">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="yourname.html"><img id="yourname" src="https://media.themoviedb.org/t/p/w440_and_h660_face/zyHjvVRgKOt9wgVx4ikp2kGArGF.jpg" alt="Your Name"></a>
-        </div>
-        <h2>Your Name</h2>
-        <span>Animation</span>
-        <div class="rating-stars"></div>
-    </div>
-
-    <div class="movieimg" data-title="Cars : Quatre roues " data-genre="Animation">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="carsun.html"><img id="carsun" src="https://media.themoviedb.org/t/p/w440_and_h660_face/4P0NYzeNFqddAjllEICPAbd0iiu.jpg" alt="Cars"></a>
-        </div>
-        <h2>Cars : Quatre roues </h2>
-        <span>Animation</span>
-        <div class="rating-stars"></div>
-    </div>
-
-    <div class="movieimg" data-title="Matrix" data-genre="Action">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="matrix.html"><img id="matrix" src="https://media.themoviedb.org/t/p/w440_and_h660_face/pEoqbqtLc4CcwDUDqxmEDSWpWTZ.jpg" alt="Matrix"></a>
-        </div>
-        <h2>Matrix</h2>
-        <span>Action</span>
-        <div class="rating-stars"></div>
-    </div>
-
-       <div class="movieimg" data-title="Tenet" data-genre="Thriller">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="tenet.html"><img id="tenet" src="https://media.themoviedb.org/t/p/w440_and_h660_face/cRDUa63MeEpOWdqZeXqReDz7KTx.jpg" alt="tenet"></a>
-        </div>
-        <h2>Tenet</h2>
-        <span>Thriller</span>
-        <div class="rating-stars"></div>
-    </div>
-
-       <div class="movieimg" data-title="Avatar" data-genre="Aventure">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="avatarun.html"><img id="avatarun" src="https://media.themoviedb.org/t/p/w440_and_h660_face/7N8L80OaG8EBTDdRBjGqT8PBzCM.jpg" alt="Avatar"></a>
-        </div>
-        <h2>Avatar</h2>
-        <span>Aventure</span>
-        <div class="rating-stars"></div>
-    </div>
-
-       <div class="movieimg" data-title="Fast & Furious : Tokyo Drift" data-genre="Action">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="fastandftokyodrift.html"><img id="f&ftokyodrift" src="https://media.themoviedb.org/t/p/w440_and_h660_face/pji0QbsaA6lhk1eQc2EfeBsXU4y.jpg" alt="f&f tokyo drift"></a>
-        </div>
-        <h2>Fast & Furious : Tokyo Drift</h2>
-        <span>Action</span>
-        <div class="rating-stars"></div>
-    </div>
-
-       <div class="movieimg" data-title="Suzume" data-genre="Animation">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="suzume.html"><img id="suzume" src="https://media.themoviedb.org/t/p/w440_and_h660_face/hOJYwkVSgXtE3BJFN0bRPKdLJLj.jpg" alt="Suzume"></a>
-        </div>
-        <h2>Suzume</h2>
-        <span>Animation</span>
-        <div class="rating-stars"></div>
-    </div>
-
-       <div class="movieimg" data-title="F1® Le Film" data-genre="Action">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="fun.html"><img id="fun" src="https://media.themoviedb.org/t/p/w440_and_h660_face/2crZHK9muPUcgHsiwoW9xb6421j.jpg" alt="Fun"></a>
-        </div>
-        <h2>F1® Le Film</h2>
-        <span>Action</span>
-        <div class="rating-stars"></div>
-    </div>
-
-       <div class="movieimg" data-title="Dune" data-genre="Science-Fiction">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="duneun"><img id="duneun" src="https://media.themoviedb.org/t/p/w440_and_h660_face/anDuUygHsWrbxqOEQ8H1ZkYTaL9.jpg" alt="duneun"></a>
-        </div>
-        <h2>Dune : Première partie</h2>
-        <span>Science-Fiction</span>
-        <div class="rating-stars"></div>
-    </div>
-
-       <div class="movieimg" data-title="The Mask" data-genre="Comédie">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="themask.html"><img id="themask" src="https://media.themoviedb.org/t/p/w440_and_h660_face/5OBK9sksRSyrwrcMtxpdxql75Sw.jpg" alt="Themask"></a>
-        </div>
-        <h2>The Mask</h2>
-        <span>Comédie</span>
-        <div class="rating-stars"></div>
-    </div>
-
-       <div class="movieimg" data-title="Retour vers le futur" data-genre="Science-Fiction">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="retourverslefuturun.html"><img id="retourverslefutur" src="https://media.themoviedb.org/t/p/w440_and_h660_face/gggA0GBaFumhfZzRxOgyRk5Zob5.jpg" alt="Retourverslefutur"></a>
-        </div>
-        <h2>Retour vers le futur</h2>
-        <span>Science-Fiction</span>
-        <div class="rating-stars"></div>
-    </div>
-
-       <div class="movieimg" data-title="Detective Pikachu" data-genre="Fantastique">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="detpikachu.html"><img id="detpikachu" src="https://media.themoviedb.org/t/p/w440_and_h660_face/gsoZQqBX04yXe5nXNKyILy9fuuF.jpg" alt="detpikachu"></a>
-        </div>
-        <h2>Pokémon Détective Pikachu</h2>
-        <span>Fantastique</span>
-        <div class="rating-stars"></div>
-    </div>
-
-           <div class="movieimg" data-title="Charlie et la Chocolaterie" data-genre="Comédie">
-        <div class="myimages">
-            <span class="favorite-badge">⭐</span>
-            <a href="charliechocolaterie.html"><img id="charliechoco" src="https://media.themoviedb.org/t/p/w440_and_h660_face/eLNqcXXz0V2FdjyViR8o4uCTd9n.jpg" alt="charliechoco"></a>
-        </div>
-        <h2>Charlie et la Chocolaterie</h2>
-        <span>Comédie</span>
-        <div class="rating-stars"></div>
-    </div>
-
-</div>
-
-    </section>
-  
-
-<div style="text-align: center; margin: 30px;">
-    <button onclick="exportAnimeData()">📤 Exporter mes données</button>
-</div>
-<div style="text-align: center; margin: 10px;">
-    <input type="file" id="importFile" accept=".json">
-</div>
-
-
-    <!-- Menu contextuel personnalisé -->
-    <div class="context-menu" id="context-menu">
-        <div class="context-menu-item" onclick="handleFavorite()">⭐ Ajouter aux favoris</div>
-<div class="context-menu-item" onclick="handleRating()">📝 Noter</div>
-        <div class="context-menu-item" data-status="En cours">En cours</div>
-        <div class="context-menu-item" data-status="Terminé">Terminé</div>
-        <div class="context-menu-item" data-status="En Pause">En Pause</div>
-        <div class="context-menu-item" data-status="Abandonné">Abandonné</div>
-        <div class="context-menu-item" data-status="Envie de voir">Envie de voir</div>
-    </div>
-
-    <!-- Barre de progression -->
-    <div style="width: 100%; background: #ccc; height: 20px; margin-top: 20px;">
-        <div id="progress-bar" style="height: 100%; width: 0%; background: red;"></div>
-    </div>
-
-
-
-<div class="filters" style="text-align: center; margin: 20px;">
-    <select id="genreFilter">
-        <option value="">Tous les genres</option>
-        <option value="Shonen">Shonen</option>
-        <option value="Seinen">Seinen</option>
-    </select>
-    <select id="statusFilter">
-        <option value="">Tous les statuts</option>
-        <option value="En cours">En cours</option>
-        <option value="Terminé">Terminé</option>
-        <option value="En Pause">En Pause</option>
-        <option value="Abandonné">Abandonné</option>
-        <option value="Envie de voir">Envie de voir</option>
-    </select>
-</div>
-
-
-    <style>
-        /* Import de la police */
-@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-
-/* 🌌 Style général */
-body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(to bottom, #000000 0%, #000066 100%);
-    overflow-x: hidden;
-    margin: 0;
-    padding: 0;
-}
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
-@keyframes fade{
-  from{
-    opacity:0.4;
-  }
-  to{
-    opacity:1;
-  }
-}
-
-#slider {
-  position: relative;
-}
-
-.slides {
-  position: relative;
-  overflow: hidden;
-  animation-name: fade;
-  animation-duration: 1s;
-  display: none;
-}
-
-.slides.active {
-  display: block;
-}
-
-.slides img {
-  width: 100%;
-  height: 500px;
-  object-fit: cover;
-  display: block;
-}
-
-.slides::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) -10%,    /* transparent jusqu'à 40% */
-    rgba(0, 0, 0, 0.85) 100% /* noir très sombre en bas */
-  );
-  pointer-events: none;
-  z-index: 1;
-}
-
-
-
-#slide-info {
-  position: absolute;
-  top: 50%;
-  left: 5%;
-  transform: translateY(-50%);
-  z-index: 2; /* au-dessus du dégradé */
-  color: white;
-  text-align: left;
-  max-width: 45%;
-  background: rgba(0, 0, 0, 0.65);
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 0 25px black;
-}
-
-#slide-info h2 {
-  font-size: 3.4em;
-  margin-bottom: 25px;
-  font-weight: bold;
-}
-
-#slide-info p {
-  font-size: 1.8em;
-  line-height: 1.7;
-  margin-bottom: 30px;
-}
-
-#slide-button {
-  padding: 20px 40px;
-  font-size: 1.6em;
-  border-radius: 15px;
-  background: red;
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-#slide-button:hover {
-  background: darkred;
-}
-
-
-
-img{
-  width:100%;
-}
-
-#dot{
-  margin:0 auto;
-  text-align:center;
-}
-.dot{
-  display:inline-block;
-  border-radius:50%;
-  background:#d3d3d3;
-  padding:8px;
-  margin:10px 5px;
-}
-
-.active{
-  background:black;
-}
-
-@media (max-width:567px){
-  #slider{
-    width:100%;
-
-  }
-}
-
-#heading{
-  display:block;
-  text-align:center;
-  font-size:2em;
-  margin:10px 0px;
-
-}
-
-/* 🖼️ Image de fond */
-.image-wrapper {
-  position: relative;
-  max-height: 620px;
-  overflow: hidden;
-}
-
-#berserkimage {
-  width: 100%;
-  height: auto;
-  max-height: 620px;
-  object-fit: cover;
-  display: block;
-}
-
-.gradient-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  pointer-events: none;
-  background-image: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 1) calc(-510px + 50vw),
-    rgba(0, 0, 0, 1) 50%,
-    transparent 100%
-  );
-  background-size: cover;
-}
-
-
-/* 🧭 Navigation */
-ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background-color: transparent;
-  font-size: 1.6em; /* ← agrandit le texte */
-}
-
-li {
-  float: left;
-}
-
-li a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 20px 24px; /* ← plus d'espace */
-  text-decoration: none;
-  transition: background 0.3s;
-}
-
-li a:hover {
-  background-color: red;
-  border-radius: 10px;
-}
-
-
-/* 🎬 Section animes */
-
-
-hr.rounded {
-    border-top: 3px solid red;
-    border-radius: 5px;
-}
-
-.movieimg h2,
-.movieimg span,
-.rating-stars {
-    text-align: center;
-}
-
-.moviesection {
-    max-width: 1300px;
-    margin: 0 auto;
-    padding: 0 20px;
-    color: white;
-    text-transform: uppercase;
-}
-
-.moviecontainer {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    padding: 40px 20px;
-    max-width: 1300px;
-    margin: 0 auto;
-    box-sizing: border-box;
-    justify-content: center;
-    justify-items: center;
-    pointer-events: none !important; /* désactive les hover sur les espaces vides */
-}
-.movieimg {
-    width: 300px;
-    text-align: center;
-    color: white;
-    position: relative;
-    transition: transform 0.3s ease;
-    transform: scale(1);
-    pointer-events: auto !important; /* ← très important */
-    will-change: transform;
-}
-
-
-.movieimg:hover {
-  z-index: 1;
-}
-
-.movieimg:hover > .myimages {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px red;
-  border: 3px solid #0385fe;
-}
-
-.myimages {
-  transition: transform 0.3s ease;
-}
-
-
-.movieimg .myimages {
-    width: 100%;
-    height: 450px;
-    overflow: hidden;
-    border-radius: 10px;
-    background-color: #000;
-    position: relative;
-}
-
-.movieimg .myimages img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
-    display: block;
-}
-
-
-
-.movieimg:hover .myimages img {
-  box-shadow: 0 0 20px red;
-  border: 3px solid #0385fe;
-}
-
-
-
-
-
-/* 🎨 Menu contextuel */
-.context-menu {
-    display: none;
-    position: absolute;
-    background: #fff;
-    border: 1px solid #ccc;
-    z-index: 1000;
-}
-.context-menu-item {
-    padding: 8px;
-    cursor: pointer;
-}
-.context-menu-item:hover {
-    background: #eee;
-}
-
-/* 🎥 Modale vidéo */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 10;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-    padding-top: 60px;
-}
-.modal-content {
-    background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-    margin: 5% auto;
-    padding: 20px;
-    width: 80%;
-    text-align: center;
-    color: white;
-    border-radius: 10px;
-}
-.modal-content h1 {
-    color: white;
-}
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-#videoPlayer {
-    width: 640px;
-    height: 360px;
-    display: block;
-    margin: 20px auto;
-}
-.controls {
-    text-align: center;
-}
-select {
-    width: 200px;
-    height: 50px;
-    font-size: 16px;
-}
-
-/* 🧭 Carrousel (si utilisé) */
-.wrapper {
-    display: flex;
-    grid-gap: 1em;
-    overflow: hidden;
-    width: 70em;
-}
-.wrapper .inner {
-    display: flex;
-    grid-gap: 1em;
-    transition: all 1s ease-in-out;
-    width: calc(17.5em * 12);
-}
-.card {
-    border-radius: 0.5em;
-    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
-    background-color: navy;
-    width: 17.5em;
-    height: 25em;
-    overflow: hidden;
-}
-.card img {
-    border-top-right-radius: inherit;
-    border-top-left-radius: inherit;
-    display: block;
-    width: 100%;
-    height: 75%;
-    object-fit: cover;
-}
-.card .content {
-    background-color: darkblue;
-    border-bottom-left-radius: inherit;
-    border-bottom-right-radius: inherit;
-    padding: 1em;
-    text-align: center;
-    height: 25%;
-}
-.card .content h1 {
-    color: #fff;
-    font-size: 1.25rem;
-    margin: 0.35em 0;
-}
-.card .content h3 {
-    color: #ccc;
-    font-size: 0.9rem;
-    font-weight: 300;
-    margin: 0.35em 0;
-}
-
-.favorite-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 24px;
-    color: gold;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 50%;
-    padding: 4px;
-    display: none;
-    z-index: 2;
-}
-
-.rating-stars {
-    margin-top: 5px;
-    font-size: 18px;
-    color: gold;
-    text-align: center;
-}
-@media screen and (max-width: 1000px) {
-    #berserkimage {
-        width: 100%;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalogue Streaming</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #111, #000);
+      color: white;
     }
-    ul {
-        width: 100%;
-    }
-}
 
-@media screen and (max-width: 600px) {
-    .moviecontainer {
-        grid-template-columns: 1fr;
-        padding: 20px;
+    header {
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: #ccc;
+    }
+
+    /* Filtres */
+    .filters {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 2rem;
+    }
+
+    .filters button {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 20px;
+      background: #333;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .filters button.active,
+    .filters button:hover {
+      background: crimson;
+    }
+
+    /* Grille */
+    .grid {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      padding: 0 2rem 2rem;
     }
 
     .movieimg {
-        width: 100%;
-        max-width: 300px;
+      background: #222;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      transition: transform 0.3s;
+      text-align: center;
     }
 
-    .movieimg .myimages {
-        height: auto;
-        aspect-ratio: 2 / 3;
+    .movieimg:hover {
+      transform: scale(1.05);
     }
 
-    .movieimg .myimages img {
-        height: 100%;
-        width: 100%;
-        object-fit: cover;
+    .myimages {
+      position: relative;
     }
-}
 
+    .movieimg img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      border-bottom: 2px solid #333;
+    }
 
-.search-large {
-  padding: 14px 20px;
-  width: 400px;
-  font-size: 1.4em;
-  border-radius: 12px;
-  border: none;
-  outline: none;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-}
+    .favorite-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 1.2rem;
+      background: rgba(0,0,0,0.6);
+      border-radius: 50%;
+      padding: 5px;
+    }
 
+    .movieimg h2 {
+      margin: 0.5rem 0;
+      font-size: 1.1rem;
+    }
 
+    .movieimg span {
+      color: #aaa;
+      font-size: 0.9rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
 
-    </style>
-    <!-- Script principal -->
-    <script src="script.js" defer></script>
-    <script>
-        // 🎞️ Liste des épisodes
-const episodes = [
-    'https://video.sibnet.ru/shell.php?videoid=4906990&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4906993&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4906996&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907001&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907002&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907007&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907009&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907013&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907016&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907019&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907023&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907030&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907033&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907038&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907043&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907046&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907049&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907053&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907057&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907062&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907064&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907070&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907073&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907077&share=1'
-];
+    .rating-stars {
+      margin-bottom: 1rem;
+      height: 15px; /* espace réservé si tu veux ajouter des étoiles */
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎬 Catalogue Streaming</h1>
+    <p>Découvrez nos derniers films et séries selon vos envies</p>
+  </header>
 
-let currentEpisode = 0;
+  <!-- Filtres -->
+  <div class="filters">
+    <button class="active" onclick="filterMovies('Tous')">Tous</button>
+    <button onclick="filterMovies('Romance')">Romance</button>
+    <button onclick="filterMovies('Science-Fiction')">Science-Fiction</button>
+    <button onclick="filterMovies('Animation')">Animation</button>
+    <button onclick="filterMovies('Action')">Action</button>
+    <button onclick="filterMovies('Thriller')">Thriller</button>
+    <button onclick="filterMovies('Aventure')">Aventure</button>
+    <button onclick="filterMovies('Comédie')">Comédie</button>
+    <button onclick="filterMovies('Fantastique')">Fantastique</button>
+  </div>
 
-function loadEpisode(index) {
-  const video = document.getElementById('videoPlayer');
-  video.src = episodes[index];
-  document.getElementById('episodeTitle').innerText = 'Épisode ' + (parseInt(index) + 1);
-  document.getElementById('episodeSelector').value = index;
-  currentEpisode = parseInt(index);
-  markEpisodeAsViewed(index); // ✅ ici !
-}
+  <!-- Grille -->
+  <div class="grid" id="movieGrid">
 
+    <!-- Films -->
+    <div class="movieimg" data-genre="Romance">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="thegorge.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/1Np511QIqSs0s3iDpWXPbuY4o5o.jpg" alt="The Gorge"></a>
+      </div>
+      <h2>The Gorge</h2>
+      <span>Romance</span>
+      <div class="rating-stars"></div>
+    </div>
 
-function nextEpisode() {
-  if (currentEpisode < episodes.length - 1) {
-    loadEpisode(currentEpisode + 1);
-  }
-}
+    <div class="movieimg" data-genre="Science-Fiction">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="interstellar.html"><img src="images/interstellar.jpg" alt="Interstellar"></a>
+      </div>
+      <h2>Interstellar</h2>
+      <span>Science-Fiction</span>
+      <div class="rating-stars"></div>
+    </div>
 
-function previousEpisode() {
-  if (currentEpisode > 0) {
-    loadEpisode(currentEpisode - 1);
-  }
-}
+    <div class="movieimg" data-genre="Animation">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="yourname.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zyHjvVRgKOt9wgVx4ikp2kGArGF.jpg" alt="Your Name"></a>
+      </div>
+      <h2>Your Name</h2>
+      <span>Animation</span>
+      <div class="rating-stars"></div>
+    </div>
 
-function generateOptions() {
-  const selector = document.getElementById('episodeSelector');
-  selector.innerHTML = '';
-  for (let i = 0; i < episodes.length; i++) {
-    const option = document.createElement('option');
-    option.value = i;
-    option.text = 'Épisode ' + (i + 1);
-    selector.appendChild(option);
-  }
-}
-function markEpisodeAsViewed(index) {
-  let viewedEpisodes = JSON.parse(localStorage.getItem('viewedEpisodes')) || [];
-  if (!viewedEpisodes.includes(index)) {
-    viewedEpisodes.push(index);
-    localStorage.setItem('viewedEpisodes', JSON.stringify(viewedEpisodes));
-  }
-  updateProgressBar();
-}
+    <div class="movieimg" data-genre="Animation">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="carsun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4P0NYzeNFqddAjllEICPAbd0iiu.jpg" alt="Cars"></a>
+      </div>
+      <h2>Cars : Quatre roues</h2>
+      <span>Animation</span>
+      <div class="rating-stars"></div>
+    </div>
 
+    <div class="movieimg" data-genre="Action">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="matrix.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pEoqbqtLc4CcwDUDqxmEDSWpWTZ.jpg" alt="Matrix"></a>
+      </div>
+      <h2>Matrix</h2>
+      <span>Action</span>
+      <div class="rating-stars"></div>
+    </div>
 
-function updateProgressBar() {
-  const totalEpisodes = episodes.length;
-  const viewedEpisodes = JSON.parse(localStorage.getItem('viewedEpisodes')) || [];
-  const percentage = (viewedEpisodes.length / totalEpisodes) * 100;
-  document.getElementById("progress-bar").style.width = percentage + '%';
-}
+    <div class="movieimg" data-genre="Thriller">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="tenet.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/cRDUa63MeEpOWdqZeXqReDz7KTx.jpg" alt="Tenet"></a>
+      </div>
+      <h2>Tenet</h2>
+      <span>Thriller</span>
+      <div class="rating-stars"></div>
+    </div>
 
+    <div class="movieimg" data-genre="Aventure">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="avatarun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7N8L80OaG8EBTDdRBjGqT8PBzCM.jpg" alt="Avatar"></a>
+      </div>
+      <h2>Avatar</h2>
+      <span>Aventure</span>
+      <div class="rating-stars"></div>
+    </div>
 
-function getRandomImage(images) {
-    return images[Math.floor(Math.random() * images.length)];
-}
+    <div class="movieimg" data-genre="Action">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="fastandftokyodrift.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pji0QbsaA6lhk1eQc2EfeBsXU4y.jpg" alt="F&F Tokyo Drift"></a>
+      </div>
+      <h2>Fast & Furious : Tokyo Drift</h2>
+      <span>Action</span>
+      <div class="rating-stars"></div>
+    </div>
 
-function loadRandomPosters() {
-    const posters = {
-        erased: [
-            "https://fr.web.img5.acsta.net/pictures/19/09/20/16/59/1993201.jpg",
-            "https://ih1.redbubble.net/image.546580566.3272/flat,750x,075,f-pad,750x1000,f8f8f8.jpg",
-            "https://m.media-amazon.com/images/I/71kAsfINhVL._AC_UF894,1000_QL80_.jpg"
-        ],
-        steinsgate: [
-            "https://www.nautiljon.com/images/anime/00/76/steins_gate_1967.webp",
-            "https://m.media-amazon.com/images/I/71qP5EqnxXS._AC_UF1000,1000_QL80_.jpg",
-            "https://i.pinimg.com/originals/75/77/bd/7577bd0a1fbcbbb92c38c1293fd5e320.jpg"
-        ],
-        cotn: [
-            "https://fr.web.img3.acsta.net/pictures/22/07/04/14/30/5500974.jpg",
-            "https://m.media-amazon.com/images/M/MV5BMDNkM2QxNmUtYzMyZC00OWJlLTkwMmYtZDg4MzFjNjY5NGIzXkEyXkFqcGdeQXVyMzgxODM4NjM@._V1_FMjpg_UX1000_.jpg",
-            "https://pbs.twimg.com/media/Fy15mftXgAc26oz.jpg"
-        ],
-        cyberpunk: [
-            "https://fr.web.img4.acsta.net/pictures/22/06/09/09/16/1463272.jpg",
-            "https://i.ebayimg.com/images/g/2ncAAOSwqu9jRL9d/s-l1200.jpg",
-            "https://image.tmdb.org/t/p/original/7jSWOc6jWSw5hZ78HB8Hw3pJxuk.jpg"
-        ],
-        platinumend: [
-            "https://fr.web.img2.acsta.net/pictures/21/08/02/11/23/3965735.jpg",
-            "https://m.media-amazon.com/images/I/61TDQm0F7zL._AC_UF1000,1000_QL80_.jpg",
-            "https://media-cache.cinematerial.com/p/500x/8qmq6xtn/platinum-end-japanese-movie-poster.jpg?v=1645981100"
-        ],
-        hellsparadise: [
-            "https://fr.web.img2.acsta.net/pictures/23/03/22/17/10/3028192.jpg",
-            "https://static.printler.com/cache/6/0/c/f/e/b/60cfeb4c9c1a3af0edf10997ec3d7a114c4611e6.jpg",
-            "https://image.tmdb.org/t/p/original/1V9I7SvZbYoMbSvdtnlkkq9SB1k.jpg"
-        ],
-        sakamoto: [
-            "https://fr.web.img5.acsta.net/c_310_420/pictures/20/06/17/16/14/3508304.jpg",
-            "https://media.themoviedb.org/t/p/w440_and_h660_face/qaV8q1PflyGaQTc2sYlS3zxvFdW.jpg",
-            "https://media.themoviedb.org/t/p/w440_and_h660_face/9lqIoqxpB3kBNYjqHRCn6LwChof.jpg"
-        ],
-        deathnote: [
-            "deathposterun.jpg",
-            "deathposterdeux.jpg",
-            "https://static.posters.cz/image/1300/affiches-et-posters/death-note-fate-connects-us-i206600.jpg"
-        ],
-        oshinoko: [
-            "https://www.nautiljon.com/images/more/04/39/364593.webp",
-            "https://fr.web.img3.acsta.net/r_1280_720/pictures/23/03/27/09/50/3692966.jpg",
-            "posteroshi.jpeg"
-        ],
-        deathparade: [
-            "https://fr.web.img6.acsta.net/pictures/19/07/10/15/27/4695755.jpg",
-            "https://ih1.redbubble.net/image.1552907528.2553/flat,750x,075,f-pad,750x1000,f8f8f8.jpg",
-            "https://i.ebayimg.com/images/g/si8AAOSwCA5bbB~F/s-l1200.jpg"
-        ],
-               blueperiod: [
-            "https://res.cloudinary.com/jerrick/image/upload/d_642250b563292b35f27461a7.png,f_jpg,fl_progressive,q_auto,w_1024/6316d798154b25001eb94b4c.png",
-            "https://m.media-amazon.com/images/I/61HUDQkhIyL._AC_UF1000,1000_QL80_.jpg",
-            "https://m.media-amazon.com/images/I/71c2XKLkeLL._AC_UF894,1000_QL80_.jpg"
-        ],
-        steinsgate0: [
-            "https://www.nautiljon.com/images/anime/00/98/steins_gate_0_4689.webp",
-            "https://image.tmdb.org/t/p/original/jbRSUeWu6saPLrBEWei4CdLrAYX.jpg",
-            "https://image.tmdb.org/t/p/original/oysiTMX6kMBCfG7iVRUgATcWiCp.jpg"
-        ],
-        jujutsukaisen: [
-            "https://www.manga-news.com/public/images/dvd/Jujutsu-Kaisen-S2_anime.jpg",
-            "https://static.posters.cz/image/750/affiches-et-posters/jujutsu-kaisen-jujutsushi-i195602.jpg",
-            "https://m.media-amazon.com/images/I/71kBr22ahDL._AC_UF1000,1000_QL80_.jpg"
-        ],
-        dragonball: [
-            "https://fr.web.img2.acsta.net/pictures/22/11/22/14/02/3642167.jpg",
-            "https://m.media-amazon.com/images/I/712mWgOWX+L._AC_UF1000,1000_QL80_.jpg",
-            "https://pbs.twimg.com/media/FfqAe8dagAE7fkJ.jpg"
-        ],
-        interstellar: [
-            "https://media.themoviedb.org/t/p/w440_and_h660_face/1pnigkWWy8W032o9TKDneBa3eVK.jpg",
-            "https://media.themoviedb.org/t/p/w440_and_h660_face/yFWUnIdLuxEB00NXQDSjuzgH0fO.jpg",
-            "https://media.themoviedb.org/t/p/w440_and_h660_face/gio2picfTTTM5KbtlkbRJujE6tJ.jpg"
-            ],
-    };
+    <div class="movieimg" data-genre="Animation">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="suzume.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/hOJYwkVSgXtE3BJFN0bRPKdLJLj.jpg" alt="Suzume"></a>
+      </div>
+      <h2>Suzume</h2>
+      <span>Animation</span>
+      <div class="rating-stars"></div>
+    </div>
 
-    for (const id in posters) {
-        const img = document.getElementById(id);
-        if (img) {
-            img.src = getRandomImage(posters[id]);
+    <div class="movieimg" data-genre="Action">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="fun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/2crZHK9muPUcgHsiwoW9xb6421j.jpg" alt="F1 Le Film"></a>
+      </div>
+      <h2>F1® Le Film</h2>
+      <span>Action</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Science-Fiction">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="duneun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/anDuUygHsWrbxqOEQ8H1ZkYTaL9.jpg" alt="Dune"></a>
+      </div>
+      <h2>Dune : Première partie</h2>
+      <span>Science-Fiction</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Comédie">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="themask.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/5OBK9sksRSyrwrcMtxpdxql75Sw.jpg" alt="The Mask"></a>
+      </div>
+      <h2>The Mask</h2>
+      <span>Comédie</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Science-Fiction">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="retourverslefuturun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gggA0GBaFumhfZzRxOgyRk5Zob5.jpg" alt="Retour vers le futur"></a>
+      </div>
+      <h2>Retour vers le futur</h2>
+      <span>Science-Fiction</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Fantastique">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="detpikachu.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gsoZQqBX04yXe5nXNKyILy9fuuF.jpg" alt="Détective Pikachu"></a>
+      </div>
+      <h2>Pokémon Détective Pikachu</h2>
+      <span>Fantastique</span>
+      <div class="rating-stars"></div>
+    </div>
+
+    <div class="movieimg" data-genre="Comédie">
+      <div class="myimages">
+        <span class="favorite-badge">⭐</span>
+        <a href="charliechocolaterie.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/eLNqcXXz0V2FdjyViR8o4uCTd9n.jpg" alt="Charlie et la Chocolaterie"></a>
+      </div>
+      <h2>Charlie et la Chocolaterie</h2>
+      <span>Comédie</span>
+      <div class="rating-stars"></div>
+    </div>
+  </div>
+
+  <script>
+    function filterMovies(genre) {
+      const buttons = document.querySelectorAll('.filters button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const movies = document.querySelectorAll('.movieimg');
+      movies.forEach(movie => {
+        if (genre === 'Tous' || movie.dataset.genre === genre) {
+          movie.style.display = 'block';
+        } else {
+          movie.style.display = 'none';
         }
+      });
     }
-}
-
-// -------------------- FAVORIS --------------------
-function toggleFavorite(title) {
-  let animes = JSON.parse(localStorage.getItem('animes')) || [];
-  const index = animes.findIndex(a => a.title === title);
-  if (index !== -1) {
-    animes[index].favorite = !animes[index].favorite;
-  } else {
-    animes.push({ title, favorite: true });
-  }
-  localStorage.setItem('animes', JSON.stringify(animes));
-  renderFavorites();
-}
-
-function renderFavorites() {
-  const animes = JSON.parse(localStorage.getItem('animes')) || [];
-  document.querySelectorAll('.favorite-badge').forEach(badge => badge.style.display = 'none');
-  animes.forEach(anime => {
-    if (anime.favorite) {
-      const badge = document.querySelector(`.movieimg[data-title="${anime.title}"] .favorite-badge`);
-      if (badge) badge.style.display = 'inline';
-    }
-  });
-}
-
-function injectFavoriteBadges() {
-  document.querySelectorAll('.movieimg').forEach(card => {
-    if (!card.querySelector('.favorite-badge')) {
-      const badge = document.createElement('span');
-      badge.className = 'favorite-badge';
-      badge.textContent = '⭐';
-      badge.style.display = 'none';
-      card.appendChild(badge);
-    }
-  });
-}
-        function injectStatusBadges() {
-  document.querySelectorAll('.movieimg').forEach(card => {
-    if (!card.querySelector('.status-badge')) {
-      const badge = document.createElement('span');
-      badge.className = 'status-badge';
-      badge.style.display = 'none';
-      badge.style.position = 'absolute';
-      badge.style.right = '8px';
-      badge.style.bottom = '8px';
-      badge.style.padding = '2px 6px';
-      badge.style.borderRadius = '12px';
-      badge.style.fontSize = '12px';
-      badge.style.background = '#444';
-      badge.style.color = '#fff';
-      // Pour être sûr que le badge soit bien positionné
-      if (getComputedStyle(card).position === 'static') {
-        card.style.position = 'relative';
-      }
-      card.appendChild(badge);
-    }
-  });
-}
-
-function renderStatuses() {
-  const animes = JSON.parse(localStorage.getItem('animes')) || [];
-  document.querySelectorAll('.movieimg').forEach(card => {
-    const title = card.dataset.title;
-    const data = animes.find(a => a.title === title);
-    const badge = card.querySelector('.status-badge');
-    if (!badge) return;
-    if (data && data.status) {
-      badge.textContent = data.status;
-      badge.style.display = 'inline-block';
-    } else {
-      badge.textContent = '';
-      badge.style.display = 'none';
-    }
-  });
-}
-
-
-// -------------------- NOTES --------------------
-function rateAnime(title, rating) {
-  let animes = JSON.parse(localStorage.getItem('animes')) || [];
-  const index = animes.findIndex(a => a.title === title);
-  if (index !== -1) {
-    animes[index].rating = rating;
-  } else {
-    animes.push({ title, rating });
-  }
-  localStorage.setItem('animes', JSON.stringify(animes));
-  renderRatings();
-}
-
-function renderRatings() {
-  const animes = JSON.parse(localStorage.getItem('animes')) || [];
-  animes.forEach(anime => {
-    const container = document.querySelector(`.movieimg[data-title="${anime.title}"] .rating-stars`);
-    if (container && anime.rating) {
-      container.innerHTML = '★'.repeat(anime.rating) + '☆'.repeat(5 - anime.rating);
-    }
-  });
-}
-
-// -------------------- CONTEXT MENU --------------------
-function setupContextMenu() {
-  const menu = document.getElementById('context-menu');
-  document.querySelectorAll('.movieimg').forEach(anime => {
-    anime.addEventListener('contextmenu', function (e) {
-      e.preventDefault();
-      menu.style.display = 'block';
-      menu.style.left = `${e.pageX}px`;
-      menu.style.top = `${e.pageY}px`;
-      menu.dataset.title = this.dataset.title;
-      menu.dataset.genre = this.dataset.genre;
-      menu.dataset.img = this.querySelector('img').src;
-    });
-  });
-
-document.querySelectorAll('.context-menu-item[data-status]').forEach(item => {
-  item.addEventListener('click', function (e) {
-    e.stopPropagation();
-    const title = menu.dataset.title;
-    const genre = menu.dataset.genre;
-    const img = menu.dataset.img;
-    const status = this.dataset.status;
-
-    let animes = JSON.parse(localStorage.getItem('animes')) || [];
-    const index = animes.findIndex(a => a.title === title);
-
-    if (index !== -1) {
-      animes[index] = { ...animes[index], title, genre, img, status };
-    } else {
-      animes.push({ title, genre, img, status, favorite: false });
-    }
-
-    localStorage.setItem('animes', JSON.stringify(animes));
-
-    renderStatuses();   // ✅ met à jour les badges immédiatement
-    applyFilters();     // ✅ prend en compte le filtre actif
-    menu.style.display = 'none';
-  });
-});
-
-
-  window.addEventListener('click', () => menu.style.display = 'none');
-}
-
-function handleFavorite() {
-  const title = document.getElementById('context-menu').dataset.title;
-  toggleFavorite(title);
-}
-
-function handleRating() {
-  const title = document.getElementById('context-menu').dataset.title;
-  const rating = parseInt(prompt(`Note pour "${title}" (1 à 5 étoiles) :`));
-  if (rating >= 1 && rating <= 5) {
-    rateAnime(title, rating);
-  } else {
-    alert("Note invalide.");
-  }
-  document.getElementById('context-menu').style.display = 'none';
-}
-
-// -------------------- FILTRES --------------------
-function applyFilters() {
-  const genre = document.getElementById('genreFilter').value;
-  const status = document.getElementById('statusFilter').value;
-  const animes = JSON.parse(localStorage.getItem('animes')) || [];
-
-  document.querySelectorAll('.movieimg').forEach(card => {
-    const title = card.dataset.title;
-    const genreMatch = !genre || card.dataset.genre === genre;
-    const animeData = animes.find(a => a.title === title);
-    const statusMatch = !status || (animeData && animeData.status === status);
-    card.style.display = genreMatch && statusMatch ? 'block' : 'none';
-  });
-}
-
-function applySearchFilter() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  document.querySelectorAll('.movieimg').forEach(card => {
-    const title = card.dataset.title.toLowerCase();
-    card.style.display = title.includes(search) ? 'block' : 'none';
-  });
-}
-
-// -------------------- IMPORT / EXPORT --------------------
-function exportAnimeData() {
-  const data = localStorage.getItem('animes');
-  const blob = new Blob([data], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'mes_animes.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function setupImport() {
-  const input = document.getElementById('importFile');
-  if (!input) return;
-  input.addEventListener('change', function () {
-    const file = this.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      try {
-        const data = JSON.parse(e.target.result);
-        localStorage.setItem('animes', JSON.stringify(data));
-        alert("Import réussi !");
-        location.reload();
-      } catch {
-        alert("Fichier invalide.");
-      }
-    };
-    reader.readAsText(file);
-  });
-}
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  injectFavoriteBadges();
-  injectStatusBadges();   // ✅ ajout
-  renderFavorites();
-  renderRatings();
-  renderStatuses();       // ✅ ajout
-  setupContextMenu();
-  setupImport();
-  applyFilters();
-  generateOptions();
-  loadEpisode(0);
-  updateProgressBar();
-  loadRandomPosters();
-
-  const gf = document.getElementById('genreFilter');
-  if (gf) gf.addEventListener('change', applyFilters);
-  const sf = document.getElementById('statusFilter');
-  if (sf) sf.addEventListener('change', applyFilters);
-  const si = document.getElementById('searchInput');
-  if (si) si.addEventListener('input', applySearchFilter);
-});
-
-    // Protège si #searchInput n'existe pas
-const searchInputEarly = document.getElementById('searchInput');
-if (searchInputEarly) {
-  searchInputEarly.addEventListener('input', applySearchFilter);
-}
-
-// Sélection des slides et des points
-var slides = document.querySelectorAll(".slides");
-var dot = document.querySelectorAll(".dot");
-
-if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
-  let index = 0;
-
-  const slideData = [
-    {
-      title: "Call of the Night",
-      synopsis: "Un adolescent insomniaque rencontre une vampire mystérieuse dans une ville éclairée par la nuit.",
-      button: "Découvrir Call of the Night",
-      link: "cotn.html"
-    },
-    {
-      title: "Cyberpunk Edgerunners",
-      synopsis: "Dans un futur dystopique, un jeune rebelle rejoint un groupe de mercenaires cybernétiques.",
-      button: "Explorer Cyberpunk",
-      link: "cyber.html"
-    },
-    {
-      title: "Death Parade",
-      synopsis: "Après la mort, des âmes sont envoyées dans un bar pour jouer à des jeux... qui décideront de leur sort.",
-      button: "Voir Death Parade",
-      link: "deathparade.html"
-    },
-    {
-      title: "Erased",
-      synopsis: "Un homme remonte dans le temps pour empêcher une série d'enlèvements et sauver sa mère.",
-      button: "Voyager avec Erased",
-      link: "animera.html"
-    },
-    {
-      title: "Steins;Gate",
-      synopsis: "Un scientifique excentrique découvre le voyage dans le temps à l'aide d'un micro-ondes modifié.",
-      button: "Plonger dans Steins;Gate",
-      link: "steinsgate.html"
-    }
-  ];
-
-  function changeSlide() {
-    if (index < 0) index = slides.length - 1;
-    if (index >= slides.length) index = 0;
-
-    slides.forEach((slide, i) => {
-      slide.style.display = i === index ? "block" : "none";
-      dot[i].classList.toggle("active", i === index);
-    });
-
-    const data = slideData[index];
-    const titleEl = document.getElementById('slide-title');
-    const synopsisEl = document.getElementById('slide-synopsis');
-    const btnEl = document.getElementById('slide-button');
-
-    if (titleEl) titleEl.textContent = data.title;
-    if (synopsisEl) synopsisEl.textContent = data.synopsis;
-    if (btnEl) {
-      btnEl.textContent = data.button;
-      btnEl.onclick = () => window.location.href = data.link;
-    }
-
-    index++;
-    setTimeout(changeSlide, 6000);
-  }
-
-  changeSlide();
-} else {
-  console.warn("Carrousel non trouvé ou slides/dots manquants !");
-}
-
-
-    </script>
-
+  </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
