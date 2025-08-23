@@ -14,7 +14,7 @@
 
     header {
       text-align: center;
-      padding: 2rem 1rem;
+      padding: 2rem 1rem 1rem;
     }
 
     header h1 {
@@ -24,6 +24,23 @@
 
     header p {
       color: #ccc;
+    }
+
+    /* Barre de recherche */
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      margin: 1rem auto 2rem;
+    }
+
+    .search-bar input {
+      width: 80%;
+      max-width: 400px;
+      padding: 0.6rem 1rem;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
     }
 
     /* Filtres */
@@ -71,25 +88,11 @@
       transform: scale(1.05);
     }
 
-    .myimages {
-      position: relative;
-    }
-
     .movieimg img {
       width: 100%;
       height: 280px;
       object-fit: cover;
       border-bottom: 2px solid #333;
-    }
-
-    .favorite-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 1.2rem;
-      background: rgba(0,0,0,0.6);
-      border-radius: 50%;
-      padding: 5px;
     }
 
     .movieimg h2 {
@@ -106,7 +109,7 @@
 
     .rating-stars {
       margin-bottom: 1rem;
-      height: 15px; /* espace réservé si tu veux ajouter des étoiles */
+      height: 15px;
     }
   </style>
 </head>
@@ -115,6 +118,11 @@
     <h1>🎬 Catalogue Streaming</h1>
     <p>Découvrez nos derniers films et séries selon vos envies</p>
   </header>
+
+  <!-- Barre de recherche -->
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Rechercher un film..." onkeyup="searchMovies()">
+  </div>
 
   <!-- Filtres -->
   <div class="filters">
@@ -132,156 +140,111 @@
   <!-- Grille -->
   <div class="grid" id="movieGrid">
 
-    <!-- Films -->
-    <div class="movieimg" data-genre="Romance">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="thegorge.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/1Np511QIqSs0s3iDpWXPbuY4o5o.jpg" alt="The Gorge"></a>
-      </div>
+    <div class="movieimg" data-title="The Gorge" data-genre="Romance">
+      <a href="thegorge.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/1Np511QIqSs0s3iDpWXPbuY4o5o.jpg" alt="The Gorge"></a>
       <h2>The Gorge</h2>
       <span>Romance</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Science-Fiction">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="interstellar.html"><img src="images/interstellar.jpg" alt="Interstellar"></a>
-      </div>
+    <div class="movieimg" data-title="Interstellar" data-genre="Science-Fiction">
+      <a href="interstellar.html"><img src="images/interstellar.jpg" alt="Interstellar"></a>
       <h2>Interstellar</h2>
       <span>Science-Fiction</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Animation">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="yourname.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zyHjvVRgKOt9wgVx4ikp2kGArGF.jpg" alt="Your Name"></a>
-      </div>
+    <div class="movieimg" data-title="Your Name" data-genre="Animation">
+      <a href="yourname.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zyHjvVRgKOt9wgVx4ikp2kGArGF.jpg" alt="Your Name"></a>
       <h2>Your Name</h2>
       <span>Animation</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Animation">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="carsun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4P0NYzeNFqddAjllEICPAbd0iiu.jpg" alt="Cars"></a>
-      </div>
+    <div class="movieimg" data-title="Cars : Quatre roues" data-genre="Animation">
+      <a href="carsun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4P0NYzeNFqddAjllEICPAbd0iiu.jpg" alt="Cars"></a>
       <h2>Cars : Quatre roues</h2>
       <span>Animation</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Action">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="matrix.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pEoqbqtLc4CcwDUDqxmEDSWpWTZ.jpg" alt="Matrix"></a>
-      </div>
+    <div class="movieimg" data-title="Matrix" data-genre="Action">
+      <a href="matrix.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pEoqbqtLc4CcwDUDqxmEDSWpWTZ.jpg" alt="Matrix"></a>
       <h2>Matrix</h2>
       <span>Action</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Thriller">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="tenet.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/cRDUa63MeEpOWdqZeXqReDz7KTx.jpg" alt="Tenet"></a>
-      </div>
+    <div class="movieimg" data-title="Tenet" data-genre="Thriller">
+      <a href="tenet.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/cRDUa63MeEpOWdqZeXqReDz7KTx.jpg" alt="Tenet"></a>
       <h2>Tenet</h2>
       <span>Thriller</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Aventure">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="avatarun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7N8L80OaG8EBTDdRBjGqT8PBzCM.jpg" alt="Avatar"></a>
-      </div>
+    <div class="movieimg" data-title="Avatar" data-genre="Aventure">
+      <a href="avatarun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7N8L80OaG8EBTDdRBjGqT8PBzCM.jpg" alt="Avatar"></a>
       <h2>Avatar</h2>
       <span>Aventure</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Action">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="fastandftokyodrift.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pji0QbsaA6lhk1eQc2EfeBsXU4y.jpg" alt="F&F Tokyo Drift"></a>
-      </div>
+    <div class="movieimg" data-title="Fast & Furious : Tokyo Drift" data-genre="Action">
+      <a href="fastandftokyodrift.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pji0QbsaA6lhk1eQc2EfeBsXU4y.jpg" alt="Tokyo Drift"></a>
       <h2>Fast & Furious : Tokyo Drift</h2>
       <span>Action</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Animation">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="suzume.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/hOJYwkVSgXtE3BJFN0bRPKdLJLj.jpg" alt="Suzume"></a>
-      </div>
+    <div class="movieimg" data-title="Suzume" data-genre="Animation">
+      <a href="suzume.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/hOJYwkVSgXtE3BJFN0bRPKdLJLj.jpg" alt="Suzume"></a>
       <h2>Suzume</h2>
       <span>Animation</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Action">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="fun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/2crZHK9muPUcgHsiwoW9xb6421j.jpg" alt="F1 Le Film"></a>
-      </div>
+    <div class="movieimg" data-title="F1 Le Film" data-genre="Action">
+      <a href="fun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/2crZHK9muPUcgHsiwoW9xb6421j.jpg" alt="F1 Le Film"></a>
       <h2>F1® Le Film</h2>
       <span>Action</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Science-Fiction">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="duneun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/anDuUygHsWrbxqOEQ8H1ZkYTaL9.jpg" alt="Dune"></a>
-      </div>
+    <div class="movieimg" data-title="Dune : Première partie" data-genre="Science-Fiction">
+      <a href="duneun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/anDuUygHsWrbxqOEQ8H1ZkYTaL9.jpg" alt="Dune"></a>
       <h2>Dune : Première partie</h2>
       <span>Science-Fiction</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Comédie">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="themask.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/5OBK9sksRSyrwrcMtxpdxql75Sw.jpg" alt="The Mask"></a>
-      </div>
+    <div class="movieimg" data-title="The Mask" data-genre="Comédie">
+      <a href="themask.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/5OBK9sksRSyrwrcMtxpdxql75Sw.jpg" alt="The Mask"></a>
       <h2>The Mask</h2>
       <span>Comédie</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Science-Fiction">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="retourverslefuturun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gggA0GBaFumhfZzRxOgyRk5Zob5.jpg" alt="Retour vers le futur"></a>
-      </div>
+    <div class="movieimg" data-title="Retour vers le futur" data-genre="Science-Fiction">
+      <a href="retourverslefuturun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gggA0GBaFumhfZzRxOgyRk5Zob5.jpg" alt="Retour vers le futur"></a>
       <h2>Retour vers le futur</h2>
       <span>Science-Fiction</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Fantastique">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="detpikachu.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gsoZQqBX04yXe5nXNKyILy9fuuF.jpg" alt="Détective Pikachu"></a>
-      </div>
+    <div class="movieimg" data-title="Pokémon Détective Pikachu" data-genre="Fantastique">
+      <a href="detpikachu.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gsoZQqBX04yXe5nXNKyILy9fuuF.jpg" alt="Détective Pikachu"></a>
       <h2>Pokémon Détective Pikachu</h2>
       <span>Fantastique</span>
       <div class="rating-stars"></div>
     </div>
 
-    <div class="movieimg" data-genre="Comédie">
-      <div class="myimages">
-        <span class="favorite-badge">⭐</span>
-        <a href="charliechocolaterie.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/eLNqcXXz0V2FdjyViR8o4uCTd9n.jpg" alt="Charlie et la Chocolaterie"></a>
-      </div>
+    <div class="movieimg" data-title="Charlie et la Chocolaterie" data-genre="Comédie">
+      <a href="charliechocolaterie.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/eLNqcXXz0V2FdjyViR8o4uCTd9n.jpg" alt="Charlie et la Chocolaterie"></a>
       <h2>Charlie et la Chocolaterie</h2>
       <span>Comédie</span>
       <div class="rating-stars"></div>
     </div>
+
   </div>
 
   <script>
@@ -293,6 +256,20 @@
       const movies = document.querySelectorAll('.movieimg');
       movies.forEach(movie => {
         if (genre === 'Tous' || movie.dataset.genre === genre) {
+          movie.style.display = 'block';
+        } else {
+          movie.style.display = 'none';
+        }
+      });
+    }
+
+    function searchMovies() {
+      const input = document.getElementById('searchInput').value.toLowerCase();
+      const movies = document.querySelectorAll('.movieimg');
+
+      movies.forEach(movie => {
+        const title = movie.dataset.title.toLowerCase();
+        if (title.includes(input)) {
           movie.style.display = 'block';
         } else {
           movie.style.display = 'none';
