@@ -40,7 +40,7 @@
   }
 
   .card {
-    flex: 1 1 200px;
+    flex: 1 1 calc(20% - 20px); /* 5 cartes par ligne avec gap */
     max-width: 220px;
     background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
     border-radius: 15px;
@@ -66,15 +66,26 @@
     object-fit: cover;
     border-bottom: 2px solid #333;
     border-radius: 15px 15px 0 0;
+    transition: transform 0.3s ease;
+  }
+
+  .card:hover img {
+    transform: scale(1.05);
   }
 
   .card h3 {
-    margin: 10px 0;
-    font-size: 16px;
-    font-weight: 600;
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
     color: #ff416c;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.7);
     padding: 5px 0;
+    text-shadow: 1px 1px 3px #000;
+    border-radius: 0 0 15px 15px;
   }
 
   .card:hover {
