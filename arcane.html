@@ -9,29 +9,31 @@
 
 
 <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: url('https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/q8eejQcg1bAqImEV8jh8RtBD4uH.jpg') no-repeat center center fixed;
-      background-size: cover;
-      color: #fff;
-      position: relative;
-      z-index: 0;
-    }
+/* --- Styles globaux --- */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: url('https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/q8eejQcg1bAqImEV8jh8RtBD4uH.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+  position: relative;
+  z-index: 0;
+}
 
-    /* Overlay sombre */
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: -1;
-    }
+/* Overlay sombre */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: -1;
+}
 
-    ul {
+/* --- Navbar --- */
+ul {
   list-style-type: none;
   margin: 0;
   padding: 0;
@@ -57,334 +59,427 @@ li a:hover {
   border-radius: 5px;
 }
 
-  /* Conteneur des cartes */
-  .cards-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-    margin: 20px 0;
-    padding: 0 20px;
-    box-sizing: border-box;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
-  }
+/* Navbar responsive */
+#navbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
 
-  /* Cartes individuelles */
+/* --- Conteneur des cartes --- */
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin: 20px 0;
+  padding: 0 20px;
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Cartes individuelles */
+.card {
+  flex: 1 1 calc(20% - 20px);
+  max-width: 220px;
+  background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+  border-radius: 15px;
+  overflow: hidden;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  border-bottom: 2px solid #333;
+}
+
+.card:hover img {
+  transform: scale(1.05);
+}
+
+.card h3 {
+  margin: 10px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff416c;
+  text-shadow: 1px 1px 3px #000;
+}
+
+.card:hover {
+  transform: scale(1.08);
+  box-shadow: 0 10px 25px rgba(255,65,108,0.5);
+}
+
+/* --- Sélecteur de saison --- */
+.season-selector {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.season-selector button {
+  background: linear-gradient(90deg, #ff416c, #ff4b2b);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.season-selector button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(255,65,108,0.6);
+}
+
+.season-selector button.active {
+  box-shadow: 0 0 15px rgba(255,65,108,0.8);
+}
+
+/* --- Fiche du film --- */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.fiche {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.fiche img {
+  width: 300px;
+  border-radius: 10px;
+}
+
+.fiche-info {
+  flex: 1;
+}
+
+.fiche-info h1 {
+  margin-top: 0;
+}
+
+.fiche-info p {
+  line-height: 1.5;
+}
+
+/* --- Bouton regarder --- */
+.btn-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: #ff3d00;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.btn-watch:hover {
+  background-color: #ff5722;
+}
+
+.btn-watch:hover .material-symbols-outlined {
+  transform: scale(1.2);
+}
+
+/* --- Conteneur du lecteur vidéo --- */
+.video-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* --- Bouton retour --- */
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  z-index: 1100;
+}
+
+.back-button:hover {
+  background: rgba(255, 65, 108, 0.8);
+}
+
+/* --- Barre de progression et contrôles --- */
+.progress-wrapper {
+  position: absolute;
+  bottom: 70px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 14px;
+  font-family: monospace;
+}
+
+.progress {
+  flex: 1;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff4b2b, #ff416c);
+  border-radius: 6px;
+}
+
+.controls {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+.controls-left,
+.controls-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.center-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  padding: 20px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.center-play.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.material-symbols-outlined {
+  cursor: pointer;
+  color: white;
+  font-size: 35px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 35;
+}
+
+/* Volume */
+.volume-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#volume-slider {
+  width: 100px;
+  height: 5px;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+}
+
+#volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Menu contextuel */
+.menu {
+  position: absolute;
+  bottom: 60px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.menu button {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.menu button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.hide {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.4s ease;
+}
+
+.controls,
+.progress-wrapper,
+#centerPlay,
+.back-button {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease;
+}
+
+/* --- Media Queries pour la responsivité --- */
+
+/* Tablettes */
+@media (max-width: 1024px) {
   .card {
-    flex: 1 1 calc(20% - 20px);
-    max-width: 220px;
-    background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
-    border-radius: 15px;
-    overflow: hidden;
+    flex: 1 1 calc(33.333% - 20px);
+    max-width: 200px;
+  }
+
+  .fiche {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .fiche img {
+    width: 80%;
+    max-width: 300px;
+  }
+
+  .fiche-info {
     text-align: center;
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
-  .card img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-    border-bottom: 2px solid #333;
+  li {
+    float: none;
+    text-align: center;
   }
 
-  .card:hover img {
-    transform: scale(1.05);
-  }
-
-  .card h3 {
-    margin: 10px 0;
+  li a {
     font-size: 18px;
-    font-weight: 700;
-    color: #ff416c;
-    text-shadow: 1px 1px 3px #000;
+  }
+}
+
+/* Mobiles */
+@media (max-width: 768px) {
+  .card {
+    flex: 1 1 calc(50% - 20px);
+    max-width: 180px;
   }
 
-  .card:hover {
-    transform: scale(1.08);
-    box-shadow: 0 10px 25px rgba(255,65,108,0.5);
-  }
-
-  /* Sélecteur de saison */
   .season-selector {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 20px 0;
+    flex-direction: column;
+    gap: 10px;
   }
 
-  .season-selector button {
-    background: linear-gradient(90deg, #ff416c, #ff4b2b);
-    border: none;
-    color: white;
-    font-weight: 600;
-    padding: 10px 20px;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+  .fiche img {
+    width: 100%;
+    max-width: 250px;
   }
 
-  .season-selector button:hover {
-    transform: scale(1.1);
-    box-shadow: 0 5px 15px rgba(255,65,108,0.6);
+  .fiche-info h1 {
+    font-size: 22px;
   }
 
-  .season-selector button.active {
-    box-shadow: 0 0 15px rgba(255,65,108,0.8);
+  .fiche-info p {
+    font-size: 14px;
   }
 
-    /* --- Fiche du film --- */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
+  li a {
+    padding: 10px 12px;
+    font-size: 16px;
+  }
+}
 
-    .fiche {
-      display: flex;
-      flex-direction: row;
-      gap: 20px;
-      margin-bottom: 40px;
-    }
+/* Très petits écrans */
+@media (max-width: 480px) {
+  .card {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
 
-    .fiche img {
-      width: 300px;
-      border-radius: 10px;
-    }
+  .season-selector {
+    gap: 8px;
+  }
 
-    .fiche-info {
-      flex: 1;
-    }
+  .fiche-info h1 {
+    font-size: 20px;
+  }
 
-    .fiche-info h1 {
-      margin-top: 0;
-    }
+  .fiche-info p {
+    font-size: 13px;
+  }
+}
 
-    .fiche-info p {
-      line-height: 1.5;
-    }
 
-    /* Styles du bouton */
-    .btn-watch {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      background-color: #ff3d00;
-      color: white;
-      font-size: 16px;
-      font-weight: 500;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s, transform 0.2s;
-    }
-
-    .btn-watch:hover {
-      background-color: #ff5722;
-    }
-
-    .btn-watch:hover .material-symbols-outlined {
-      transform: scale(1.2);
-    }
-
-    /* --- Conteneur du lecteur --- */
-    .video-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: black;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    video {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-
-    /* --- Bouton retour --- */
-    .back-button {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background: rgba(0, 0, 0, 0.6);
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: opacity 0.3s;
-      z-index: 1100;
-    }
-
-    .back-button:hover {
-      background: rgba(255, 65, 108, 0.8);
-    }
-
-    /* --- Barre de progression et contrôles --- */
-    .progress-wrapper {
-      position: absolute;
-      bottom: 70px;
-      left: 20px;
-      right: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: white;
-      font-size: 14px;
-      font-family: monospace;
-    }
-
-    .progress {
-      flex: 1;
-      height: 12px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 6px;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .progress-bar {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, #ff4b2b, #ff416c);
-      border-radius: 6px;
-    }
-
-    .controls {
-      position: absolute;
-      bottom: 10px;
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-      background: rgba(0, 0, 0, 0.5);
-      border-radius: 10px;
-      opacity: 1;
-      transition: opacity 0.3s;
-    }
-
-    .controls-left, .controls-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .center-play {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 80px;
-      color: white;
-      background: rgba(0, 0, 0, 0.5);
-      border-radius: 50%;
-      padding: 20px;
-      cursor: pointer;
-      transition: opacity 0.3s;
-    }
-
-    .center-play.hide {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .material-symbols-outlined {
-      cursor: pointer;
-      color: white;
-      font-size: 35px;
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 35;
-    }
-
-    .volume-container {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    #volume-slider {
-      width: 100px;
-      height: 5px;
-      appearance: none;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 5px;
-      outline: none;
-      cursor: pointer;
-    }
-
-    #volume-slider::-webkit-slider-thumb {
-      appearance: none;
-      width: 12px;
-      height: 12px;
-      background: #ff416c;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-
-    #volume-slider::-moz-range-thumb {
-      width: 12px;
-      height: 12px;
-      background: #ff416c;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-
-    .menu {
-      position: absolute;
-      bottom: 60px;
-      right: 20px;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 10px;
-      border-radius: 8px;
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .menu button {
-      background: transparent;
-      border: none;
-      color: white;
-      padding: 5px 10px;
-      cursor: pointer;
-      text-align: left;
-    }
-
-    .menu button:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .hide {
-      opacity: 0 !important;
-      visibility: hidden !important;
-      pointer-events: none !important;
-      transition: opacity 0.4s ease;
-    }
-
-    .controls, .progress-wrapper, #centerPlay, .back-button {
-      opacity: 1;
-      visibility: visible;
-      transition: opacity 0.4s ease;
-    }
-
-    #navbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-    }
 
 </style>
 </head>
