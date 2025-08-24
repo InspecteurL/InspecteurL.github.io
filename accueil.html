@@ -360,10 +360,10 @@ body {
   to { opacity: 1; }
 }
 
+/* SLIDER PRINCIPAL */
 #slider {
   position: relative;
 }
-
 .slides {
   position: relative;
   overflow: hidden;
@@ -371,16 +371,13 @@ body {
   animation-duration: 1s;
   display: none;
 }
-
 .slides.active { display: block; }
-
 .slides img {
   width: 100%;
   height: 500px;
   object-fit: cover;
   display: block;
 }
-
 .slides::after {
   content: "";
   position: absolute;
@@ -407,19 +404,8 @@ body {
   border-radius: 20px;
   box-shadow: 0 0 25px black;
 }
-
-#slide-info h2 {
-  font-size: 3.4em;
-  margin-bottom: 25px;
-  font-weight: bold;
-}
-
-#slide-info p {
-  font-size: 1.8em;
-  line-height: 1.7;
-  margin-bottom: 30px;
-}
-
+#slide-info h2 { font-size: 3.4em; margin-bottom: 25px; font-weight: bold; }
+#slide-info p { font-size: 1.8em; line-height: 1.7; margin-bottom: 30px; }
 #slide-button {
   padding: 20px 40px;
   font-size: 1.6em;
@@ -444,30 +430,13 @@ img { width: 100%; }
 }
 .active { background: black; }
 
-@media (max-width:567px) {
-  #slider { width: 100%; }
-}
+@media (max-width:567px) { #slider { width: 100%; } }
 
-#heading {
-  display: block;
-  text-align: center;
-  font-size: 2em;
-  margin: 10px 0px;
-}
+#heading { display: block; text-align: center; font-size: 2em; margin: 10px 0px; }
 
 /* 🖼️ Image de fond */
-.image-wrapper {
-  position: relative;
-  max-height: 620px;
-  overflow: hidden;
-}
-#berserkimage {
-  width: 100%;
-  height: auto;
-  max-height: 620px;
-  object-fit: cover;
-  display: block;
-}
+.image-wrapper { position: relative; max-height: 620px; overflow: hidden; }
+#berserkimage { width: 100%; height: auto; max-height: 620px; object-fit: cover; display: block; }
 .gradient-overlay {
   position: absolute;
   inset: 0;
@@ -500,22 +469,14 @@ li a {
   text-decoration: none;
   transition: background 0.3s;
 }
-li a:hover {
-  background-color: red;
-  border-radius: 10px;
-}
+li a:hover { background-color: red; border-radius: 10px; }
 
 /* 🎬 Section animes */
-hr.rounded {
-  border-top: 3px solid red;
-  border-radius: 5px;
-}
+hr.rounded { border-top: 3px solid red; border-radius: 5px; }
 
 .movieimg h2,
 .movieimg span,
-.rating-stars {
-  text-align: center;
-}
+.rating-stars { text-align: center; }
 
 .moviesection {
   max-width: 1300px;
@@ -525,7 +486,7 @@ hr.rounded {
   text-transform: uppercase;
 }
 
-/* Ancienne grille (remplacée par le carrousel mais gardée pour compatibilité) */
+/* Grille (compatibilité carrousel) */
 .moviecontainer {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -533,7 +494,6 @@ hr.rounded {
   padding: 40px 20px;
   max-width: 1300px;
   margin: 0 auto;
-  box-sizing: border-box;
   justify-content: center;
   justify-items: center;
   pointer-events: none !important;
@@ -619,25 +579,12 @@ hr.rounded {
   font-size: 28px;
   font-weight: bold;
 }
-.close:hover, .close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-#videoPlayer {
-  width: 640px;
-  height: 360px;
-  display: block;
-  margin: 20px auto;
-}
+.close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+#videoPlayer { width: 640px; height: 360px; display: block; margin: 20px auto; }
 .controls { text-align: center; }
-select {
-  width: 200px;
-  height: 50px;
-  font-size: 16px;
-}
+select { width: 200px; height: 50px; font-size: 16px; }
 
-/* 🧭 Carrousel (version compacte + animée) */
+/* 🧭 Carrousel */
 .carousel {
   position: relative;
   width: 100%;
@@ -653,11 +600,6 @@ select {
   scrollbar-width: none;
 }
 .carousel-track::-webkit-scrollbar { display: none; }
-
-/* ✨ Animation ajoutée */
-.carousel-track.animate {
-  transition: transform 0.5s cubic-bezier(.68,-0.55,.27,1.55); /* rebond */
-}
 
 .carousel-btn {
   position: absolute;
@@ -677,59 +619,13 @@ select {
 .carousel-btn.left { left: 5px; }
 .carousel-btn.right { right: 5px; }
 
-.carousel-track .movieimg {
-  flex: 0 0 220px;
-  font-size: 0.9em;
-}
+.carousel-track .movieimg { flex: 0 0 220px; font-size: 0.9em; }
 .movieimg .myimages { height: 320px; }
 .movieimg h2 { font-size: 1.1em; }
 .movieimg span { font-size: 0.9em; }
 .rating-stars { font-size: 16px; }
 
-/* Ancien carrousel type wrapper (optionnel) */
-.wrapper { display: flex; grid-gap: 1em; overflow: hidden; width: 70em; }
-.wrapper .inner {
-  display: flex;
-  grid-gap: 1em;
-  transition: all 1s ease-in-out;
-  width: calc(17.5em * 12);
-}
-.card {
-  border-radius: 0.5em;
-  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
-  background-color: navy;
-  width: 17.5em;
-  height: 25em;
-  overflow: hidden;
-}
-.card img {
-  border-top-right-radius: inherit;
-  border-top-left-radius: inherit;
-  display: block;
-  width: 100%;
-  height: 75%;
-  object-fit: cover;
-}
-.card .content {
-  background-color: darkblue;
-  border-bottom-left-radius: inherit;
-  border-bottom-right-radius: inherit;
-  padding: 1em;
-  text-align: center;
-  height: 25%;
-}
-.card .content h1 {
-  color: #fff;
-  font-size: 1.25rem;
-  margin: 0.35em 0;
-}
-.card .content h3 {
-  color: #ccc;
-  font-size: 0.9rem;
-  font-weight: 300;
-  margin: 0.35em 0;
-}
-
+/* Badges favoris & statuts */
 .favorite-badge {
   position: absolute;
   top: 8px;
@@ -742,33 +638,32 @@ select {
   display: none;
   z-index: 2;
 }
-
-.rating-stars {
-  margin-top: 5px;
-  font-size: 18px;
-  color: gold;
-  text-align: center;
+.status-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 12px;
+  color: #fff;
+  background: #444;
+  border-radius: 12px;
+  padding: 2px 6px;
+  display: none;
+  z-index: 2;
 }
 
+/* Responsive */
 @media screen and (max-width: 1000px) {
   #berserkimage { width: 100%; }
   ul { width: 100%; }
 }
-
 @media screen and (max-width: 600px) {
   .moviecontainer { grid-template-columns: 1fr; padding: 20px; }
   .movieimg { width: 100%; max-width: 300px; }
-  .movieimg .myimages {
-    height: auto;
-    aspect-ratio: 2 / 3;
-  }
-  .movieimg .myimages img {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-  }
+  .movieimg .myimages { height: auto; aspect-ratio: 2 / 3; }
+  .movieimg .myimages img { height: 100%; width: 100%; object-fit: cover; }
 }
 
+/* Barre de recherche */
 .search-large {
   padding: 14px 20px;
   width: 400px;
@@ -782,54 +677,11 @@ select {
 
 
 
+
     <!-- Script principal -->
     <script src="script.js" defer></script>
     <script>
-        // 🎞️ Liste des épisodes
-const episodes = [
-    'https://video.sibnet.ru/shell.php?videoid=4906990&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4906993&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4906996&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907001&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907002&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907007&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907009&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907013&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907016&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907019&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907023&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907030&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907033&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907038&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907043&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907046&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907049&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907053&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907057&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907062&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907064&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907070&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907073&share=1',
-    'https://video.sibnet.ru/shell.php?videoid=4907077&share=1'
-];
 
-let currentEpisode = 0;
-
-function loadEpisode(index) {
-  const video = document.getElementById('videoPlayer');
-  video.src = episodes[index];
-  document.getElementById('episodeTitle').innerText = 'Épisode ' + (parseInt(index) + 1);
-  document.getElementById('episodeSelector').value = index;
-  currentEpisode = parseInt(index);
-  markEpisodeAsViewed(index); // ✅ ici !
-}
-
-
-function nextEpisode() {
-  if (currentEpisode < episodes.length - 1) {
-    loadEpisode(currentEpisode + 1);
-  }
-}
 
     function scrollCarousel(id, direction) {
   const track = document.getElementById(id);
@@ -878,26 +730,23 @@ function getRandomImage(images) {
     return images[Math.floor(Math.random() * images.length)];
 }
 
+// -------------------- CARROUSEL --------------------
 const carousels = document.querySelectorAll(".carousel");
-
 carousels.forEach(carousel => {
   const track = carousel.querySelector(".carousel-track");
   const btnLeft = carousel.querySelector(".carousel-btn.left");
   const btnRight = carousel.querySelector(".carousel-btn.right");
+  const scrollAmount = 250; // largeur de défilement
 
-  let scrollAmount = 250; // largeur de défilement
-
-  btnLeft.addEventListener("click", () => {
-    track.classList.add("animate");
+  // Défilement fluide
+  if(btnLeft) btnLeft.addEventListener("click", () => {
     track.scrollBy({ left: -scrollAmount, behavior: "smooth" });
-    setTimeout(() => track.classList.remove("animate"), 500);
   });
-
-  btnRight.addEventListener("click", () => {
-    track.classList.add("animate");
+  if(btnRight) btnRight.addEventListener("click", () => {
     track.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    setTimeout(() => track.classList.remove("animate"), 500);
   });
+});
+);
 });
 
         
@@ -1308,6 +1157,7 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
+
 
 
 
