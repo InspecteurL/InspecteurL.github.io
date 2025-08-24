@@ -31,54 +31,56 @@
       z-index: -1;
     }
 
-    .cards-container {
-      display: flex;
-      flex-wrap: wrap;
-      /* Passe à la ligne si pas assez de place */
-      gap: 20px;
-      /* Espace entre les cartes */
-      justify-content: center;
-      /* Centre les cartes dans la page */
-      margin: 20px 0;
-    }
+      .cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin: 20px 0;
+  }
 
-    .card {
-      flex: 1 1 200px;
-      max-width: 220px;
-      background: #222;
-      color: white;
-      border-radius: 10px;
-      overflow: hidden;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s ease-in-out;
-    }
+  .card {
+    flex: 1 1 200px;
+    max-width: 220px;
+    background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+    border-radius: 15px;
+    overflow: hidden;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+  }
 
-    .card img {
-      width: 100%;
-      height: 120px;
-      /* Fixe une hauteur type vignette */
-      object-fit: cover;
-      /* Recadre au lieu d’étirer */
-      display: block;
-      border-bottom: 2px solid #333;
-      /* optionnel, pour séparer joliment */
-    }
+  .card::before {
+    content: "";
+    display: block;
+    padding-top: 56.25%; /* ratio 16:9 pour image placeholder */
+  }
 
-    .card:hover {
-      transform: scale(1.05);
-    }
+  .card img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-bottom: 2px solid #333;
+    border-radius: 15px 15px 0 0;
+  }
 
-    .card h3 {
-      margin: 10px 0 5px 0;
-    }
+  .card h3 {
+    margin: 10px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ff416c;
+    background: rgba(0,0,0,0.6);
+    padding: 5px 0;
+  }
 
-    .card p {
-      font-size: 14px;
-      padding: 0 10px 10px 10px;
-      line-height: 1.2;
-    }
-
+  .card:hover {
+    transform: scale(1.08);
+    box-shadow: 0 10px 25px rgba(255,65,108,0.5);
+  }
     /* --- Fiche du film --- */
     .container {
       max-width: 1200px;
@@ -393,84 +395,73 @@
   </div>
 
   <!-- Navbar transformée en cartes interactives (13 épisodes) -->
-<div class="card" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E01.mp4">
-  <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/d159TokjZllfgHzofPKmv0Qa3Qx.jpg" alt="Épisode 1">
-  <h3>Épisode 1</h3>
-  <p>Examen final</p>
-</div>
+<div class="cards-container">
+  <div class="card" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E01.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/g7dMkFJvJECDYoL0TRzGQCfF3xD.jpg" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
 
-  <div class="card" data-video="master.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/tzDZmYIvKSpDPNzSLDlrmnhtA0w.jpg" alt="Épisode 2">
+  <div class="card" data-video="VIDEO_URL_2">
+    <img src="IMAGE_URL_2" alt="Épisode 2">
     <h3>Épisode 2</h3>
-    <p>Les Sœurs ennemies</p>
   </div>
 
-  <div class="card" data-video="https://cinepizza.xyz/series/serie-s01e03.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/jC5ZjMiyy1TEjZN55cAjz8ZlFBE.jpg" alt="Épisode 3">
+  <div class="card" data-video="VIDEO_URL_3">
+    <img src="IMAGE_URL_3" alt="Épisode 3">
     <h3>Épisode 3</h3>
-    <p>Diviser pour mieux régner</p>
   </div>
 
-  <div class="card" data-video="https://cinepizza.xyz/series/serie-s01e04.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/97b6LtuQoStHfnBvOOS7vXOPF78.jpg" alt="Épisode 4">
+  <div class="card" data-video="VIDEO_URL_4">
+    <img src="IMAGE_URL_4" alt="Épisode 4">
     <h3>Épisode 4</h3>
-    <p>Les forces de la nature</p>
   </div>
 
-  <div class="card" data-video="https://cinepizza.xyz/series/serie-s01e05.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/jw4thOEJY03cPSRxcLhpYhWpiHg.jpg" alt="Épisode 5">
+  <div class="card" data-video="VIDEO_URL_5">
+    <img src="IMAGE_URL_5" alt="Épisode 5">
     <h3>Épisode 5</h3>
-    <p>En pièces détachées</p>
   </div>
 
-  <div class="card" data-video="https://cinepizza.xyz/series/serie-s01e06.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/v82eDOdYNlt9Yx8GgUFsfukBS7V.jpg" alt="Épisode 6">
+  <div class="card" data-video="VIDEO_URL_6">
+    <img src="IMAGE_URL_6" alt="Épisode 6">
     <h3>Épisode 6</h3>
-    <p>Plus jamais</p>
   </div>
 
-  <div class="card" data-video="https://cinepizza.xyz/series/serie-s01e07.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9jFMg2RW8gR6GoSNB23l9sKKZ4J.jpg" alt="Épisode 7">
+  <div class="card" data-video="VIDEO_URL_7">
+    <img src="IMAGE_URL_7" alt="Épisode 7">
     <h3>Épisode 7</h3>
-    <p>Inversées</p>
   </div>
 
-  <div class="card" data-video="https://cinepizza.xyz/series/serie-s01e08.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/9OHn3nHoSdnvjYT3JK2X6GCAZz1.jpg" alt="Épisode 8">
+  <div class="card" data-video="VIDEO_URL_8">
+    <img src="IMAGE_URL_8" alt="Épisode 8">
     <h3>Épisode 8</h3>
-    <p>Trident des abysses</p>
   </div>
 
-  <div class="card" data-video="https://cinepizza.xyz/series/serie-s01e09.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/tpaJPhxpibAw2Xz5PoVa7qSAfmr.jpg" alt="Épisode 9">
+  <div class="card" data-video="VIDEO_URL_9">
+    <img src="IMAGE_URL_9" alt="Épisode 9">
     <h3>Épisode 9</h3>
-    <p>Jeux de masques</p>
   </div>
 
-  <div class="card" data-video="https://cinepizza.xyz/series/serie-s01e10.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/qqYVIwi4mX1DhoGlLL8XvrOe5IQ.jpg" alt="Épisode 10">
+  <div class="card" data-video="VIDEO_URL_10">
+    <img src="IMAGE_URL_10" alt="Épisode 10">
     <h3>Épisode 10</h3>
-    <p>Mad Mod et l'école du respect</p>
   </div>
 
-  <div class="card" data-video="https://cinepizza.xyz/series/serie-s01e11.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/pCMRlYIjbrsIgd1cWNLrCUtcT7t.jpg" alt="Épisode 11">
+  <div class="card" data-video="VIDEO_URL_11">
+    <img src="IMAGE_URL_11" alt="Épisode 11">
     <h3>Épisode 11</h3>
-    <p>L'apprenti (1)</p>
   </div>
 
-  <div class="card" data-video="https://cinepizza.xyz/series/serie-s01e12.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/rwOTO2fN8TUxS0DT5uLP5c0eYVn.jpg" alt="Épisode 12">
+  <div class="card" data-video="VIDEO_URL_12">
+    <img src="IMAGE_URL_12" alt="Épisode 12">
     <h3>Épisode 12</h3>
-    <p>L'apprenti (2)</p>
   </div>
 
-  <div class="card" data-video="https://cinepizza.xyz/series/serie-s01e13.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/crO5npQKkTSHLe1Tz2ikLbGiHcO.jpg" alt="Épisode 13">
+  <div class="card" data-video="VIDEO_URL_13">
+    <img src="IMAGE_URL_13" alt="Épisode 13">
     <h3>Épisode 13</h3>
-    <p>Chagrin mécanique</p>
   </div>
 </div>
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
