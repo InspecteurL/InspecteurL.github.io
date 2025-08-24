@@ -491,7 +491,11 @@ ul {
   background-color: transparent;
   font-size: 1.6em;
 }
-li { float: left; }
+
+li {
+  float: left;
+}
+
 li a {
   display: block;
   color: white;
@@ -500,10 +504,26 @@ li a {
   text-decoration: none;
   transition: background 0.3s;
 }
+
 li a:hover {
   background-color: red;
   border-radius: 10px;
 }
+
+/* 🔍 Barre de recherche intégrée */
+.search-large {
+  padding: 12px 16px;          /* proche du padding des liens */
+  width: 220px;                /* largeur réduite */
+  font-size: 1em;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background-color: white;     /* couleur pour contraster */
+  color: black;
+  margin: 10px 16px;           /* espace pour s’aligner verticalement */
+  box-shadow: none;            /* pas d’ombre pour mieux s’intégrer */
+}
+
 
 /* 🎬 Section animes */
 hr.rounded {
@@ -769,15 +789,6 @@ select {
   }
 }
 
-.search-large {
-  padding: 8px 12px;      /* moins d’espace interne */
-  width: 250px;           /* largeur réduite */
-  font-size: 1em;         /* texte plus petit */
-  border-radius: 8px;     /* coins arrondis plus discrets */
-  border: none;
-  outline: none;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.2); /* ombre plus légère */
-}
 
 </style>
 
@@ -1309,4 +1320,5 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
+
 
