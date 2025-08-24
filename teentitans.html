@@ -31,54 +31,84 @@
       z-index: -1;
     }
 
-.cards-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-  margin: 20px 0;
-  padding: 0 20px; /* espace sur les côtés */
-  box-sizing: border-box; /* inclut le padding dans la largeur totale */
-  max-width: 1200px; /* limite la largeur pour grands écrans */
-  margin-left: auto;
-  margin-right: auto; /* centre le conteneur */
-}
+  /* Conteneur des cartes */
+  .cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin: 20px 0;
+    padding: 0 20px;
+    box-sizing: border-box;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
-.card {
-  flex: 1 1 calc(20% - 20px); /* 5 cartes par ligne */
-  max-width: 220px;
-  background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
-  border-radius: 15px;
-  overflow: hidden;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+  /* Cartes individuelles */
+  .card {
+    flex: 1 1 calc(20% - 20px);
+    max-width: 220px;
+    background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+    border-radius: 15px;
+    overflow: hidden;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
 
-.card img {
-  width: 100%;
-  height: 140px;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-  border-bottom: 2px solid #333;
-}
+  .card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    border-bottom: 2px solid #333;
+  }
 
-.card:hover img {
-  transform: scale(1.05);
-}
+  .card:hover img {
+    transform: scale(1.05);
+  }
 
-.card h3 {
-  margin: 10px 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #ff416c;
-  text-shadow: 1px 1px 3px #000;
-}
+  .card h3 {
+    margin: 10px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #ff416c;
+    text-shadow: 1px 1px 3px #000;
+  }
 
-.card:hover {
-  transform: scale(1.08);
-  box-shadow: 0 10px 25px rgba(255,65,108,0.5);
-}
+  .card:hover {
+    transform: scale(1.08);
+    box-shadow: 0 10px 25px rgba(255,65,108,0.5);
+  }
+
+  /* Sélecteur de saison */
+  .season-selector {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+  }
+
+  .season-selector button {
+    background: linear-gradient(90deg, #ff416c, #ff4b2b);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .season-selector button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(255,65,108,0.6);
+  }
+
+  .season-selector button.active {
+    box-shadow: 0 0 15px rgba(255,65,108,0.8);
+  }
 
     /* --- Fiche du film --- */
     .container {
@@ -394,52 +424,90 @@
   </div>
 
   <!-- Navbar transformée en cartes interactives (13 épisodes) -->
-<div class="cards-container">
-  <div class="card" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E01.mp4">
+<!-- Sélecteur de saison -->
+<div class="season-selector">
+  <button class="active" data-season="1">Saison 1</button>
+  <button data-season="2">Saison 2</button>
+</div>
+
+<!-- Cartes des épisodes -->
+<div class="cards-container" id="season-episodes">
+  <!-- Saison 1 -->
+  <div class="card" data-season="1" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E01.mp4">
     <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/g7dMkFJvJECDYoL0TRzGQCfF3xD.jpg" alt="Épisode 1">
     <h3>Épisode 1</h3>
   </div>
-
-  <div class="card" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E02.mp4">
+  <div class="card" data-season="1" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E02.mp4">
     <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/1uubdoW7nPtpYS6T59COLEKDB7A.jpg" alt="Épisode 2">
     <h3>Épisode 2</h3>
   </div>
-
-  <div class="card" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E03.mp4">
+  <div class="card" data-season="1" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E03.mp4">
     <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/8bbCa2TtAMeWuJTEWcFzy6wHH1w.jpg" alt="Épisode 3">
     <h3>Épisode 3</h3>
   </div>
-
-  <div class="card" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E04.mp4">
+  <div class="card" data-season="1" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E04.mp4">
     <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ujtz5sodazJZkwxKLXVnGT4Bzcv.jpg" alt="Épisode 4">
     <h3>Épisode 4</h3>
   </div>
-
-  <div class="card" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E05.mp4">
+  <div class="card" data-season="1" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E05.mp4">
     <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/yPzc1kz2wg3mQSmDFYQzfWfxSeB.jpg" alt="Épisode 5">
     <h3>Épisode 5</h3>
   </div>
-
-  <div class="card" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E06.mp4">
+  <div class="card" data-season="1" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E06.mp4">
     <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/wpNg63YkoWXyE6yONIuwH6lV9MI.jpg" alt="Épisode 6">
     <h3>Épisode 6</h3>
   </div>
-
-  <div class="card" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E07.mp4">
+  <div class="card" data-season="1" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E07.mp4">
     <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/ieYvkXKqOuIYcBps7COg8w6rJyN.jpg" alt="Épisode 7">
     <h3>Épisode 7</h3>
   </div>
-
-  <div class="card" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E08.mp4">
+  <div class="card" data-season="1" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E08.mp4">
     <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/vYIBscxveNMkxFNTcPZ6YoF6fdU.jpg" alt="Épisode 8">
     <h3>Épisode 8</h3>
   </div>
-
-  <div class="card" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E09.mp4">
+  <div class="card" data-season="1" data-video="https://cinetacos.xyz/animes/VF/Arcane/S01/Arcane-S01-E09.mp4">
     <img src="https://media.themoviedb.org/t/p/w454_and_h254_bestv2/whYSErvez8kncpTmTRBsRd1Pg5i.jpg" alt="Épisode 9">
     <h3>Épisode 9</h3>
   </div>
 
+  <!-- Saison 2 -->
+  <div class="card" data-season="2" data-video="VIDEO_URL_S02_E01">
+    <img src="IMAGE_URL_S02_E01" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
+  <div class="card" data-season="2" data-video="VIDEO_URL_S02_E02">
+    <img src="IMAGE_URL_S02_E02" alt="Épisode 2">
+    <h3>Épisode 2</h3>
+  </div>
+  <div class="card" data-season="2" data-video="VIDEO_URL_S02_E03">
+    <img src="IMAGE_URL_S02_E03" alt="Épisode 3">
+    <h3>Épisode 3</h3>
+  </div>
+  <div class="card" data-season="2" data-video="VIDEO_URL_S02_E04">
+    <img src="IMAGE_URL_S02_E04" alt="Épisode 4">
+    <h3>Épisode 4</h3>
+  </div>
+  <div class="card" data-season="2" data-video="VIDEO_URL_S02_E05">
+    <img src="IMAGE_URL_S02_E05" alt="Épisode 5">
+    <h3>Épisode 5</h3>
+  </div>
+  <div class="card" data-season="2" data-video="VIDEO_URL_S02_E06">
+    <img src="IMAGE_URL_S02_E06" alt="Épisode 6">
+    <h3>Épisode 6</h3>
+  </div>
+  <div class="card" data-season="2" data-video="VIDEO_URL_S02_E07">
+    <img src="IMAGE_URL_S02_E07" alt="Épisode 7">
+    <h3>Épisode 7</h3>
+  </div>
+  <div class="card" data-season="2" data-video="VIDEO_URL_S02_E08">
+    <img src="IMAGE_URL_S02_E08" alt="Épisode 8">
+    <h3>Épisode 8</h3>
+  </div>
+  <div class="card" data-season="2" data-video="VIDEO_URL_S02_E09">
+    <img src="IMAGE_URL_S02_E09" alt="Épisode 9">
+    <h3>Épisode 9</h3>
+  </div>
+</div>
 
 
 
@@ -646,6 +714,35 @@ document.addEventListener('DOMContentLoaded', () => {
   showControls();
 });
 
+     const seasonButtons = document.querySelectorAll('.season-selector button');
+  const allCards = document.querySelectorAll('.cards-container .card');
+
+  seasonButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // active button
+      seasonButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const season = btn.dataset.season;
+
+      // afficher uniquement les cartes de la saison choisie
+      allCards.forEach(card => {
+        if (card.dataset.season === season) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Afficher seulement la saison active au chargement
+  window.addEventListener('DOMContentLoaded', () => {
+    const activeSeason = document.querySelector('.season-selector button.active').dataset.season;
+    allCards.forEach(card => {
+      card.style.display = card.dataset.season === activeSeason ? 'block' : 'none';
+    });
+  });
 
 
 </script>
