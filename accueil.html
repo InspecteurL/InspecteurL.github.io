@@ -637,7 +637,7 @@ select {
   font-size: 16px;
 }
 
-/* 🧭 Carrousel (version compacte) */
+/* 🧭 Carrousel (version compacte + animée) */
 .carousel {
   position: relative;
   width: 100%;
@@ -653,6 +653,12 @@ select {
   scrollbar-width: none;
 }
 .carousel-track::-webkit-scrollbar { display: none; }
+
+/* ✨ Animation ajoutée */
+.carousel-track.animate {
+  transition: transform 0.5s cubic-bezier(.68,-0.55,.27,1.55); /* rebond */
+}
+
 .carousel-btn {
   position: absolute;
   top: 35%;
@@ -775,6 +781,7 @@ select {
 </style>
 
 
+
     <!-- Script principal -->
     <script src="script.js" defer></script>
     <script>
@@ -871,6 +878,29 @@ function getRandomImage(images) {
     return images[Math.floor(Math.random() * images.length)];
 }
 
+const carousels = document.querySelectorAll(".carousel");
+
+carousels.forEach(carousel => {
+  const track = carousel.querySelector(".carousel-track");
+  const btnLeft = carousel.querySelector(".carousel-btn.left");
+  const btnRight = carousel.querySelector(".carousel-btn.right");
+
+  let scrollAmount = 250; // largeur de défilement
+
+  btnLeft.addEventListener("click", () => {
+    track.classList.add("animate");
+    track.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+    setTimeout(() => track.classList.remove("animate"), 500);
+  });
+
+  btnRight.addEventListener("click", () => {
+    track.classList.add("animate");
+    track.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    setTimeout(() => track.classList.remove("animate"), 500);
+  });
+});
+
+        
 function loadRandomPosters() {
     const posters = {
         erased: [
@@ -1278,6 +1308,7 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
+
 
 
 
