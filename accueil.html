@@ -770,14 +770,15 @@ select {
 }
 
 .search-large {
-  padding: 14px 20px;
-  width: 400px;
-  font-size: 1.4em;
-  border-radius: 12px;
+  padding: 8px 12px;      /* moins d’espace interne */
+  width: 250px;           /* largeur réduite */
+  font-size: 1em;         /* texte plus petit */
+  border-radius: 8px;     /* coins arrondis plus discrets */
   border: none;
   outline: none;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.2); /* ombre plus légère */
 }
+
 </style>
 
 
@@ -1308,3 +1309,4 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
+
