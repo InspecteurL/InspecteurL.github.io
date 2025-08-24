@@ -637,17 +637,17 @@ select {
   font-size: 16px;
 }
 
-/* 🧭 Carrousel */
+/* 🧭 Carrousel (version compacte) */
 .carousel {
   position: relative;
   width: 100%;
-  max-width: 1300px;
-  margin: 40px auto;
+  max-width: 1200px;
+  margin: 20px auto;
   overflow: hidden;
 }
 .carousel-track {
   display: flex;
-  gap: 20px;
+  gap: 15px;
   overflow-x: auto;
   scroll-behavior: smooth;
   scrollbar-width: none;
@@ -655,14 +655,14 @@ select {
 .carousel-track::-webkit-scrollbar { display: none; }
 .carousel-btn {
   position: absolute;
-  top: 40%;
+  top: 35%;
   transform: translateY(-50%);
   background: rgba(0,0,0,0.6);
   color: white;
   border: none;
-  font-size: 2rem;
+  font-size: 1.5rem;
   cursor: pointer;
-  padding: 10px;
+  padding: 8px;
   border-radius: 50%;
   z-index: 10;
   transition: background 0.3s;
@@ -670,7 +670,15 @@ select {
 .carousel-btn:hover { background: red; }
 .carousel-btn.left { left: 5px; }
 .carousel-btn.right { right: 5px; }
-.carousel-track .movieimg { flex: 0 0 300px; }
+
+.carousel-track .movieimg {
+  flex: 0 0 220px;
+  font-size: 0.9em;
+}
+.movieimg .myimages { height: 320px; }
+.movieimg h2 { font-size: 1.1em; }
+.movieimg span { font-size: 0.9em; }
+.rating-stars { font-size: 16px; }
 
 /* Ancien carrousel type wrapper (optionnel) */
 .wrapper { display: flex; grid-gap: 1em; overflow: hidden; width: 70em; }
@@ -765,6 +773,7 @@ select {
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 </style>
+
 
     <!-- Script principal -->
     <script src="script.js" defer></script>
@@ -1269,6 +1278,7 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
+
 
 
 
