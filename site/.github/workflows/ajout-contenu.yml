@@ -1,0 +1,41 @@
+name: Ajouter un contenu
+
+on:
+  workflow_dispatch:   # Permet de lancer manuellement
+    inputs:
+      titre:
+        description: "Nom du film/série/anime"
+        required: true
+      type:
+        description: "film | serie | anime"
+        required: true
+        default: film
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installer dépendances
+        run: pip install requests beautifulsoup4 unidecode
+
+      - name: Lancer le script
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        run: |
+          python script.py "${{ github.event.inputs.titre }}" \
+            --type "${{ github.event.inputs.type }}" \
+            --base-url "https://cinetacos.xyz"
+
+      - name: Commit & Push les changements
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Ajout: ${{ github.event.inputs.titre }} (${{ github.event.inputs.type }})" || echo "Rien à committer"
+          git push
