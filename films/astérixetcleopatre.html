@@ -515,42 +515,22 @@ const btnWatch = document.getElementById('btnWatch');
 const backButton = document.getElementById('backButton');
 const navbar = document.getElementById('navbar');
 
+// Quand on clique sur "Lire le film" → cacher la navbar
 btnWatch.addEventListener('click', () => {
   videoContainer.style.display = 'flex';
   video.play();
   showControls();
   navbar.style.display = 'none'; // 👈 cache la navbar
-
-  // ✅ Forcer paysage si mobile
-  if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    lockOrientation("landscape");
-  }
 });
 
-
-  // Fonction pour verrouiller l'orientation si supportée
-function lockOrientation(orientation) {
-  if (screen.orientation && screen.orientation.lock) {
-    screen.orientation.lock(orientation).catch(err => {
-      console.warn("Orientation non supportée ou refusée :", err);
-    });
-  }
-}
-
-
+// Quand on clique sur "Retour à la fiche" → montrer la navbar
 backButton.addEventListener('click', () => {
   video.pause();
   video.currentTime = 0;
   videoContainer.style.display = 'none';
   if (document.fullscreenElement) document.exitFullscreen();
   navbar.style.display = 'block'; // 👈 réaffiche la navbar
-
-  // ✅ Revenir en portrait si mobile
-  if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    lockOrientation("portrait");
-  }
 });
-
 
 let hideTimeout;
 video.controls = false;
