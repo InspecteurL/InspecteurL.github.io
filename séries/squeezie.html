@@ -576,10 +576,16 @@ video {
 
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<script src="script.js"></script>
 
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm';
 
-<script>
+  // Initialisation Supabase
+  const supabase = createClient(
+    'https://wuagahavmbugmnuzsouf.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  );
+
 document.addEventListener('DOMContentLoaded', () => {
   const cards = document.querySelectorAll('.card');
   const videoContainer = document.getElementById('videoContainer');
@@ -807,6 +813,93 @@ document.addEventListener('DOMContentLoaded', () => {
       card.style.display = card.dataset.season === activeSeason ? 'block' : 'none';
     });
   });
+
+/*************************************************
+ * Activité Supabase (profiles table)
+ *************************************************/
+const ANIME_TITLE = "Squeezie : Merci Internet!";
+let currentSeason = 1;
+let currentEpisodeIndex = null;
+let userId = null;
+
+/*************************************************
+ * Session utilisateur
+ *************************************************/
+async function fetchSession() {
+  const { data: sessionData, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error("Erreur session Supabase:", error);
+    return null;
+  }
+  const session = sessionData?.session;
+  if (!session) {
+    console.warn("Pas de session (non connecté).");
+    return null;
+  }
+  return session.user.id;
+}
+(async () => {
+  userId = await fetchSession();
+})();
+
+/*************************************************
+ * Mise à jour activité
+ *************************************************/
+async function updateCurrentActivity(episodeCard) {
+  if (!userId) return;
+
+  // Récupère infos depuis la carte cliquée
+  const episodeTitle = episodeCard.querySelector("h3")?.textContent || "";
+  const episodeNumber = episodeTitle.match(/\d+/) ? parseInt(episodeTitle.match(/\d+/)[0], 10) : null;
+  const episodeImage  = episodeCard.querySelector("img")?.src || null;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      currently_watching: ANIME_TITLE,   // 🔑 juste le titre
+      episode_number: episodeNumber,     // 🔑 numéro brut
+      episode_image: episodeImage,
+      current_season: currentSeason      // 🔑 numéro brut
+    })
+    .eq("id", userId);
+
+  if (error) console.error("Erreur update activité:", error);
+}
+
+/*************************************************
+ * Effacer activité
+ *************************************************/
+async function clearCurrentActivity() {
+  if (!userId) return;
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      currently_watching: null,
+      episode_number: null,
+      episode_image: null,
+      current_season: null
+    })
+    .eq("id", userId);
+
+  if (error) console.error("Erreur clear activité:", error);
+}
+
+/*************************************************
+ * Intégration avec ton lecteur
+ *************************************************/
+// Quand on clique sur une carte épisode → on lance la vidéo + update activité
+document.querySelectorAll(".card").forEach((card, index) => {
+  card.addEventListener("click", () => {
+    currentSeason = card.dataset.season;
+    currentEpisodeIndex = index;
+    updateCurrentActivity(card);
+  });
+});
+
+// Quand on ferme le lecteur vidéo → clear activité
+document.getElementById("backButton").addEventListener("click", () => {
+  clearCurrentActivity();
+});
 
 
 </script>
