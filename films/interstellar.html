@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Interstellar - BNZ</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <style>
 /* --- Styles généraux --- */
 body {
@@ -448,7 +449,7 @@ video {
 <!-- --- Lecteur vidéo --- -->
 <div class="video-container" id="videoContainer">
   <button class="back-button" id="backButton">← Retour à la fiche</button>
-  <video id="video" src="https://cinetacos.xyz/movies/Interstellar.mp4"></video>
+ <video id="video" controls></video>
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
   <div class="progress-wrapper" id="progressWrapper">
@@ -535,12 +536,32 @@ backButton.addEventListener('click', () => {
 let hideTimeout;
 video.controls = false;
 
-// ✅ Bouton "Lire le film"
 btnWatch.addEventListener('click', () => {
   videoContainer.style.display = 'flex';
+  loadVideo("https://pulse.topstrime.online/movie/803796/mgob7j/audio-0/index.m3u8"); 
   video.play();
   showControls();
+  navbar.style.display = 'none';
 });
+
+
+  function loadVideo(source) {
+  if (source.endsWith(".m3u8")) {
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(source);
+      hls.attachMedia(video);
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari supporte directement HLS
+      video.src = source;
+    } else {
+      alert("Votre navigateur ne supporte pas HLS.");
+    }
+  } else {
+    // Cas d'une vidéo MP4 normale
+    video.src = source;
+  }
+}
 
 // ---------------------
 // Show / hide controls
