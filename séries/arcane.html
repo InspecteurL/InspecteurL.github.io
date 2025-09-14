@@ -871,7 +871,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /*************************************************
+/*************************************************
  * Activité Supabase (profiles table)
  *************************************************/
 const ANIME_TITLE = "Arcane";
@@ -905,16 +905,18 @@ async function fetchSession() {
 async function updateCurrentActivity(episodeCard) {
   if (!userId) return;
 
-  const episodeNumber = episodeCard.querySelector("h3")?.textContent.replace(/\D/g, "") || null;
+  // Récupère infos depuis la carte cliquée
+  const episodeTitle = episodeCard.querySelector("h3")?.textContent || "";
+  const episodeNumber = episodeTitle.match(/\d+/) ? parseInt(episodeTitle.match(/\d+/)[0], 10) : null;
   const episodeImage  = episodeCard.querySelector("img")?.src || null;
 
   const { error } = await supabase
     .from("profiles")
     .update({
-      currently_watching: `${ANIME_TITLE} (Saison ${currentSeason})`,
-      episode_number: episodeNumber,
+      currently_watching: ANIME_TITLE,   // 🔑 juste le titre
+      episode_number: episodeNumber,     // 🔑 numéro brut
       episode_image: episodeImage,
-      current_season: currentSeason
+      current_season: currentSeason      // 🔑 numéro brut
     })
     .eq("id", userId);
 
@@ -955,7 +957,6 @@ document.querySelectorAll(".card").forEach((card, index) => {
 document.getElementById("backButton").addEventListener("click", () => {
   clearCurrentActivity();
 });
-
 
 
 </script>
