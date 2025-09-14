@@ -871,6 +871,92 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /*************************************************
+ * Activité Supabase (profiles table)
+ *************************************************/
+const ANIME_TITLE = "Arcane";
+let currentSeason = 1;
+let currentEpisodeIndex = null;
+let userId = null;
+
+/*************************************************
+ * Session utilisateur
+ *************************************************/
+async function fetchSession() {
+  const { data: sessionData, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error("Erreur session Supabase:", error);
+    return null;
+  }
+  const session = sessionData?.session;
+  if (!session) {
+    console.warn("Pas de session (non connecté).");
+    return null;
+  }
+  return session.user.id;
+}
+(async () => {
+  userId = await fetchSession();
+})();
+
+/*************************************************
+ * Mise à jour activité
+ *************************************************/
+async function updateCurrentActivity(episodeCard) {
+  if (!userId) return;
+
+  const episodeNumber = episodeCard.querySelector("h3")?.textContent.replace(/\D/g, "") || null;
+  const episodeImage  = episodeCard.querySelector("img")?.src || null;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      currently_watching: `${ANIME_TITLE} (Saison ${currentSeason})`,
+      episode_number: episodeNumber,
+      episode_image: episodeImage,
+      current_season: currentSeason
+    })
+    .eq("id", userId);
+
+  if (error) console.error("Erreur update activité:", error);
+}
+
+/*************************************************
+ * Effacer activité
+ *************************************************/
+async function clearCurrentActivity() {
+  if (!userId) return;
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      currently_watching: null,
+      episode_number: null,
+      episode_image: null,
+      current_season: null
+    })
+    .eq("id", userId);
+
+  if (error) console.error("Erreur clear activité:", error);
+}
+
+/*************************************************
+ * Intégration avec ton lecteur
+ *************************************************/
+// Quand on clique sur une carte épisode → on lance la vidéo + update activité
+document.querySelectorAll(".card").forEach((card, index) => {
+  card.addEventListener("click", () => {
+    currentSeason = card.dataset.season;
+    currentEpisodeIndex = index;
+    updateCurrentActivity(card);
+  });
+});
+
+// Quand on ferme le lecteur vidéo → clear activité
+document.getElementById("backButton").addEventListener("click", () => {
+  clearCurrentActivity();
+});
+
+
 
 </script>
 
