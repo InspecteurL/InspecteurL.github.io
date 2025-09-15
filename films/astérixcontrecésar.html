@@ -492,7 +492,27 @@ video {
   </div>
 </div>
 
-<script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm";
+
+const supabase = createClient(
+  "https://wuagahavmbugmnuzsouf.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+);
+
+// ──────────────── Supabase session ────────────────
+let userId = null;
+async function fetchUser() {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    console.error("Erreur récupération user:", error.message);
+    return;
+  }
+  userId = data.user?.id;
+}
+await fetchUser();
+
+// ──────────────── DOM elements ────────────────
 const video = document.getElementById('video');
 const videoContainer = document.getElementById('videoContainer');
 const controls = document.getElementById('controls');
@@ -514,37 +534,37 @@ const subtitleMenu = document.getElementById('subtitleMenu');
 const btnWatch = document.getElementById('btnWatch');
 const backButton = document.getElementById('backButton');
 const navbar = document.getElementById('navbar');
+const fullscreenBtn = document.getElementById('fullscreen');
+const backwardBtn = document.getElementById('backward');
+const forwardBtn = document.getElementById('forward');
 
-// Quand on clique sur "Lire le film" → cacher la navbar
-btnWatch.addEventListener('click', () => {
-  videoContainer.style.display = 'flex';
-  video.play();
-  showControls();
-  navbar.style.display = 'none'; // 👈 cache la navbar
-});
+// ──────────────── Supabase activity ────────────────
+async function startWatching() {
+  if (!userId) return;
+  await supabase.from("profiles").update({
+    currently_watching: "Astérix & Obélix contre César",
+    watching_type: "film",
+    episode_number: null,
+    current_season: null,
+    episode_image: "https://media.themoviedb.org/t/p/w440_and_h660_face/2xFo4wO4zAGb3KcyvBsC2igLLdF.jpg"
+  }).eq("id", userId);
+}
 
-// Quand on clique sur "Retour à la fiche" → montrer la navbar
-backButton.addEventListener('click', () => {
-  video.pause();
-  video.currentTime = 0;
-  videoContainer.style.display = 'none';
-  if (document.fullscreenElement) document.exitFullscreen();
-  navbar.style.display = 'block'; // 👈 réaffiche la navbar
-});
+async function stopWatching() {
+  if (!userId) return;
+  await supabase.from("profiles").update({
+    currently_watching: null,
+    watching_type: null,
+    episode_number: null,
+    current_season: null,
+    episode_image: null
+  }).eq("id", userId);
+}
 
+// ──────────────── Show / Hide controls ────────────────
 let hideTimeout;
 video.controls = false;
 
-// ✅ Bouton "Lire le film"
-btnWatch.addEventListener('click', () => {
-  videoContainer.style.display = 'flex';
-  video.play();
-  showControls();
-});
-
-// ---------------------
-// Show / hide controls
-// ---------------------
 function showControls() {
   controls.classList.remove('hide');
   progressWrapper.classList.remove('hide');
@@ -573,31 +593,33 @@ video.addEventListener('click', showControls);
 
 showControls();
 
-// --- Cacher le lecteur et retourner à la fiche quand on clique sur le bouton ---
-backButton.addEventListener('click', () => {
+// ──────────────── Bouton "Lire le film" ────────────────
+btnWatch.addEventListener('click', async () => {
+  videoContainer.style.display = 'flex';
+  video.play();
+  navbar.style.display = 'none';
+  showControls();
+  await startWatching();
+});
+
+// ──────────────── Bouton "Retour à la fiche" ────────────────
+backButton.addEventListener('click', async () => {
   video.pause();
   video.currentTime = 0;
   videoContainer.style.display = 'none';
-
-  // Si on est en fullscreen, quitter
-  if (document.fullscreenElement) {
-    document.exitFullscreen();
-  }
+  if (document.fullscreenElement) document.exitFullscreen();
+  navbar.style.display = 'block';
+  await stopWatching();
 });
 
-
-// ---------------------
-// Format time
-// ---------------------
+// ──────────────── Format time ────────────────
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-// ---------------------
-// Update progress & time
-// ---------------------
+// ──────────────── Update progress & time ────────────────
 video.addEventListener('timeupdate', () => {
   const percent = (video.currentTime / video.duration) * 100;
   progressBar.style.width = percent + '%';
@@ -605,9 +627,7 @@ video.addEventListener('timeupdate', () => {
   totalTimeEl.textContent = formatTime(video.duration);
 });
 
-// ---------------------
-// Play / pause
-// ---------------------
+// ──────────────── Play / pause ────────────────
 function togglePlay() {
   if (video.paused) video.play();
   else video.pause();
@@ -629,18 +649,14 @@ video.addEventListener('pause', () => {
   showControls();
 });
 
-// ---------------------
-// Seek
-// ---------------------
+// ──────────────── Seek ────────────────
 progressWrapper.addEventListener('click', e => {
   const rect = progress.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
   video.currentTime = pos * video.duration;
 });
 
-// ---------------------
-// Volume
-// ---------------------
+// ──────────────── Volume ────────────────
 volumeSlider.addEventListener('input', () => {
   video.volume = volumeSlider.value;
   updateVolumeIcon();
@@ -657,9 +673,7 @@ function updateVolumeIcon() {
   else volumeIcon.textContent = 'volume_up';
 }
 
-// ---------------------
-// Settings menu
-// ---------------------
+// ──────────────── Settings menu ────────────────
 settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
 settingsMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -668,9 +682,7 @@ settingsMenu.querySelectorAll('button').forEach(btn => {
   });
 });
 
-// ---------------------
-// Source menu
-// ---------------------
+// ──────────────── Source menu ────────────────
 sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
 sourceMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -680,9 +692,7 @@ sourceMenu.querySelectorAll('button').forEach(btn => {
   });
 });
 
-// ---------------------
-// Subtitles menu
-// ---------------------
+// ──────────────── Subtitles menu ────────────────
 subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
 subtitleMenu.addEventListener('click', e => {
   if(e.target.tagName === 'BUTTON'){
@@ -699,29 +709,23 @@ subtitleMenu.addEventListener('click', e => {
   }
 });
 
-// ---------------------
-// Fullscreen
-// ---------------------
-document.getElementById('fullscreen').addEventListener('click', () => {
+// ──────────────── Fullscreen ────────────────
+fullscreenBtn.addEventListener('click', () => {
   if(!document.fullscreenElement) videoContainer.requestFullscreen();
   else document.exitFullscreen();
 });
 
-// ---------------------
-// Backward / Forward
-// ---------------------
-document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
-document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
+// ──────────────── Backward / Forward ────────────────
+backwardBtn.addEventListener('click', () => { video.currentTime -= 10; });
+forwardBtn.addEventListener('click', () => { video.currentTime += 10; });
 
-// ---------------------
-// Toggle menu helper
-// ---------------------
+// ──────────────── Toggle menu helper ────────────────
 function toggleMenu(menu){
   [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
   menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
 }
-
 </script>
+
 
 </body>
 </html>
