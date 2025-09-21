@@ -515,27 +515,49 @@ const btnWatch = document.getElementById('btnWatch');
 const backButton = document.getElementById('backButton');
 const navbar = document.getElementById('navbar');
 
-// Quand on clique sur "Lire le film" → cacher la navbar
+// ---------------------
+// Remplacement automatique des domaines
+// ---------------------
+const replacements = {
+  "cinetacos.xyz": "cinechicken.xyz",
+  "chicken.xyz": "burger.xyz"
+};
+
+function autoReplaceDomain(url) {
+  for (const oldDomain in replacements) {
+    if (url.includes(oldDomain)) {
+      return url.replace(oldDomain, replacements[oldDomain]);
+    }
+  }
+  return url;
+}
+
+// Corrige la source principale
+video.src = autoReplaceDomain(video.src);
+
+// ---------------------
+// Lire le film → cacher la navbar
+// ---------------------
 btnWatch.addEventListener('click', () => {
   videoContainer.style.display = 'flex';
   video.play();
   showControls();
-  navbar.style.display = 'none'; // 👈 cache la navbar
+  navbar.style.display = 'none';
 });
 
-// Quand on clique sur "Retour à la fiche" → montrer la navbar
+// Retour fiche → montrer la navbar
 backButton.addEventListener('click', () => {
   video.pause();
   video.currentTime = 0;
   videoContainer.style.display = 'none';
   if (document.fullscreenElement) document.exitFullscreen();
-  navbar.style.display = 'block'; // 👈 réaffiche la navbar
+  navbar.style.display = 'block';
 });
 
 let hideTimeout;
 video.controls = false;
 
-// ✅ Bouton "Lire le film"
+// Bouton "Lire le film"
 btnWatch.addEventListener('click', () => {
   videoContainer.style.display = 'flex';
   video.play();
@@ -572,19 +594,6 @@ document.addEventListener('keydown', showControls);
 video.addEventListener('click', showControls);
 
 showControls();
-
-// --- Cacher le lecteur et retourner à la fiche quand on clique sur le bouton ---
-backButton.addEventListener('click', () => {
-  video.pause();
-  video.currentTime = 0;
-  videoContainer.style.display = 'none';
-
-  // Si on est en fullscreen, quitter
-  if (document.fullscreenElement) {
-    document.exitFullscreen();
-  }
-});
-
 
 // ---------------------
 // Format time
@@ -669,12 +678,14 @@ settingsMenu.querySelectorAll('button').forEach(btn => {
 });
 
 // ---------------------
-// Source menu
+// Source menu (avec correction auto des domaines)
 // ---------------------
 sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
 sourceMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => {
-    video.src = btn.dataset.src;
+    let src = btn.dataset.src;
+    src = autoReplaceDomain(src);
+    video.src = src;
     video.play();
     sourceMenu.style.display = 'none';
   });
@@ -720,8 +731,8 @@ function toggleMenu(menu){
   [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
   menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
 }
-
 </script>
+
 
 </body>
 </html>
