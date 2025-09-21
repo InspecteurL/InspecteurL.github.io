@@ -516,26 +516,6 @@ const backButton = document.getElementById('backButton');
 const navbar = document.getElementById('navbar');
 
 // ---------------------
-// Remplacement automatique des domaines
-// ---------------------
-const replacements = {
-  "cinetacos.xyz": "cinechicken.xyz",
-  "chicken.xyz": "burger.xyz"
-};
-
-function autoReplaceDomain(url) {
-  for (const oldDomain in replacements) {
-    if (url.includes(oldDomain)) {
-      return url.replace(oldDomain, replacements[oldDomain]);
-    }
-  }
-  return url;
-}
-
-// Corrige la source principale
-video.src = autoReplaceDomain(video.src);
-
-// ---------------------
 // Lire le film → cacher la navbar
 // ---------------------
 btnWatch.addEventListener('click', () => {
@@ -733,6 +713,7 @@ function toggleMenu(menu){
 }
 </script>
 
+<script src="script.js"></script>
 
 </body>
 </html>
