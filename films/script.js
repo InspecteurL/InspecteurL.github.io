@@ -6,6 +6,7 @@ const replacements = {
   "chicken.xyz": "burger.xyz"
 };
 
+
 function autoReplaceDomain(url) {
   if (!url || typeof url !== "string") return url;
   for (const oldDomain in replacements) {
@@ -72,3 +73,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
