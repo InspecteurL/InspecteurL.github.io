@@ -35,14 +35,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Corrige toutes les data-video (👉 Arcane est ici)
+  // Corrige toutes les data-video
   document.querySelectorAll("[data-video]").forEach(el => {
     if (el.dataset.video) {
       el.dataset.video = autoReplaceDomain(el.dataset.video);
     }
   });
 
-  // Corrige aussi data-src si jamais tu en utilises
+  // Corrige aussi data-src
   document.querySelectorAll("[data-src]").forEach(el => {
     if (el.dataset.src) {
       el.dataset.src = autoReplaceDomain(el.dataset.src);
@@ -55,13 +55,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// script.js
+// ---------------------
+// Supabase - activité (uniquement pour /films/)
+// ---------------------
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm';
 
-// Vérifie si on est sur la page films
 if (window.location.href.startsWith("https://inspecteurl.github.io/films/")) {
   
-  // --- Supabase ---
   const supabase = createClient(
     'https://wuagahavmbugmnuzsouf.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
@@ -78,7 +78,6 @@ if (window.location.href.startsWith("https://inspecteurl.github.io/films/")) {
   }
   (async () => { userId = await fetchSession(); })();
 
-  // --- Mise à jour activité ---
   async function updateCurrentActivity() {
     if (!userId) return;
     const title = document.querySelector(".fiche-info h1")?.textContent || "";
@@ -97,7 +96,6 @@ if (window.location.href.startsWith("https://inspecteurl.github.io/films/")) {
     if (error) console.error("Erreur update activité:", error);
   }
 
-  // --- Effacer activité ---
   async function clearCurrentActivity() {
     if (!userId) return;
     const { error } = await supabase
@@ -113,29 +111,25 @@ if (window.location.href.startsWith("https://inspecteurl.github.io/films/")) {
     if (error) console.error("Erreur clear activité:", error);
   }
 
-  // --- Intégration avec le lecteur ---
+  // Liens avec le lecteur
   const btnWatch = document.getElementById('btnWatch');
   const backButton = document.getElementById('backButton');
   const video = document.getElementById('video');
 
   if (btnWatch && backButton && video) {
-    // Quand on lance le film
     btnWatch.addEventListener("click", () => {
       updateCurrentActivity();
     });
 
-    // Quand on ferme le lecteur
     backButton.addEventListener("click", () => {
       clearCurrentActivity();
     });
 
-    // Quand la vidéo se termine
     video.addEventListener("ended", () => {
       clearCurrentActivity();
     });
   }
 }
-
 
 // ---------------------
 // Sécuriser playMovie()
@@ -143,7 +137,7 @@ if (window.location.href.startsWith("https://inspecteurl.github.io/films/")) {
 (function () {
   const oldPlayMovie = window.playMovie;
   window.playMovie = function (src) {
-    src = autoReplaceDomain(src); // ✅ on corrige ici aussi
+    src = autoReplaceDomain(src); // ✅ correction domaine
     if (typeof oldPlayMovie === "function") {
       return oldPlayMovie(src);
     }
@@ -154,4 +148,3 @@ if (window.location.href.startsWith("https://inspecteurl.github.io/films/")) {
     }
   };
 })();
-
