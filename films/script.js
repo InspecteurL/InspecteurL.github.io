@@ -35,14 +35,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Corrige toutes les data-video
+  // Corrige toutes les data-video (👉 Arcane est ici)
   document.querySelectorAll("[data-video]").forEach(el => {
     if (el.dataset.video) {
       el.dataset.video = autoReplaceDomain(el.dataset.video);
     }
   });
 
-  // Corrige aussi data-src
+  // Corrige aussi data-src si jamais tu en utilises
   document.querySelectorAll("[data-src]").forEach(el => {
     if (el.dataset.src) {
       el.dataset.src = autoReplaceDomain(el.dataset.src);
@@ -56,88 +56,12 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ---------------------
-// Supabase - activité (uniquement pour /films/)
-// ---------------------
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm';
-
-if (window.location.href.startsWith("https://inspecteurl.github.io/films/")) {
-  
-  const supabase = createClient(
-    'https://wuagahavmbugmnuzsouf.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-  );
-
-  let userId = null;
-  async function fetchSession() {
-    const { data: sessionData, error } = await supabase.auth.getSession();
-    if (error) {
-      console.error("Erreur session Supabase:", error);
-      return null;
-    }
-    return sessionData?.session?.user?.id || null;
-  }
-  (async () => { userId = await fetchSession(); })();
-
-  async function updateCurrentActivity() {
-    if (!userId) return;
-    const title = document.querySelector(".fiche-info h1")?.textContent || "";
-    const poster = document.querySelector(".fiche img")?.src || "";
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        currently_watching: title,
-        episode_number: null,
-        current_season: null,
-        episode_image: poster
-      })
-      .eq("id", userId);
-
-    if (error) console.error("Erreur update activité:", error);
-  }
-
-  async function clearCurrentActivity() {
-    if (!userId) return;
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        currently_watching: null,
-        episode_number: null,
-        current_season: null,
-        episode_image: null
-      })
-      .eq("id", userId);
-
-    if (error) console.error("Erreur clear activité:", error);
-  }
-
-  // Liens avec le lecteur
-  const btnWatch = document.getElementById('btnWatch');
-  const backButton = document.getElementById('backButton');
-  const video = document.getElementById('video');
-
-  if (btnWatch && backButton && video) {
-    btnWatch.addEventListener("click", () => {
-      updateCurrentActivity();
-    });
-
-    backButton.addEventListener("click", () => {
-      clearCurrentActivity();
-    });
-
-    video.addEventListener("ended", () => {
-      clearCurrentActivity();
-    });
-  }
-}
-
-// ---------------------
 // Sécuriser playMovie()
 // ---------------------
 (function () {
   const oldPlayMovie = window.playMovie;
   window.playMovie = function (src) {
-    src = autoReplaceDomain(src); // ✅ correction domaine
+    src = autoReplaceDomain(src); // ✅ on corrige ici aussi
     if (typeof oldPlayMovie === "function") {
       return oldPlayMovie(src);
     }
