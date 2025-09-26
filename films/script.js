@@ -1,19 +1,15 @@
 // ---------------------
 // Remplacement automatique des domaines
 // ---------------------
-const replacements = {
-  "cinetacos.xyz": "cinechicken.xyz",
-  "chicken.xyz": "burger.xyz"
-};
-
-
 function autoReplaceDomain(url) {
   if (!url || typeof url !== "string") return url;
-  for (const oldDomain in replacements) {
-    if (url.includes(oldDomain)) {
-      return url.replace(new RegExp(oldDomain, "g"), replacements[oldDomain]);
-    }
-  }
+
+  // toujours forcer vers cinechicken et burger
+  url = url.replace(/cinetacos\.xyz/g, "cinechicken.xyz");
+  url = url.replace(/cinechicken\.xyz/g, "cinechicken.xyz"); // 🔒 sécurise si déjà bon
+  url = url.replace(/chicken\.xyz/g, "burger.xyz");
+  url = url.replace(/burger\.xyz/g, "burger.xyz"); // 🔒 idem
+
   return url;
 }
 
@@ -36,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Corrige toutes les data-video (👉 Arcane est ici)
+  // Corrige toutes les data-video
   document.querySelectorAll("[data-video]").forEach(el => {
     if (el.dataset.video) {
       el.dataset.video = autoReplaceDomain(el.dataset.video);
@@ -62,15 +58,15 @@ document.addEventListener("DOMContentLoaded", () => {
 (function () {
   const oldPlayMovie = window.playMovie;
   window.playMovie = function (src) {
-    src = autoReplaceDomain(src); // ✅ on corrige ici aussi
+    src = autoReplaceDomain(src); // ✅ correction systématique
     if (typeof oldPlayMovie === "function") {
       return oldPlayMovie(src);
     }
     const video = document.getElementById("video");
     if (video) {
       video.src = src;
+      video.load(); // 🔑 recharge bien la nouvelle source
       video.play().catch(err => console.warn("Erreur lecture vidéo :", err));
     }
   };
 })();
-
