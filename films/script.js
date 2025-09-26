@@ -1,72 +1,193 @@
-// ---------------------
-// Remplacement automatique des domaines
-// ---------------------
-function autoReplaceDomain(url) {
-  if (!url || typeof url !== "string") return url;
+// DEBUG = true pour voir tout dans la console
+const DEBUG = true;
 
-  // toujours forcer vers cinechicken et burger
-  url = url.replace(/cinetacos\.xyz/g, "cinechicken.xyz");
-  url = url.replace(/cinechicken\.xyz/g, "cinechicken.xyz"); // 🔒 sécurise si déjà bon
-  url = url.replace(/chicken\.xyz/g, "burger.xyz");
-  url = url.replace(/burger\.xyz/g, "burger.xyz"); // 🔒 idem
+const HOST_MAP = {
+  "cinetacos.xyz": "cinechicken.xyz",
+  "chicken.xyz": "burger.xyz"
+};
 
-  return url;
+function dbg(...args) { if (DEBUG) console.log("[autoDomain] ", ...args); }
+
+/**
+ * Replace hostnames in a URL using the HOST_MAP.
+ * Uses the URL constructor for safety and supports relative URLs.
+ */
+function autoReplaceDomain(raw) {
+  if (!raw || typeof raw !== "string") return raw;
+  try {
+    // Résout les URLs relatives par rapport à la page
+    const u = new URL(raw, location.href);
+    const host = u.hostname.toLowerCase();
+    if (HOST_MAP[host]) {
+      const old = u.href;
+      u.hostname = HOST_MAP[host];
+      dbg("replace host", host, "→", HOST_MAP[host], ":", old, "→", u.href);
+      return u.href;
+    }
+    return raw;
+  } catch (err) {
+    // fallback si URL() échoue (chaîne bizarre)
+    dbg("autoReplaceDomain: URL() failed for", raw);
+    for (const from in HOST_MAP) {
+      const re = new RegExp(from.replace(/\./g, "\\."), "ig");
+      if (re.test(raw)) {
+        const replaced = raw.replace(re, HOST_MAP[from]);
+        dbg("fallback replace", raw, "→", replaced);
+        return replaced;
+      }
+    }
+    return raw;
+  }
 }
 
-// ---------------------
-// Appliquer les corrections une fois le DOM chargé
-// ---------------------
-document.addEventListener("DOMContentLoaded", () => {
+function patchElementSources(root = document) {
+  // <video src=...>
+  const videos = root.querySelectorAll ? root.querySelectorAll("video") : [];
+  videos.forEach(video => {
+    try {
+      if (video.src) {
+        const newSrc = autoReplaceDomain(video.src);
+        if (newSrc !== video.src) {
+          dbg("video.src patched:", video.src, "→", newSrc);
+          video.src = newSrc;
+        }
+      }
+      // <source> children
+      video.querySelectorAll && video.querySelectorAll("source").forEach(srcEl => {
+        const s = srcEl.getAttribute("src");
+        if (s) {
+          const newS = autoReplaceDomain(s);
+          if (newS !== s) {
+            dbg("<source> patched:", s, "→", newS);
+            srcEl.setAttribute("src", newS);
+          }
+        }
+      });
+    } catch (e) {
+      console.warn("patchElementSources error", e);
+    }
+  });
+
+  // data-video / data-src attributes
+  root.querySelectorAll && root.querySelectorAll("[data-video],[data-src]").forEach(el => {
+    if (el.dataset) {
+      if (el.dataset.video) {
+        const n = autoReplaceDomain(el.dataset.video);
+        if (n !== el.dataset.video) {
+          dbg("data-video patched:", el.dataset.video, "→", n);
+          el.dataset.video = n;
+        }
+      }
+      if (el.dataset.src) {
+        const n = autoReplaceDomain(el.dataset.src);
+        if (n !== el.dataset.src) {
+          dbg("data-src patched:", el.dataset.src, "→", n);
+          el.dataset.src = n;
+        }
+      }
+    }
+  });
+
+  // <a href>
+  root.querySelectorAll && root.querySelectorAll("a[href]").forEach(a => {
+    try {
+      const old = a.getAttribute("href");
+      if (old) {
+        const n = autoReplaceDomain(old);
+        if (n !== old) {
+          dbg("<a> href patched:", old, "→", n);
+          a.setAttribute("href", n);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  });
+}
+
+// Add error logging to the main video (helps comprendre pourquoi ça plante)
+function attachVideoErrorLogging() {
   const video = document.getElementById("video");
+  if (!video) return;
+  if (video._autoDomainErrorAttached) return;
+  video._autoDomainErrorAttached = true;
 
-  // Corrige la source directe du <video>
-  if (video && video.src) {
-    video.src = autoReplaceDomain(video.src);
-  }
+  video.addEventListener("error", (ev) => {
+    const code = video.error && video.error.code;
+    dbg("VIDEO ERROR event:", { code, message: video.error && video.error.message, currentSrc: video.currentSrc });
+  });
 
-  // Corrige aussi les <source> enfants
-  if (video) {
-    video.querySelectorAll("source").forEach(srcEl => {
-      const s = srcEl.getAttribute("src");
-      if (s) srcEl.setAttribute("src", autoReplaceDomain(s));
+  video.addEventListener("stalled", () => dbg("video stalled - check network / CORS"));
+}
+
+// Intercepter window.playMovie proprement (capture et conserve la fonction réelle si la page la redéfinit)
+(function installPlayMovieInterceptor() {
+  let savedFn = window.playMovie;
+  try {
+    Object.defineProperty(window, "playMovie", {
+      configurable: true,
+      enumerable: true,
+      get() {
+        // retourne une fonction wrapper qui utilise la dernière savedFn
+        return function(...args) {
+          if (args[0]) args[0] = autoReplaceDomain(args[0]);
+          if (typeof savedFn === "function") {
+            try { return savedFn.apply(this, args); }
+            catch (e) { dbg("old playMovie threw, falling back:", e); }
+          }
+          // fallback direct player control
+          const video = document.getElementById("video");
+          if (video) {
+            video.src = args[0] || video.src;
+            try { video.load(); } catch(e){ dbg("video.load() failed", e); }
+            return video.play && video.play().catch(err => dbg("video.play() failed:", err));
+          }
+          dbg("playMovie wrapper called but no video element and no old function.");
+        };
+      },
+      set(fn) {
+        // quand la page fait `window.playMovie = fn`, on capture la fonction réelle
+        savedFn = fn;
+        dbg("playMovie setter: captured new implementation", !!fn);
+      }
     });
+    dbg("playMovie interceptor installed");
+  } catch (e) {
+    // fallback si defineProperty impossible
+    dbg("defineProperty failed for playMovie:", e);
+    window.playMovie = function(...args) {
+      if (args[0]) args[0] = autoReplaceDomain(args[0]);
+      if (typeof savedFn === "function") return savedFn.apply(this, args);
+      const video = document.getElementById("video");
+      if (video) {
+        video.src = args[0] || video.src;
+        try { video.load(); } catch(e){ dbg("video.load() failed", e); }
+        return video.play && video.play().catch(err => dbg("video.play() failed:", err));
+      }
+    };
   }
+})();
 
-  // Corrige toutes les data-video
-  document.querySelectorAll("[data-video]").forEach(el => {
-    if (el.dataset.video) {
-      el.dataset.video = autoReplaceDomain(el.dataset.video);
-    }
-  });
-
-  // Corrige aussi data-src si jamais tu en utilises
-  document.querySelectorAll("[data-src]").forEach(el => {
-    if (el.dataset.src) {
-      el.dataset.src = autoReplaceDomain(el.dataset.src);
-    }
-  });
-
-  // Corrige les liens <a href="">
-  document.querySelectorAll("a[href]").forEach(a => {
-    a.href = autoReplaceDomain(a.href);
-  });
+// DOMContentLoaded initial patch
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    patchElementSources(document);
+    attachVideoErrorLogging();
+  } catch (e) { dbg("DOMContentLoaded handler error", e); }
 });
 
-// ---------------------
-// Sécuriser playMovie()
-// ---------------------
-(function () {
-  const oldPlayMovie = window.playMovie;
-  window.playMovie = function (src) {
-    src = autoReplaceDomain(src); // ✅ correction systématique
-    if (typeof oldPlayMovie === "function") {
-      return oldPlayMovie(src);
+// Observer pour éléments ajoutés dynamiquement
+const mo = new MutationObserver(muts => {
+  muts.forEach(m => {
+    if (m.addedNodes && m.addedNodes.length) {
+      m.addedNodes.forEach(node => {
+        // si le noeud est un element, patcher les sources dedans
+        if (node.nodeType === 1) patchElementSources(node);
+      });
     }
-    const video = document.getElementById("video");
-    if (video) {
-      video.src = src;
-      video.load(); // 🔑 recharge bien la nouvelle source
-      video.play().catch(err => console.warn("Erreur lecture vidéo :", err));
-    }
-  };
-})();
+  });
+});
+mo.observe(document.documentElement || document, { childList: true, subtree: true });
+
+// patch immédiat au cas où le script est injecté tard
+try { patchElementSources(document); attachVideoErrorLogging(); } catch(e){ dbg("initial patch failed", e); }
