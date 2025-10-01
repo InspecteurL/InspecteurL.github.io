@@ -450,8 +450,8 @@ video {
   <button class="back-button" id="backButton">← Retour à la fiche</button>
   <video id="video" src="https://cinetacos.xyz/movies/Retour-vers-le-futur.mp4" controls>
     <!-- Ajout des sous-titres -->
-    <track label="Français" kind="subtitles" srclang="fr" src="https://inspecteurl.github.io/subtitles/subfrbacktothefutur.vtt">
     <track label="Anglais" kind="subtitles" srclang="en" src="https://inspecteurl.github.io/subtitles/subenbacktothefutur.vtt">
+    <track label="Français" kind="subtitles" srclang="fr" src="https://inspecteurl.github.io/subtitles/subfrbacktothefutur.vtt">
   </video>
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
@@ -688,33 +688,24 @@ sourceMenu.querySelectorAll('button').forEach(btn => {
 });
 
 // ---------------------
-// Subtitles menu  ✅ VERSION CORRIGÉE (basé sur label)
+// Subtitles menu  ✅ VERSION FIXE
 // ---------------------
 subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
 subtitleMenu.addEventListener('click', e => {
   if (e.target.tagName === 'BUTTON') {
     const lang = e.target.dataset.track; // ex: "fr", "en" ou "none"
 
-    // On désactive toutes les pistes
     for (let i = 0; i < video.textTracks.length; i++) {
-      video.textTracks[i].mode = 'disabled';
-    }
-
-    // Si on choisit une langue spécifique, on cherche par label
-    if (lang !== 'none') {
-      for (let i = 0; i < video.textTracks.length; i++) {
-        const t = video.textTracks[i];
-        // Exemple: label="Français", dataset.track="fr"
-        if (t.label.toLowerCase().includes(lang)) {
-          t.mode = 'showing';
-        }
+      const t = video.textTracks[i];
+      t.mode = 'disabled';
+      if (lang !== 'none' && t.language === lang) {
+        t.mode = 'showing'; // active seulement la langue choisie
       }
     }
 
     subtitleMenu.style.display = 'none';
   }
 });
-
 
 
 // ---------------------
