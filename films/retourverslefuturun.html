@@ -448,11 +448,12 @@ video {
 <!-- --- Lecteur vidéo --- -->
 <div class="video-container" id="videoContainer">
   <button class="back-button" id="backButton">← Retour à la fiche</button>
-  <video id="video" src="https://cinetacos.xyz/movies/Retour-vers-le-futur.mp4" controls>
-    <!-- Ajout des sous-titres -->
-    <track label="Anglais" kind="subtitles" srclang="en" src="https://inspecteurl.github.io/subtitles/subenbacktothefutur.vtt">
-    <track label="Français" kind="subtitles" srclang="fr" src="https://inspecteurl.github.io/subtitles/subfrbacktothefutur.vtt">
-  </video>
+ <video id="video" src="https://cinetacos.xyz/movies/Retour-vers-le-futur.mp4" controls>
+  <!-- Ajout des sous-titres avec srclang correct -->
+  <track label="Anglais" kind="subtitles" srclang="en" src="https://inspecteurl.github.io/subtitles/subenbacktothefutur.vtt">
+  <track label="Français" kind="subtitles" srclang="fr" src="https://inspecteurl.github.io/subtitles/subfrbacktothefutur.vtt" default>
+</video>
+
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
   <div class="progress-wrapper" id="progressWrapper">
@@ -688,24 +689,27 @@ sourceMenu.querySelectorAll('button').forEach(btn => {
 });
 
 // ---------------------
-// Subtitles menu  ✅ VERSION FIXE
+// Subtitles menu  ✅ FIXÉ
 // ---------------------
 subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
 subtitleMenu.addEventListener('click', e => {
   if (e.target.tagName === 'BUTTON') {
-    const lang = e.target.dataset.track; // ex: "fr", "en" ou "none"
+    const lang = e.target.dataset.track; // "fr", "en" ou "none"
 
     for (let i = 0; i < video.textTracks.length; i++) {
       const t = video.textTracks[i];
-      t.mode = 'disabled';
-      if (lang !== 'none' && t.language === lang) {
-        t.mode = 'showing'; // active seulement la langue choisie
+      t.mode = 'disabled'; // désactiver toutes les pistes
+
+      // Vérifie à la fois srclang ET label pour plus de compatibilité
+      if (lang !== 'none' && (t.language === lang || t.label.toLowerCase().startsWith(lang))) {
+        t.mode = 'showing'; // activer la langue choisie
       }
     }
 
     subtitleMenu.style.display = 'none';
   }
 });
+
 
 
 // ---------------------
