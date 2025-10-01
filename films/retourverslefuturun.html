@@ -448,7 +448,11 @@ video {
 <!-- --- Lecteur vidéo --- -->
 <div class="video-container" id="videoContainer">
   <button class="back-button" id="backButton">← Retour à la fiche</button>
-  <video id="video" src="https://cinetacos.xyz/movies/Retour-vers-le-futur.mp4"></video>
+  <video id="video" src="https://cinetacos.xyz/movies/Retour-vers-le-futur.mp4" controls>
+    <!-- Ajout des sous-titres -->
+    <track label="Français" kind="subtitles" srclang="fr" src="https://ton-site.fr/sous-titres/retour-vers-le-futur.vtt" default>
+    <track label="Anglais" kind="subtitles" srclang="en" src="https://ton-site.fr/sous-titres/back-to-the-future.vtt">
+  </video>
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
   <div class="progress-wrapper" id="progressWrapper">
@@ -489,6 +493,9 @@ video {
   </div>
 
   <div id="subtitleMenu" class="menu">
+    <button data-track="fr">Français</button>
+    <button data-track="en">Anglais</button>
+    <button data-track="none">Désactiver</button>
   </div>
 </div>
 
@@ -681,23 +688,25 @@ sourceMenu.querySelectorAll('button').forEach(btn => {
 });
 
 // ---------------------
-// Subtitles menu
+// Subtitles menu  ✅ VERSION FIXE
 // ---------------------
 subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
 subtitleMenu.addEventListener('click', e => {
-  if(e.target.tagName === 'BUTTON'){
-    const subUrl = e.target.dataset.sub;
-    video.querySelectorAll('track').forEach(t => t.remove());
-    if(subUrl){
-      const track = document.createElement('track');
-      track.src = subUrl;
-      track.kind = 'subtitles';
-      track.default = true;
-      video.appendChild(track);
+  if (e.target.tagName === 'BUTTON') {
+    const lang = e.target.dataset.track; // ex: "fr", "en" ou "none"
+
+    for (let i = 0; i < video.textTracks.length; i++) {
+      const t = video.textTracks[i];
+      t.mode = 'disabled';
+      if (lang !== 'none' && t.language === lang) {
+        t.mode = 'showing'; // active seulement la langue choisie
+      }
     }
+
     subtitleMenu.style.display = 'none';
   }
 });
+
 
 // ---------------------
 // Fullscreen
