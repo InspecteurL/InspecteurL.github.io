@@ -688,24 +688,33 @@ sourceMenu.querySelectorAll('button').forEach(btn => {
 });
 
 // ---------------------
-// Subtitles menu  ✅ VERSION FIXE
+// Subtitles menu  ✅ VERSION CORRIGÉE (basé sur label)
 // ---------------------
 subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
 subtitleMenu.addEventListener('click', e => {
   if (e.target.tagName === 'BUTTON') {
     const lang = e.target.dataset.track; // ex: "fr", "en" ou "none"
 
+    // On désactive toutes les pistes
     for (let i = 0; i < video.textTracks.length; i++) {
-      const t = video.textTracks[i];
-      t.mode = 'disabled';
-      if (lang !== 'none' && t.language === lang) {
-        t.mode = 'showing'; // active seulement la langue choisie
+      video.textTracks[i].mode = 'disabled';
+    }
+
+    // Si on choisit une langue spécifique, on cherche par label
+    if (lang !== 'none') {
+      for (let i = 0; i < video.textTracks.length; i++) {
+        const t = video.textTracks[i];
+        // Exemple: label="Français", dataset.track="fr"
+        if (t.label.toLowerCase().includes(lang)) {
+          t.mode = 'showing';
+        }
       }
     }
 
     subtitleMenu.style.display = 'none';
   }
 });
+
 
 
 // ---------------------
