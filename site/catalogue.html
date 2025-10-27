@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catalogue BNZ</title>
   <style>
-    :root{
-      --card-w: clamp(160px, 20vw, 200px); /* empêche les cartes de grossir en filtrant/recherchant */
+    :root {
+      --card-w: clamp(160px, 20vw, 200px);
     }
     body {
       margin: 0;
@@ -15,7 +15,6 @@
       color: white;
     }
 
-    /* NAV */
     ul {
       list-style-type: none;
       margin: 0;
@@ -47,7 +46,6 @@
     }
     header p { color: #ccc; }
 
-    /* Barre de recherche */
     .search-bar {
       display: flex;
       justify-content: center;
@@ -63,15 +61,15 @@
       font-size: 1rem;
     }
 
-    /* Filtres */
-    .filters {
+    /* Filtres Type */
+    .type-filters, .filters {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 2rem;
+      margin-bottom: 1.2rem;
     }
-    .filters button {
+    .type-filters button, .filters button {
       padding: 0.6rem 1.2rem;
       border: none;
       border-radius: 20px;
@@ -80,10 +78,10 @@
       cursor: pointer;
       transition: 0.3s;
     }
-    .filters button.active,
-    .filters button:hover { background: crimson; }
+    button.active, button:hover {
+      background: crimson;
+    }
 
-    /* Catalogue (flex pour garder taille fixe) */
     .grid {
       display: flex;
       flex-wrap: wrap;
@@ -99,9 +97,8 @@
       box-shadow: 0 5px 15px rgba(0,0,0,0.5);
       transition: transform 0.3s;
       text-align: center;
-
       width: var(--card-w);
-      flex: 0 0 var(--card-w); /* taille stable même quand il reste peu d’éléments */
+      flex: 0 0 var(--card-w);
     }
     .movieimg:hover { transform: scale(1.05); }
 
@@ -123,7 +120,6 @@
       margin-bottom: 0.5rem;
     }
 
-    /* Message Aucun résultat */
     #noResults {
       text-align: center;
       font-size: 1.2rem;
@@ -133,7 +129,7 @@
     }
 
     @media (max-width: 400px){
-      :root{ --card-w: 46vw; } /* 2 colonnes sur très petit écran */
+      :root{ --card-w: 46vw; }
       .movieimg img{ height: 48vw; }
     }
   </style>
@@ -141,7 +137,7 @@
 <body>
   <header>
     <ul id="navbar">
-      <li><a class="active" href="https://inspecteurl.github.io/site/index.html">Home</a></li>
+      <li><a href="https://inspecteurl.github.io/site/index.html">Home</a></li>
       <li><a href="https://inspecteurl.github.io/site/compte.html">Votre Compte</a></li>
       <li><a href="https://inspecteurl.github.io/site/mes-amis.html">Mes amis</a></li>
       <li><a href="https://inspecteurl.github.io/site/accueil.html">Feuilleter</a></li>
@@ -150,295 +146,300 @@
     <p>Découvrez nos derniers films et séries selon vos envies</p>
   </header>
 
-  <!-- Barre de recherche -->
+  <!-- Recherche -->
   <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Rechercher un film, une série, un anime..." onkeyup="searchMovies()">
+    <input type="text" id="searchInput" placeholder="Rechercher un titre..." onkeyup="searchMovies()">
   </div>
 
-  <!-- Filtres -->
+  <!-- Filtres par TYPE -->
+  <div class="type-filters">
+    <button class="active" onclick="filterType('Tous')">Tous</button>
+    <button onclick="filterType('Film')">Films 🎥</button>
+    <button onclick="filterType('Série')">Séries 📺</button>
+    <button onclick="filterType('Documentaire')">Documentaires 🎬</button>
+  </div>
+
+  <!-- Filtres par GENRE -->
   <div class="filters">
     <button class="active" onclick="filterMovies('Tous')">Tous</button>
-    <button onclick="filterMovies('Romance')">Romance</button>
-    <button onclick="filterMovies('Science-Fiction')">Science-Fiction</button>
-    <button onclick="filterMovies('Animation')">Animation</button>
     <button onclick="filterMovies('Action')">Action</button>
-    <button onclick="filterMovies('Thriller')">Thriller</button>
-    <button onclick="filterMovies('Drame')">Drame</button>
     <button onclick="filterMovies('Aventure')">Aventure</button>
     <button onclick="filterMovies('Comédie')">Comédie</button>
+    <button onclick="filterMovies('Drame')">Drame</button>
     <button onclick="filterMovies('Fantastique')">Fantastique</button>
-    <button onclick="filterMovies('Anime')">Anime</button>
-    <button onclick="filterMovies('Documentaire')">Documentaire</button>
-    <button onclick="filterMovies('Horreur')">Horreur</button>
-    <button onclick="filterMovies('Western')">Western</button>
+    <button onclick="filterMovies('Animation')">Animation</button>
+    <button onclick="filterMovies('Thriller')">Thriller</button>
+    <button onclick="filterMovies('Romance')">Romance</button>
+    <button onclick="filterMovies('Science-Fiction')">Science-Fiction</button>
   </div>
 
-  <!-- Message Aucun résultat -->
-  <div id="noResults">Aucun film trouvé.</div>
+  <div id="noResults">Aucun résultat trouvé.</div>
 
-  <!-- Grille -->
   <div class="grid" id="movieGrid">
 
+    <!-- Exemple FILM -->
+    <div class="movieimg" data-type="Film" data-title="Interstellar" data-genre="Science-Fiction">
+      <a href="https://inspecteurl.github.io/films/interstellar.html">
+        <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/tYaC23U62BOJRNVIlFGT6iowEwj.jpg" alt="Interstellar">
+      </a>
+      <h2>Interstellar</h2>
+      <span>Film - Science-Fiction</span>
+    </div>
+
     <!-- ===== FILMS ===== -->
-    <div class="movieimg" data-title="The Gorge" data-genre="Romance">
+    <div class="movieimg" data-type="Film" data-title="The Gorge" data-genre="Romance">
       <a href="https://inspecteurl.github.io/films/thegorge.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/1Np511QIqSs0s3iDpWXPbuY4o5o.jpg" alt="The Gorge"></a>
       <h2>The Gorge</h2>
       <span>Romance</span>
     </div>
 
-    <div class="movieimg" data-title="Interstellar" data-genre="Science-Fiction">
-      <a href="https://inspecteurl.github.io/films/interstellar.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/tYaC23U62BOJRNVIlFGT6iowEwj.jpg" alt="Interstellar"></a>
-      <h2>Interstellar</h2>
-      <span>Science-Fiction</span>
-    </div>
-
-    <div class="movieimg" data-title="Your Name" data-genre="Animation">
+    <div class="movieimg" data-type="Film" data-title="Your Name" data-genre="Animation">
       <a href="https://inspecteurl.github.io/films/yourname.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zyHjvVRgKOt9wgVx4ikp2kGArGF.jpg" alt="Your Name"></a>
       <h2>Your Name</h2>
       <span>Animation</span>
     </div>
 
-    <div class="movieimg" data-title="Cars : Quatre roues" data-genre="Animation">
+    <div class="movieimg" data-type="Film" data-title="Cars : Quatre roues" data-genre="Animation">
       <a href="https://inspecteurl.github.io/films/carsun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/hvHw7ASXEK8x3EawlOtwYXrovdo.jpg" alt="Cars"></a>
       <h2>Cars : Quatre roues</h2>
       <span>Animation</span>
     </div>
 
-    <div class="movieimg" data-title="Cars 2" data-genre="Animation">
+    <div class="movieimg" data-type="Film" data-title="Cars 2" data-genre="Animation">
       <a href="https://inspecteurl.github.io/films/carsdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/qCoaNNfH6lS7qkZDYhWkQpiQpnM.jpg" alt="Cars 2"></a>
       <h2>Cars 2</h2>
       <span>Animation</span>
     </div>
 
-    <div class="movieimg" data-title="Cars 3" data-genre="Animation">
+    <div class="movieimg" data-type="Film" data-title="Cars 3" data-genre="Animation">
       <a href="https://inspecteurl.github.io/films/carstrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4Qbfp1oDsZChdfUX6IPLsEVBQ6s.jpg" alt="Cars 3"></a>
       <h2>Cars 3</h2>
       <span>Animation</span>
     </div>
 
-    <div class="movieimg" data-title="Matrix" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Matrix" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/matrix.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pEoqbqtLc4CcwDUDqxmEDSWpWTZ.jpg" alt="Matrix"></a>
       <h2>Matrix</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Tenet" data-genre="Thriller">
+    <div class="movieimg" data-type="Film" data-title="Tenet" data-genre="Thriller">
       <a href="https://inspecteurl.github.io/films/tenet.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/cRDUa63MeEpOWdqZeXqReDz7KTx.jpg" alt="Tenet"></a>
       <h2>Tenet</h2>
       <span>Thriller</span>
     </div>
 
-    <div class="movieimg" data-title="Avatar" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Avatar" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/avatarun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7N8L80OaG8EBTDdRBjGqT8PBzCM.jpg" alt="Avatar"></a>
       <h2>Avatar</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Avatar : La Voie de l'eau" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Avatar : La Voie de l'eau" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/avatardeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/kQYx143yujkwyjJdZH2skOGeQfA.jpg" alt="Avatar 2"></a>
       <h2>Avatar : La Voie de l'eau</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Fast & Furious : Tokyo Drift" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Fast & Furious : Tokyo Drift" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/fastandftokyodrift.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pji0QbsaA6lhk1eQc2EfeBsXU4y.jpg" alt="Tokyo Drift"></a>
       <h2>Fast & Furious : Tokyo Drift</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Suzume" data-genre="Animation">
+    <div class="movieimg" data-type="Film" data-title="Suzume" data-genre="Animation">
       <a href="https://inspecteurl.github.io/films/suzume.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/hOJYwkVSgXtE3BJFN0bRPKdLJLj.jpg" alt="Suzume"></a>
       <h2>Suzume</h2>
       <span>Animation</span>
     </div>
 
-    <div class="movieimg" data-title="F1 Le Film" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="F1 Le Film" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/fun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/2crZHK9muPUcgHsiwoW9xb6421j.jpg" alt="F1 Le Film"></a>
       <h2>F1® Le Film</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Dune : Première partie" data-genre="Science-Fiction">
+    <div class="movieimg" data-type="Film" data-title="Dune : Première partie" data-genre="Science-Fiction">
       <a href="https://inspecteurl.github.io/films/duneun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/anDuUygHsWrbxqOEQ8H1ZkYTaL9.jpg" alt="Dune"></a>
       <h2>Dune : Première partie</h2>
       <span>Science-Fiction</span>
     </div>
 
-    <div class="movieimg" data-title="Dune : Deuxième partie" data-genre="Science-Fiction">
+    <div class="movieimg" data-type="Film" data-title="Dune : Deuxième partie" data-genre="Science-Fiction">
       <a href="https://inspecteurl.github.io/films/dunedeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/iRNbRAIGQQr5diGnjpwJFm0dgt4.jpg" alt="Dune 2"></a>
       <h2>Dune : Deuxième partie</h2>
       <span>Science-Fiction</span>
     </div>
 
-    <div class="movieimg" data-title="The Mask" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="The Mask" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/themask.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/5OBK9sksRSyrwrcMtxpdxql75Sw.jpg" alt="The Mask"></a>
       <h2>The Mask</h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Retour vers le futur" data-genre="Science-Fiction">
+    <div class="movieimg" data-type="Film" data-title="Retour vers le futur" data-genre="Science-Fiction">
       <a href="https://inspecteurl.github.io/films/retourverslefuturun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gggA0GBaFumhfZzRxOgyRk5Zob5.jpg" alt="Retour vers le futur"></a>
       <h2>Retour vers le futur</h2>
       <span>Science-Fiction</span>
     </div>
 
-    <div class="movieimg" data-title="Retour vers le futur II" data-genre="Science-Fiction">
+    <div class="movieimg" data-type="Film" data-title="Retour vers le futur II" data-genre="Science-Fiction">
       <a href="https://inspecteurl.github.io/films/retourverslefuturdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/k6gtdFRwPaodriCiMw2zhpUa2xI.jpg" alt="Retour vers le futur II"></a>
       <h2>Retour vers le futur II</h2>
       <span>Science-Fiction</span>
     </div>
 
-    <div class="movieimg" data-title="Retour vers le futur III" data-genre="Science-Fiction">
+    <div class="movieimg" data-type="Film" data-title="Retour vers le futur III" data-genre="Science-Fiction">
       <a href="https://inspecteurl.github.io/films/retourverslefuturtrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4pqYyszHxhYHbhwCElM6jHrZ5Zg.jpg" alt="Retour vers le futur III"></a>
       <h2>Retour vers le futur III</h2>
       <span>Science-Fiction</span>
     </div>
 
-    <div class="movieimg" data-title="Pokémon Détective Pikachu" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Pokémon Détective Pikachu" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/detpikachu.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gsoZQqBX04yXe5nXNKyILy9fuuF.jpg" alt="Détective Pikachu"></a>
       <h2>Pokémon Détective Pikachu</h2>
       <span>Fantastique</span>
     </div>
 
-    <div class="movieimg" data-title="Charlie et la Chocolaterie" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="Charlie et la Chocolaterie" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/charliechocolaterie.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/eLNqcXXz0V2FdjyViR8o4uCTd9n.jpg" alt="Charlie et la Chocolaterie"></a>
       <h2>Charlie et la Chocolaterie</h2>
       <span>Comédie</span>
     </div>
 
-        <div class="movieimg" data-title="Spider-Man : New Generation" data-genre="Animation">
+        <div class="movieimg" data-type="Film" data-title="Spider-Man : New Generation" data-genre="Animation">
       <a href="https://inspecteurl.github.io/films/spidermangen.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7uPGS5CgvIjDcFUhw9HB9qYeDXf.jpg" alt="spidermangen"></a>
       <h2>Spider-Man : New Generation</h2>
       <span>Animation</span>
     </div>
 
-    <div class="movieimg" data-title="Spider-Man : Across the Spider-Verse" data-genre="Animation">
+    <div class="movieimg" data-type="Film" data-title="Spider-Man : Across the Spider-Verse" data-genre="Animation">
       <a href="https://inspecteurl.github.io/films/spidermanverse.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/hvfwCeSTgsExmz9l31dKkfR83DH.jpg" alt="spidermanverse"></a>
       <h2>Spider-Man : Across the Spider-Verse</h2>
       <span>Animation</span>
     </div>
 
-    <div class="movieimg" data-title="Gran Turismo" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Gran Turismo" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/granturismo.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/vRIHkkuI6FKqUHPJbABbNLRM3VI.jpg" alt="granturismo"></a>
       <h2>Gran Turismo</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="The Batman" data-genre="Thriller">
+    <div class="movieimg" data-type="Film" data-title="The Batman" data-genre="Thriller">
       <a href="https://inspecteurl.github.io/films/thebatman.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/g2g0msCF96LVI6CW3dMaqN9R4sA.jpg" alt="The Batman"></a>
       <h2>The Batman</h2>
       <span>Thriller</span>
     </div>
 
-    <div class="movieimg" data-title="Fight Club" data-genre="Thriller">
+    <div class="movieimg" data-type="Film" data-title="Fight Club" data-genre="Thriller">
       <a href="https://inspecteurl.github.io/films/fightclub.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/jSziioSwPVrOy9Yow3XhWIBDjq1.jpg" alt="Fight Club"></a>
       <h2>Fight Club</h2>
       <span>Thriller</span>
     </div>
 
-    <div class="movieimg" data-title="The Karate Kid" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="The Karate Kid" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/thekaratekid.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/b1RBy3l297N0c7PHjlz35cClWju.jpg" alt="The Karate Kid"></a>
       <h2>The Karate Kid</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Inception" data-genre="Science-Fiction">
+    <div class="movieimg" data-type="Film" data-title="Inception" data-genre="Science-Fiction">
       <a href="https://inspecteurl.github.io/films/inception.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/aej3LRUga5rhgkmRP6XMFw3ejbl.jpg" alt="Inception"></a>
       <h2>Inception</h2>
       <span>Science-Fiction</span>
     </div>
 
-    <div class="movieimg" data-title="Joker" data-genre="Thriller">
+    <div class="movieimg" data-type="Film" data-title="Joker" data-genre="Thriller">
       <a href="https://inspecteurl.github.io/films/joker.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/tOHccxALSRFA82EOhBsmE3Phn4k.jpg" alt="Joker"></a>
       <h2>Joker</h2>
       <span>Thriller</span>
     </div>
 
-    <div class="movieimg" data-title="The Fallout" data-genre="Thriller">
+    <div class="movieimg" data-type="Film" data-title="The Fallout" data-genre="Thriller">
       <a href="https://inspecteurl.github.io/films/thefallout.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4ByHl9XRKR2iXbvF0ZilMRD1RcL.jpg" alt="The Fallout"></a>
       <h2>The Fallout</h2>
       <span>Thriller</span>
     </div>
 
-    <div class="movieimg" data-title="The Truman Show" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="The Truman Show" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/thetruman.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/67KjyFo3PFoYCqyhnagRINg9ALK.jpg" alt="The Truman Show"></a>
       <h2>The Truman Show</h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Ready Player One" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Ready Player One" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/readyplayerone.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/832ngDVXhOVp6HBnuMMeeWTrGXN.jpg" alt="Ready Player One"></a>
       <h2>Ready Player One</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Les Choristes" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Les Choristes" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/leschoristes.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/wBEvmlo0WLt8gTxiSoTHXeU91X6.jpg" alt="Les Choristes"></a>
       <h2>Les Choristes</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Le Comte de Monte-Cristo" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Le Comte de Monte-Cristo" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/comtemontecristo.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/g7kiprYdXxaYCZABWQwTWAgRYjl.jpg" alt="Le Comte de Monte-Cristo"></a>
       <h2>Le Comte de Monte-Cristo</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Princesse Mononoké" data-genre="Animation">
+    <div class="movieimg" data-type="Film" data-title="Princesse Mononoké" data-genre="Animation">
       <a href="https://inspecteurl.github.io/films/mononoke.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/qZn0JwRtbR7YZ0FWm9PLDvIyI1B.jpg" alt="Princesse Mononoké"></a>
       <h2>Princesse Mononoké</h2>
       <span>Animation</span>
     </div>
 
-    <div class="movieimg" data-title="Trap" data-genre="Thriller">
+    <div class="movieimg" data-type="Film" data-title="Trap" data-genre="Thriller">
       <a href="https://inspecteurl.github.io/films/trap.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/mWV2fNBkSTW67dIotVTXDYZhNBj.jpg" alt="Trap"></a>
       <h2>Trap</h2>
       <span>Thriller</span>
     </div>
 
-    <div class="movieimg" data-title="Star Wars, épisode I - La Menace fantôme" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Star Wars, épisode I - La Menace fantôme" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/starwarsun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/fpEC910v5DrMvZteRNlKzXeHiHY.jpg" alt="Star Wars I"></a>
       <h2>Star Wars, Episode I - La Menace fantôme</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title=Star Wars, épisode II - L'Attaque des clones"" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title=Star Wars, épisode II - L'Attaque des clones"" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/starwarsdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/3nqpcTkODCBhuKuDQJ1dtRhgTqZ.jpg" alt="Star Wars II"></a>
       <h2>Star Wars, Episode II - L'Attaque des clones</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Star Wars, épisode III - La Revanche des Sith" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Star Wars, épisode III - La Revanche des Sith" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/starwarstrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/2RcBuU8cdxFxCJibbiYCGNLApfz.jpg" alt="Star Wars III"></a>
       <h2>Star Wars, Episode III - La Revanche des Sith</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Star Wars: Episode IV - Un Nouvel Espoir" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Star Wars: Episode IV - Un Nouvel Espoir" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/starwarsquatre.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/qelTNHrBSYjPvwdzsDBPVsqnNzc.jpg" alt="Star Wars IV"></a>
       <h2>Star Wars: Episode IV - Un Nouvel Espoir</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Star Wars: Episode V - L'Empire contre-attaque" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Star Wars: Episode V - L'Empire contre-attaque" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/starwarscinq.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/qDvctAykmNWAmi9G2GrVrwWx3pr.jpg" alt="Star Wars V"></a>
       <h2>Star Wars: Episode V - L'Empire contre-attaque</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Star Wars: Episode VI - Le Retour du Jedi" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Star Wars: Episode VI - Le Retour du Jedi" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/starwarssix.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/tEQlCGiiWvMvfD7Sz8d99Pouy39.jpg" alt="Star Wars VI"></a>
       <h2>Star Wars: Episode VI - Le Retour du Jedi</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Hunger Games" data-genre="Science-Fiction">
+    <div class="movieimg" data-type="Film" data-title="Hunger Games" data-genre="Science-Fiction">
       <a href="https://inspecteurl.github.io/films/hungergames.html"><img src="https://media.themoviedb.org/t/p/w600_and_h900_bestv2/wSvsjqyRWk5xku9yEUNZYFwUF87.jpg" alt="Hunger Games"></a>
       <h2>Hunger Games</h2>
       <span>Science-Fiction</span>
     </div>
 
-    <div class="movieimg" data-title="Arcane" data-genre="Animation">
+    <div class="movieimg" data-type="Série" data-title="Arcane" data-genre="Animation">
       <a href="https://inspecteurl.github.io/séries/arcane.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/f1Vivcukr0DBlSxppMaEDuwGSjk.jpg" alt="Arcane"></a>
       <h2>Arcane</h2>
       <span>Animation</span>
@@ -450,13 +451,13 @@
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Astérix & Obélix : Mission Cléopâtre" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="Astérix & Obélix : Mission Cléopâtre" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/astérixetcleopatre.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zmRl1dF4cRwmynZZ9ZpohBzVCRa.jpg" alt="Astérix & Obélix : Mission Cléopâtre"></a>
       <h2>Astérix & Obélix : Mission Cléopâtre</h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Astérix & Obélix contre César" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="Astérix & Obélix contre César" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/astérixcontrecésar.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/2xFo4wO4zAGb3KcyvBsC2igLLdF.jpg" alt="Astérix contre César"></a>
       <h2>Astérix & Obélix contre César</h2>
       <span>Comédie</span>
@@ -468,385 +469,385 @@
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Sherlock Holmes : Jeu d'ombres" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Sherlock Holmes : Jeu d'ombres" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/sherlockholmesdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/iaG2qLkossyASON0diykCF08WK6.jpg" alt="Sherlock Holmes : Jeu d'ombres"></a>
       <h2>Sherlock Holmes : Jeu d'ombres</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="L'Élève Ducobu" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="L'Élève Ducobu" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/ducobuun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/piVjl9Xhd6xeYxJnm7ifJaURjHd.jpg" alt="L'Élève Ducobu"></a>
       <h2>L'Élève Ducobu</h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Les Vacances de Ducobu" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="Les Vacances de Ducobu" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/ducoubudeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/jl6Ze8DRXsm3vCgwajJ0cpRsjh3.jpg" alt="Les Vacances de Ducobu"></a>
       <h2>Les Vacances de Ducobu</h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Ducobu 3" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="Ducobu 3" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/ducobutrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/crRYr2QsVw1LTF0PZUpX5Kwa6Ep.jpg" alt="Ducobu 3"></a>
       <h2>Ducobu 3</h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Ducobu Président ! " data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="Ducobu Président ! " data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/ducobuquatre.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4XgSEb9wovGR9vgJY2Z9Z9BgzKh.jpg" alt="Ducobu Président ! "></a>
       <h2>Ducobu Président ! </h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Ducobu passe au vert" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="Ducobu passe au vert" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/ducobucinq.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7u1WgrEJH5UKOM5SBAwH2azapRs.jpg" alt="Ducobu passe au vert"></a>
       <h2>Ducobu passe au vert</h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Squid Game" data-genre="Drame">
+    <div class="movieimg" data-type="Série" data-title="Squid Game" data-genre="Drame">
       <a href="https://inspecteurl.github.io/séries/squidgame.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/AtS3eeuorUot1B6o4RPx3MKyD6B.jpg" alt="Squid Game"></a>
       <h2>Squid Game</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Harry Potter à l'école des sorciers" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Harry Potter à l'école des sorciers" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/harrypotterun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/lWZcuIQVc8d1hmXj3vPgYc5Fm5b.jpg" alt="Harry Potter à l'école des sorciers"></a>
       <h2>Harry Potter à l'école des sorciers</h2>
       <span>Fantastique</span>
     </div>
 
-    <div class="movieimg" data-title="Harry Potter et la Chambre des secrets" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Harry Potter et la Chambre des secrets" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/harrypotterdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/8mbkFZ5l8oxeZF5UAQ1gmF92sgJ.jpg" alt="Harry Potter et la Chambre des secrets"></a>
       <h2>Harry Potter et la Chambre des secrets</h2>
       <span>Fantastique</span>
     </div>
 
-    <div class="movieimg" data-title="Harry Potter et le Prisonnier d'Azkaban" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Harry Potter et le Prisonnier d'Azkaban" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/harrypottertrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/yTK3mDYaEzbWvL2e3l1pXmrKzfM.jpg" alt="Harry Potter et le Prisonnier d'Azkaban"></a>
       <h2>Harry Potter et le Prisonnier d'Azkaban</h2>
       <span>Fantastique</span>
     </div>
 
-    <div class="movieimg" data-title="Harry Potter et la Coupe de feu" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Harry Potter et la Coupe de feu" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/harrypotterquatre.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/fOYdSiFtGzE6kP1K25MXlAnCFAd.jpg" alt="Harry Potter et la Coupe de feu"></a>
       <h2>Harry Potter et la Coupe de feu</h2>
       <span>Fantastique</span>
     </div>
 
-    <div class="movieimg" data-title="Harry Potter et l'Ordre du Phénix" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Harry Potter et l'Ordre du Phénix" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/harrypottercinq.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/eZRzUYms4qgbAZ9FzFTaTz7QqDG.jpg" alt="Harry Potter et l'Ordre du Phénix"></a>
       <h2>Harry Potter et l'Ordre du Phénix</h2>
       <span>Fantastique</span>
     </div>
 
-    <div class="movieimg" data-title="Harry Potter et le Prince de sang-mêlé" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Harry Potter et le Prince de sang-mêlé" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/harrypottersix.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/3BHdG1DuDubI0en18EFWd3Rvqjl.jpg" alt="Harry Potter et le Prince de sang-mêlé"></a>
       <h2>Harry Potter et le Prince de sang-mêlé</h2>
       <span>Fantastique</span>
     </div>
 
-    <div class="movieimg" data-title="Harry Potter et les Reliques de la Mort - 1ère partie" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Harry Potter et les Reliques de la Mort - 1ère partie" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/harrypottersept.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/bac4ASxP4jGn1Wcz2wiQpMRmFzf.jpg" alt="Harry Potter et les Reliques de la Mort - 1ère partie"></a>
       <h2>Harry Potter et les Reliques de la Mort - 1ère partie</h2>
       <span>Fantastique</span>
     </div>
 
-    <div class="movieimg" data-title="Harry Potter et les Reliques de la Mort - 2ème partie" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Harry Potter et les Reliques de la Mort - 2ème partie" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/harrypotterhuit.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/pv9MbOqPaXFqcmPWdRFSh1SdHiz.jpg" alt="Harry Potter et les Reliques de la Mort - 2ème partie"></a>
       <h2>Harry Potter et les Reliques de la Mort - 2ème partie</h2>
       <span>Fantastique</span>
     </div>
 
-        <div class="movieimg" data-title="Squeezie : Merci Internet" data-genre="Documentaire">
+        <div class="movieimg" data-type="Série" data-title="Squeezie : Merci Internet" data-genre="Documentaire">
       <a href="https://inspecteurl.github.io/séries/squeezie.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/fdU3qMA1BHq0VTkVDzaCdLjE1ol.jpg" alt="Squeezie : Merci Internet"></a>
       <h2>Squeezie : Merci Internet</h2>
       <span>Documentaire</span>
     </div>
 
-    <div class="movieimg" data-title="Le Parrain" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Le Parrain" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/leparrainun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/wnDNKCeBQzioXYQrXcSyrmRHVxf.jpg" alt="Le Parrain"></a>
       <h2>Le Parrain</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Le Parrain, 2e partie" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Le Parrain, 2e partie" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/leparraindeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zbahpSpzOIzxwQnDF3Ohi7iAjLG.jpg" alt="Le Parrain, 2e partie"></a>
       <h2>Le Parrain, 2e partie</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Le Parrain, 3e partie" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Le Parrain, 3e partie" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/leparraintrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/AqHvf08rsE54Mk5JudgnzXMjVTA.jpg" alt="Le Parrain, 3e partie"></a>
       <h2>Le Parrain, 3e partie</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Godzilla" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Godzilla" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/godzillaun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/yDmD9HyjbqkYLiM53WlOSg3lw2i.jpg" alt="Godzilla"></a>
       <h2>Godzilla</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Godzilla II : Roi des Monstres" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Godzilla II : Roi des Monstres" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/godzilladeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/90hA2CC06nADpiF07NJN5cRH5Zv.jpg" alt="Godzilla II : Roi des Monstres"></a>
       <h2>Godzilla II : Roi des Monstres</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Godzilla vs. Kong" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Godzilla vs. Kong" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/godzillakingkong.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gx846E0Y0qbO9BcqlYhsgsmEPQi.jpg" alt="Action"></a>
       <h2>Godzilla vs. Kong</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Forrest Gump" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="Forrest Gump" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/forestgump.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/hLP7yaSWkrimeIB7D22FjMdWitx.jpg" alt="Forrest Gump"></a>
       <h2>Forrest Gump</h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Taxi Driver" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Taxi Driver" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/taxidriver.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/r0qDNLurxpbxkNPMOYn3ZvWFsv0.jpg" alt="Taxi Driver"></a>
       <h2>Taxi Driver</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Les Évadés" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Les Évadés" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/lesevades.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xqfTE9FjwD5vS1A6QnyoMdPQUvh.jpg" alt="Les Évadés"></a>
       <h2>Les Évadés</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Blade Runner" data-genre="Science-Fiction">
+    <div class="movieimg" data-type="Film" data-title="Blade Runner" data-genre="Science-Fiction">
       <a href="https://inspecteurl.github.io/films/bladerunner.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zHKWxyG4j404HVeSYHNH4niUpkW.jpg" alt="Blade Runner"></a>
       <h2>Blade Runner</h2>
       <span>Science-Fiction</span>
     </div>
 
-    <div class="movieimg" data-title="Rocky" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Rocky" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/rocky.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/dqgVSjONm97j4kGYWkNyklRAIJ0.jpg" alt="Rocky"></a>
       <h2>Rocky</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Scarface" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Scarface" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/scarface.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4NGVX3OV2LvkTZOesryq5z1uxIi.jpg" alt="Scarface"></a>
       <h2>Scarface</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Platoon" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Platoon" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/platoon.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/rehBWOx9AIkZRKVuiemWvAMH40.jpg" alt="Platoon"></a>
       <h2>Platoon</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Terminator" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Terminator" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/terminator.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/aouC2EfEqOTM1uXfQCWlOvFhvQm.jpg" alt="Terminator"></a>
       <h2>Terminator</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Saw" data-genre="Horreur">
+    <div class="movieimg" data-type="Film" data-title="Saw" data-genre="Horreur">
       <a href="https://inspecteurl.github.io/films/sawun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/65iEhOt1QwScpkSEH8UtzAbnE6Q.jpg" alt="Saw"></a>
       <h2>Saw</h2>
       <span>Horreur</span>
     </div>
 
-    <div class="movieimg" data-title="Saw II" data-genre="Horreur">
+    <div class="movieimg" data-type="Film" data-title="Saw II" data-genre="Horreur">
       <a href="https://inspecteurl.github.io/films/sawdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/t64rAop7eb285wTGw2TnPc7TBnk.jpg" alt="Saw II"></a>
       <h2>Saw II</h2>
       <span>Horreur</span>
     </div>
 
-    <div class="movieimg" data-title="Impitoyable" data-genre="Western">
+    <div class="movieimg" data-type="Film" data-title="Impitoyable" data-genre="Western">
       <a href="https://inspecteurl.github.io/films/impitoyable.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/v7snHlRPE6cI8IhHH17PkfY0lCi.jpg" alt="Impitoyable"></a>
       <h2>Impitoyable</h2>
       <span>Western</span>
     </div>
 
-    <div class="movieimg" data-title="No Country for Old Men" data-genre="Western">
+    <div class="movieimg" data-type="Film" data-title="No Country for Old Men" data-genre="Western">
       <a href="https://inspecteurl.github.io/films/nocountryforoldmen.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/exyvUrDKdkxWZNFGfHHWbHUaxB6.jpg" alt="No Country for Old Men"></a>
       <h2>No Country for Old Men</h2>
       <span>Western</span>
     </div>
 
-    <div class="movieimg" data-title="Les Affranchis" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Les Affranchis" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/lesaffranchis.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/kc55cCUCZKtAFpsCnZKM5uLBzwh.jpg" alt="Les Affranchis"></a>
       <h2>Les Affranchis</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="The Dark Knight : Le Chevalier noir" data-genre="Thriller">
+    <div class="movieimg" data-type="Film" data-title="The Dark Knight : Le Chevalier noir" data-genre="Thriller">
       <a href="https://inspecteurl.github.io/films/darknight.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/iCfSmjV9K9ucgetp52GzniYnQkj.jpg" alt="The Dark Knight : Le Chevalier noir"></a>
       <h2>The Dark Knight : Le Chevalier noir</h2>
       <span>Thriller</span>
     </div>
 
-    <div class="movieimg" data-title="The Social Network" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="The Social Network" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/socialnetwork.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/n0ybibhJtQ5icDqTp8eRytcIHJx.jpg" alt="The Social Network"></a>
       <h2>The Social Network</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="McWalter" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="McWalter" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/mcwalter.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/93XDwOGPFh4HJEMmOSSrWL29tOM.jpg" alt="McWalter"></a>
       <h2>McWalter</h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Parasite" data-genre="Thriller">
+    <div class="movieimg" data-type="Film" data-title="Parasite" data-genre="Thriller">
       <a href="https://inspecteurl.github.io/films/parasite.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7hLSzZX2jROmEXz2aEoh6JKUFy2.jpg" alt="Parasite"></a>
       <h2>Parasite</h2>
       <span>Thriller</span>
     </div>
 
-    <div class="movieimg" data-title="Rogue One : A Star Wars Story" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Rogue One : A Star Wars Story" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/rogueone.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/obsGPyNOAwkQbLRQOHR6a21VT23.jpg" alt="Rogue One : A Star Wars Story"></a>
       <h2>Rogue One : A Star Wars Story</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Kick-Ass" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Kick-Ass" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/kickassun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/iHMbrTHJwocsNvo5murCBw0CwTo.jpg" alt="Kick-Ass"></a>
       <h2>Kick-Ass</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Kick-Ass 2" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Kick-Ass 2" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/kickassdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/mhL6H8td9dsT5LMS2koyTqcn94H.jpg" alt="Kick-Ass 2"></a>
       <h2>Kick-Ass 2</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Jurassic Park" data-genre="Science-Fiction">
+    <div class="movieimg" data-type="Film" data-title="Jurassic Park" data-genre="Science-Fiction">
       <a href="https://inspecteurl.github.io/films/jurassicparkun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/2E2dKGPTWoyiaSzgNaer9zpP49n.jpg" alt="Jurassic Park"></a>
       <h2>Jurassic Park</h2>
       <span>Science-Fiction</span>
     </div>
     
-    <div class="movieimg" data-title="Le monde perdu : Jurassic Park" data-genre="Science-Fiction">
+    <div class="movieimg" data-type="Film" data-title="Le monde perdu : Jurassic Park" data-genre="Science-Fiction">
       <a href="https://inspecteurl.github.io/films/jurassicparkdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/6KvT0Mfee1mvTrgLHm9ItD3Uxfa.jpg" alt="Le monde perdu : Jurassic Park"></a>
       <h2>Le monde perdu : Jurassic Park</h2>
       <span>Science-Fiction</span>
     </div>
 
-    <div class="movieimg" data-title="Jurassic Park III" data-genre="Science-Fiction">
+    <div class="movieimg" data-type="Film" data-title="Jurassic Park III" data-genre="Science-Fiction">
       <a href="https://inspecteurl.github.io/films/jurassicparktrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/6Kso8pAIlfubkRqwZ5ywcwT9XEH.jpg" alt="Jurassic Park III"></a>
       <h2>Jurassic Park III</h2>
       <span>Science-Fiction</span>
     </div>
 
-    <div class="movieimg" data-title="Le Loup de Wall Street" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="Le Loup de Wall Street" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/loupwallstreet.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/dQIQZbJXn1pflQw3nwvXLJX0dHa.jpg" alt="Le Loup de Wall Street"></a>
       <h2>Le Loup de Wall Street</h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Titanic" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Titanic" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/titanic.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/As0zX43h3w6kD2NS4uVHu9HKdEh.jpg" alt="Titanic"></a>
       <h2>Titanic</h2>
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Batman Begins" data-genre="Crime">
+    <div class="movieimg" data-type="Film" data-title="Batman Begins" data-genre="Crime">
       <a href="https://inspecteurl.github.io/films/batmanbegins.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/taKcn26BMWnsUcMFSlr5RfGDtFB.jpg" alt="Batman Begins"></a>
       <h2>Batman Begins</h2>
       <span>Crime</span>
     </div>
 
-    <div class="movieimg" data-title="The Dark Knight Rises" data-genre="Thriller">
+    <div class="movieimg" data-type="Film" data-title="The Dark Knight Rises" data-genre="Thriller">
       <a href="https://inspecteurl.github.io/films/darknightrises.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/lEeOaKZf16R1cZCuryP859SKgE7.jpg" alt="The Dark Knight Rises"></a>
       <h2>The Dark Knight Rises</h2>
       <span>Thriller</span>
     </div>
 
-    <div class="movieimg" data-title="Le Seigneur des anneaux : La Communauté de l'anneau" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Le Seigneur des anneaux : La Communauté de l'anneau" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/seigneurdesanneauxun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/5OPg6M0yHr21Ovs1fni2H1xpKuF.jpg" alt="Le Seigneur des anneaux : La Communauté de l'anneau"></a>
       <h2>Le Seigneur des anneaux : La Communauté de l'anneau</h2>
       <span>Fantastique</span>
     </div>
 
-    <div class="movieimg" data-title="Le Seigneur des anneaux : Les Deux Tours" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Le Seigneur des anneaux : Les Deux Tours" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/seigneurdesanneauxtrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/qVHBqQYLDRs7ESjP9q6o9iPHLWj.jpg" alt="Le Seigneur des anneaux : Les Deux Tours"></a>
       <h2>Le Seigneur des anneaux : Les Deux Tours</h2>
       <span>Fantastique</span>
     </div>
 
-    <div class="movieimg" data-title="Le Seigneur des anneaux : Le Retour du roi" data-genre="Fantastique">
+    <div class="movieimg" data-type="Film" data-title="Le Seigneur des anneaux : Le Retour du roi" data-genre="Fantastique">
       <a href="https://inspecteurl.github.io/films/seigneurdesanneauxdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/aqiFUqswXVM58Tamux1ilnNvVRs.jpg" alt="Le Seigneur des anneaux : Le Retour du roi"></a>
       <h2>Le Seigneur des anneaux : Le Retour du roi</h2>
       <span>Fantastique</span>
     </div>
 
-    <div class="movieimg" data-title="Iron Man" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Iron Man" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/ironmanun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/uZrsDJkn0PPnGc51fQhtCqwPPVM.jpg" alt="Iron Man"></a>
       <h2>Iron Man</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Iron Man 2" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Iron Man 2" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/ironmandeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/bMYuDvz2Zl0pNWIbt9GQqZt1CH.jpg" alt="Iron Man 2"></a>
       <h2>Iron Man 2</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Iron Man 3" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Iron Man 3" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/ironmantrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/mt6ppX4nzTMU0e7lpixawyVK500.jpg" alt="Iron Man 3"></a>
       <h2>Iron Man 3</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="American Sniper" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="American Sniper" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/americansniper.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/huUk9goxuRcM223mCVPVPZrAkTN.jpg" alt="American Sniper"></a>
       <h2>American Sniper</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Les Aventuriers de l'arche perdue" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Les Aventuriers de l'arche perdue" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/indianajonesun.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/lrI2eHnqqg67WnQgydzVpSRYrMg.jpg" alt="Les Aventuriers de l'arche perdue"></a>
       <h2>Les Aventuriers de l'arche perdue</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Indiana Jones et le Temple maudit" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Indiana Jones et le Temple maudit" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/indianajonesdeux.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/oiUd1KUXWZeDPGMr8TrtZcXzpQU.jpg" alt="Indiana Jones et le Temple maudit"></a>
       <h2>Indiana Jones et le Temple maudit</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Indiana Jones et la dernière croisade" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Indiana Jones et la dernière croisade" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/indianajonestrois.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/kD1y7bgbkXvN3RkYogFMlyQR6Ci.jpg" alt="Indiana Jones et la dernière croisade"></a>
       <h2>Indiana Jones et la dernière croisade</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Indiana Jones et le royaume du crâne de cristal" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Indiana Jones et le royaume du crâne de cristal" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/indianajonesquatre.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/rARRcuwWjzdD1e2J6eJMpHkawz0.jpg" alt="Indiana Jones et le royaume du crâne de cristal"></a>
       <h2>Indiana Jones et le royaume du crâne de cristal</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Indiana Jones et le Cadran de la destinée" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Indiana Jones et le Cadran de la destinée" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/indianajonescinq.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/64TyGedJPmfwfO0dIQWFDLIw1U7.jpg" alt="Indiana Jones et le Cadran de la destinée"></a>
       <h2>Indiana Jones et le Cadran de la destinée</h2>
       <span>Aventure</span>
     </div>
 
-    <div class="movieimg" data-title="Skyfall" data-genre="Action">
+    <div class="movieimg" data-type="Film" data-title="Skyfall" data-genre="Action">
       <a href="https://inspecteurl.github.io/films/skyfall.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/nNFECkwmrYoUQ17EnPTcSlRictV.jpg" alt="Skyfall"></a>
       <h2>Skyfall</h2>
       <span>Action</span>
     </div>
 
-    <div class="movieimg" data-title="Le Bon, la Brute et le Truand" data-genre="Western">
+    <div class="movieimg" data-type="Film" data-title="Le Bon, la Brute et le Truand" data-genre="Western">
       <a href="https://inspecteurl.github.io/films/bonbrutetruand.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/qEr65B4yGlsmLQjcM0xjSUMfZS2.jpg" alt="Le Bon, la Brute et le Truand"></a>
       <h2>Le Bon, la Brute et le Truand</h2>
       <span>Western</span>
     </div>
 
-    <div class="movieimg" data-title="Django Unchained" data-genre="Western">
+    <div class="movieimg" data-type="Film" data-title="Django Unchained" data-genre="Western">
       <a href="https://inspecteurl.github.io/films/django.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7oWY8VDWW7thTzWh3OKYRkWUlD5.jpg" alt="Django Unchained"></a>
       <h2>Django Unchained</h2>
       <span>Western</span>
@@ -858,31 +859,31 @@
       <span>Drame</span>
     </div>
 
-    <div class="movieimg" data-title="Once Upon a Time... in Hollywood" data-genre="Comédie">
+    <div class="movieimg" data-type="Film" data-title="Once Upon a Time... in Hollywood" data-genre="Comédie">
       <a href="https://inspecteurl.github.io/films/onceuponatimeinhollywood.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/wQKeS2JrsRF8XSfd9zqflrc5gad.jpg" alt="Once Upon a Time... in Hollywood"></a>
       <h2>Once Upon a Time... in Hollywood</h2>
       <span>Comédie</span>
     </div>
 
-    <div class="movieimg" data-title="Léon" data-genre="Crime">
+    <div class="movieimg" data-type="Film" data-title="Léon" data-genre="Crime">
       <a href="https://inspecteurl.github.io/films/leon.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/b5HmaukFCEQX97CJ9BA5e46qgVm.jpg" alt="Léon"></a>
       <h2>Léon</h2>
       <span>Crime</span>
     </div>
 
-    <div class="movieimg" data-title="Le Projet Blair Witch" data-genre="Horreur">
+    <div class="movieimg" data-type="Film" data-title="Le Projet Blair Witch" data-genre="Horreur">
       <a href="https://inspecteurl.github.io/films/projetblairwitch.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/9050VGrYjYrEjpOvDZVAngLbg1f.jpg" alt="Le Projet Blair Witch"></a>
       <h2>Le Projet Blair Witch</h2>
       <span>Horreur</span>
     </div>
 
-    <div class="movieimg" data-title="The Revenant" data-genre="Western">
+    <div class="movieimg" data-type="Film" data-title="The Revenant" data-genre="Western">
       <a href="https://inspecteurl.github.io/films/therevenant.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/tSaBkriE7TpbjFoQUFXuikoz0dF.jpg" alt="The Revenant"></a>
       <h2>The Revenant</h2>
       <span>Western</span>
     </div>
 
-    <div class="movieimg" data-title="Il faut sauver le soldat Ryan" data-genre="Drame">
+    <div class="movieimg" data-type="Film" data-title="Il faut sauver le soldat Ryan" data-genre="Drame">
       <a href="https://inspecteurl.github.io/films/sauversoldatrayane.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/mlSsQWIQV0NKIqqRQRI0yi9gqk8.jpg" alt="Il faut sauver le soldat Ryan"></a>
       <h2>Il faut sauver le soldat Ryan</h2>
       <span>Drame</span>
@@ -976,44 +977,55 @@
   </div>
 
   <script>
-    function filterMovies(genre) {
-      const buttons = document.querySelectorAll('.filters button');
-      buttons.forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+  let activeType = 'Tous';
+  let activeGenre = 'Tous';
 
-      const movies = document.querySelectorAll('.movieimg');
-      let visibleCount = 0;
+  function filterType(type) {
+    activeType = type;
+    const buttons = document.querySelectorAll('.type-filters button');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    applyFilters();
+  }
 
-      movies.forEach(movie => {
-        if (genre === 'Tous' || movie.dataset.genre === genre) {
-          movie.style.display = '';
-          visibleCount++;
-        } else {
-          movie.style.display = 'none';
-        }
-      });
+  function filterMovies(genre) {
+    activeGenre = genre;
+    const buttons = document.querySelectorAll('.filters button');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    applyFilters();
+  }
 
-      document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
-    }
+  function searchMovies() {
+    applyFilters();
+  }
 
-    function searchMovies() {
-      const input = document.getElementById('searchInput').value.toLowerCase();
-      const movies = document.querySelectorAll('.movieimg');
-      let visibleCount = 0;
+  function applyFilters() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const movies = document.querySelectorAll('.movieimg');
+    let visibleCount = 0;
 
-      movies.forEach(movie => {
-        const title = (movie.dataset.title || '').toLowerCase();
-        const sub = (movie.dataset.subgenre || '').toLowerCase();
-        if (title.includes(input) || sub.includes(input)) {
-          movie.style.display = '';
-          visibleCount++;
-        } else {
-          movie.style.display = 'none';
-        }
-      });
+    movies.forEach(movie => {
+      const title = (movie.dataset.title || '').toLowerCase();
+      const sub = (movie.dataset.subgenre || '').toLowerCase();
+      const type = movie.dataset.type;
+      const genre = movie.dataset.genre;
 
-      document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
-    }
-  </script>
+      const matchType = (activeType === 'Tous' || type === activeType);
+      const matchGenre = (activeGenre === 'Tous' || genre === activeGenre);
+      const matchSearch = (title.includes(input) || sub.includes(input));
+
+      if (matchType && matchGenre && matchSearch) {
+        movie.style.display = '';
+        visibleCount++;
+      } else {
+        movie.style.display = 'none';
+      }
+    });
+
+    document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+</script>
+
 </body>
 </html>
