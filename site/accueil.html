@@ -124,6 +124,7 @@
   <div class="fog"></div>
   <img src="https://t3.ftcdn.net/jpg/09/53/43/28/360_F_953432855_CRBPTRnYhJDi1yfQsa5Cqf4L9uZ1sxOv.jpg" alt="Screamer" />
   <audio id="screamer-sound" src="https://inspecteurl.github.io/site/screamer.mp3"></audio>
+<audio id="screamer-extra" src="https://inspecteurl.github.io/site/screamerdeux.mp3"></audio>
 </div>
 
    <section class="moviesection">
@@ -932,7 +933,6 @@ select {
   }
 }
 
-   /* Container Screamer */
 #halloween-screamer {
   position: fixed;
   inset: 0;
@@ -945,7 +945,6 @@ select {
   transition: opacity 0.1s ease;
 }
 
-/* Flash blanc */
 #halloween-screamer .flash {
   position: absolute;
   inset: 0;
@@ -953,10 +952,9 @@ select {
   opacity: 0;
   z-index: 3;
   pointer-events: none;
-  transition: opacity 0.1s ease;
+  transition: opacity 0.05s ease;
 }
 
-/* Brouillard orange */
 #halloween-screamer .fog {
   position: absolute;
   inset: 0;
@@ -965,34 +963,37 @@ select {
   z-index: 1;
 }
 
-/* Image du screamer */
 #halloween-screamer img {
   position: relative;
   z-index: 2;
   max-width: 60%;
   max-height: 60%;
   transform: scale(0.5);
-  transition: transform 0.1s ease;
+  transition: transform 0.05s ease;
   filter: drop-shadow(0 0 20px red);
 }
 
-/* Apparition */
 #halloween-screamer.show {
   opacity: 1;
   pointer-events: auto;
 }
+
 #halloween-screamer.show img {
-  transform: scale(1.3) rotate(-5deg);
-  animation: shake 0.6s infinite;
+  animation: shake-zoom 0.3s ease-in-out 5; /* secousses multiples */
 }
 
-/* Tremblement */
-@keyframes shake {
-  0% { transform: translate(0px, 0px) rotate(-5deg); }
-  25% { transform: translate(10px, -10px) rotate(10deg); }
-  50% { transform: translate(-10px, 10px) rotate(-10deg); }
-  75% { transform: translate(10px, 10px) rotate(10deg); }
-  100% { transform: translate(0px, 0px) rotate(-5deg); }
+@keyframes shake-zoom {
+  0% { transform: scale(1.2) translate(0px, 0px) rotate(0deg); }
+  10% { transform: scale(1.3) translate(-10px, 10px) rotate(-5deg); }
+  20% { transform: scale(1.25) translate(10px, -10px) rotate(5deg); }
+  30% { transform: scale(1.3) translate(-5px, 5px) rotate(-3deg); }
+  40% { transform: scale(1.2) translate(5px, -5px) rotate(3deg); }
+  50% { transform: scale(1.25) translate(-5px, 5px) rotate(-2deg); }
+  60% { transform: scale(1.3) translate(5px, -5px) rotate(2deg); }
+  70% { transform: scale(1.2) translate(-3px, 3px) rotate(-1deg); }
+  80% { transform: scale(1.25) translate(3px, -3px) rotate(1deg); }
+  90% { transform: scale(1.3) translate(0px, 0px) rotate(0deg); }
+  100% { transform: scale(1.2) translate(0px, 0px) rotate(0deg); }
 }
 
 </style>
@@ -1525,19 +1526,22 @@ if (!localStorage.getItem('screamerShown')) {
   function triggerScreamer() {
     const screamer = document.getElementById('halloween-screamer');
     const audio = document.getElementById('screamer-sound');
+    const extra = document.getElementById('screamer-extra');
     const flash = screamer.querySelector('.flash');
 
     if (!screamer.classList.contains('show')) {
-      // Marque comme montré
       localStorage.setItem('screamerShown', 'true');
 
-      // Affiche le screamer et joue le son
+      // Affiche le screamer
       screamer.classList.add('show');
-      flash.style.opacity = 1;       // flash instantané
-      audio.play();
 
-      // Enlève le flash après 0.2s
-      setTimeout(() => { flash.style.opacity = 0; }, 200);
+      // Flash rapide
+      flash.style.opacity = 1;
+      setTimeout(() => { flash.style.opacity = 0; }, 150);
+
+      // Joue les sons simultanément
+      audio.play();
+      extra.play();
 
       // Cache le screamer après 3 secondes
       setTimeout(() => {
@@ -1546,7 +1550,6 @@ if (!localStorage.getItem('screamerShown')) {
     }
   }
 
-  // Déclenchement unique sur clic ou survol
   document.body.addEventListener('click', triggerScreamer, { once: true });
   document.body.addEventListener('mouseover', triggerScreamer, { once: true });
 }
@@ -1554,6 +1557,7 @@ if (!localStorage.getItem('screamerShown')) {
 
 </body>
 </html>
+
 
 
 
