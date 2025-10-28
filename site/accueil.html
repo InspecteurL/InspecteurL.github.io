@@ -932,7 +932,7 @@ select {
   }
 }
 
-    /* Container Screamer */
+   /* Container Screamer */
 #halloween-screamer {
   position: fixed;
   inset: 0;
@@ -942,7 +942,7 @@ select {
   z-index: 9999;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.1s ease; /* rapide pour l'effet "pop" */
 }
 
 /* Brouillard orange */
@@ -961,11 +961,11 @@ select {
   max-width: 60%;
   max-height: 60%;
   transform: scale(0.5);
-  transition: transform 0.2s ease;
+  transition: transform 0.1s ease;
   filter: drop-shadow(0 0 20px red);
 }
 
-/* Apparition du screamer */
+/* Apparition unique */
 #halloween-screamer.show {
   opacity: 1;
   pointer-events: auto;
@@ -975,28 +975,13 @@ select {
   animation: shake 0.6s infinite;
 }
 
-/* Tremblement et effet fou */
+/* Tremblement */
 @keyframes shake {
   0% { transform: translate(0px, 0px) rotate(-5deg); }
   25% { transform: translate(10px, -10px) rotate(10deg); }
   50% { transform: translate(-10px, 10px) rotate(-10deg); }
   75% { transform: translate(10px, 10px) rotate(10deg); }
   100% { transform: translate(0px, 0px) rotate(-5deg); }
-}
-
-/* Yeux rouges qui brillent */
-#halloween-screamer img::after {
-  content: "";
-  position: absolute;
-  top: 25%;
-  left: 35%;
-  width: 30%;
-  height: 20%;
-  background: red;
-  border-radius: 50%;
-  box-shadow: 0 0 30px red, 0 0 60px red;
-  z-index: 3;
-  pointer-events: none;
 }
 
 </style>
@@ -1524,20 +1509,25 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
   console.warn("Carrousel non trouvé ou slides/dots manquants !");
 }
 
-// Activation au clic ou au survol sur le body
-document.body.addEventListener('click', triggerScreamer);
-document.body.addEventListener('mouseover', triggerScreamer, { once: true });
-
+// Activation unique au premier clic ou survol
 function triggerScreamer() {
   const screamer = document.getElementById('halloween-screamer');
   const audio = document.getElementById('screamer-sound');
-  screamer.classList.add('show');
-  audio.play();
+
+  if (!screamer.classList.contains('show')) {
+    screamer.classList.add('show');
+    audio.play();
+  }
 }
+
+// Événements pour déclenchement unique
+document.body.addEventListener('click', triggerScreamer, { once: true });
+document.body.addEventListener('mouseover', triggerScreamer, { once: true });
     </script>
 
 </body>
 </html>
+
 
 
 
