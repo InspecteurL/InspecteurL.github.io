@@ -119,7 +119,13 @@
   }
 </script>
 
-
+<!-- Screamer Halloween Extrême -->
+<div id="halloween-screamer">
+  <div class="fog"></div>
+  <img src="https://i.imgur.com/3V6xQ6x.png" alt="Screamer" />
+  <audio id="screamer-sound" src="https://www.soundjay.com/horror/sounds/scream-01.mp3"></audio>
+</div>
+    
    <section class="moviesection">
        <h1 class="line">Les Films pour Halloween</h1>
        <hr class="rounded">
@@ -926,6 +932,72 @@ select {
   }
 }
 
+    /* Container Screamer */
+#halloween-screamer {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Brouillard orange */
+#halloween-screamer .fog {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,140,0,0.5) 0%, rgba(0,0,0,0.9) 80%);
+  backdrop-filter: blur(3px);
+  z-index: 1;
+}
+
+/* Image du screamer */
+#halloween-screamer img {
+  position: relative;
+  z-index: 2;
+  max-width: 60%;
+  max-height: 60%;
+  transform: scale(0.5);
+  transition: transform 0.2s ease;
+  filter: drop-shadow(0 0 20px red);
+}
+
+/* Apparition du screamer */
+#halloween-screamer.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+#halloween-screamer.show img {
+  transform: scale(1.3) rotate(-5deg);
+  animation: shake 0.6s infinite;
+}
+
+/* Tremblement et effet fou */
+@keyframes shake {
+  0% { transform: translate(0px, 0px) rotate(-5deg); }
+  25% { transform: translate(10px, -10px) rotate(10deg); }
+  50% { transform: translate(-10px, 10px) rotate(-10deg); }
+  75% { transform: translate(10px, 10px) rotate(10deg); }
+  100% { transform: translate(0px, 0px) rotate(-5deg); }
+}
+
+/* Yeux rouges qui brillent */
+#halloween-screamer img::after {
+  content: "";
+  position: absolute;
+  top: 25%;
+  left: 35%;
+  width: 30%;
+  height: 20%;
+  background: red;
+  border-radius: 50%;
+  box-shadow: 0 0 30px red, 0 0 60px red;
+  z-index: 3;
+  pointer-events: none;
+}
 
 </style>
 
@@ -1452,11 +1524,21 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
   console.warn("Carrousel non trouvé ou slides/dots manquants !");
 }
 
+// Activation au clic ou au survol sur le body
+document.body.addEventListener('click', triggerScreamer);
+document.body.addEventListener('mouseover', triggerScreamer, { once: true });
 
+function triggerScreamer() {
+  const screamer = document.getElementById('halloween-screamer');
+  const audio = document.getElementById('screamer-sound');
+  screamer.classList.add('show');
+  audio.play();
+}
     </script>
 
 </body>
 </html>
+
 
 
 
