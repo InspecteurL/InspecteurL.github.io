@@ -121,7 +121,59 @@
 
 
    <section class="moviesection">
-  <h2>Nos Recommandations Animes</h2>
+       <h1 class="line">Les Films pour Halloween</h1>
+       <hr class="rounded">
+
+  <!-- 🎬 Carrousel FILMS -->
+  <div class="carousel">
+    <button class="carousel-btn left" onclick="scrollCarousel('film-movies', -1)">&#10094;</button>
+    <div class="carousel-track" id="film-movies">
+
+      <div class="movieimg" data-title="The Gorge" data-genre="Romance">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/sawun.html"><img id="sawun" src="https://media.themoviedb.org/t/p/w440_and_h660_face/ixwaHER4oYhr4ztmQs9oPhBpZ5v.jpg" alt="Saw"></a></div>
+        <h2>Saw</h2><span>Horreur</span><div class="rating-stars"></div>
+      </div>
+
+      <div class="movieimg" data-title="Interstellar" data-genre="Science-Fiction">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/sawdeux.html"><img id="sawdeux.html" src="https://media.themoviedb.org/t/p/w440_and_h660_face/t64rAop7eb285wTGw2TnPc7TBnk.jpg" alt="Saw II"></a></div>
+        <h2>Saw II</h2><span>Horreur</span><div class="rating-stars"></div>
+      </div>
+
+      <div class="movieimg" data-title="Your Name" data-genre="Animation">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/themask.html"><img id="themask" src="https://media.themoviedb.org/t/p/w440_and_h660_face/jPC2eYub74zwf2tPGVtzSlBW6Oy.jpg" alt="The Mask"></a></div>
+        <h2>The Mask</h2><span>Crime</span><div class="rating-stars"></div>
+      </div>
+
+      <div class="movieimg" data-title="Cars : Quatre roues" data-genre="Animation">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/fivenightsatfreddys.html"><img id="fivenightatfreddys" src="https://media.themoviedb.org/t/p/w440_and_h660_face/4dKRTUylqwXQ4VJz0BS84fqW2wa.jpg" alt="Five Nights at Freddy's"></a></div>
+        <h2>Five Nights at Freddy's</h2><span>Horreur</span><div class="rating-stars"></div>
+      </div>
+
+      <div class="movieimg" data-title="Matrix" data-genre="Action">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/scooby-dooun.html"><img id="scooby-doo" src="https://media.themoviedb.org/t/p/w440_and_h660_face/32bzh3HnRZdE8oM9pwfmGJUYnvl.jpg" alt="Scooby-Doo"></a></div>
+        <h2>Scooby-Doo</h2><span>Mystère</span><div class="rating-stars"></div>
+      </div>
+
+      <div class="movieimg" data-title="Tenet" data-genre="Thriller">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/projetblairwitch.html"><img id="blair-witch" src="https://media.themoviedb.org/t/p/w440_and_h660_face/9050VGrYjYrEjpOvDZVAngLbg1f.jpg" alt="Le Projet Blair Witch"></a></div>
+        <h2>Le Projet Blair Witch</h2><span>Horreur</span><div class="rating-stars"></div>
+      </div>
+
+      <div class="movieimg" data-title="Avatar" data-genre="Aventure">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/parasite.html"><img id="parasite" src="https://media.themoviedb.org/t/p/w440_and_h660_face/x23Fqkt00uqV2TzfSiB60hrc3HY.jpg" alt="Parasite"></a></div>
+        <h2>Parasite</h2><span>Thriller</span><div class="rating-stars"></div>
+      </div>
+
+      <div class="movieimg" data-title="Fast & Furious : Tokyo Drift" data-genre="Action">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/joker.html"><img id="joker" src="https://media.themoviedb.org/t/p/w440_and_h660_face/aLRa1MZJmJJClNtOEHAmfaOkcsV.jpg" alt="Joker"></a></div>
+        <h2>Joker</h2><span>Thriller</span><div class="rating-stars"></div>
+      </div>
+    </div>
+    <button class="carousel-btn right" onclick="scrollCarousel('film-movies', 1)">&#10095;</button>
+  </div>
+  
+       
+       <h2>Nos Recommandations Animes</h2>
   <hr class="rounded">
 
   <!-- 🎞️ Carrousel ANIMES -->
@@ -1402,6 +1454,7 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
+
 
 
 
