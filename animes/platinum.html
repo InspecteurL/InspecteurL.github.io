@@ -202,29 +202,29 @@ li a:hover {
 }
 
 /* --- Conteneur du lecteur vidéo --- */
+/* --- Conteneur du lecteur vidéo --- */
 .video-container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.95); /* fond cinéma */
+  background: black; /* fond noir pour les bandes */
   display: none;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
-/* --- Vidéo grande, centrée, mais avec marges --- */
+/* --- Vidéo remplissant horizontalement avec bars haut/bas --- */
 video {
-  width: 95%;             /* prend 95% de la largeur max */
-  height: 95%;            /* prend 95% de la hauteur max */
-  max-width: 1400px;      /* limite sur très grands écrans */
-  max-height: 90vh;       /* garde un peu de marge verticale */
-  object-fit: contain;    /* conserve les proportions sans zoomer */
-  border-radius: 10px;    /* coins légèrement arrondis */
-  box-shadow: 0 0 40px rgba(255, 65, 108, 0.6); /* effet lumineux */
-  background: black;      /* fond de secours */
+  width: 100%;         /* largeur totale */
+  height: auto;        /* hauteur proportionnelle */
+  max-height: 90vh;    /* garde des marges verticales */
+  object-fit: contain; /* conserve les proportions */
+  border-radius: 0;    /* coins droits, pas de rounded */
+  box-shadow: none;    /* pas de glow */
+  background: black;   /* bandes noires visibles */
 }
 
 
@@ -1010,6 +1010,7 @@ document.getElementById("backButton").addEventListener("click", () => {
 <script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
 </html>
+
 
 
 
