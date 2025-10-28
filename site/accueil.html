@@ -119,13 +119,13 @@
   }
 </script>
 
-<!-- Screamer Halloween Extrême -->
-<div id="halloween-screamer">
+    <div id="halloween-screamer">
+  <div class="flash"></div>
   <div class="fog"></div>
   <img src="https://t3.ftcdn.net/jpg/09/53/43/28/360_F_953432855_CRBPTRnYhJDi1yfQsa5Cqf4L9uZ1sxOv.jpg" alt="Screamer" />
   <audio id="screamer-sound" src="https://inspecteurl.github.io/site/screamer.mp3"></audio>
 </div>
-    
+
    <section class="moviesection">
        <h1 class="line">Les Films pour Halloween</h1>
        <hr class="rounded">
@@ -942,7 +942,18 @@ select {
   z-index: 9999;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.1s ease; /* rapide pour l'effet "pop" */
+  transition: opacity 0.1s ease;
+}
+
+/* Flash blanc */
+#halloween-screamer .flash {
+  position: absolute;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  z-index: 3;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
 }
 
 /* Brouillard orange */
@@ -965,7 +976,7 @@ select {
   filter: drop-shadow(0 0 20px red);
 }
 
-/* Apparition unique */
+/* Apparition */
 #halloween-screamer.show {
   opacity: 1;
   pointer-events: auto;
@@ -1509,24 +1520,41 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
   console.warn("Carrousel non trouvé ou slides/dots manquants !");
 }
 
-// Activation unique au premier clic ou survol
-function triggerScreamer() {
-  const screamer = document.getElementById('halloween-screamer');
-  const audio = document.getElementById('screamer-sound');
+// Vérifie si le screamer a déjà été montré
+if (!localStorage.getItem('screamerShown')) {
+  function triggerScreamer() {
+    const screamer = document.getElementById('halloween-screamer');
+    const audio = document.getElementById('screamer-sound');
+    const flash = screamer.querySelector('.flash');
 
-  if (!screamer.classList.contains('show')) {
-    screamer.classList.add('show');
-    audio.play();
+    if (!screamer.classList.contains('show')) {
+      // Marque comme montré
+      localStorage.setItem('screamerShown', 'true');
+
+      // Affiche le screamer et joue le son
+      screamer.classList.add('show');
+      flash.style.opacity = 1;       // flash instantané
+      audio.play();
+
+      // Enlève le flash après 0.2s
+      setTimeout(() => { flash.style.opacity = 0; }, 200);
+
+      // Cache le screamer après 3 secondes
+      setTimeout(() => {
+        screamer.classList.remove('show');
+      }, 3000);
+    }
   }
-}
 
-// Événements pour déclenchement unique
-document.body.addEventListener('click', triggerScreamer, { once: true });
-document.body.addEventListener('mouseover', triggerScreamer, { once: true });
+  // Déclenchement unique sur clic ou survol
+  document.body.addEventListener('click', triggerScreamer, { once: true });
+  document.body.addEventListener('mouseover', triggerScreamer, { once: true });
+}
     </script>
 
 </body>
 </html>
+
 
 
 
