@@ -203,33 +203,38 @@ li a:hover {
 
 /* --- Conteneur du lecteur vidéo --- */
 /* --- Vidéo plus grande et mieux centrée --- */
+/* --- Conteneur du lecteur vidéo --- */
 .video-container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: black;
+  background: rgba(0, 0, 0, 0.95); /* fond légèrement transparent */
   display: none;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
-/* La vidéo occupe tout l’espace sans bande noire */
+/* --- Vidéo centrée avec marges élégantes --- */
 video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* remplissage total de l’écran */
+  width: 90%;              /* un peu de marge autour */
+  height: 90%;
+  max-width: 1400px;       /* limite sur très grands écrans */
+  max-height: 90vh;        /* garde une marge verticale */
+  object-fit: contain;     /* garde les bonnes proportions */
+  border-radius: 16px;     /* angles arrondis */
+  box-shadow: 0 0 40px rgba(255, 65, 108, 0.5); /* glow stylé */
+  background: black;       /* évite les bords blancs si vidéo chargée lentement */
+  transition: transform 0.3s ease;
 }
 
-/* Option : si tu veux garder un peu de marge autour */
-video.fullscreen-fit {
-  width: 95%;
-  height: 95%;
-  object-fit: contain; /* conserve les proportions */
-  border-radius: 10px;
-  box-shadow: 0 0 40px rgba(255, 65, 108, 0.6);
+/* Animation douce à l’ouverture */
+.video-container.show video {
+  transform: scale(1.02);
+}
+box-shadow: 0 0 40px rgba(255, 65, 108, 0.6);
 }
 
 
@@ -1013,4 +1018,5 @@ document.getElementById("backButton").addEventListener("click", () => {
 <script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
 </html>
+
 
