@@ -1459,96 +1459,10 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
   console.warn("Carrousel non trouvé ou slides/dots manquants !");
 }
 
-import { useRef } from "react";
-import { ChevronLeft, ChevronRight, Play, Info } from "lucide-react";
-
-const movies = [
-  { id: 1, title: "Charlie et la Chocolaterie", image: "https://media.themoviedb.org/t/p/w440_and_h660_face/uf2T5IDXt2i5cPyKO92CcxeQv9O.jpg" },
-  { id: 2, title: "Retour vers le Futur", image: "https://media.themoviedb.org/t/p/w440_and_h660_face/hqvsIJ680Oh0QlNokyi1vgMCgIU.jpg" },
-  { id: 3, title: "Star Wars, épisode III - La Revanche des Sith", image: "https://media.themoviedb.org/t/p/w440_and_h660_face/cnhZGY8lkg1fxWecEdTsxw2AWGG.jpg" },
-  { id: 4, title: "Le Parrain", image: "https://media.themoviedb.org/t/p/w440_and_h660_face/k3uIbYtiuK8pwbCcbma29nTqmgG.jpg" },
-  { id: 5, title: "Titanic", image: "https://media.themoviedb.org/t/p/w440_and_h660_face/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg" },
-  { id: 6, title: "Interstellar", image: "https://media.themoviedb.org/t/p/w440_and_h660_face/yoPpzmjijprmzikLvHhPAzxUMMw.jpg" },
-  { id: 7, title: "The Mask", image: "https://media.themoviedb.org/t/p/w440_and_h660_face/6KPaosuKWTyuNl0JhoLucHxw1nU.jpg" },
-  { id: 8, title: "Matrix", image: "https://media.themoviedb.org/t/p/w440_and_h660_face/mHga0ATMUgjoRkFgD3aqkGpiCgD.jpg" },
-  { id: 9, title: "Inception", image: "https://media.themoviedb.org/t/p/w440_and_h660_face/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" },
-  { id: 10, title: "Terminator", image: "https://media.themoviedb.org/t/p/w440_and_h660_face/mDeDcnWDS35f7VRQBato0fEEVFt.jpg" },
-];
-
-export default function NetflixTop10Carousel() {
-  const carouselRef = useRef(null);
-
-  const scroll = (direction) => {
-    const { current } = carouselRef;
-    if (current) {
-      const scrollAmount = direction === "left" ? -400 : 400;
-      current.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
-  };
-
-  return (
-    <div className="relative w-full">
-      <h2 className="text-2xl font-bold text-white mb-4">Top 10 des Incontournables</h2>
-
-      {/* Flèches */}
-      <button
-        onClick={() => scroll("left")}
-        className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/60 p-2 rounded-full z-10 hover:bg-black transition"
-      >
-        <ChevronLeft className="text-white" />
-      </button>
-
-      <div
-        ref={carouselRef}
-        className="flex overflow-x-scroll scrollbar-hide scroll-smooth gap-6 px-10"
-      >
-        {movies.map((movie, index) => (
-          <div
-            key={movie.id}
-            className="relative flex-shrink-0 w-48 md:w-56 transform transition-all duration-300 hover:scale-110 hover:z-20"
-          >
-            {/* Numéro du classement */}
-            <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-[80px] md:text-[100px] font-black text-red-600 opacity-80 z-0 drop-shadow-lg">
-              {index + 1}
-            </div>
-
-            {/* Image du film */}
-            <div className="relative group">
-              <img
-                src={movie.image}
-                alt={movie.title}
-                className="rounded-xl shadow-lg z-10 relative"
-              />
-
-              {/* Overlay au survol */}
-              <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex flex-col justify-center items-center gap-3">
-                <h3 className="text-white font-semibold text-lg">{movie.title}</h3>
-                <div className="flex gap-3">
-                  <button className="bg-white text-black px-3 py-2 rounded-lg flex items-center gap-1 hover:bg-gray-200 transition">
-                    <Play size={18} /> Lire
-                  </button>
-                  <button className="bg-gray-700 text-white px-3 py-2 rounded-lg flex items-center gap-1 hover:bg-gray-600 transition">
-                    <Info size={18} /> Infos
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <button
-        onClick={() => scroll("right")}
-        className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/60 p-2 rounded-full z-10 hover:bg-black transition"
-      >
-        <ChevronRight className="text-white" />
-      </button>
-    </div>
-  );
-}
 
     </script>
 
 </body>
 </html>
+
 
