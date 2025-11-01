@@ -121,108 +121,56 @@
 
 
    <section class="moviesection">
-  <h2>🔥 Top 10 Films Incontournables</h2>
-  <hr class="rounded">
+       <h1 class="line">Les Films pour Halloween</h1>
+       <hr class="rounded">
 
+  <!-- 🎬 Carrousel FILMS -->
   <div class="carousel">
-    <button class="carousel-btn left" onclick="scrollCarousel(-1)">❮</button>
-    <div class="carousel-track" id="top10-track">
+    <button class="carousel-btn left" onclick="scrollCarousel('film-movies', -1)">&#10094;</button>
+    <div class="carousel-track" id="film-movies">
 
-      <div class="movieimg">
-        <span class="rank-number">1</span>
-        <div class="myimages">
-          <a href="#"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" alt="Anime 1"></a>
-        </div>
-        <h2>Attack on Titan</h2>
-        <span>Action</span>
+      <div class="movieimg" data-title="The Gorge" data-genre="Romance">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/sawun.html"><img id="sawun" src="https://media.themoviedb.org/t/p/w440_and_h660_face/ixwaHER4oYhr4ztmQs9oPhBpZ5v.jpg" alt="Saw"></a></div>
+        <h2>Saw</h2><span>Horreur</span><div class="rating-stars"></div>
       </div>
 
-      <div class="movieimg">
-        <span class="rank-number">2</span>
-        <div class="myimages">
-          <a href="#"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" alt="Anime 2"></a>
-        </div>
-        <h2>One Piece</h2>
-        <span>Aventure</span>
+      <div class="movieimg" data-title="Interstellar" data-genre="Science-Fiction">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/sawdeux.html"><img id="sawdeux.html" src="https://media.themoviedb.org/t/p/w440_and_h660_face/t64rAop7eb285wTGw2TnPc7TBnk.jpg" alt="Saw II"></a></div>
+        <h2>Saw II</h2><span>Horreur</span><div class="rating-stars"></div>
       </div>
 
-      <div class="movieimg">
-        <span class="rank-number">3</span>
-        <div class="myimages">
-          <a href="#"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" alt="Anime 3"></a>
-        </div>
-        <h2>Jujutsu Kaisen</h2>
-        <span>Combat</span>
+      <div class="movieimg" data-title="Your Name" data-genre="Animation">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/themask.html"><img id="themask" src="https://media.themoviedb.org/t/p/w440_and_h660_face/jPC2eYub74zwf2tPGVtzSlBW6Oy.jpg" alt="The Mask"></a></div>
+        <h2>The Mask</h2><span>Crime</span><div class="rating-stars"></div>
       </div>
 
-      <div class="movieimg">
-        <span class="rank-number">4</span>
-        <div class="myimages">
-          <a href="#"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" alt="Anime 4"></a>
-        </div>
-        <h2>Chainsaw Man</h2>
-        <span>Horreur</span>
+      <div class="movieimg" data-title="Cars : Quatre roues" data-genre="Animation">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/fivenightsatfreddys.html"><img id="fivenightatfreddys" src="https://media.themoviedb.org/t/p/w440_and_h660_face/4dKRTUylqwXQ4VJz0BS84fqW2wa.jpg" alt="Five Nights at Freddy's"></a></div>
+        <h2>Five Nights at Freddy's</h2><span>Horreur</span><div class="rating-stars"></div>
       </div>
 
-      <div class="movieimg">
-        <span class="rank-number">5</span>
-        <div class="myimages">
-          <a href="#"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" alt="Anime 5"></a>
-        </div>
-        <h2>Demon Slayer</h2>
-        <span>Fantastique</span>
+      <div class="movieimg" data-title="Matrix" data-genre="Action">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/scooby-dooun.html"><img id="scooby-doo" src="https://media.themoviedb.org/t/p/w440_and_h660_face/32bzh3HnRZdE8oM9pwfmGJUYnvl.jpg" alt="Scooby-Doo"></a></div>
+        <h2>Scooby-Doo</h2><span>Mystère</span><div class="rating-stars"></div>
       </div>
 
-      <div class="movieimg">
-        <span class="rank-number">6</span>
-        <div class="myimages">
-          <a href="#"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" alt="Anime 6"></a>
-        </div>
-        <h2>My Hero Academia</h2>
-        <span>Héros</span>
+      <div class="movieimg" data-title="Tenet" data-genre="Thriller">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/projetblairwitch.html"><img id="blair-witch" src="https://media.themoviedb.org/t/p/w440_and_h660_face/9050VGrYjYrEjpOvDZVAngLbg1f.jpg" alt="Le Projet Blair Witch"></a></div>
+        <h2>Le Projet Blair Witch</h2><span>Horreur</span><div class="rating-stars"></div>
       </div>
 
-      <div class="movieimg">
-        <span class="rank-number">7</span>
-        <div class="myimages">
-          <a href="#"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" alt="Anime 7"></a>
-        </div>
-        <h2>Naruto</h2>
-        <span>Ninja</span>
+      <div class="movieimg" data-title="Avatar" data-genre="Aventure">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/parasite.html"><img id="parasite" src="https://media.themoviedb.org/t/p/w440_and_h660_face/x23Fqkt00uqV2TzfSiB60hrc3HY.jpg" alt="Parasite"></a></div>
+        <h2>Parasite</h2><span>Thriller</span><div class="rating-stars"></div>
       </div>
 
-      <div class="movieimg">
-        <span class="rank-number">8</span>
-        <div class="myimages">
-          <a href="#"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" alt="Anime 8"></a>
-        </div>
-        <h2>Tokyo Ghoul</h2>
-        <span>Dark</span>
+      <div class="movieimg" data-title="Fast & Furious : Tokyo Drift" data-genre="Action">
+        <div class="myimages"><span class="favorite-badge">⭐</span><a href="https://inspecteurl.github.io/films/joker.html"><img id="joker" src="https://media.themoviedb.org/t/p/w440_and_h660_face/aLRa1MZJmJJClNtOEHAmfaOkcsV.jpg" alt="Joker"></a></div>
+        <h2>Joker</h2><span>Thriller</span><div class="rating-stars"></div>
       </div>
-
-      <div class="movieimg">
-        <span class="rank-number">9</span>
-        <div class="myimages">
-          <a href="#"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" alt="Anime 9"></a>
-        </div>
-        <h2>Inception</h2>
-        <span>Fantôme</span>
-      </div>
-
-      <div class="movieimg">
-        <span class="rank-number">10</span>
-        <div class="myimages">
-          <a href="https://inspecteurl.github.io/films/terminator.html"><img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" alt="Anime 10"></a>
-        </div>
-        <h2>Terminator</h2>
-        <span>Action</span>
-      </div>
-
     </div>
-    <button class="carousel-btn right" onclick="scrollCarousel(1)">❯</button>
+    <button class="carousel-btn right" onclick="scrollCarousel('film-movies', 1)">&#10095;</button>
   </div>
-
-
   
        
        <h1>Nos Recommandations Animes</h1>
@@ -701,17 +649,18 @@ li a:hover {
 
 /* 🔍 Barre de recherche intégrée */
 .search-large {
-  padding: 12px 16px;
-  width: 220px;
+  padding: 12px 16px;          /* proche du padding des liens */
+  width: 220px;                /* largeur réduite */
   font-size: 1em;
   border-radius: 10px;
   border: none;
   outline: none;
-  background-color: white;
+  background-color: white;     /* couleur pour contraster */
   color: black;
-  margin: 10px 16px;
-  box-shadow: none;
+  margin: 10px 16px;           /* espace pour s’aligner verticalement */
+  box-shadow: none;            /* pas d’ombre pour mieux s’intégrer */
 }
+
 
 /* 🎬 Section animes */
 hr.rounded {
@@ -862,8 +811,9 @@ select {
 }
 .carousel-track::-webkit-scrollbar { display: none; }
 
+/* ✨ Animation ajoutée */
 .carousel-track.animate {
-  transition: transform 0.5s cubic-bezier(.68,-0.55,.27,1.55);
+  transition: transform 0.5s cubic-bezier(.68,-0.55,.27,1.55); /* rebond */
 }
 
 .carousel-btn {
@@ -955,58 +905,6 @@ select {
   font-size: 18px;
   color: gold;
   text-align: center;
-}
-
-/* === NETFLIX TOP 10 === */
-.rank-number {
-  position: absolute;
-  left: -35px;
-  bottom: 15px;
-  font-size: 90px;
-  font-weight: 900;
-  color: #e50914;
-  z-index: 0;
-  opacity: 0.85;
-  text-shadow: 2px 2px 8px #000;
-  pointer-events: none;
-}
-
-.movieimg {
-  position: relative;
-}
-
-.moviesection h2 {
-  text-align: left;
-  font-size: 2.2em;
-  margin-bottom: 10px;
-  color: white;
-  letter-spacing: 1px;
-}
-
-/* Responsive Netflix style */
-@media (max-width: 1024px) {
-  .carousel-track .movieimg {
-    flex: 0 0 180px;
-  }
-  .movieimg .myimages { height: 260px; }
-  .rank-number { font-size: 70px; left: -25px; bottom: 10px; }
-}
-
-@media (max-width: 768px) {
-  .carousel-track { gap: 10px; }
-  .carousel-track .movieimg {
-    flex: 0 0 150px;
-  }
-  .movieimg .myimages { height: 220px; }
-  .rank-number { font-size: 60px; left: -20px; bottom: 8px; }
-}
-
-@media (max-width: 500px) {
-  .carousel-track .movieimg {
-    flex: 0 0 120px;
-  }
-  .movieimg .myimages { height: 180px; }
-  .rank-number { font-size: 45px; left: -15px; bottom: 6px; }
 }
 
 @media screen and (max-width: 1000px) {
@@ -1560,7 +1458,5 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
-
-
 
 
