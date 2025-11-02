@@ -132,6 +132,18 @@
       :root{ --card-w: 46vw; }
       .movieimg img{ height: 48vw; }
     }
+
+    .badge-provisoire {
+  display: inline-block;
+  background-color: orange;
+  color: white;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 5px;
+  font-size: 0.8em;
+}
+
   </style>
 </head>
 <body>
@@ -198,13 +210,13 @@
       <span>Fantastique</span>
     </div>
     
-    <div class="movieimg" data-title="Scooby-Doo" data-genre="Aventure">
+    <div class="movieimg" data-type="Film" data-title="Scooby-Doo" data-genre="Aventure">
       <a href="https://inspecteurl.github.io/films/scooby-dooun.html"><img src="https://image.tmdb.org/t/p/original/32bzh3HnRZdE8oM9pwfmGJUYnvl.jpg" alt="Scooby-Doo"></a>
       <h2>Scooby-Doo</h2>
       <span>Aventure</span>
     </div>
     
-    <div class="movieimg" data-title="Five Nights at Freddy's" data-genre="Horreur">
+    <div class="movieimg" data-type="Film" data-title="Five Nights at Freddy's" data-genre="Horreur">
       <a href="https://inspecteurl.github.io/films/fivenightsatfreddys.html"><img src="https://image.tmdb.org/t/p/original/4dKRTUylqwXQ4VJz0BS84fqW2wa.jpg" alt="Five Nights at Freddy's"></a>
       <h2>Five Nights at Freddy's</h2>
       <span>Horreur</span>
@@ -911,6 +923,16 @@
       <h2>Il faut sauver le soldat Ryan</h2>
       <span>Drame</span>
     </div>
+
+    <div class="movieimg" data-type="Film" data-title="Memories of Murder" data-genre="Crime">
+  <a href="https://inspecteurl.github.io/films/memoriesofmurder.html">
+    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xEDYfyjMbHrrFA983DABMT7WWT.jpg" alt="Memories of Murder">
+  </a>
+  <h2>Memories of Murder</h2>
+  <span>Crime</span>
+  <span class="badge-provisoire">Provisoire</span>
+</div>
+
     
     <!-- ===== ANIMES (data-genre='Anime' + sous-genre affiché) ===== -->
     <div class="movieimg" data-title="Erased" data-genre="Anime" data-subgenre="Seinen">
