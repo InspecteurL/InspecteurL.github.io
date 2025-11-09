@@ -143,78 +143,6 @@
   margin-top: 5px;
   font-size: 0.8em;
 }
-/* === Formulaire Admin pour ajouter/éditer des films === */
-.admin-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.8rem;
-  margin: 2rem auto;
-  padding: 1rem;
-  max-width: 400px;
-  background: #1c1c1c;
-  border: 2px solid crimson;
-  border-radius: 12px;
-}
-
-.admin-form input[type="text"],
-.admin-form input[type="url"] {
-  width: 90%;
-  padding: 0.6rem 1rem;
-  border-radius: 12px;
-  border: none;
-  outline: none;
-  font-size: 1rem;
-  background: #222;
-  color: white;
-}
-
-.admin-form input::placeholder {
-  color: #aaa;
-}
-
-.admin-form button {
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 12px;
-  background: crimson;
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.admin-form button:hover {
-  background: #ff4c4c;
-}
-
-.movieimg .edit-btn,
-.movieimg .delete-btn {
-  position: absolute;
-  top: 6px;
-  padding: 4px 6px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #fff;
-  z-index: 2;
-}
-
-.movieimg .edit-btn {
-  right: 40px;
-  background: #f0ad4e;
-}
-
-.movieimg .edit-btn:hover { background: #ec971f; }
-
-.movieimg .delete-btn {
-  right: 6px;
-  background: #d9534f;
-}
-
-.movieimg .delete-btn:hover { background: #c9302c; }
-
 
   </style>
 </head>
@@ -1116,11 +1044,14 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
 );
 
+// Vérifie si l'utilisateur est l'admin
 const { data } = await supabase.auth.getUser();
 const isAdmin = data?.user?.email === 'lolovp.portrets41@gmail.com';
 
+// Conteneur principal des films
 const container = document.querySelector('#filmsContainer');
 
+// Fonction pour charger le catalogue depuis localStorage
 function loadCatalog() {
   const saved = localStorage.getItem('catalogue');
   if (saved) {
@@ -1129,6 +1060,7 @@ function loadCatalog() {
   }
 }
 
+// Fonction pour sauvegarder le catalogue
 function saveCatalog() {
   const movies = [];
   document.querySelectorAll('.movieimg').forEach(div => {
@@ -1139,6 +1071,7 @@ function saveCatalog() {
   localStorage.setItem('catalogue', JSON.stringify(movies));
 }
 
+// Fonction pour ajouter un film au DOM
 function addMovieToDOM(title, imgUrl, attachEdit=true) {
   const div = document.createElement('div');
   div.className = 'movieimg';
@@ -1151,6 +1084,7 @@ function addMovieToDOM(title, imgUrl, attachEdit=true) {
   if (isAdmin && attachEdit) attachButtons(div);
 }
 
+// Fonction pour attacher les boutons éditables
 function attachButtons(div) {
   const edit = document.createElement('button');
   edit.className = 'edit-btn';
@@ -1180,14 +1114,27 @@ function attachButtons(div) {
     }
   };
 
+  div.style.position = 'relative';
+  edit.style.position = del.style.position = 'absolute';
+  edit.style.top = del.style.top = '5px';
+  edit.style.right = '40px';
+  del.style.right = '5px';
+
   div.appendChild(edit);
   div.appendChild(del);
 }
 
+// Bouton pour ajouter un nouveau film
 if (isAdmin) {
   const addBtn = document.createElement('button');
   addBtn.className = 'add-btn';
   addBtn.textContent = '➕ Ajouter un film';
+  addBtn.style.display = 'block';
+  addBtn.style.margin = '20px auto';
+  addBtn.style.background = '#333';
+  addBtn.style.color = '#fff';
+  addBtn.style.borderRadius = '8px';
+  addBtn.style.padding = '6px 12px';
   addBtn.onclick = () => {
     const title = prompt("Titre du film/série :");
     const imgUrl = prompt("URL de l'image :");
@@ -1195,11 +1142,13 @@ if (isAdmin) {
     addMovieToDOM(title, imgUrl);
     saveCatalog();
   };
-  document.body.insertBefore(addBtn, container);
+  document.body.appendChild(addBtn);
 }
 
+// Load saved movies on page load
 loadCatalog();
 </script>
+
 
 
 
