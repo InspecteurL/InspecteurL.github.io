@@ -144,55 +144,17 @@
   font-size: 0.8em;
 }
 
-    /* ===== Boutons admin ===== */
-.edit-btn,
-.delete-btn {
-  position: absolute;
-  top: 5px;
-  padding: 4px 6px;
-  font-size: 0.9rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #fff;
-  transition: 0.3s;
-}
-
-.edit-btn {
-  right: 40px;
-  background-color: #007bff; /* Bleu pour éditer */
-}
-
-.edit-btn:hover {
-  background-color: #0056b3;
-}
-
-.delete-btn {
-  right: 5px;
-  background-color: #dc3545; /* Rouge pour supprimer */
-}
-
-.delete-btn:hover {
-  background-color: #a71d2a;
-}
-
-/* ===== Bouton ajouter film ===== */
-.add-btn {
-  display: block;
-  margin: 20px auto;
-  background: #28a745;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.add-btn:hover {
-  background: #1e7e34;
-}
+.edit-btn, .delete-btn { position:absolute; top:5px; padding:4px 6px; font-size:0.9rem; border:none; border-radius:6px; cursor:pointer; color:#fff; transition:0.3s; }
+.edit-btn { right:40px; background-color:#007bff; }
+.edit-btn:hover { background-color:#0056b3; }
+.delete-btn { right:5px; background-color:#dc3545; }
+.delete-btn:hover { background-color:#a71d2a; }
+.add-btn { display:block; margin:20px auto; background:#28a745; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:1rem; cursor:pointer; transition:0.3s; }
+.add-btn:hover { background:#1e7e34; }
+#adminFormWrapper { display:none; text-align:center; margin:2rem; }
+#adminForm input, #adminForm select { padding:6px 10px; margin:4px; border-radius:6px; border:none; font-size:1rem; }
+#adminForm button { padding:6px 12px; border:none; border-radius:6px; background:#007bff; color:white; cursor:pointer; }
+#adminForm button:hover { background:#0056b3; }
 
   </style>
 </head>
@@ -240,23 +202,23 @@
 
   <div id="noResults">Aucun résultat trouvé.</div>
 <!-- Formulaire admin (visible uniquement pour l'admin) -->
-<div id="adminFormWrapper" style="display:none; margin:2rem; text-align:center;">
-  <form id="adminForm" class="admin-form">
-    <input type="text" id="movieTitle" placeholder="Titre du film/série/anime" required />
-    <input type="url" id="movieImg" placeholder="URL de l'image" required />
+<div class="grid" id="movieGrid"></div>
+
+<div id="adminFormWrapper">
+  <form id="adminForm">
+    <input type="text" id="movieTitle" placeholder="Titre du film/série/anime" required>
+    <input type="url" id="movieImg" placeholder="URL de l'image" required>
     <select id="movieType" required>
       <option value="">Type</option>
       <option value="film">Film</option>
       <option value="serie">Série</option>
       <option value="anime">Anime</option>
     </select>
-    <input type="hidden" id="editingId" />
+    <input type="hidden" id="editingId">
     <button type="submit">Ajouter / Modifier</button>
   </form>
+  <button class="add-btn" id="showFormBtn">➕ Ajouter un film/série/anime</button>
 </div>
-
-
-  <div class="grid" id="movieGrid">
 
     <!-- Exemple FILM -->
     <div class="movieimg" data-type="Film" data-title="Interstellar" data-genre="Science-Fiction">
@@ -1107,32 +1069,27 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
   'https://wuagahavmbugmnuzsouf.supabase.co',
-  'YOUR_SUPABASE_ANON_KEY'
+  'YOUR_SUPABASE_ANON_KEY' // Remplace par ta clé Supabase
 );
 
 const movieGrid = document.getElementById('movieGrid');
 const adminFormWrapper = document.getElementById('adminFormWrapper');
 const adminForm = document.getElementById('adminForm');
-const editingIdInput = document.getElementById('editingId');
+const showFormBtn = document.getElementById('showFormBtn');
 
 let currentUser = null;
 let isAdmin = false;
-let movies = [];
+let catalogue = [];
 
-// ===== Utils =====
-function escapeHtml(str='') {
-  return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
-}
-
+// Affiche un film dans le DOM
 function createMovieCard(movie) {
   const div = document.createElement('div');
   div.className = 'movieimg';
   div.dataset.id = movie.id;
   div.innerHTML = `
-    <img src="${escapeHtml(movie.image_url)}" alt="${escapeHtml(movie.title)}">
-    <p class="title">${escapeHtml(movie.title)}</p>
-    <p class="type">${escapeHtml(movie.type || '')}</p>
-    <p class="genre">${escapeHtml(movie.genre || '')}</p>
+    <img src="${movie.image_url}" alt="${movie.title}">
+    <p class="title">${movie.title}</p>
+    <p class="type">${movie.type || ''}</p>
   `;
 
   if (isAdmin) attachAdminButtons(div, movie);
@@ -1140,6 +1097,7 @@ function createMovieCard(movie) {
   movieGrid.appendChild(div);
 }
 
+// Ajoute les boutons éditer/supprimer pour l'admin
 function attachAdminButtons(div, movie) {
   const editBtn = document.createElement('button');
   editBtn.textContent = '✏️';
@@ -1149,105 +1107,83 @@ function attachAdminButtons(div, movie) {
   delBtn.className = 'delete-btn';
 
   editBtn.onclick = () => {
-    adminFormWrapper.style.display = 'block';
     document.getElementById('movieTitle').value = movie.title;
     document.getElementById('movieImg').value = movie.image_url;
     document.getElementById('movieType').value = movie.type;
-    editingIdInput.value = movie.id;
+    document.getElementById('editingId').value = movie.id;
+    adminFormWrapper.style.display = 'block';
   };
 
   delBtn.onclick = async () => {
-    if (!confirm('Supprimer ce film ?')) return;
+    if (!confirm("Supprimer ce film ?")) return;
     const { error } = await supabase.from('catalogue').delete().eq('id', movie.id);
-    if (error) return alert('Erreur suppression: ' + error.message);
+    if (error) return alert('Erreur suppression: '+error.message);
     div.remove();
-    movies = movies.filter(m => m.id !== movie.id);
   };
-
-  div.style.position = 'relative';
-  editBtn.style.position = delBtn.style.position = 'absolute';
-  editBtn.style.top = delBtn.style.top = '5px';
-  editBtn.style.right = '40px';
-  delBtn.style.right = '5px';
 
   div.appendChild(editBtn);
   div.appendChild(delBtn);
 }
 
-// ===== Load catalogue =====
+// Charge le catalogue depuis Supabase
 async function loadCatalogue() {
-  const { data, error } = await supabase.from('catalogue').select('*').order('created_at', { ascending: false });
-  if (error) return console.error('Erreur chargement catalogue:', error);
-  movies = data;
+  const { data, error } = await supabase.from('catalogue').select('*').order('created_at', { ascending:false });
+  if (error) return console.error(error);
+  catalogue = data;
   movieGrid.innerHTML = '';
-  movies.forEach(createMovieCard);
+  catalogue.forEach(createMovieCard);
 }
 
-// ===== Auth / Admin check =====
+// Vérifie l'utilisateur connecté
 async function detectUser() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
   currentUser = user;
   isAdmin = user.email === 'lolovp.portrets41@gmail.com';
-
-  if (isAdmin) {
-    // Afficher directement un bouton "Ajouter un film"
-    const addBtn = document.createElement('button');
-    addBtn.textContent = '➕ Ajouter un film/série/anime';
-    addBtn.className = 'add-btn';
-    addBtn.onclick = () => {
-      adminFormWrapper.style.display = 'block';
-      editingIdInput.value = '';
-      adminForm.reset();
-    };
-    document.body.insertBefore(addBtn, document.getElementById('movieGrid'));
-  }
+  if (isAdmin) adminFormWrapper.style.display = 'block';
 }
 
-// ===== Handle Add / Edit form =====
+// Soumission du formulaire (ajout / modification)
 adminForm.onsubmit = async (e) => {
   e.preventDefault();
-  const title = document.getElementById('movieTitle').value.trim();
-  const image_url = document.getElementById('movieImg').value.trim();
+  const title = document.getElementById('movieTitle').value;
+  const image_url = document.getElementById('movieImg').value;
   const type = document.getElementById('movieType').value;
-  const id = editingIdInput.value;
+  const editingId = document.getElementById('editingId').value;
 
-  if (!title || !image_url || !type) return alert('Tous les champs sont obligatoires');
-
-  if (id) {
+  if (editingId) {
     // Modifier
     const { error, data } = await supabase
       .from('catalogue')
       .update({ title, image_url, type })
-      .eq('id', id)
+      .eq('id', editingId)
       .select()
       .single();
     if (error) return alert('Erreur modification: ' + error.message);
-    const idx = movies.findIndex(m => m.id == id);
-    movies[idx] = data;
-    movieGrid.innerHTML = '';
-    movies.forEach(createMovieCard);
+    loadCatalogue();
+    adminForm.reset();
+    document.getElementById('editingId').value = '';
   } else {
     // Ajouter
-    const { data, error } = await supabase
+    const { error, data } = await supabase
       .from('catalogue')
       .insert({ title, image_url, type })
       .select()
       .single();
     if (error) return alert('Erreur ajout: ' + error.message);
-    movies.unshift(data);
     createMovieCard(data);
+    adminForm.reset();
   }
-
-  adminFormWrapper.style.display = 'none';
-  adminForm.reset();
-  editingIdInput.value = '';
 };
 
+// Afficher le formulaire quand on clique sur le bouton
+showFormBtn.onclick = () => adminFormWrapper.style.display = 'block';
+
+// Initialisation
 await detectUser();
 await loadCatalogue();
-</script>
 
+</script>
 
 
 
