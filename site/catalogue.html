@@ -256,9 +256,7 @@
 </div>
 
 
-  <div id="filmsContainer" class="grid"></div>
-
-
+  <div class="grid" id="movieGrid">
 
     <!-- Exemple FILM -->
     <div class="movieimg" data-type="Film" data-title="Interstellar" data-genre="Science-Fiction">
@@ -1107,142 +1105,138 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+// ========= Config Supabase =========
 const supabase = createClient(
   'https://wuagahavmbugmnuzsouf.supabase.co',
   'YOUR_SUPABASE_ANON_KEY'
 );
 
-const container = document.querySelector('#filmsContainer');
+// ========= DOM =========
+const container = document.getElementById('filmsContainer');
+const addBtnContainer = document.getElementById('adminAddBtnContainer'); // Conteneur bouton ajout admin
 
+// ========= Etat =========
 let currentUser = null;
 let isAdmin = false;
+let catalogue = [];
 
-// Détecter l’utilisateur Supabase
-async function detectUser() {
-  const { data } = await supabase.auth.getUser();
-  if (data?.user) {
-    currentUser = data.user;
-    isAdmin = currentUser.email === 'lolovp.portrets41@gmail.com';
-  }
+// ========= Utils =========
+function escapeHtml(str='') {
+  return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 }
 
-// Charger le catalogue depuis Supabase
-async function loadCatalog() {
-  const { data, error } = await supabase
-    .from('catalogue')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Erreur chargement catalogue:', error);
-    return;
-  }
-
-  container.innerHTML = '';
-  data.forEach(film => addMovieToDOM(film));
-}
-
-// Ajouter un film au DOM
-function addMovieToDOM(film) {
+function createMovieCard(movie) {
   const div = document.createElement('div');
   div.className = 'movieimg';
-  div.dataset.id = film.id;
+  div.dataset.id = movie.id;
   div.innerHTML = `
-    <img src="${film.image_url}" alt="${film.title}">
-    <p class="title">${film.title}</p>
+    <img src="${escapeHtml(movie.image_url)}" alt="${escapeHtml(movie.title)}">
+    <p class="title">${escapeHtml(movie.title)}</p>
+    <p class="type">${escapeHtml(movie.type || '')}</p>
+    <p class="genre">${escapeHtml(movie.genre || '')}</p>
   `;
 
-  if (isAdmin) attachAdminButtons(div, film);
+  if (isAdmin) attachAdminButtons(div, movie);
 
   container.appendChild(div);
 }
 
-// Ajouter les boutons éditables pour l’admin
-function attachAdminButtons(div, film) {
-  const edit = document.createElement('button');
-  edit.className = 'edit-btn';
-  edit.textContent = '✏️';
-  const del = document.createElement('button');
-  del.className = 'delete-btn';
-  del.textContent = '🗑️';
+function attachAdminButtons(div, movie) {
+  const editBtn = document.createElement('button');
+  editBtn.textContent = '✏️';
+  editBtn.className = 'edit-btn';
+  const delBtn = document.createElement('button');
+  delBtn.textContent = '🗑️';
+  delBtn.className = 'delete-btn';
 
-  edit.onclick = async () => {
-    const newTitle = prompt("Nouveau titre :", film.title);
-    const newImg = prompt("Nouvelle URL de l'image :", film.image_url);
-    if (!newTitle || !newImg) return;
+  editBtn.onclick = async () => {
+    const newTitle = prompt("Titre :", movie.title) || movie.title;
+    const newImage = prompt("URL de l'image :", movie.image_url) || movie.image_url;
+    const newType = prompt("Type (film/série/anime) :", movie.type) || movie.type;
+    const newGenre = prompt("Genre :", movie.genre) || movie.genre;
 
     const { error } = await supabase
       .from('catalogue')
-      .update({ title: newTitle, image_url: newImg })
-      .eq('id', film.id);
+      .update({ title: newTitle, image_url: newImage, type: newType, genre: newGenre })
+      .eq('id', movie.id);
 
-    if (error) return alert('Erreur update: ' + error.message);
+    if (error) return alert('Erreur modification: ' + error.message);
 
-    film.title = newTitle;
-    film.image_url = newImg;
-    div.querySelector('p.title').textContent = newTitle;
-    div.querySelector('img').src = newImg;
+    movie.title = newTitle;
+    movie.image_url = newImage;
+    movie.type = newType;
+    movie.genre = newGenre;
+    div.querySelector('.title').textContent = newTitle;
+    div.querySelector('img').src = newImage;
+    div.querySelector('.type').textContent = newType;
+    div.querySelector('.genre').textContent = newGenre;
   };
 
-  del.onclick = async () => {
+  delBtn.onclick = async () => {
     if (!confirm("Supprimer ce film ?")) return;
-
-    const { error } = await supabase
-      .from('catalogue')
-      .delete()
-      .eq('id', film.id);
-
+    const { error } = await supabase.from('catalogue').delete().eq('id', movie.id);
     if (error) return alert('Erreur suppression: ' + error.message);
-
     div.remove();
   };
 
   div.style.position = 'relative';
-  edit.style.position = del.style.position = 'absolute';
-  edit.style.top = del.style.top = '5px';
-  edit.style.right = '40px';
-  del.style.right = '5px';
+  editBtn.style.position = delBtn.style.position = 'absolute';
+  editBtn.style.top = delBtn.style.top = '5px';
+  editBtn.style.right = '40px';
+  delBtn.style.right = '5px';
 
-  div.appendChild(edit);
-  div.appendChild(del);
+  div.appendChild(editBtn);
+  div.appendChild(delBtn);
 }
 
-// Bouton pour ajouter un nouveau film
-async function addFilmPrompt() {
-  const title = prompt("Titre du film/série/anime :");
-  const imgUrl = prompt("URL de l'image :");
-  if (!title || !imgUrl) return;
-
-  const { data, error } = await supabase
-    .from('catalogue')
-    .insert({ title, image_url: imgUrl })
-    .select()
-    .single();
-
-  if (error) return alert('Erreur ajout: ' + error.message);
-
-  addMovieToDOM(data);
+// ========= Chargement catalogue =========
+async function loadCatalogue() {
+  const { data, error } = await supabase.from('catalogue').select('*').order('created_at', { ascending: false });
+  if (error) return console.error('Erreur chargement catalogue:', error);
+  catalogue = data;
+  container.innerHTML = '';
+  catalogue.forEach(createMovieCard);
 }
 
-// Init
+// ========= Auth / Admin check =========
+async function detectUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  currentUser = user;
+  isAdmin = user.email === 'lolovp.portrets41@gmail.com';
+
+  if (isAdmin) {
+    const addBtn = document.createElement('button');
+    addBtn.textContent = '➕ Ajouter un film/série/anime';
+    addBtn.style.margin = '20px';
+    addBtn.onclick = async () => {
+      const title = prompt("Titre :");
+      const image_url = prompt("URL de l'image :");
+      const type = prompt("Type (film/série/anime) :");
+      const genre = prompt("Genre :");
+
+      if (!title || !image_url) return;
+
+      const { data, error } = await supabase
+        .from('catalogue')
+        .insert({ title, image_url, type, genre })
+        .select()
+        .single();
+
+      if (error) return alert('Erreur ajout: ' + error.message);
+
+      createMovieCard(data);
+      catalogue.push(data);
+    };
+    addBtnContainer.appendChild(addBtn);
+  }
+}
+
+// ========= Initialisation =========
 await detectUser();
+await loadCatalogue();
 
-if (isAdmin) {
-  const addBtn = document.createElement('button');
-  addBtn.textContent = '➕ Ajouter un film';
-  addBtn.style.display = 'block';
-  addBtn.style.margin = '20px auto';
-  addBtn.style.background = '#333';
-  addBtn.style.color = '#fff';
-  addBtn.style.borderRadius = '8px';
-  addBtn.style.padding = '6px 12px';
-  addBtn.onclick = addFilmPrompt;
-  document.body.insertBefore(addBtn, container);
-}
-
-loadCatalog();
 </script>
-
 
 
 
