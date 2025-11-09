@@ -1063,51 +1063,36 @@ const supabase = createClient(
 // Conteneur principal
 const container = document.querySelector('#filmsContainer');
 
-// Vérifie si l’utilisateur est l’admin
+// Vérifie si l’utilisateur est admin
 let isAdmin = false;
-
 async function detectAdmin() {
-  try {
-    const { data } = await supabase.auth.getUser();
-    const email = data?.user?.email;
-    if (email === 'lolovp.portrets41@gmail.com') isAdmin = true;
-  } catch(e) {
-    console.warn('Impossible de récupérer l’utilisateur Supabase', e);
-  }
-
-  // Pour développement ou si non connecté : forcer l’admin
-  if (!isAdmin) {
-    const saved = localStorage.getItem('forceAdmin');
-    if (saved === 'true') isAdmin = true;
-  }
+  const { data } = await supabase.auth.getUser();
+  const email = data?.user?.email;
+  isAdmin = email === 'lolovp.portrets41@gmail.com';
 
   if (isAdmin) addAdminAddButton();
 }
 
-// Charge le catalogue depuis localStorage
-function loadCatalog() {
-  const saved = localStorage.getItem('catalogue');
-  if (saved) {
-    const movies = JSON.parse(saved);
-    movies.forEach(m => addMovieToDOM(m.title, m.img, true));
-  }
-}
+// Charge le catalogue depuis Supabase
+async function loadCatalog() {
+  const { data: movies, error } = await supabase
+    .from('catalogue')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-// Sauvegarde le catalogue dans localStorage
-function saveCatalog() {
-  const movies = [];
-  document.querySelectorAll('.movieimg').forEach(div => {
-    const img = div.querySelector('img')?.src;
-    const title = div.querySelector('.title')?.textContent;
-    if (img && title) movies.push({ title, img });
-  });
-  localStorage.setItem('catalogue', JSON.stringify(movies));
+  if (error) {
+    console.error("Erreur chargement catalogue :", error);
+    return;
+  }
+
+  movies.forEach(m => addMovieToDOM(m.id, m.title, m.img, true));
 }
 
 // Ajouter un film au DOM
-function addMovieToDOM(title, imgUrl, attachButtons=true) {
+function addMovieToDOM(id, title, imgUrl, attachButtons=true) {
   const div = document.createElement('div');
   div.className = 'movieimg';
+  div.dataset.id = id;
   div.innerHTML = `
     <img src="${imgUrl}" alt="${title}">
     <p class="title">${title}</p>
@@ -1126,24 +1111,40 @@ function attachAdminButtons(div) {
   del.className = 'delete-btn';
   del.textContent = '🗑️';
 
-  edit.onclick = () => {
+  edit.onclick = async () => {
     const img = div.querySelector('img');
     const title = div.querySelector('.title');
 
     const newTitle = prompt("Nouveau titre :", title.textContent);
     const newImg = prompt("URL de l'image :", img.src);
+    if (!newTitle && !newImg) return;
+
+    const updates = {};
+    if (newTitle) updates.title = newTitle;
+    if (newImg) updates.img = newImg;
+
+    const { error } = await supabase
+      .from('catalogue')
+      .update(updates)
+      .eq('id', div.dataset.id);
+
+    if (error) return alert('Erreur modification: ' + error.message);
 
     if (newTitle) title.textContent = newTitle;
     if (newImg) img.src = newImg;
-
-    saveCatalog();
   };
 
-  del.onclick = () => {
-    if (confirm("Supprimer ce film ?")) {
-      div.remove();
-      saveCatalog();
-    }
+  del.onclick = async () => {
+    if (!confirm("Supprimer ce film ?")) return;
+
+    const { error } = await supabase
+      .from('catalogue')
+      .delete()
+      .eq('id', div.dataset.id);
+
+    if (error) return alert('Erreur suppression: ' + error.message);
+
+    div.remove();
   };
 
   div.style.position = 'relative';
@@ -1168,12 +1169,20 @@ function addAdminAddButton() {
   addBtn.style.borderRadius = '8px';
   addBtn.style.padding = '6px 12px';
 
-  addBtn.onclick = () => {
+  addBtn.onclick = async () => {
     const title = prompt("Titre du film/série/anime :");
     const imgUrl = prompt("URL de l'image :");
     if (!title || !imgUrl) return;
-    addMovieToDOM(title, imgUrl);
-    saveCatalog();
+
+    const { data, error } = await supabase
+      .from('catalogue')
+      .insert({ title, img: imgUrl })
+      .select()
+      .single();
+
+    if (error) return alert('Erreur ajout: ' + error.message);
+
+    addMovieToDOM(data.id, data.title, data.img);
   };
 
   document.body.appendChild(addBtn);
@@ -1181,7 +1190,7 @@ function addAdminAddButton() {
 
 // Initialisation
 await detectAdmin();
-loadCatalog();
+await loadCatalog();
 </script>
 
 
