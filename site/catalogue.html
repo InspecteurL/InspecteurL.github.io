@@ -143,6 +143,77 @@
   margin-top: 5px;
   font-size: 0.8em;
 }
+/* === Formulaire Admin pour ajouter/éditer des films === */
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 2rem auto;
+  padding: 1rem;
+  max-width: 400px;
+  background: #1c1c1c;
+  border: 2px solid crimson;
+  border-radius: 12px;
+}
+
+.admin-form input[type="text"],
+.admin-form input[type="url"] {
+  width: 90%;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  background: #222;
+  color: white;
+}
+
+.admin-form input::placeholder {
+  color: #aaa;
+}
+
+.admin-form button {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 12px;
+  background: crimson;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.admin-form button:hover {
+  background: #ff4c4c;
+}
+
+.movieimg .edit-btn,
+.movieimg .delete-btn {
+  position: absolute;
+  top: 6px;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #fff;
+  z-index: 2;
+}
+
+.movieimg .edit-btn {
+  right: 40px;
+  background: #f0ad4e;
+}
+
+.movieimg .edit-btn:hover { background: #ec971f; }
+
+.movieimg .delete-btn {
+  right: 6px;
+  background: #d9534f;
+}
+
+.movieimg .delete-btn:hover { background: #c9302c; }
 
 
   </style>
@@ -1037,7 +1108,7 @@
     </div>
 
   </div>
-  <script type="module">
+<script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
@@ -1045,98 +1116,89 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
 );
 
-// Vérifie si l'utilisateur est l'admin
 const { data } = await supabase.auth.getUser();
 const isAdmin = data?.user?.email === 'lolovp.portrets41@gmail.com';
 
-if (isAdmin) {
-  activateEditMode();
-}
+const container = document.querySelector('#filmsContainer');
 
-function activateEditMode() {
-  console.log("Mode édition activé pour l'admin.");
-
-  // Style pour les boutons
-  const style = document.createElement('style');
-  style.textContent = `
-    .edit-btn, .delete-btn, .add-btn {
-      position: absolute;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      border: none;
-      padding: 4px 8px;
-      cursor: pointer;
-      font-size: 12px;
-      border-radius: 4px;
-    }
-    .movieimg { position: relative; }
-    .edit-btn { top: 5px; right: 40px; }
-    .delete-btn { top: 5px; right: 5px; }
-    .add-btn {
-      display:block;
-      margin: 20px auto;
-      background:#333;
-      color:#fff;
-      font-weight:bold;
-      border-radius:8px;
-      padding:6px 12px;
-    }
-  `;
-  document.head.appendChild(style);
-
-  // Ajoute les boutons sur chaque film
-  document.querySelectorAll('.movieimg').forEach(div => {
-    const edit = document.createElement('button');
-    edit.className = 'edit-btn';
-    edit.textContent = '✏️';
-    const del = document.createElement('button');
-    del.className = 'delete-btn';
-    del.textContent = '🗑️';
-
-    edit.onclick = () => editMovie(div);
-    del.onclick = () => { if (confirm('Supprimer ce film ?')) div.remove(); };
-
-    div.appendChild(edit);
-    div.appendChild(del);
-  });
-
-  // Bouton d’ajout global
-  const addBtn = document.createElement('button');
-  addBtn.className = 'add-btn';
-  addBtn.textContent = '➕ Ajouter un film';
-  addBtn.onclick = addMovie;
-  document.body.appendChild(addBtn);
-}
-
-// === FONCTIONS ADMIN ===
-
-function editMovie(div) {
-  const img = div.querySelector('img');
-  const title = div.querySelector('.title') || div.querySelector('h3') || div.querySelector('p');
-
-  const newTitle = prompt("Nouveau titre :", title?.textContent || "");
-  const newImg = prompt("URL de la nouvelle image :", img?.src || "");
-
-  if (newTitle && img) {
-    img.src = newImg || img.src;
-    if (title) title.textContent = newTitle;
+function loadCatalog() {
+  const saved = localStorage.getItem('catalogue');
+  if (saved) {
+    const movies = JSON.parse(saved);
+    movies.forEach(m => addMovieToDOM(m.title, m.img, false));
   }
 }
 
-function addMovie() {
-  const title = prompt("Titre du film/série :");
-  const imgUrl = prompt("URL de l'image :");
-  if (!title || !imgUrl) return;
+function saveCatalog() {
+  const movies = [];
+  document.querySelectorAll('.movieimg').forEach(div => {
+    const img = div.querySelector('img')?.src;
+    const title = div.querySelector('.title')?.textContent;
+    if (img && title) movies.push({title, img});
+  });
+  localStorage.setItem('catalogue', JSON.stringify(movies));
+}
 
-  const newDiv = document.createElement('div');
-  newDiv.className = 'movieimg';
-  newDiv.innerHTML = `
+function addMovieToDOM(title, imgUrl, attachEdit=true) {
+  const div = document.createElement('div');
+  div.className = 'movieimg';
+  div.innerHTML = `
     <img src="${imgUrl}" alt="${title}">
     <p class="title">${title}</p>
   `;
-  document.querySelector('#filmsContainer')?.appendChild(newDiv) || document.body.appendChild(newDiv);
-  activateEditMode(); // réattache les boutons sur le nouveau
+  container.appendChild(div);
+
+  if (isAdmin && attachEdit) attachButtons(div);
 }
+
+function attachButtons(div) {
+  const edit = document.createElement('button');
+  edit.className = 'edit-btn';
+  edit.textContent = '✏️';
+  const del = document.createElement('button');
+  del.className = 'delete-btn';
+  del.textContent = '🗑️';
+
+  edit.onclick = () => {
+    const img = div.querySelector('img');
+    const title = div.querySelector('.title');
+
+    const newTitle = prompt("Nouveau titre :", title.textContent);
+    const newImg = prompt("URL de l'image :", img.src);
+
+    if (newTitle && img) {
+      img.src = newImg || img.src;
+      title.textContent = newTitle;
+      saveCatalog();
+    }
+  };
+
+  del.onclick = () => {
+    if (confirm("Supprimer ce film ?")) {
+      div.remove();
+      saveCatalog();
+    }
+  };
+
+  div.appendChild(edit);
+  div.appendChild(del);
+}
+
+if (isAdmin) {
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-btn';
+  addBtn.textContent = '➕ Ajouter un film';
+  addBtn.onclick = () => {
+    const title = prompt("Titre du film/série :");
+    const imgUrl = prompt("URL de l'image :");
+    if (!title || !imgUrl) return;
+    addMovieToDOM(title, imgUrl);
+    saveCatalog();
+  };
+  document.body.insertBefore(addBtn, container);
+}
+
+loadCatalog();
 </script>
 
 
