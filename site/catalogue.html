@@ -1105,7 +1105,6 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// === Config Supabase ===
 const supabase = createClient(
   'https://wuagahavmbugmnuzsouf.supabase.co',
   'YOUR_SUPABASE_ANON_KEY'
@@ -1190,7 +1189,19 @@ async function detectUser() {
   if (!user) return;
   currentUser = user;
   isAdmin = user.email === 'lolovp.portrets41@gmail.com';
-  if (isAdmin) adminFormWrapper.style.display = 'block';
+
+  if (isAdmin) {
+    // Afficher directement un bouton "Ajouter un film"
+    const addBtn = document.createElement('button');
+    addBtn.textContent = '➕ Ajouter un film/série/anime';
+    addBtn.className = 'add-btn';
+    addBtn.onclick = () => {
+      adminFormWrapper.style.display = 'block';
+      editingIdInput.value = '';
+      adminForm.reset();
+    };
+    document.body.insertBefore(addBtn, document.getElementById('movieGrid'));
+  }
 }
 
 // ===== Handle Add / Edit form =====
@@ -1228,6 +1239,7 @@ adminForm.onsubmit = async (e) => {
     createMovieCard(data);
   }
 
+  adminFormWrapper.style.display = 'none';
   adminForm.reset();
   editingIdInput.value = '';
 };
@@ -1235,6 +1247,7 @@ adminForm.onsubmit = async (e) => {
 await detectUser();
 await loadCatalogue();
 </script>
+
 
 
 
