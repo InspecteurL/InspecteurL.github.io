@@ -1063,7 +1063,7 @@ const supabase = createClient(
 const container = document.querySelector('#filmsContainer');
 let isAdmin = false;
 
-// Vérifier si l'utilisateur est admin
+// Vérifier si c'est l'admin
 async function checkAdmin() {
   const { data } = await supabase.auth.getUser();
   isAdmin = data?.user?.email === 'lolovp.portrets41@gmail.com';
@@ -1082,7 +1082,7 @@ async function loadCatalogue() {
   movies.forEach(m => addMovieToDOM(m, isAdmin));
 }
 
-// Ajouter un film au DOM
+// Ajouter un film/série/anime au DOM
 function addMovieToDOM(movie, attachButtons = false) {
   const div = document.createElement('div');
   div.className = 'movieimg';
@@ -1097,7 +1097,7 @@ function addMovieToDOM(movie, attachButtons = false) {
   if (attachButtons) attachAdminButtons(div);
 }
 
-// Ajouter les boutons pour l'admin
+// Ajouter les boutons admin
 function attachAdminButtons(div) {
   const edit = document.createElement('button');
   edit.className = 'edit-btn';
@@ -1115,22 +1115,23 @@ function attachAdminButtons(div) {
     const newImg = prompt("URL image :", imgEl.src);
     const newType = prompt("Type (film/série/anime) :", typeEl.textContent);
 
-    if (newTitle && newImg) {
-      const { error } = await supabase
-        .from('catalogue')
-        .update({ title: newTitle, img: newImg, type: newType })
-        .eq('id', div.dataset.id);
+    if (!newTitle || !newImg) return;
 
-      if (error) return alert('Erreur modification: ' + error.message);
+    const { error } = await supabase
+      .from('catalogue')
+      .update({ title: newTitle, img: newImg, type: newType })
+      .eq('id', div.dataset.id);
 
-      titleEl.textContent = newTitle;
-      imgEl.src = newImg;
-      typeEl.textContent = newType || '';
-    }
+    if (error) return alert('Erreur modification: ' + error.message);
+
+    titleEl.textContent = newTitle;
+    imgEl.src = newImg;
+    typeEl.textContent = newType || '';
   };
 
   del.onclick = async () => {
-    if (!confirm("Supprimer ce film ?")) return;
+    if (!confirm("Supprimer ce film/série/anime ?")) return;
+
     const { error } = await supabase
       .from('catalogue')
       .delete()
@@ -1149,9 +1150,10 @@ function attachAdminButtons(div) {
   div.appendChild(del);
 }
 
-// Ajouter un bouton pour créer un nouveau film
-async function addNewMovieButton() {
+// Bouton pour ajouter un nouveau film/série/anime
+function addNewMovieButton() {
   if (!isAdmin) return;
+
   const addBtn = document.createElement('button');
   addBtn.textContent = '➕ Ajouter un film/série/anime';
   addBtn.style.display = 'block';
@@ -1185,8 +1187,9 @@ async function addNewMovieButton() {
 // Initialisation
 await checkAdmin();
 await loadCatalogue();
-await addNewMovieButton();
+addNewMovieButton();
 </script>
+
 
   <script>
   let activeType = 'Tous';
