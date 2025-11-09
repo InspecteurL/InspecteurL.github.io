@@ -1105,22 +1105,22 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// ========= Config Supabase =========
+// === Config Supabase ===
 const supabase = createClient(
   'https://wuagahavmbugmnuzsouf.supabase.co',
   'YOUR_SUPABASE_ANON_KEY'
 );
 
-// ========= DOM =========
-const container = document.getElementById('filmsContainer');
-const addBtnContainer = document.getElementById('adminAddBtnContainer'); // Conteneur bouton ajout admin
+const movieGrid = document.getElementById('movieGrid');
+const adminFormWrapper = document.getElementById('adminFormWrapper');
+const adminForm = document.getElementById('adminForm');
+const editingIdInput = document.getElementById('editingId');
 
-// ========= Etat =========
 let currentUser = null;
 let isAdmin = false;
-let catalogue = [];
+let movies = [];
 
-// ========= Utils =========
+// ===== Utils =====
 function escapeHtml(str='') {
   return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 }
@@ -1138,7 +1138,7 @@ function createMovieCard(movie) {
 
   if (isAdmin) attachAdminButtons(div, movie);
 
-  container.appendChild(div);
+  movieGrid.appendChild(div);
 }
 
 function attachAdminButtons(div, movie) {
@@ -1149,34 +1149,20 @@ function attachAdminButtons(div, movie) {
   delBtn.textContent = '🗑️';
   delBtn.className = 'delete-btn';
 
-  editBtn.onclick = async () => {
-    const newTitle = prompt("Titre :", movie.title) || movie.title;
-    const newImage = prompt("URL de l'image :", movie.image_url) || movie.image_url;
-    const newType = prompt("Type (film/série/anime) :", movie.type) || movie.type;
-    const newGenre = prompt("Genre :", movie.genre) || movie.genre;
-
-    const { error } = await supabase
-      .from('catalogue')
-      .update({ title: newTitle, image_url: newImage, type: newType, genre: newGenre })
-      .eq('id', movie.id);
-
-    if (error) return alert('Erreur modification: ' + error.message);
-
-    movie.title = newTitle;
-    movie.image_url = newImage;
-    movie.type = newType;
-    movie.genre = newGenre;
-    div.querySelector('.title').textContent = newTitle;
-    div.querySelector('img').src = newImage;
-    div.querySelector('.type').textContent = newType;
-    div.querySelector('.genre').textContent = newGenre;
+  editBtn.onclick = () => {
+    adminFormWrapper.style.display = 'block';
+    document.getElementById('movieTitle').value = movie.title;
+    document.getElementById('movieImg').value = movie.image_url;
+    document.getElementById('movieType').value = movie.type;
+    editingIdInput.value = movie.id;
   };
 
   delBtn.onclick = async () => {
-    if (!confirm("Supprimer ce film ?")) return;
+    if (!confirm('Supprimer ce film ?')) return;
     const { error } = await supabase.from('catalogue').delete().eq('id', movie.id);
     if (error) return alert('Erreur suppression: ' + error.message);
     div.remove();
+    movies = movies.filter(m => m.id !== movie.id);
   };
 
   div.style.position = 'relative';
@@ -1189,54 +1175,67 @@ function attachAdminButtons(div, movie) {
   div.appendChild(delBtn);
 }
 
-// ========= Chargement catalogue =========
+// ===== Load catalogue =====
 async function loadCatalogue() {
   const { data, error } = await supabase.from('catalogue').select('*').order('created_at', { ascending: false });
   if (error) return console.error('Erreur chargement catalogue:', error);
-  catalogue = data;
-  container.innerHTML = '';
-  catalogue.forEach(createMovieCard);
+  movies = data;
+  movieGrid.innerHTML = '';
+  movies.forEach(createMovieCard);
 }
 
-// ========= Auth / Admin check =========
+// ===== Auth / Admin check =====
 async function detectUser() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
   currentUser = user;
   isAdmin = user.email === 'lolovp.portrets41@gmail.com';
-
-  if (isAdmin) {
-    const addBtn = document.createElement('button');
-    addBtn.textContent = '➕ Ajouter un film/série/anime';
-    addBtn.style.margin = '20px';
-    addBtn.onclick = async () => {
-      const title = prompt("Titre :");
-      const image_url = prompt("URL de l'image :");
-      const type = prompt("Type (film/série/anime) :");
-      const genre = prompt("Genre :");
-
-      if (!title || !image_url) return;
-
-      const { data, error } = await supabase
-        .from('catalogue')
-        .insert({ title, image_url, type, genre })
-        .select()
-        .single();
-
-      if (error) return alert('Erreur ajout: ' + error.message);
-
-      createMovieCard(data);
-      catalogue.push(data);
-    };
-    addBtnContainer.appendChild(addBtn);
-  }
+  if (isAdmin) adminFormWrapper.style.display = 'block';
 }
 
-// ========= Initialisation =========
+// ===== Handle Add / Edit form =====
+adminForm.onsubmit = async (e) => {
+  e.preventDefault();
+  const title = document.getElementById('movieTitle').value.trim();
+  const image_url = document.getElementById('movieImg').value.trim();
+  const type = document.getElementById('movieType').value;
+  const id = editingIdInput.value;
+
+  if (!title || !image_url || !type) return alert('Tous les champs sont obligatoires');
+
+  if (id) {
+    // Modifier
+    const { error, data } = await supabase
+      .from('catalogue')
+      .update({ title, image_url, type })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) return alert('Erreur modification: ' + error.message);
+    const idx = movies.findIndex(m => m.id == id);
+    movies[idx] = data;
+    movieGrid.innerHTML = '';
+    movies.forEach(createMovieCard);
+  } else {
+    // Ajouter
+    const { data, error } = await supabase
+      .from('catalogue')
+      .insert({ title, image_url, type })
+      .select()
+      .single();
+    if (error) return alert('Erreur ajout: ' + error.message);
+    movies.unshift(data);
+    createMovieCard(data);
+  }
+
+  adminForm.reset();
+  editingIdInput.value = '';
+};
+
 await detectUser();
 await loadCatalogue();
-
 </script>
+
 
 
 
