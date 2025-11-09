@@ -144,12 +144,6 @@
   font-size: 0.8em;
 }
 
-    #catalogueList { display:grid; gap:1em; }
-    .catalogue-item { display:flex; gap:1em; background:#222; padding:1em; border-radius:8px; }
-    .catalogue-item img { width:80px; height:120px; object-fit:cover; border-radius:6px; }
-    .catalogue-item .info { flex:1; }
-    body:not(.admin-mode) #addForm { display:none; } /* cache le formulaire si non admin */
-
 
   </style>
 </head>
@@ -197,19 +191,6 @@
 
   <div id="noResults">Aucun résultat trouvé.</div>
 
-  <div id="currentUserInfo"></div>
-
-  <h2>Catalogue</h2>
-  <div id="catalogueList"></div>
-
-  <form id="addForm" style="margin-top:1em;">
-    <input name="titre" placeholder="Titre" required />
-    <input name="type" placeholder="Film/Série/Anime" required />
-    <input name="genre" placeholder="Genre" />
-    <input name="image_url" placeholder="Image URL" />
-    <textarea name="description" placeholder="Description"></textarea>
-    <button type="submit">Ajouter</button>
-  </form>
 
   <div class="grid" id="movieGrid">
 
@@ -1059,123 +1040,105 @@
   <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-/* ========= Config Supabase ========= */
 const supabase = createClient(
   'https://wuagahavmbugmnuzsouf.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
 );
 
-/* ========= DOM ========= */
-const listContainer = document.getElementById('catalogueList');
-const addForm = document.getElementById('addForm');
-const userInfo = document.getElementById('currentUserInfo');
+// Vérifie si l'utilisateur est l'admin
+const { data } = await supabase.auth.getUser();
+const isAdmin = data?.user?.email === 'lolovp.portrets41@gmail.com';
 
-/* ========= State ========= */
-let isAdmin = false;
-let catalogue = [];
+if (isAdmin) {
+  activateEditMode();
+}
 
-/* ========= Auth ========= */
-async function checkUser() {
-  const { data } = await supabase.auth.getUser();
-  if (data?.user) {
-    const email = data.user.email;
-    userInfo.innerHTML = `Connecté : <strong>${email}</strong>`;
-    isAdmin = email === 'lolovp.portrets41@gmail.com';
-    if (isAdmin) {
-      document.body.classList.add('admin-mode');
+function activateEditMode() {
+  console.log("Mode édition activé pour l'admin.");
+
+  // Style pour les boutons
+  const style = document.createElement('style');
+  style.textContent = `
+    .edit-btn, .delete-btn, .add-btn {
+      position: absolute;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 12px;
+      border-radius: 4px;
     }
-  } else {
-    userInfo.innerHTML = '<em>Non connecté</em>';
+    .movieimg { position: relative; }
+    .edit-btn { top: 5px; right: 40px; }
+    .delete-btn { top: 5px; right: 5px; }
+    .add-btn {
+      display:block;
+      margin: 20px auto;
+      background:#333;
+      color:#fff;
+      font-weight:bold;
+      border-radius:8px;
+      padding:6px 12px;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Ajoute les boutons sur chaque film
+  document.querySelectorAll('.movieimg').forEach(div => {
+    const edit = document.createElement('button');
+    edit.className = 'edit-btn';
+    edit.textContent = '✏️';
+    const del = document.createElement('button');
+    del.className = 'delete-btn';
+    del.textContent = '🗑️';
+
+    edit.onclick = () => editMovie(div);
+    del.onclick = () => { if (confirm('Supprimer ce film ?')) div.remove(); };
+
+    div.appendChild(edit);
+    div.appendChild(del);
+  });
+
+  // Bouton d’ajout global
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-btn';
+  addBtn.textContent = '➕ Ajouter un film';
+  addBtn.onclick = addMovie;
+  document.body.appendChild(addBtn);
+}
+
+// === FONCTIONS ADMIN ===
+
+function editMovie(div) {
+  const img = div.querySelector('img');
+  const title = div.querySelector('.title') || div.querySelector('h3') || div.querySelector('p');
+
+  const newTitle = prompt("Nouveau titre :", title?.textContent || "");
+  const newImg = prompt("URL de la nouvelle image :", img?.src || "");
+
+  if (newTitle && img) {
+    img.src = newImg || img.src;
+    if (title) title.textContent = newTitle;
   }
 }
 
-/* ========= Load catalogue ========= */
-async function loadCatalogue() {
-  const { data, error } = await supabase
-    .from('catalogue')
-    .select('*')
-    .order('created_at', { ascending: false });
+function addMovie() {
+  const title = prompt("Titre du film/série :");
+  const imgUrl = prompt("URL de l'image :");
+  if (!title || !imgUrl) return;
 
-  if (error) {
-    console.error(error);
-    listContainer.innerHTML = 'Erreur de chargement.';
-    return;
-  }
-
-  catalogue = data;
-  render();
+  const newDiv = document.createElement('div');
+  newDiv.className = 'movieimg';
+  newDiv.innerHTML = `
+    <img src="${imgUrl}" alt="${title}">
+    <p class="title">${title}</p>
+  `;
+  document.querySelector('#filmsContainer')?.appendChild(newDiv) || document.body.appendChild(newDiv);
+  activateEditMode(); // réattache les boutons sur le nouveau
 }
-
-/* ========= Render ========= */
-function render() {
-  listContainer.innerHTML = '';
-  catalogue.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'catalogue-item';
-    div.innerHTML = `
-      <img src="${item.image_url || ''}" alt="">
-      <div class="info">
-        <h3>${item.titre}</h3>
-        <p><em>${item.type}</em> • ${item.genre || ''}</p>
-        <p>${item.description || ''}</p>
-        ${isAdmin ? `
-          <button class="edit" data-id="${item.id}">✏️ Modifier</button>
-          <button class="delete" data-id="${item.id}">🗑️ Supprimer</button>
-        ` : ''}
-      </div>
-    `;
-    listContainer.appendChild(div);
-  });
-
-  if (isAdmin) attachAdminEvents();
-}
-
-/* ========= Admin actions ========= */
-function attachAdminEvents() {
-  document.querySelectorAll('.delete').forEach(btn => {
-    btn.onclick = async () => {
-      const id = btn.dataset.id;
-      if (confirm('Supprimer cet élément ?')) {
-        await supabase.from('catalogue').delete().eq('id', id);
-        loadCatalogue();
-      }
-    };
-  });
-
-  document.querySelectorAll('.edit').forEach(btn => {
-    btn.onclick = () => {
-      const id = btn.dataset.id;
-      const item = catalogue.find(x => x.id == id);
-      if (!item) return;
-      const titre = prompt('Titre :', item.titre);
-      const type = prompt('Type (Film/Série/Anime) :', item.type);
-      const desc = prompt('Description :', item.description || '');
-      const image_url = prompt('Image URL :', item.image_url || '');
-      const genre = prompt('Genre :', item.genre || '');
-      if (titre) {
-        supabase.from('catalogue').update({ titre, type, description: desc, image_url, genre }).eq('id', id);
-        loadCatalogue();
-      }
-    };
-  });
-}
-
-/* ========= Ajout ========= */
-addForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (!isAdmin) return alert("Seul l'admin peut ajouter.");
-  const formData = new FormData(addForm);
-  const item = Object.fromEntries(formData.entries());
-  const { error } = await supabase.from('catalogue').insert(item);
-  if (error) alert(error.message);
-  else loadCatalogue();
-  addForm.reset();
-});
-
-/* ========= Init ========= */
-await checkUser();
-await loadCatalogue();
 </script>
+
 
 
   <script>
