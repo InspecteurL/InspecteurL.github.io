@@ -769,7 +769,7 @@ function toggleMenu(menu){
 }
 
 </script>
-  <script type="module">
+<script type="module">
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
   const supabaseUrl = "https://wuagahavmbugmnuzsouf.supabase.co";
@@ -777,14 +777,19 @@ function toggleMenu(menu){
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   const movieId = "american-sniper-2014";
-  const userId = localStorage.getItem("user_id"); // récupère l’utilisateur connecté
 
   const likeBtn = document.getElementById("likeBtn");
   const dislikeBtn = document.getElementById("dislikeBtn");
   const likeCount = document.getElementById("likeCount");
   const dislikeCount = document.getElementById("dislikeCount");
 
-  // --- Charger votes globaux + utilisateur ---
+  let userId = null;
+
+  async function initUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id || null;
+  }
+
   async function loadVotes() {
     const { data, error } = await supabase
       .from("movie_likes")
@@ -802,7 +807,6 @@ function toggleMenu(menu){
     updateVoteVisual(userVote?.liked);
   }
 
-  // --- Met à jour les couleurs ---
   function updateVoteVisual(liked) {
     likeBtn.classList.remove("active-like");
     dislikeBtn.classList.remove("active-dislike");
@@ -810,7 +814,6 @@ function toggleMenu(menu){
     if (liked === false) dislikeBtn.classList.add("active-dislike");
   }
 
-  // --- Like ---
   likeBtn.addEventListener("click", async () => {
     if (!userId) return alert("Connecte-toi pour voter !");
     await supabase.from("movie_likes").upsert({
@@ -821,7 +824,6 @@ function toggleMenu(menu){
     updateVoteVisual(true);
   });
 
-  // --- Dislike ---
   dislikeBtn.addEventListener("click", async () => {
     if (!userId) return alert("Connecte-toi pour voter !");
     await supabase.from("movie_likes").upsert({
@@ -832,7 +834,6 @@ function toggleMenu(menu){
     updateVoteVisual(false);
   });
 
-  // --- Realtime ---
   supabase
     .channel("public:movie_likes")
     .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, payload => {
@@ -840,9 +841,11 @@ function toggleMenu(menu){
     })
     .subscribe();
 
-  // --- Init ---
+  // Démarrage :
+  await initUser();
   loadVotes();
 </script>
+
 
 
 <script src="https://inspecteurl.github.io/films/script.js"></script>
