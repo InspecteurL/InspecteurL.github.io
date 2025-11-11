@@ -783,15 +783,15 @@ function toggleMenu(menu){
   const dislikeCount = document.getElementById("dislikeCount");
 
   let userId = null;
-  let currentVote = null; // 'like', 'dislike', ou null
+  let currentVote = null;
 
-  // --- Auth ---
+  // --- Auth
   async function initUser() {
     const { data: { user } } = await supabase.auth.getUser();
     userId = user?.id || null;
   }
 
-  // --- Charger les votes ---
+  // --- Charger les votes
   async function loadVotes() {
     const { data, error } = await supabase
       .from("movie_likes")
@@ -810,22 +810,23 @@ function toggleMenu(menu){
     updateVoteVisual();
   }
 
-  // --- Mise à jour visuelle ---
+  // --- Visuel
   function updateVoteVisual() {
     likeBtn.classList.toggle("active-like", currentVote === "like");
     dislikeBtn.classList.toggle("active-dislike", currentVote === "dislike");
   }
 
-  // --- Action Like ---
+  // --- Like
   likeBtn.addEventListener("click", async () => {
     if (!userId) return alert("Connecte-toi pour voter !");
     if (currentVote === "like") {
-      // Annule le vote
+      // Annuler le vote
       await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
       currentVote = null;
     } else {
-      // Like ou change depuis dislike
-      await supabase.from("movie_likes").upsert({
+      // Supprimer vote précédent avant d'ajouter le nouveau
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      await supabase.from("movie_likes").insert({
         movie_id: movieId,
         user_id: userId,
         liked: true
@@ -836,16 +837,15 @@ function toggleMenu(menu){
     loadVotes();
   });
 
-  // --- Action Dislike ---
+  // --- Dislike
   dislikeBtn.addEventListener("click", async () => {
     if (!userId) return alert("Connecte-toi pour voter !");
     if (currentVote === "dislike") {
-      // Annule le vote
       await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
       currentVote = null;
     } else {
-      // Dislike ou change depuis like
-      await supabase.from("movie_likes").upsert({
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      await supabase.from("movie_likes").insert({
         movie_id: movieId,
         user_id: userId,
         liked: false
@@ -856,7 +856,7 @@ function toggleMenu(menu){
     loadVotes();
   });
 
-  // --- Realtime : mise à jour automatique des compteurs ---
+  // --- Realtime
   supabase
     .channel("public:movie_likes")
     .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, payload => {
@@ -866,10 +866,11 @@ function toggleMenu(menu){
     })
     .subscribe();
 
-  // --- Init ---
+  // --- Init
   await initUser();
   loadVotes();
 </script>
+
 
 
 
