@@ -83,3 +83,98 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 })();
 
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const supabaseUrl = "https://wuagahavmbugmnuzsouf.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+let userId = null;
+
+// --- Init user ---
+async function initUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  userId = user?.id || null;
+}
+
+async function initVotes(container) {
+  const movieId = container.dataset.movieId;
+  const likeBtn = container.querySelector(".like-btn");
+  const dislikeBtn = container.querySelector(".dislike-btn");
+  const likeCount = container.querySelector(".like-count");
+  const dislikeCount = container.querySelector(".dislike-count");
+
+  let currentVote = null;
+
+  // Charger votes
+  async function loadVotes() {
+    const { data, error } = await supabase
+      .from("movie_likes")
+      .select("user_id, liked")
+      .eq("movie_id", movieId);
+    if (error) console.error(error);
+
+    const likes = data.filter(v => v.liked).length;
+    const dislikes = data.filter(v => !v.liked).length;
+    likeCount.textContent = likes;
+    dislikeCount.textContent = dislikes;
+
+    const userVote = data.find(v => v.user_id === userId);
+    currentVote = userVote ? (userVote.liked ? "like" : "dislike") : null;
+    updateVoteVisual();
+  }
+
+  function updateVoteVisual() {
+    likeBtn.classList.toggle("active-like", currentVote === "like");
+    dislikeBtn.classList.toggle("active-dislike", currentVote === "dislike");
+  }
+
+  // Actions
+  likeBtn.addEventListener("click", async () => {
+    if (!userId) return alert("Connecte-toi pour voter !");
+    if (currentVote === "like") {
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      currentVote = null;
+    } else {
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      await supabase.from("movie_likes").insert({ movie_id: movieId, user_id: userId, liked: true });
+      currentVote = "like";
+    }
+    updateVoteVisual();
+    loadVotes();
+  });
+
+  dislikeBtn.addEventListener("click", async () => {
+    if (!userId) return alert("Connecte-toi pour voter !");
+    if (currentVote === "dislike") {
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      currentVote = null;
+    } else {
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      await supabase.from("movie_likes").insert({ movie_id: movieId, user_id: userId, liked: false });
+      currentVote = "dislike";
+    }
+    updateVoteVisual();
+    loadVotes();
+  });
+
+  // Realtime
+  supabase
+    .channel("public:movie_likes")
+    .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, payload => {
+      if (payload.new?.movie_id === movieId || payload.old?.movie_id === movieId) {
+        loadVotes();
+      }
+    })
+    .subscribe();
+
+  loadVotes();
+}
+
+// --- Initialisation pour toutes les containers ---
+document.addEventListener("DOMContentLoaded", async () => {
+  await initUser();
+  document.querySelectorAll(".vote-container").forEach(container => {
+    initVotes(container);
+  });
+});
