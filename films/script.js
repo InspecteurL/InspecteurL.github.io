@@ -83,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 })();
 
+// script.js
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const supabaseUrl = "https://wuagahavmbugmnuzsouf.supabase.co";
@@ -97,6 +98,7 @@ async function initUser() {
   userId = user?.id || null;
 }
 
+// --- Fonction pour initialiser les votes pour un conteneur donné ---
 async function initVotes(container) {
   const movieId = container.dataset.movieId;
   const likeBtn = container.querySelector(".like-btn");
@@ -104,15 +106,24 @@ async function initVotes(container) {
   const likeCount = container.querySelector(".like-count");
   const dislikeCount = container.querySelector(".dislike-count");
 
+  if (!likeBtn || !dislikeBtn) {
+    console.warn("Boutons non trouvés pour ce container :", container);
+    return;
+  }
+
   let currentVote = null;
 
-  // Charger votes
+  // --- Charger les votes
   async function loadVotes() {
     const { data, error } = await supabase
       .from("movie_likes")
       .select("user_id, liked")
       .eq("movie_id", movieId);
-    if (error) console.error(error);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
 
     const likes = data.filter(v => v.liked).length;
     const dislikes = data.filter(v => !v.liked).length;
@@ -124,14 +135,16 @@ async function initVotes(container) {
     updateVoteVisual();
   }
 
+  // --- Mise à jour visuelle
   function updateVoteVisual() {
     likeBtn.classList.toggle("active-like", currentVote === "like");
     dislikeBtn.classList.toggle("active-dislike", currentVote === "dislike");
   }
 
-  // Actions
+  // --- Action Like
   likeBtn.addEventListener("click", async () => {
     if (!userId) return alert("Connecte-toi pour voter !");
+
     if (currentVote === "like") {
       await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
       currentVote = null;
@@ -140,12 +153,15 @@ async function initVotes(container) {
       await supabase.from("movie_likes").insert({ movie_id: movieId, user_id: userId, liked: true });
       currentVote = "like";
     }
+
     updateVoteVisual();
     loadVotes();
   });
 
+  // --- Action Dislike
   dislikeBtn.addEventListener("click", async () => {
     if (!userId) return alert("Connecte-toi pour voter !");
+
     if (currentVote === "dislike") {
       await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
       currentVote = null;
@@ -154,11 +170,12 @@ async function initVotes(container) {
       await supabase.from("movie_likes").insert({ movie_id: movieId, user_id: userId, liked: false });
       currentVote = "dislike";
     }
+
     updateVoteVisual();
     loadVotes();
   });
 
-  // Realtime
+  // --- Realtime updates
   supabase
     .channel("public:movie_likes")
     .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, payload => {
@@ -168,13 +185,15 @@ async function initVotes(container) {
     })
     .subscribe();
 
+  // Charger les votes dès l'initialisation
   loadVotes();
 }
 
-// --- Initialisation pour toutes les containers ---
+// --- Initialisation sur toutes les pages / conteneurs ---
 document.addEventListener("DOMContentLoaded", async () => {
   await initUser();
   document.querySelectorAll(".vote-container").forEach(container => {
     initVotes(container);
   });
 });
+
