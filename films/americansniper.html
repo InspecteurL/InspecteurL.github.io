@@ -413,6 +413,39 @@ video {
     padding: 12px;
   }
 }
+.like-dislike-container {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+.vote-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.vote-btn:hover {
+  transform: scale(1.1);
+}
+.vote-btn span {
+  font-weight: 600;
+  color: #333;
+}
+.vote-btn svg {
+  transition: fill 0.2s;
+}
+.vote-btn.active-like svg {
+  fill: #2196F3; /* bleu */
+}
+.vote-btn.active-dislike svg {
+  fill: #E53935; /* rouge */
+}
+
+
 </style>
 
 
@@ -440,7 +473,21 @@ video {
   <span class="material-symbols-outlined">play_arrow</span>
   Lire le film
 </button>
+<div class="like-dislike-container">
+  <button id="likeBtn" class="vote-btn">
+    <svg id="likeIcon" xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#888">
+      <path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/>
+    </svg>
+    <span id="likeCount">0</span>
+  </button>
 
+  <button id="dislikeBtn" class="vote-btn">
+    <svg id="dislikeIcon" xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#888">
+      <path d="M240-840h440v520L400-40l-50-50q-7-7-11.5-19t-4.5-23v-14l44-174H120q-32 0-56-24t-24-56v-80q0-7 2-15t4-15l120-282q9-20 30-34t44-14Zm360 80H240L120-480v80h360l-54 220 174-174v-406Zm0 406v-406 406Zm80 34v-80h120v-360H680v-80h200v520H680Z"/>
+    </svg>
+    <span id="dislikeCount">0</span>
+  </button>
+</div>
     </div>
   </div>
 </div>
@@ -722,6 +769,82 @@ function toggleMenu(menu){
 }
 
 </script>
+  <script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  const supabaseUrl = "https://wuagahavmbugmnuzsouf.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const movieId = "american-sniper-2014";
+  const userId = localStorage.getItem("user_id"); // récupère l’utilisateur connecté
+
+  const likeBtn = document.getElementById("likeBtn");
+  const dislikeBtn = document.getElementById("dislikeBtn");
+  const likeCount = document.getElementById("likeCount");
+  const dislikeCount = document.getElementById("dislikeCount");
+
+  // --- Charger votes globaux + utilisateur ---
+  async function loadVotes() {
+    const { data, error } = await supabase
+      .from("movie_likes")
+      .select("user_id, liked")
+      .eq("movie_id", movieId);
+
+    if (error) console.error(error);
+
+    const likes = data.filter(v => v.liked).length;
+    const dislikes = data.filter(v => !v.liked).length;
+    likeCount.textContent = likes;
+    dislikeCount.textContent = dislikes;
+
+    const userVote = data.find(v => v.user_id === userId);
+    updateVoteVisual(userVote?.liked);
+  }
+
+  // --- Met à jour les couleurs ---
+  function updateVoteVisual(liked) {
+    likeBtn.classList.remove("active-like");
+    dislikeBtn.classList.remove("active-dislike");
+    if (liked === true) likeBtn.classList.add("active-like");
+    if (liked === false) dislikeBtn.classList.add("active-dislike");
+  }
+
+  // --- Like ---
+  likeBtn.addEventListener("click", async () => {
+    if (!userId) return alert("Connecte-toi pour voter !");
+    await supabase.from("movie_likes").upsert({
+      movie_id: movieId,
+      user_id: userId,
+      liked: true
+    });
+    updateVoteVisual(true);
+  });
+
+  // --- Dislike ---
+  dislikeBtn.addEventListener("click", async () => {
+    if (!userId) return alert("Connecte-toi pour voter !");
+    await supabase.from("movie_likes").upsert({
+      movie_id: movieId,
+      user_id: userId,
+      liked: false
+    });
+    updateVoteVisual(false);
+  });
+
+  // --- Realtime ---
+  supabase
+    .channel("public:movie_likes")
+    .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, payload => {
+      if (payload.new?.movie_id === movieId) loadVotes();
+    })
+    .subscribe();
+
+  // --- Init ---
+  loadVotes();
+</script>
+
+
 <script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
 </html>
