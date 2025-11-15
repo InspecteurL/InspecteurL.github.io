@@ -4,10 +4,11 @@
 const HOST_MAP = {
   "cinetacos.xyz": "cinefries.xyz",
   "cinechicken.xyz": "cinefries.xyz",
-  "cinecake.xyz": "cinefries.xyz", // reste tel quel → renvoie maintenant vers cinefries
-  "chicken.xyz": "cinechicken.xyz", // inchangé, ou à modifier si tu veux aussi cinefries
-  "fries.xyz": "fries.xyz"          // inchangé
+  "cinecake.xyz": "cinefries.xyz",
+  "chicken.xyz": "cinefries.xyz",
+  "fries.xyz": "cinefries.xyz"
 };
+
 
 function autoReplaceDomain(raw) {
   if (!raw || typeof raw !== "string") return raw;
@@ -81,5 +82,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
