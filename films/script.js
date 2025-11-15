@@ -2,12 +2,12 @@
 // Remplacement automatique des domaines (corrigé)
 // ---------------------
 const HOST_MAP = {
-  "cinetacos.xyz": "cinecake.xyz",
-  "cinechicken.xyz": "cinecake.xyz", 
-  "cinecake.xyz": "cinecake.xyz",// reste tel quel
+  "cinetacos.xyz": "cinefries.xyz",
+  "cinechicken.xyz": "cinefries.xyz", 
+  "cinecake.xyz": "cinefries.xyz",// reste tel quel
   "chicken.xyz": "cinechicken.xyz",     // 🔑 avant → burger.xyz (problème)
 // si tu as vraiment besoin de "burger.xyz", ajoute une règle séparée
-  "cake.xyz": "cake.xyz"
+  "fries.xyz": "fries.xyz"
 };
 
 function autoReplaceDomain(raw) {
@@ -82,3 +82,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
