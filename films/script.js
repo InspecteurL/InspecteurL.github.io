@@ -3,11 +3,10 @@
 // ---------------------
 const HOST_MAP = {
   "cinetacos.xyz": "cinefries.xyz",
-  "cinechicken.xyz": "cinefries.xyz", 
-  "cinecake.xyz": "cinefries.xyz",// reste tel quel
-  "chicken.xyz": "cinechicken.xyz",     // 🔑 avant → burger.xyz (problème)
-// si tu as vraiment besoin de "burger.xyz", ajoute une règle séparée
-  "fries.xyz": "fries.xyz"
+  "cinechicken.xyz": "cinefries.xyz",
+  "cinecake.xyz": "cinefries.xyz", // reste tel quel → renvoie maintenant vers cinefries
+  "chicken.xyz": "cinechicken.xyz", // inchangé, ou à modifier si tu veux aussi cinefries
+  "fries.xyz": "fries.xyz"          // inchangé
 };
 
 function autoReplaceDomain(raw) {
@@ -82,4 +81,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
