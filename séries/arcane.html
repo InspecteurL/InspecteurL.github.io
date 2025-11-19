@@ -479,7 +479,57 @@ video {
   }
 }
 
+.vote-container {
+    display: flex;
+    gap: 1rem;
+    margin-top: 20px;
+  }
 
+  .vote-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: #f4f4f4;
+    padding: 10px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .vote-btn:hover {
+    background: #e9e9e9;
+    transform: translateY(-1px);
+  }
+
+  .vote-btn svg {
+    transition: fill 0.2s ease;
+  }
+
+  .vote-btn span {
+    font-weight: bold;
+    color: #333;
+    font-size: 16px;
+  }
+
+  .active-like {
+    background-color: #d6ebff !important;
+    box-shadow: 0 0 8px rgba(0, 128, 255, 0.4);
+  }
+
+  .active-like svg {
+    fill: #007bff;
+  }
+
+  .active-dislike {
+    background-color: #ffe2e2 !important;
+    box-shadow: 0 0 8px rgba(255, 80, 80, 0.4);
+  }
+
+  .active-dislike svg {
+    fill: #ff3333;
+  }
 
 </style>
 </head>
@@ -502,6 +552,22 @@ video {
         <p><strong>Synopsis:</strong> Championnes de leurs villes jumelles et rivales, deux sœurs se battent dans une guerre où font rage des technologies magiques et des perspectives diamétralement opposées.</p>
       </div>
     </div>
+    <!-- --- Boutons Like / Dislike --- -->
+<div class="vote-container">
+  <button id="likeBtn" class="vote-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#555">
+      <path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/>
+    </svg>
+    <span id="likeCount">0</span>
+  </button>
+
+  <button id="dislikeBtn" class="vote-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#555">
+      <path d="M240-840h440v520L400-40l-50-50q-7-7-11.5-19t-4.5-23v-14l44-174H120q-32 0-56-24t-24-56v-80q0-7 2-15t4-15l120-282q9-20 30-34t44-14Zm360 80H240L120-480v80h360l-54 220 174-174v-406Zm0 406v-406 406Zm80 34v-80h120v-360H680v-80h200v520H680Z"/>
+    </svg>
+    <span id="dislikeCount">0</span>
+  </button>
+</div>
   </div>
 
   <!-- --- Lecteur vidéo --- -->
@@ -636,6 +702,107 @@ video {
   </div>
 </div>
 
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  const supabaseUrl = "https://wuagahavmbugmnuzsouf.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const movieId = "arcane";
+  const likeBtn = document.getElementById("likeBtn");
+  const dislikeBtn = document.getElementById("dislikeBtn");
+  const likeCount = document.getElementById("likeCount");
+  const dislikeCount = document.getElementById("dislikeCount");
+
+  let userId = null;
+  let currentVote = null;
+
+  // --- Auth
+  async function initUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id || null;
+  }
+
+  // --- Charger les votes
+  async function loadVotes() {
+    const { data, error } = await supabase
+      .from("movie_likes")
+      .select("user_id, liked")
+      .eq("movie_id", movieId);
+
+    if (error) console.error(error);
+
+    const likes = data.filter(v => v.liked).length;
+    const dislikes = data.filter(v => !v.liked).length;
+    likeCount.textContent = likes;
+    dislikeCount.textContent = dislikes;
+
+    const userVote = data.find(v => v.user_id === userId);
+    currentVote = userVote ? (userVote.liked ? "like" : "dislike") : null;
+    updateVoteVisual();
+  }
+
+  // --- Visuel
+  function updateVoteVisual() {
+    likeBtn.classList.toggle("active-like", currentVote === "like");
+    dislikeBtn.classList.toggle("active-dislike", currentVote === "dislike");
+  }
+
+  // --- Like
+  likeBtn.addEventListener("click", async () => {
+    if (!userId) return alert("Connecte-toi pour voter !");
+    if (currentVote === "like") {
+      // Annuler le vote
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      currentVote = null;
+    } else {
+      // Supprimer vote précédent avant d'ajouter le nouveau
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      await supabase.from("movie_likes").insert({
+        movie_id: movieId,
+        user_id: userId,
+        liked: true
+      });
+      currentVote = "like";
+    }
+    updateVoteVisual();
+    loadVotes();
+  });
+
+  // --- Dislike
+  dislikeBtn.addEventListener("click", async () => {
+    if (!userId) return alert("Connecte-toi pour voter !");
+    if (currentVote === "dislike") {
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      currentVote = null;
+    } else {
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      await supabase.from("movie_likes").insert({
+        movie_id: movieId,
+        user_id: userId,
+        liked: false
+      });
+      currentVote = "dislike";
+    }
+    updateVoteVisual();
+    loadVotes();
+  });
+
+  // --- Realtime
+  supabase
+    .channel("public:movie_likes")
+    .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, payload => {
+      if (payload.new?.movie_id === movieId || payload.old?.movie_id === movieId) {
+        loadVotes();
+      }
+    })
+    .subscribe();
+
+  // --- Init
+  await initUser();
+  loadVotes();
+</script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
