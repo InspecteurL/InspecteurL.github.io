@@ -1,397 +1,520 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Custom Video Player</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SportStream — Accueil (Pro)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
-body {
-  margin: 0;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  overflow: hidden;
-}
-.video-container {
-  position: relative;
-  width: 100%;
-  max-width: 1200px;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: black;
-}
-video {
-  max-width: 100%;
-  max-height: 100%;
-  display: block;
-  object-fit: contain;
-}
+  :root{
+    --bg:#050506; --muted:#bdbdbd; --accent:#e50914;
+    --glass: rgba(255,255,255,0.06);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:'Poppins',sans-serif;
+    background:linear-gradient(180deg,#030304 0%, #0a0a0a 100%);
+    color:#fff;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow-y:scroll;
+  }
 
-/* Progress bar wrapper */
-.progress-wrapper {
-  position: absolute;
-  bottom: 70px;
-  left: 20px;
-  right: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px; /* espace entre temps et barre */
-  color: white;
-  font-size: 14px;
-  font-family: monospace;
-}
-.progress-wrapper.hide {
-  opacity: 0;
-  pointer-events: none;
-}
+  /* NAV */
+  .nav{
+    position:fixed; inset:0 0 auto 0; height:72px; display:flex;
+    align-items:center; justify-content:space-between; z-index:1200;
+    padding:12px 28px; gap:16px;
+    backdrop-filter: blur(10px);
+    background: linear-gradient(180deg, rgba(4,4,4,0.45), rgba(4,4,4,0.12));
+    border-bottom:1px solid rgba(255,255,255,0.04);
+  }
+  .logo{font-weight:800; letter-spacing:2px; font-size:1.2rem}
+  .nav-links{display:flex; gap:20px; align-items:center}
+  .nav-links a{color:var(--muted); font-weight:600; font-size:0.95rem}
+  .cta{background:var(--accent); padding:10px 14px; border-radius:8px; font-weight:700; cursor:pointer; border:none}
 
-/* Progress bar */
-.progress {
-  flex: 1; /* prend tout l’espace restant entre les temps */
-  height: 12px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 6px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: opacity 0.3s;
-}
-.progress-bar {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #ff4b2b, #ff416c);
-  border-radius: 6px;
-}
-.progress.hide { opacity: 0; pointer-events: none; }
+  /* HERO (parallax + slider) */
+  .hero-wrap{position:relative; height:78vh; min-height:480px; overflow:hidden;}
+  .hero-bg{
+    position:absolute; inset:0;
+    transform-origin:center;
+    will-change:transform,filter;
+    transition:transform 0.15s linear;
+  }
+  .hero-overlay{
+    position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.7) 70%);
+    pointer-events:none;
+  }
+  .hero-inner{
+    position:relative; z-index:5; height:100%;
+    display:flex; align-items:flex-end; padding:40px 6%;
+  }
+  .hero-card{
+    max-width:720px;
+    transform:translateZ(20px);
+  }
+  .hero-title{font-size:3.2rem; margin:0 0 8px; font-weight:800; letter-spacing:1px}
+  .hero-sub{color:#d7d7d7; margin:8px 0 18px; font-size:1.05rem}
+  .hero-actions{display:flex; gap:12px}
+  .btn{background:var(--accent); color:white; padding:12px 18px; border-radius:8px; border:none; cursor:pointer; font-weight:700}
+  .btn.secondary{background:transparent; border:1px solid rgba(255,255,255,0.12); color:var(--muted)}
 
-/* Controls */
-.controls {
-  position: absolute;
-  bottom: 10px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
-  background: rgba(0,0,0,0.5);
-  border-radius: 10px;
-  opacity: 1;
-  transition: opacity 0.3s;
-}
-.controls.hide { opacity: 0; pointer-events: none; }
-.controls-left, .controls-right { display: flex; align-items: center; gap: 20px; }
+  /* subtle floating gradient "halo" that links hero to page */
+  .hero-halo{
+    position:absolute; right:-10%; top:10%; width:70vw; height:70vh; z-index:3;
+    background: radial-gradient(closest-side, rgba(229,9,20,0.14), transparent 30%);
+    filter: blur(90px); pointer-events:none;
+    mix-blend-mode:screen;
+  }
 
-/* Floating play button */
-.center-play {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 80px;
-  color: white;
-  background: rgba(0,0,0,0.5);
-  border-radius: 50%;
-  padding: 20px;
-  cursor: pointer;
-  transition: opacity 0.3s;
-}
-.center-play.hide { opacity: 0; pointer-events: none; }
+  /* Parallax layers (multiple background layers) */
+  .layer{
+    position:absolute; inset:0; background-size:cover; background-position:center; opacity:1;
+    transform:translate3d(0,0,0);
+  }
 
-.material-symbols-outlined {
-  cursor: pointer;
-  color: white;
-  font-size: 35px;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 35;
-}
+  /* SECTION TITLES */
+  .wrap{max-width:1300px; margin:28px auto; padding:0 18px}
+  h2.section{font-size:1.6rem; margin:18px 0; font-weight:700}
 
-/* Volume slider */
-.volume-container { display: flex; align-items: center; gap: 10px; }
-#volume-slider {
-  width: 100px;
-  height: 5px;
-  appearance: none;
-  background: rgba(255,255,255,0.3);
-  border-radius: 5px;
-  outline: none;
-  cursor: pointer;
-}
-#volume-slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 12px;
-  height: 12px;
-  background: #ff416c;
-  border-radius: 50%;
-  cursor: pointer;
-}
-#volume-slider::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  background: #ff416c;
-  border-radius: 50%;
-  cursor: pointer;
-}
+  /* CAROUSEL + 3D cards */
+  .carousel{
+    position:relative;
+    display:flex; align-items:center;
+  }
+  .rows{
+    overflow:hidden;
+    width:100%;
+    position:relative;
+  }
+  .scroll{
+    display:flex; gap:18px; padding:14px 8px 18px;
+    transition:transform .3s ease;
+    scroll-behavior:smooth;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .card{
+    min-width:280px; height:170px; border-radius:12px; background-size:cover;
+    background-position:center; position:relative; cursor:pointer; flex:0 0 auto;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    transform-style: preserve-3d; transition: transform .28s ease, box-shadow .28s ease;
+    will-change: transform;
+  }
+  .card .meta{
+    position:absolute; left:14px; bottom:12px; z-index:2; font-weight:700; text-shadow: 0 3px 12px rgba(0,0,0,0.6)
+  }
+  .card::after{
+    content:""; position:absolute; inset:0; border-radius:12px;
+    background:linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.0) 50%);
+  }
+  .card:hover{transform: translateY(-8px) rotateX(6deg) scale(1.06); box-shadow: 0 20px 50px rgba(0,0,0,0.7)}
 
-/* Dropdown menus */
-.menu {
-  position: absolute;
-  bottom: 60px;
-  right: 20px;
-  background: rgba(0,0,0,0.8);
-  padding: 10px;
-  border-radius: 8px;
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-}
-.menu button {
-  background: transparent;
-  border: none;
-  color: white;
-  padding: 5px 10px;
-  cursor: pointer;
-  text-align: left;
-}
-.menu button:hover {
-  background: rgba(255,255,255,0.2);
-}
+  /* carousel arrows */
+  .arrow{
+    position:absolute; top:50%; transform:translateY(-50%); width:56px; height:56px; border-radius:10px;
+    background:rgba(0,0,0,0.45); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; z-index:40; border:1px solid rgba(255,255,255,0.06)
+  }
+  .arrow.left{left:6px}
+  .arrow.right{right:6px}
+  .arrow svg{width:20px; height:20px; fill:white; opacity:0.9}
+
+  /* responsive small */
+  @media (max-width:900px){
+    .hero-title{font-size:2.1rem}
+    .hero-inner{padding:28px}
+    .card{min-width:220px; height:140px}
+    .nav{padding:10px 14px}
+  }
+  @media (max-width:520px){
+    .hero-card{max-width:90%}
+    .hero-title{font-size:1.6rem}
+    .hero-sub{font-size:0.95rem}
+    .arrow{display:none}
+  }
+
+  /* CHANNEL MODAL */
+  .modal{
+    position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:1500;
+    background:linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85));
+    padding:28px;
+  }
+  .modal.open{display:flex}
+  .modal-card{
+    width:min(1100px,96%); background:linear-gradient(180deg,#070707,#0b0b0b); border-radius:12px; overflow:hidden;
+    box-shadow:0 40px 120px rgba(0,0,0,0.8); position:relative;
+  }
+  .modal-video{
+    width:100%; aspect-ratio:16/9; background:#000; display:block;
+  }
+  .modal-body{padding:18px 22px; display:flex; gap:18px; align-items:flex-start}
+  .modal-info{flex:1}
+  .close-btn{position:absolute; right:12px; top:12px; background:rgba(255,255,255,0.06); border:none; color:white; padding:10px 12px; border-radius:8px; cursor:pointer}
+
+  /* subtle entrance animations */
+  .fade-up{ animation: fadeUp .6s ease both }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none} }
 </style>
 </head>
 <body>
-<div class="video-container" id="video-container">
-  <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
 
-  <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
-<!-- Progress bar with time -->
-<div class="progress-wrapper" id="progressWrapper">
-  <span id="currentTime">0:00</span>
-  <div class="progress" id="progress">
-    <div class="progress-bar" id="progress-bar"></div>
+<header class="nav fade-up" role="banner">
+  <div class="logo">SPORTSTREAM</div>
+  <div class="nav-links" role="navigation" aria-label="menu">
+    <a href="#">Accueil</a>
+    <a href="#">Chaînes</a>
+    <a href="#">Live</a>
+    <a href="#">À venir</a>
+    <button class="cta" id="open-account">Connexion</button>
   </div>
-  <span id="totalTime">0:00</span>
-</div>
-  
-  <div class="controls" id="controls">
-    <div class="controls-left">
-      <span id="backward" class="material-symbols-outlined">replay_10</span>
-      <span id="play" class="material-symbols-outlined">play_arrow</span>
-      <span id="forward" class="material-symbols-outlined">forward_10</span>
-      <div class="volume-container">
-        <span id="volume-icon" class="material-symbols-outlined">volume_up</span>
-        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
+</header>
+
+<!-- HERO with parallax layers -->
+<section class="hero-wrap" id="hero">
+  <!-- background layers; you can add more / change images -->
+  <div class="hero-bg layer" id="bg-far" style="background-image:url('https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=1800&auto=format&fit=crop&q=80'); transform: translateZ(-1px) scale(1.15)"></div>
+  <div class="hero-bg layer" id="bg-mid" style="background-image:url('https://images.unsplash.com/photo-1505842465776-3f8d1c7f01ab?w=2000&auto=format&fit=crop&q=80'); mix-blend-mode:screen; opacity:0.9; transform: translateZ(0) scale(1.08)"></div>
+  <div class="hero-bg layer" id="bg-front" style="background-image: url('https://images.unsplash.com/photo-1546519638-68e109498ffc?w=2000&auto=format&fit=crop&q=80'); transform: translateZ(0) scale(1.02); filter: saturate(1.05)"></div>
+
+  <div class="hero-halo" aria-hidden="true"></div>
+  <div class="hero-overlay"></div>
+
+  <div class="hero-inner">
+    <div class="hero-card fade-up" role="region" aria-label="Featured">
+      <h1 class="hero-title">Champions League — Soirée Finale</h1>
+      <p class="hero-sub">Match en direct • Commentaires exclusifs • Multi-caméra</p>
+      <div class="hero-actions">
+        <button class="btn" id="watch-now">Regarder</button>
+        <button class="btn secondary" id="trailer">Bande-annonce</button>
       </div>
     </div>
-    <div class="controls-right">
-      <span id="subtitles" class="material-symbols-outlined">subtitles</span>
-      <span id="source" class="material-symbols-outlined">cloud</span>
-      <span id="settings" class="material-symbols-outlined">settings</span>
-      <span id="fullscreen" class="material-symbols-outlined">fullscreen</span>
+  </div>
+</section>
+
+<!-- Carousels -->
+<main>
+  <div class="wrap">
+    <h2 class="section">Chaînes recommandées</h2>
+    <div class="carousel" id="carousel-1" aria-label="Chaînes recommandées">
+      <div class="arrow left" data-target="1" aria-hidden><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+      <div class="rows">
+        <div class="scroll" data-scroll-id="1">
+          <div class="card" tabindex="0" data-title="Football Live" data-src="sample1.mp4" style="background-image:url('https://images.unsplash.com/photo-1517649763962-0c623066013b?w=900&auto=format&fit=crop&q=60')">
+            <div class="meta">Football Live</div>
+          </div>
+          <div class="card" tabindex="0" data-title="Basket Premium" data-src="sample2.mp4" style="background-image:url('https://images.unsplash.com/photo-1505842465776-3f8d1c7f01ab?w=900&auto=format&fit=crop&q=60')">
+            <div class="meta">Basket Premium</div>
+          </div>
+          <div class="card" tabindex="0" data-title="Tennis World" data-src="sample3.mp4" style="background-image:url('https://images.unsplash.com/photo-1546519638-68e109498ffc?w=900&auto=format&fit=crop&q=60')">
+            <div class="meta">Tennis World</div>
+          </div>
+          <div class="card" tabindex="0" data-title="Sports Extrêmes" data-src="sample4.mp4" style="background-image:url('https://images.unsplash.com/photo-1521412644187-c49fa049e84d?w=900&auto=format&fit=crop&q=60')">
+            <div class="meta">Sports Extrêmes</div>
+          </div>
+          <div class="card" tabindex="0" data-title="Boxe Live" data-src="sample5.mp4" style="background-image:url('https://images.unsplash.com/photo-1533106418989-88406c7cc8c7?w=900&auto=format&fit=crop&q=60')">
+            <div class="meta">Boxe Live</div>
+          </div>
+        </div>
+      </div>
+      <div class="arrow right" data-target="1" aria-hidden><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></div>
     </div>
   </div>
 
-  <!-- Menus -->
-  <div id="settingsMenu" class="menu">
-    <button data-speed="0.5">0.5x</button>
-    <button data-speed="1">1x</button>
-    <button data-speed="1.5">1.5x</button>
-    <button data-speed="2">2x</button>
+  <div class="wrap">
+    <h2 class="section">Évènements en direct</h2>
+    <div class="carousel" id="carousel-2" aria-label="Évènements en direct">
+      <div class="arrow left" data-target="2" aria-hidden><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+      <div class="rows">
+        <div class="scroll" data-scroll-id="2">
+          <div class="card" tabindex="0" data-title="Match du soir" data-src="sample6.mp4" style="background-image:url('https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=900&auto=format&fit=crop&q=60')">
+            <div class="meta">Match du soir</div>
+          </div>
+          <div class="card" tabindex="0" data-title="Grand Prix" data-src="sample7.mp4" style="background-image:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&auto=format&fit=crop&q=60')">
+            <div class="meta">Grand Prix</div>
+          </div>
+          <div class="card" tabindex="0" data-title="Match Amical" data-src="sample8.mp4" style="background-image:url('https://images.unsplash.com/photo-1543255006-9b8f1b2f0c5b?w=900&auto=format&fit=crop&q=60')">
+            <div class="meta">Match Amical</div>
+          </div>
+        </div>
+      </div>
+      <div class="arrow right" data-target="2" aria-hidden><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></div>
+    </div>
   </div>
+</main>
 
-  <div id="sourceMenu" class="menu">
-    <button data-src="https://cinepizza.xyz/movies/Interstellar.mp4">Interstellar</button>
-  </div>
-
-  <div id="subtitleMenu" class="menu">
-    <!-- Example: <button data-sub="https://example.com/subtitles_fr.vtt">FR</button> -->
+<!-- Modal : player / page chaîne -->
+<div class="modal" id="playerModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-card fade-up" role="document">
+    <button class="close-btn" id="closeModal" aria-label="Fermer">✕</button>
+    <video class="modal-video" id="modalVideo" controls playsinline poster="https://images.unsplash.com/photo-1496386461964-1b1b16b3a8be?w=1600&auto=format&fit=crop&q=60">
+      <!-- sample source; remplace par ton flux / mp4 / HLS -->
+      <source src="" type="video/mp4">
+      Ton navigateur ne supporte pas la lecture vidéo.
+    </video>
+    <div class="modal-body">
+      <div class="modal-info">
+        <h3 id="modalTitle" style="margin:0 0 6px">Titre</h3>
+        <p style="color:var(--muted); margin:0 0 8px">Chaîne • Live • Qualité HD</p>
+        <p style="margin:0 0 6px; color:#cfcfcf; font-size:0.95rem">Description courte de la chaîne/évènement. Tu peux ajouter des métadonnées, options multi-caméra, ou boutons pour changer de piste audio.</p>
+        <div style="margin-top:10px; display:flex; gap:8px">
+          <button class="btn" id="openPip">Picture-in-Picture</button>
+          <button class="btn secondary" id="toggleSub">Sous-titres</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-const video = document.getElementById('video');
-const controls = document.getElementById('controls');
-const progressWrapper = document.getElementById('progressWrapper');
-const progress = document.getElementById('progress');
-const progressBar = document.getElementById('progress-bar');
-const currentTimeEl = document.getElementById('currentTime');
-const totalTimeEl = document.getElementById('totalTime');
-const playBtn = document.getElementById('play');
-const centerPlay = document.getElementById('centerPlay');
-const container = document.getElementById('video-container');
-const volumeSlider = document.getElementById('volume-slider');
-const volumeIcon = document.getElementById('volume-icon');
-const settingsBtn = document.getElementById('settings');
-const settingsMenu = document.getElementById('settingsMenu');
-const sourceBtn = document.getElementById('source');
-const sourceMenu = document.getElementById('sourceMenu');
-const subtitleBtn = document.getElementById('subtitles');
-const subtitleMenu = document.getElementById('subtitleMenu');
+/* -----------------------
+   Parallax (mouse + scroll)
+   - translate layers different amounts
+   - subtle scale on scroll
+   ----------------------- */
+(function(){
+  const hero = document.getElementById('hero');
+  const bgFar = document.getElementById('bg-far');
+  const bgMid = document.getElementById('bg-mid');
+  const bgFront = document.getElementById('bg-front');
 
-let hideTimeout;
-video.controls = false;
-
-// ---------------------
-// Show / hide controls
-// ---------------------
-function showControls() {
-  controls.classList.remove('hide');
-  progressWrapper.classList.remove('hide');
-  centerPlay.classList.remove('hide');
-  document.body.style.cursor = 'default';
-  clearTimeout(hideTimeout);
-  hideTimeout = setTimeout(hideControls, 3000);
-}
-
-function hideControls() {
-  controls.classList.add('hide');
-  progressWrapper.classList.add('hide');
-  centerPlay.classList.add('hide');
-  document.body.style.cursor = 'none';
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
-}
-
-document.addEventListener('mousemove', showControls);
-showControls();
-
-// ---------------------
-// Format time
-// ---------------------
-function formatTime(sec) {
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-// ---------------------
-// Update progress & time
-// ---------------------
-video.addEventListener('timeupdate', () => {
-  const percent = (video.currentTime / video.duration) * 100;
-  progressBar.style.width = percent + '%';
-  currentTimeEl.textContent = formatTime(video.currentTime);
-  totalTimeEl.textContent = formatTime(video.duration);
-});
-
-// ---------------------
-// Play / pause
-// ---------------------
-function togglePlay() {
-  if (video.paused) video.play();
-  else video.pause();
-}
-
-// Clicks
-playBtn.addEventListener('click', togglePlay);
-centerPlay.addEventListener('click', togglePlay);
-
-// Update icons
-video.addEventListener('play', () => {
-  playBtn.textContent = 'pause';
-  centerPlay.textContent = 'pause'; // <-- Change ici
-  centerPlay.classList.add('hide'); // facultatif : cacher le bouton central en lecture
-});
-
-video.addEventListener('pause', () => {
-  playBtn.textContent = 'play_arrow';
-  centerPlay.textContent = 'play_arrow'; // <-- Change ici
-  centerPlay.classList.remove('hide'); // montrer le bouton central si vidéo en pause
-});
-
-// ---------------------
-// Seek
-// ---------------------
-progressWrapper.addEventListener('click', e => {
-  const rect = progress.getBoundingClientRect();
-  const pos = (e.clientX - rect.left) / rect.width;
-  video.currentTime = pos * video.duration;
-});
-
-// ---------------------
-// Volume
-// ---------------------
-volumeSlider.addEventListener('input', () => {
-  video.volume = volumeSlider.value;
-  updateVolumeIcon();
-});
-volumeIcon.addEventListener('click', () => {
-  if(video.volume > 0){ video.volume = 0; volumeSlider.value = 0; }
-  else { video.volume = 1; volumeSlider.value = 1; }
-  updateVolumeIcon();
-});
-
-function updateVolumeIcon() {
-  if(video.volume === 0) volumeIcon.textContent = 'volume_off';
-  else if(video.volume < 0.5) volumeIcon.textContent = 'volume_down';
-  else volumeIcon.textContent = 'volume_up';
-}
-
-// ---------------------
-// Settings menu
-// ---------------------
-settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
-settingsMenu.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    video.playbackRate = parseFloat(btn.dataset.speed);
-    settingsMenu.style.display = 'none';
+  // mouse-based tilt
+  hero.addEventListener('mousemove', (e)=>{
+    const r = hero.getBoundingClientRect();
+    const mx = (e.clientX - r.left) / r.width - 0.5; // -0.5..0.5
+    const my = (e.clientY - r.top) / r.height - 0.5;
+    // multiply parallax strength
+    bgFar.style.transform = `translate3d(${mx * 6}px, ${my * 6}px, 0) scale(1.13)`;
+    bgMid.style.transform = `translate3d(${mx * 18}px, ${my * 14}px, 0) scale(1.09)`;
+    bgFront.style.transform = `translate3d(${mx * 28}px, ${my * 24}px, 0) scale(1.03)`;
   });
-});
 
-// ---------------------
-// Source menu
-// ---------------------
-sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
-sourceMenu.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    video.src = btn.dataset.src;
-    video.play();
-    sourceMenu.style.display = 'none';
+  // scroll-based parallax (for mobile / touch)
+  window.addEventListener('scroll', ()=>{
+    const offset = window.scrollY;
+    // small vertical parallax on scroll
+    bgFar.style.transform = `translate3d(0, ${offset * 0.04}px, 0) scale(1.13)`;
+    bgMid.style.transform = `translate3d(0, ${offset * 0.06}px, 0) scale(1.09)`;
+    bgFront.style.transform = `translate3d(0, ${offset * 0.08}px, 0) scale(1.03)`;
   });
-});
+})();
 
-// ---------------------
-// Subtitles menu
-// ---------------------
-subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
-subtitleMenu.addEventListener('click', e => {
-  if(e.target.tagName === 'BUTTON'){
-    const subUrl = e.target.dataset.sub;
-    video.querySelectorAll('track').forEach(t => t.remove());
-    if(subUrl){
-      const track = document.createElement('track');
-      track.src = subUrl;
-      track.kind = 'subtitles';
-      track.default = true;
-      video.appendChild(track);
+/* -----------------------
+   Carousel arrows & swipe
+   - arrow scrolls by container width * 0.8
+   - supports multiple carousels
+   ----------------------- */
+(function(){
+  const arrows = document.querySelectorAll('.arrow');
+  arrows.forEach(a=>{
+    a.addEventListener('click', ()=>{
+      const target = a.dataset.target;
+      const scrollEl = document.querySelector(`.scroll[data-scroll-id="${target}"]`);
+      if(!scrollEl) return;
+      const dir = a.classList.contains('left') ? -1 : 1;
+      const shift = Math.round(scrollEl.clientWidth * 0.72) * dir;
+      scrollEl.scrollBy({left: shift, behavior: 'smooth'});
+    });
+  });
+
+  // enable keyboard navigation for each scroll area (left/right)
+  document.querySelectorAll('.scroll').forEach(s=>{
+    s.addEventListener('keydown', (e)=>{
+      if(e.key === 'ArrowLeft') s.scrollBy({left:-300, behavior:'smooth'});
+      if(e.key === 'ArrowRight') s.scrollBy({left:300, behavior:'smooth'});
+    });
+  });
+
+  // touch drag to emulate swiping (desktop enhanced)
+  let isDown=false, startX, scrollLeft;
+  document.querySelectorAll('.scroll').forEach(s=>{
+    s.addEventListener('mousedown', (e)=>{
+      isDown=true; s.classList.add('dragging'); startX=e.pageX - s.offsetLeft; scrollLeft=s.scrollLeft;
+    });
+    s.addEventListener('mouseleave', ()=>{ isDown=false; s.classList.remove('dragging') });
+    s.addEventListener('mouseup', ()=>{ isDown=false; s.classList.remove('dragging') });
+    s.addEventListener('mousemove', (e)=>{
+      if(!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - s.offsetLeft;
+      const walk = (x - startX) * 1.2;
+      s.scrollLeft = scrollLeft - walk;
+    });
+  });
+})();
+
+/* -----------------------
+   3D tilt effect on cards (mouse)
+   - lighten on hover and tilt in 3D
+   - accessible: also reacts to focus
+   ----------------------- */
+(function(){
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card=>{
+    const rect = ()=>card.getBoundingClientRect();
+    const onMove = (e)=>{
+      const r = rect();
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+      const px = (x / r.width) - 0.5; // -0.5..0.5
+      const py = (y / r.height) - 0.5;
+      const rotateY = px * 10; // degrees
+      const rotateX = -py * 8;
+      card.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(8px) scale(1.04)`;
+    };
+    const reset = ()=> card.style.transform = '';
+    card.addEventListener('mousemove', onMove);
+    card.addEventListener('mouseleave', reset);
+    card.addEventListener('blur', reset);
+    // keyboard / focus: small lift
+    card.addEventListener('focus', ()=> card.style.transform = 'translateY(-8px) scale(1.04)');
+    card.addEventListener('blur', reset);
+  });
+})();
+
+/* -----------------------
+   Modal video player (channel page)
+   - opens when card clicked
+   - supports PiP + subtitles toggle (demo)
+   ----------------------- */
+(function(){
+  const modal = document.getElementById('playerModal');
+  const modalVideo = document.getElementById('modalVideo');
+  const modalTitle = document.getElementById('modalTitle');
+  const close = document.getElementById('closeModal');
+  const pipBtn = document.getElementById('openPip');
+  const subBtn = document.getElementById('toggleSub');
+
+  // For demo: cards open modal and set source
+  document.querySelectorAll('.card').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      const src = c.dataset.src || ''; // replace with actual stream link / HLS
+      const title = c.dataset.title || 'Live';
+      openModal(title, src);
+    });
+    // Enter key also opens
+    c.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') { c.click(); }
+    });
+  });
+
+  function openModal(title, src){
+    modalTitle.textContent = title;
+    // set a demo mp4 if none provided (these files must exist on your server)
+    const videoSrc = src && src.trim() ? src : 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+    modalVideo.querySelector('source').src = videoSrc;
+    modalVideo.load();
+    modal.classList.add('open');
+    modalVideo.play().catch(()=>{/* autoplay may be blocked */});
+    // lock scroll
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(){
+    modal.classList.remove('open');
+    modalVideo.pause();
+    modalVideo.currentTime = 0;
+    // clear src to stop network
+    modalVideo.querySelector('source').src = '';
+    modalVideo.load();
+    document.body.style.overflow = '';
+  }
+
+  close.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
+
+  // Picture-in-Picture (if supported)
+  pipBtn.addEventListener('click', async ()=>{
+    try{
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        await modalVideo.requestPictureInPicture();
+      }
+    }catch(err){
+      alert('Picture-in-Picture non supporté ou bloqué.');
     }
-    subtitleMenu.style.display = 'none';
+  });
+
+  // Subtitle toggle demo (adds/removes a track)
+  let subOn = false;
+  subBtn.addEventListener('click', ()=>{
+    if(!subOn){
+      const track = document.createElement('track');
+      track.kind = 'subtitles';
+      track.srclang = 'fr';
+      track.label = 'Français';
+      // sample VTT must be available on your server; here we skip providing file
+      // for demo we add empty cues via JS if needed.
+      modalVideo.appendChild(track);
+      // show message
+      alert('Sous-titres activés (démo). Remplace la piste par tes .vtt.');
+      subOn = true;
+      subBtn.textContent = 'Sous-titres ✓';
+    } else {
+      // remove tracks
+      modalVideo.querySelectorAll('track').forEach(t=>t.remove());
+      subOn = false;
+      subBtn.textContent = 'Sous-titres';
+    }
+  });
+})();
+
+/* -----------------------
+   Trailer button (opens small preview modal)
+   ----------------------- */
+document.getElementById('trailer').addEventListener('click', ()=>{
+  const evt = new Event('click');
+  // open first card as trailer demo
+  const firstCard = document.querySelector('.card');
+  if(firstCard) firstCard.click();
+});
+
+/* -----------------------
+   "Regarder" button: open hero featured
+   ----------------------- */
+document.getElementById('watch-now').addEventListener('click', ()=>{
+  // open modal with featured; set your featured stream URL here
+  const featuredUrl = ''; // <-- mettre ton flux HLS/MP4 ici
+  const featuredTitle = 'Champions League — Direct';
+  // reuse card click handler via dispatch
+  // simulate openModal by clicking first card but we want featured; use modal opener directly if exposed
+  const evt = new CustomEvent('openFeatured', {detail:{title:featuredTitle, src:featuredUrl}});
+  window.dispatchEvent(evt);
+});
+
+// exposed listener for programmatic open
+window.addEventListener('openFeatured', function(e){
+  const title = (e.detail && e.detail.title) || 'Featured';
+  const src = (e.detail && e.detail.src) || '';
+  // attempt to reuse modal code: find modal opener function (scoped) - fallback: click first card
+  const firstCard = document.querySelector('.card');
+  if(firstCard){
+    // set dataset then click
+    firstCard.dataset.title = title;
+    if(src) firstCard.dataset.src = src;
+    firstCard.click();
   }
 });
 
-// ---------------------
-// Fullscreen
-// ---------------------
-document.getElementById('fullscreen').addEventListener('click', () => {
-  if(!document.fullscreenElement) container.requestFullscreen();
-  else document.exitFullscreen();
-});
-
-// ---------------------
-// Backward / Forward
-// ---------------------
-document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
-document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
-
-// ---------------------
-// Toggle menu helper
-// ---------------------
-function toggleMenu(menu){
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
-  menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-}
+/* -----------------------
+   Small enhancement: lazy-load poster/background images
+   - could be enhanced with IntersectionObserver
+   ----------------------- */
+(function(){
+  // prefetch hero images for smoother parity
+  const urls = [
+    'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=1800',
+    'https://images.unsplash.com/photo-1505842465776-3f8d1c7f01ab?w=2000',
+    'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=2000'
+  ];
+  urls.forEach(u=>{ const i=new Image(); i.src=u; });
+})();
 </script>
-
 </body>
 </html>
