@@ -208,5 +208,22 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+    <form id="test">
+    <input id="email">
+    <input id="password">
+    <button>OK</button>
+</form>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+console.log("JS LOADED ✔️");   // <-- do we see this ? IMPORTANT
+
+document.getElementById("test").addEventListener("submit", (e)=>{
+    e.preventDefault();
+    console.log("FORM SUBMITTED ✔️");
+});
+</script>
 </body>
 </html>
+
