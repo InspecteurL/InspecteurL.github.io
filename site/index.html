@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horizoncine</title>
 
-    <!-- Chemins GitHub Pages -->
+    <!-- (Optionnel) Styles et icônes -->
     <link rel="stylesheet" href="https://inspecteurl.github.io/site/styles.css">
     <link rel="icon" type="image/x-icon" href="https://inspecteurl.github.io/site/horizonlogo.png">
 
@@ -50,30 +50,17 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-        }
-        .banner-content {
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .btn-watch {
-            padding: 10px 20px;
-            background-color: #e50914;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
+            color: #ffffff;
         }
 
-        /* FORMULAIRE */
+        /* Formulaire */
         #auth-form {
             max-width: 400px;
             margin: 40px auto;
             background-color: #1e1e1e;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
         }
         #auth-form input, #auth-form button {
             width: 100%;
@@ -125,9 +112,9 @@
         <button type="submit">Se connecter / S'inscrire</button>
     </form>
 
-    <!-- 🔥 SCRIPT ANTI-SCRIPT PARASITE (wrapper.mjs) -->
+    <!-- 🔥 BLOQUE LES SCRIPTS PARASITES GITHUB PAGES (wrapper.mjs, vite, etc.) -->
     <script>
-        const blocked = ["wrapper.mjs", "wrap.js", "hot-update"];
+        const blocked = ["wrapper.mjs", "wrap", "vite", "hot-update"];
         const observer = new MutationObserver(() => {
             document.querySelectorAll("script[src]").forEach(s => {
                 if (blocked.some(b => s.src.includes(b))) {
@@ -139,61 +126,61 @@
         observer.observe(document.documentElement, { childList: true, subtree: true });
     </script>
 
-    <!-- SUPABASE -->
+    <!-- 🔥 SUPABASE SCRIPT -->
     <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-        "https://wuagahavmbugmnuzsouf.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
-    );
+        const supabase = createClient(
+            "https://wuagahavmbugmnuzsouf.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+        );
 
-    document.getElementById("auth-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
+        document.getElementById("auth-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-        const pseudo = document.getElementById("pseudo").value.trim();
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value.trim();
+            const pseudo = document.getElementById("pseudo").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
 
-        if (password.length < 8) {
-            alert("Le mot de passe doit contenir au moins 8 caractères.");
-            return;
-        }
-
-        // Tentative connexion
-        let { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-
-        if (loginError) {
-            if (loginError.message.includes("Invalid login credentials")) {
-                alert("⚠️ Mot de passe incorrect.");
+            if (password.length < 8) {
+                alert("Le mot de passe doit contenir au moins 8 caractères.");
                 return;
             }
 
-            // Tentative inscription si utilisateur inexistant
-            let { error: signUpError } = await supabase.auth.signUp({ email, password });
+            // Tentative login
+            let { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-            if (signUpError) {
-                alert("Erreur d'inscription : " + signUpError.message);
+            if (signInError) {
+                if (signInError.message.includes("Invalid login credentials")) {
+                    alert("⚠️ Mot de passe incorrect.");
+                    return;
+                }
+
+                // Sinon → inscription
+                let { error: signUpError } = await supabase.auth.signUp({ email, password });
+
+                if (signUpError) {
+                    alert("Erreur d'inscription : " + signUpError.message);
+                    return;
+                }
+
+                alert("Compte créé ! Vérifie ton email.");
                 return;
             }
 
-            alert("Compte créé ! Vérifie ton email.");
-            return;
-        }
+            // Login OK
+            const { data: userData } = await supabase.auth.getUser();
+            const user = userData.user;
 
-        // Connexion réussie
-        const { data: userData } = await supabase.auth.getUser();
-        const user = userData.user;
+            await supabase.from("profiles").upsert({
+                id: user.id,
+                username: pseudo,
+                is_online: true,
+                last_seen: new Date()
+            });
 
-        await supabase.from("profiles").upsert({
-            id: user.id,
-            username: pseudo,
-            is_online: true,
-            last_seen: new Date()
+            alert(`🎉 Bienvenue ${pseudo} ! Vous êtes connecté.`);
         });
-
-        alert(`🎉 Bienvenue ${pseudo} ! Vous êtes connecté.`);
-    });
     </script>
 
 </body>
