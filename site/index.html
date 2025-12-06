@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horizoncine</title>
 
-    <!-- Chemins fixes pour GitHub Pages -->
+    <!-- Chemins GitHub Pages -->
     <link rel="stylesheet" href="https://inspecteurl.github.io/site/styles.css">
     <link rel="icon" type="image/x-icon" href="https://inspecteurl.github.io/site/horizonlogo.png">
 
@@ -36,9 +36,6 @@
             gap: 20px;
             margin: 0;
         }
-        .nav-links li {
-            display: inline;
-        }
         .nav-links a {
             color: #ffffff;
             text-decoration: none;
@@ -53,7 +50,6 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            color: #ffffff;
         }
         .banner-content {
             background-color: rgba(0, 0, 0, 0.5);
@@ -64,52 +60,20 @@
             padding: 10px 20px;
             background-color: #e50914;
             border: none;
-            color: #ffffff;
+            color: white;
             cursor: pointer;
             border-radius: 5px;
             font-size: 16px;
         }
-        .movies {
-            padding: 20px;
-        }
-        .movies h2 {
-            margin-bottom: 20px;
-        }
-        .movies-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 20px;
-        }
-        .movie-card {
-            background-color: #333333;
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .movie-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        .movie-card img {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-            border-radius: 10px;
-        }
-        .movie-card h3 {
-            margin-top: 10px;
-            font-size: 16px;
-        }
 
-        /* Formulaire */
+        /* FORMULAIRE */
         #auth-form {
             max-width: 400px;
             margin: 40px auto;
             background-color: #1e1e1e;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
         }
         #auth-form input, #auth-form button {
             width: 100%;
@@ -127,28 +91,6 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
-        }
-
-        /* Responsiveness */
-        @media (max-width: 768px) {
-            header { flex-direction: column; align-items: flex-start; }
-            .nav-links { flex-direction: column; gap: 10px; }
-            .banner { height: 60vh; }
-            .banner-content h1 { font-size: 24px; }
-            .banner-content p { font-size: 14px; }
-            .btn-watch { font-size: 14px; padding: 8px 16px; }
-            .movies-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
-            .movie-card img { height: 200px; }
-            #auth-form { padding: 15px; max-width: 90%; }
-        }
-
-        @media (max-width: 480px) {
-            .banner-content h1 { font-size: 20px; }
-            .banner-content p { font-size: 12px; }
-            .btn-watch { font-size: 12px; padding: 6px 14px; }
-            .movies-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
-            .movie-card img { height: 180px; }
-            #auth-form { max-width: 100%; padding: 10px; }
         }
     </style>
 </head>
@@ -175,6 +117,7 @@
         </div>
     </section>
 
+    <!-- FORMULAIRE -->
     <form id="auth-form">
         <input type="text" id="pseudo" placeholder="Pseudo (visible par les autres)" required />
         <input type="email" id="email" placeholder="Email" required />
@@ -182,7 +125,21 @@
         <button type="submit">Se connecter / S'inscrire</button>
     </form>
 
-    <!-- Supabase Auth Script -->
+    <!-- 🔥 SCRIPT ANTI-SCRIPT PARASITE (wrapper.mjs) -->
+    <script>
+        const blocked = ["wrapper.mjs", "wrap.js", "hot-update"];
+        const observer = new MutationObserver(() => {
+            document.querySelectorAll("script[src]").forEach(s => {
+                if (blocked.some(b => s.src.includes(b))) {
+                    console.warn("🔥 Script parasite bloqué :", s.src);
+                    s.remove();
+                }
+            });
+        });
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+    </script>
+
+    <!-- SUPABASE -->
     <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -203,16 +160,16 @@
             return;
         }
 
-        // Tentative login
-        let { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        // Tentative connexion
+        let { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
 
-        if (signInError) {
-            if (signInError.message.includes("Invalid login credentials")) {
+        if (loginError) {
+            if (loginError.message.includes("Invalid login credentials")) {
                 alert("⚠️ Mot de passe incorrect.");
                 return;
             }
 
-            // Essayons inscription
+            // Tentative inscription si utilisateur inexistant
             let { error: signUpError } = await supabase.auth.signUp({ email, password });
 
             if (signUpError) {
@@ -224,7 +181,7 @@
             return;
         }
 
-        // Login OK
+        // Connexion réussie
         const { data: userData } = await supabase.auth.getUser();
         const user = userData.user;
 
