@@ -36,12 +36,14 @@
             gap: 20px;
             margin: 0;
         }
+        .nav-links li {
+            display: inline;
+        }
         .nav-links a {
             color: #ffffff;
             text-decoration: none;
             font-weight: bold;
         }
-
         .banner {
             background-image: url('https://inspecteurl.github.io/site/banner.jpg');
             background-size: cover;
@@ -51,6 +53,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
+            color: #ffffff;
         }
         .banner-content {
             background-color: rgba(0, 0, 0, 0.5);
@@ -66,15 +69,48 @@
             border-radius: 5px;
             font-size: 16px;
         }
+        .movies {
+            padding: 20px;
+        }
+        .movies h2 {
+            margin-bottom: 20px;
+        }
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        .movie-card {
+            background-color: #333333;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .movie-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .movie-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .movie-card h3 {
+            margin-top: 10px;
+            font-size: 16px;
+        }
 
+        /* Formulaire */
         #auth-form {
             max-width: 400px;
             margin: 40px auto;
             background-color: #1e1e1e;
             padding: 20px;
             border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
         }
-
         #auth-form input, #auth-form button {
             width: 100%;
             padding: 10px;
@@ -82,148 +118,126 @@
             border: none;
             border-radius: 5px;
         }
-
-        #message {
-            text-align: center;
+        #auth-form input {
+            background-color: #2a2a2a;
+            color: white;
+        }
+        #auth-form button {
+            background-color: #e50914;
+            color: white;
             font-weight: bold;
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            display: none;
+            cursor: pointer;
         }
 
-        .success {
-            background-color: #1db954;
-            color: white;
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            header { flex-direction: column; align-items: flex-start; }
+            .nav-links { flex-direction: column; gap: 10px; }
+            .banner { height: 60vh; }
+            .banner-content h1 { font-size: 24px; }
+            .banner-content p { font-size: 14px; }
+            .btn-watch { font-size: 14px; padding: 8px 16px; }
+            .movies-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+            .movie-card img { height: 200px; }
+            #auth-form { padding: 15px; max-width: 90%; }
         }
-        .error {
-            background-color: #e53935;
-            color: white;
+
+        @media (max-width: 480px) {
+            .banner-content h1 { font-size: 20px; }
+            .banner-content p { font-size: 12px; }
+            .btn-watch { font-size: 12px; padding: 6px 14px; }
+            .movies-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+            .movie-card img { height: 180px; }
+            #auth-form { max-width: 100%; padding: 10px; }
         }
     </style>
 </head>
 
 <body>
 
-<header>
-    <div class="logo">BNZ</div>
-    <ul class="nav-links">
-        <li><a href="https://inspecteurl.github.io/site/accueil.html">Accueil</a></li>
-        <li><a href="https://inspecteurl.github.io/site/lecteurtest.html">Données animes</a></li>
-        <li><a href="https://inspecteurl.github.io/site/amis.html">Rechercher des amis</a></li>
-        <li><a href="https://inspecteurl.github.io/site/mes-amis.html">Mes amis</a></li>
-        <li><a href="https://inspecteurl.github.io/site/compte.html">Votre Compte</a></li>
-        <li><a href="https://inspecteurl.github.io/site/suggestion.html">Suggestion</a></li>
-    </ul>
-</header>
+    <header>
+        <div class="logo">BNZ</div>
+        <ul class="nav-links">
+            <li><a href="https://inspecteurl.github.io/site/accueil.html">Accueil</a></li>
+            <li><a href="https://inspecteurl.github.io/site/lecteurtest.html">Données animes</a></li>
+            <li><a href="https://inspecteurl.github.io/site/amis.html">Rechercher des amis</a></li>
+            <li><a href="https://inspecteurl.github.io/site/mes-amis.html">Mes amis</a></li>
+            <li><a href="https://inspecteurl.github.io/site/compte.html">Votre Compte</a></li>
+            <li><a href="https://inspecteurl.github.io/site/suggestion.html">Suggestion</a></li>
+        </ul>
+    </header>
 
-<section class="banner">
-    <div class="banner-content">
-        <h1>Bienvenue sur Horizoncine</h1>
-        <p>Regardez vos films et séries préférés en ligne.</p>
-        <a href="accueil.html"><button class="btn-watch">Entrez maintenant</button></a>
-    </div>
-</section>
+    <section class="banner">
+        <div class="banner-content">
+            <h1>Bienvenue sur Horizoncine</h1>
+            <p>Regardez vos films et séries préférés en ligne.</p>
+            <a href="accueil.html"><button class="btn-watch">Entrez maintenant</button></a>
+        </div>
+    </section>
 
-<form id="auth-form">
-    <input type="text" id="pseudo" placeholder="Pseudo (visible par les autres)" required />
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Mot de passe" required />
-    <button type="submit">Se connecter / S'inscrire</button>
+    <form id="auth-form">
+        <input type="text" id="pseudo" placeholder="Pseudo (visible par les autres)" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Mot de passe" required />
+        <button type="submit">Se connecter / S'inscrire</button>
+    </form>
 
-    <div id="message"></div>
-</form>
+    <!-- Supabase Auth Script -->
+    <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(
+        "https://wuagahavmbugmnuzsouf.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
 
-document.addEventListener("DOMContentLoaded", () => {
-
-    const showMessage = (msg, type = "success") => {
-        const box = document.getElementById("message");
-        box.textContent = msg;
-        box.className = type;
-        box.style.display = "block";
-    };
-
-    const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const form = document.getElementById('auth-form');
-
-    form.addEventListener('submit', async (e) => {
+    document.getElementById("auth-form").addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const pseudo = document.getElementById('pseudo').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value.trim();
+        const pseudo = document.getElementById("pseudo").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
 
         if (password.length < 8) {
-            showMessage("⚠️ Le mot de passe doit contenir au moins 8 caractères.", "error");
+            alert("Le mot de passe doit contenir au moins 8 caractères.");
             return;
         }
 
-        // Connexion
+        // Tentative login
         let { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
         if (signInError) {
             if (signInError.message.includes("Invalid login credentials")) {
-                showMessage("⚠️ Mot de passe incorrect.", "error");
+                alert("⚠️ Mot de passe incorrect.");
                 return;
             }
 
-            // Inscription
-            const { error: signUpError } = await supabase.auth.signUp({ email, password });
+            // Essayons inscription
+            let { error: signUpError } = await supabase.auth.signUp({ email, password });
 
             if (signUpError) {
-                showMessage("Erreur d'inscription : " + signUpError.message, "error");
+                alert("Erreur d'inscription : " + signUpError.message);
                 return;
             }
 
-            showMessage("🎉 Compte créé ! Vérifie ton email.");
+            alert("Compte créé ! Vérifie ton email.");
             return;
         }
 
-        // Connexion OK → Mise à jour du profil
+        // Login OK
         const { data: userData } = await supabase.auth.getUser();
         const user = userData.user;
 
-        if (user) {
-            const { error: updateError } = await supabase.from('profiles').upsert({
-                id: user.id,
-                username: pseudo,
-                is_online: true,
-                last_seen: new Date()
-            });
+        await supabase.from("profiles").upsert({
+            id: user.id,
+            username: pseudo,
+            is_online: true,
+            last_seen: new Date()
+        });
 
-            if (updateError) {
-                showMessage("Connecté mais profil non mis à jour.", "error");
-                return;
-            }
-        }
-
-        showMessage(`🎉 Bienvenue ${pseudo} ! Vous êtes connecté.`);
+        alert(`🎉 Bienvenue ${pseudo} ! Vous êtes connecté.`);
     });
-});
-</script>
+    </script>
 
-    <form id="test">
-    <input id="email">
-    <input id="password">
-    <button>OK</button>
-</form>
-
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-console.log("JS LOADED ✔️");   // <-- do we see this ? IMPORTANT
-
-document.getElementById("test").addEventListener("submit", (e)=>{
-    e.preventDefault();
-    console.log("FORM SUBMITTED ✔️");
-});
-</script>
 </body>
 </html>
-
