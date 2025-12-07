@@ -209,56 +209,69 @@
         <input type="password" id="password" placeholder="Mot de passe" required />
         <button type="submit">Se connecter / S'inscrire</button>
     </form>
-<script type="module">
-   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+   <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-const supabase = createClient(
-  'https://wuagahavmbugmnuzsouf.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-);
+    const supabase = createClient(
+        "https://wuagahavmbugmnuzsouf.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+    );
 
-const form = document.getElementById("auth-form");
+    const form = document.getElementById("auth-form");
 
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+    // 🔥 vérifie si l’utilisateur est déjà connecté
+    (async () => {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+            window.location.href = "./app.html"; // 🔁 change vers ta page app
+        }
+    })();
 
-    const pseudo = document.getElementById("pseudo").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    // 🔹 Templogin: si l’utilisateur existe → login, sinon → signup proprement
+        const pseudo = document.getElementById("pseudo").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
 
-    const { data: loginData, error: loginError } = 
-        await supabase.auth.signInWithPassword({ email, password });
+        // 🔹 Étape 1 : tentative de connexion
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
 
-    if (loginError) {
-        if (loginError.message.includes("Invalid login credentials")) {
-            // 🔹 On n’inscrit PAS si le mdp est mauvais
-            alert("❌ Email existant, mais mauvais mot de passe.");
+        if (!loginError) {
+            alert("Connexion réussie !");
+            window.location.href = "./app.html";
             return;
         }
 
-        // 🔹 Inscription propre
+        // Si l’erreur est "Invalid login credentials", on NE crée PAS de compte !
+        if (loginError.message.includes("Invalid login credentials")) {
+            alert("❌ Mauvais mot de passe pour cet email.");
+            return;
+        }
+
+        // 🔹 Étape 2 : inscription propre (email non existant)
         const { data: signUpData, error: signUpError } =
             await supabase.auth.signUp({ email, password });
 
         if (signUpError) {
-            alert("Erreur inscription : " + signUpError.message);
+            alert("❌ Erreur lors de l’inscription : " + signUpError.message);
             return;
         }
 
-        alert("✅ Compte créé. Vérifie ton email !");
-        return;
-    }
+        // Le profil sera créé automatiquement via ton trigger SQL `init_user_profile`
 
-    // 🔹 Connexion OK
-    alert(`🎉 Bienvenue ${pseudo} !`);
-});
+        alert("🟣 Compte créé ! Vérifie ta boîte mail pour confirmer.");
+    });
+
 
 </script>
 
 </body>
 </html>
+
 
 
 
