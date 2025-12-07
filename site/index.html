@@ -1,180 +1,121 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horizoncine</title>
-    <link rel="icon" type="image/x-icon" href="horizonlogo.png">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Supabase – Test</title>
+
+    <!-- Pas de CSS externe pour éviter les 404 -->
     <style>
         body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #141414;
-            color: #ffffff;
-        }
-        header {
-            background-color: #141414;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .logo {
-            font-weight: bold;
-            font-size: 24px;
-            color: #e50914;
-        }
-        .nav-links {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            gap: 20px;
-            margin: 0;
-        }
-        .nav-links li { display: inline; }
-        .nav-links a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .banner {
-            background-image: url('./banner.jpg');
-            background-size: cover;
-            background-position: center;
-            height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #ffffff;
-        }
-        .banner-content {
-            background-color: rgba(0, 0, 0, 0.5);
+            background: #141414;
+            color: white;
+            font-family: Arial;
             padding: 20px;
-            border-radius: 10px;
         }
-        .btn-watch {
-            padding: 10px 20px;
-            background-color: #e50914;
-            border: none;
-            color: #ffffff;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
-        }
+
         #auth-form {
             max-width: 400px;
-            margin: 40px auto;
-            background-color: #1e1e1e;
+            margin: 50px auto;
+            background: #1e1e1e;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
         }
-        #auth-form input, #auth-form button {
+
+        input, button {
             width: 100%;
-            padding: 10px;
             margin-bottom: 10px;
+            padding: 10px;
             border: none;
             border-radius: 5px;
         }
-        #auth-form input { background-color: #2a2a2a; color: white; }
-        #auth-form button { background-color: #e50914; color: white; font-weight: bold; cursor: pointer; }
-        @media (max-width: 768px) {
-            header { flex-direction: column; align-items: flex-start; }
-            .nav-links { flex-direction: column; gap: 10px; }
-            .banner { height: 60vh; }
-            .banner-content h1 { font-size: 24px; }
-            .banner-content p { font-size: 14px; }
-            .btn-watch { font-size: 14px; padding: 8px 16px; }
-            #auth-form { padding: 15px; max-width: 90%; }
+
+        input {
+            background: #2a2a2a;
+            color: white;
         }
-        @media (max-width: 480px) {
-            .banner-content h1 { font-size: 20px; }
-            .banner-content p { font-size: 12px; }
-            .btn-watch { font-size: 12px; padding: 6px 14px; }
-            #auth-form { max-width: 100%; padding: 10px; }
+
+        button {
+            background: #e50914;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
 </head>
-<body>
-<header>
-    <div class="logo">BNZ</div>
-    <ul class="nav-links">
-        <li><a href="accueil.html">Accueil</a></li>
-        <li><a href="lecteurtest.html">Données animes</a></li>
-        <li><a href="amis.html">Rechercher des amis</a></li>
-        <li><a href="mes-amis.html">Mes amis</a></li>
-        <li><a href="compte.html">Votre Compte</a></li>
-        <li><a href="suggestion.html">Suggestion</a></li>
-    </ul>
-</header>
 
-<section class="banner">
-    <div class="banner-content">
-        <h1>Bienvenue sur Horizoncine</h1>
-        <p>Regardez vos films et séries préférés en ligne.</p>
-        <a href="accueil.html"><button class="btn-watch">Entrez maintenant</button></a>
-    </div>
-</section>
+<body>
+
+<h1>Connexion / Inscription</h1>
 
 <form id="auth-form">
-    <input type="text" id="pseudo" placeholder="Pseudo (visible par les autres)" required />
+    <input type="text" id="pseudo" placeholder="Pseudo" required />
     <input type="email" id="email" placeholder="Email" required />
     <input type="password" id="password" placeholder="Mot de passe" required />
-    <button type="submit">Se connecter / S'inscrire</button>
+
+    <button type="submit">Connexion / Inscription</button>
 </form>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// 1️⃣ Crée le client Supabase
-const supabaseUrl = "https://wuagahavmbugmnuzsouf.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
-const supabase = createClient(supabaseUrl, supabaseKey);
+/* -------------------------------
+   ⚠️ IMPORTANT
+   Mets ta VRAIE clé publique ici :
+   → sb_publishable_...
+--------------------------------*/
+const SUPABASE_URL = "https://wuagahavmbugmnuzsouf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_q2fTyOh6r5EhSpiN2KO5QA_HbRvI1er";
 
-// 2️⃣ Vérifie si l'utilisateur est déjà connecté
-(async () => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
-        window.location.href = "./app.html";
-    }
-})();
+// Création du client Supabase
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 3️⃣ Formulaire
+// Formulaire
 const form = document.getElementById("auth-form");
+
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const pseudo = document.getElementById("pseudo").value.trim();
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
 
     if (password.length < 8) {
-        alert("Le mot de passe doit contenir au moins 8 caractères.");
+        alert("Mot de passe trop court (min 8 caractères).");
         return;
     }
 
-    // 🔹 Tentative de connexion
-    const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-    if (!loginError) {
-        const userId = loginData.user.id;
-        await supabase.from('profiles').upsert({ id: userId, username: pseudo, is_online: true, last_seen_at: new Date() });
-        alert(`Connexion réussie ! Bienvenue ${pseudo}`);
-        window.location.href = "./app.html";
-        return;
-    }
-
-    // 🔹 Inscription si utilisateur inexistant
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
-    if (signUpError) { alert("Erreur lors de l’inscription : " + signUpError.message); return; }
-
-    const userId = signUpData.user.id;
-    const { error: profileError } = await supabase.from('profiles').insert({
-        id: userId, username: pseudo, is_online: true, last_seen_at: new Date()
+    /* ---------------------------
+       1️⃣ Tentative de connexion
+    ----------------------------*/
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password
     });
-    if (profileError) { alert("Compte créé mais impossible de créer le profil : " + profileError.message); return; }
 
-    alert("✅ Compte créé ! Vérifie ta boîte mail pour confirmer ton compte.");
+    if (!loginError) {
+        alert("Connexion réussie !");
+        return;
+    }
+
+    if (loginError.message.includes("Invalid login credentials")) {
+        alert("❌ Mauvais mot de passe.");
+        return;
+    }
+
+    /* ---------------------------
+       2️⃣ Tentative d'inscription
+    ----------------------------*/
+    const { data: signUpData, error: signUpError } =
+        await supabase.auth.signUp({ email, password });
+
+    if (signUpError) {
+        alert("Erreur inscription : " + signUpError.message);
+        return;
+    }
+
+    // Le trigger SQL crée le profil automatiquement
+    alert("✔️ Compte créé ! Va vérifier ton email.");
 });
 </script>
 
