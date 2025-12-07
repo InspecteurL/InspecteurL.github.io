@@ -50,16 +50,14 @@ header { background-color: #141414; padding: 10px 20px; display: flex; justify-c
 <button type="submit">Se connecter / S'inscrire</button>
 </form>
 
-<!-- Supabase JS stable -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 <script>
 const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-const form = document.getElementById("auth-form");
-
-// Vérifie si l’utilisateur est déjà connecté
+// 🔥 Vérifie si l’utilisateur est déjà connecté
 (async () => {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
@@ -67,9 +65,10 @@ const form = document.getElementById("auth-form");
     }
 })();
 
+// Ensuite ton code pour le formulaire
+const form = document.getElementById("auth-form");
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const pseudo = document.getElementById("pseudo").value.trim();
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
@@ -79,33 +78,26 @@ form.addEventListener("submit", async (e) => {
         return;
     }
 
-    // 1️⃣ Tentative de connexion
+    // Tentative de connexion
     const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (!loginError) {
-        // Met à jour le profil si l’utilisateur existe
         const userId = loginData.user.id;
-        const { error: profileError } = await supabase.from('profiles').upsert({
+        await supabase.from('profiles').upsert({
             id: userId,
             username: pseudo,
             is_online: true,
             last_seen_at: new Date()
         });
-        if (profileError) console.error(profileError);
         alert(`Connexion réussie ! Bienvenue ${pseudo}`);
         window.location.href = "./app.html";
         return;
     }
 
-    // 2️⃣ Si l'utilisateur n'existe pas → inscription
+    // Si utilisateur n’existe pas → inscription
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+    if (signUpError) { alert("Erreur : " + signUpError.message); return; }
 
-    if (signUpError) {
-        alert("Erreur lors de l’inscription : " + signUpError.message);
-        return;
-    }
-
-    // Création automatique du profil
     const userId = signUpData.user.id;
     const { error: profileError } = await supabase.from('profiles').insert({
         id: userId,
@@ -113,15 +105,12 @@ form.addEventListener("submit", async (e) => {
         is_online: true,
         last_seen_at: new Date()
     });
-
-    if (profileError) {
-        alert("Compte créé mais impossible de créer le profil : " + profileError.message);
-        console.error(profileError);
-        return;
-    }
+    if (profileError) { alert("Compte créé mais impossible de créer le profil : " + profileError.message); return; }
 
     alert("✅ Compte créé ! Vérifie ta boîte mail pour confirmer ton compte.");
 });
 </script>
+
 </body>
 </html>
+
