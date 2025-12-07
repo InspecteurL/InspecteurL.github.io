@@ -1,104 +1,42 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horizoncine</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #141414;
-            color: #ffffff;
-        }
-        header {
-            background-color: #141414;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .logo {
-            font-weight: bold;
-            font-size: 24px;
-            color: #e50914;
-        }
-        .nav-links {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            gap: 20px;
-            margin: 0;
-        }
-        .nav-links li {
-            display: inline;
-        }
-        .nav-links a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .banner {
-            background-color: #333;
-            height: 50vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #ffffff;
-        }
-        .banner-content {
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .btn-watch {
-            padding: 10px 20px;
-            background-color: #e50914;
-            border: none;
-            color: #ffffff;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        #auth-form {
-            max-width: 400px;
-            margin: 40px auto;
-            background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(255,255,255,0.1);
-        }
-        #auth-form input, #auth-form button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: none;
-            border-radius: 5px;
-        }
-        #auth-form input {
-            background-color: #2a2a2a;
-            color: white;
-        }
-        #auth-form button {
-            background-color: #e50914;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horizoncine</title>
+<link rel="icon" type="image/x-icon" href="horizonlogo.png">
+
+<style>
+body { margin: 0; font-family: Arial, sans-serif; background-color: #141414; color: #fff; }
+header { background-color: #141414; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.logo { font-weight: bold; font-size: 24px; color: #e50914; }
+.nav-links { list-style: none; padding: 0; display: flex; gap: 20px; margin: 0; }
+.nav-links li { display: inline; }
+.nav-links a { color: #fff; text-decoration: none; font-weight: bold; }
+
+.banner { background-color: #222; height: 80vh; display: flex; align-items: center; justify-content: center; text-align: center; color: #fff; }
+.banner-content { background-color: rgba(0,0,0,0.5); padding: 20px; border-radius: 10px; }
+.btn-watch { padding: 10px 20px; background-color: #e50914; border: none; color: #fff; cursor: pointer; border-radius: 5px; font-size: 16px; }
+
+#auth-form { max-width: 400px; margin: 40px auto; background-color: #1e1e1e; padding: 20px; border-radius: 10px; }
+#auth-form input, #auth-form button { width: 100%; padding: 10px; margin-bottom: 10px; border: none; border-radius: 5px; }
+#auth-form input { background-color: #2a2a2a; color: white; }
+#auth-form button { background-color: #e50914; color: white; font-weight: bold; cursor: pointer; }
+
+@media (max-width: 768px) { header { flex-direction: column; align-items: flex-start; } .nav-links { flex-direction: column; gap: 10px; } .banner { height: 60vh; } }
+</style>
 </head>
 <body>
 
 <header>
     <div class="logo">BNZ</div>
     <ul class="nav-links">
-        <li><a href="#">Accueil</a></li>
-        <li><a href="#">Données animes</a></li>
-        <li><a href="#">Rechercher des amis</a></li>
-        <li><a href="#">Mes amis</a></li>
-        <li><a href="#">Votre Compte</a></li>
-        <li><a href="#">Suggestion</a></li>
+        <li><a href="accueil.html">Accueil</a></li>
+        <li><a href="lecteurtest.html">Données animes</a></li>
+        <li><a href="amis.html">Rechercher des amis</a></li>
+        <li><a href="mes-amis.html">Mes amis</a></li>
+        <li><a href="compte.html">Votre Compte</a></li>
+        <li><a href="suggestion.html">Suggestion</a></li>
     </ul>
 </header>
 
@@ -106,7 +44,7 @@
     <div class="banner-content">
         <h1>Bienvenue sur Horizoncine</h1>
         <p>Regardez vos films et séries préférés en ligne.</p>
-        <button class="btn-watch">Entrez maintenant</button>
+        <a href="accueil.html"><button class="btn-watch">Entrez maintenant</button></a>
     </div>
 </section>
 
@@ -126,64 +64,49 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const form = document.getElementById('auth-form');
 
-// Vérifie si l'utilisateur est déjà connecté
+// Vérifie si l’utilisateur est déjà connecté
 (async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-        alert("Vous êtes déjà connecté !");
-        // window.location.href = "./app.html";
-    }
+    const { data } = await supabase.auth.getSession();
+    if (data.session) window.location.href = './app.html';
 })();
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const pseudo = document.getElementById('pseudo').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim();
 
-    if (password.length < 8) {
-        alert("Le mot de passe doit contenir au moins 8 caractères.");
-        return;
-    }
+    if (password.length < 8) { alert('Le mot de passe doit contenir au moins 8 caractères.'); return; }
 
     // Tentative de connexion
-    const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (!loginError) {
-        alert("Connexion réussie !");
+    if (!signInError) {
+        // Mettre à jour ou créer le profil si nécessaire
+        const { data: userData } = await supabase.auth.getUser();
+        await supabase.from('profiles').upsert({ id: userData.user.id, username: pseudo, is_online: true, last_seen_at: new Date() });
+        alert(`🎉 Bienvenue ${pseudo} ! Connexion réussie.`);
+        window.location.href = './app.html';
         return;
     }
 
-    // Si connexion échoue → inscription
+    // Si le login échoue et l'email n'existe pas → inscription
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
 
-    if (signUpError) {
-        alert("Erreur lors de l'inscription : " + signUpError.message);
-        return;
-    }
+    if (signUpError) { alert('❌ Erreur lors de l’inscription : ' + signUpError.message); return; }
 
+    // Créer le profil automatiquement après inscription
     const user = signUpData.user;
-    if (!user) {
-        alert("Impossible de récupérer l'utilisateur après inscription.");
-        return;
-    }
-
-    // Création automatique du profil
-    const { error: profileError } = await supabase.from('profiles').upsert({
+    const { error: profileError } = await supabase.from('profiles').insert({
         id: user.id,
         username: pseudo,
         is_online: true,
         last_seen_at: new Date()
     });
 
-    if (profileError) {
-        alert("Compte créé mais impossible de créer le profil : " + profileError.message);
-        console.error(profileError);
-        return;
-    }
+    if (profileError) { alert('⚠️ Compte créé mais profil non créé : ' + profileError.message); return; }
 
-    alert("✅ Compte créé et profil initialisé ! Vérifie ta boîte mail pour confirmer ton compte.");
+    alert('🟣 Compte créé ! Vérifie ta boîte mail pour confirmer.');
 });
 </script>
 
