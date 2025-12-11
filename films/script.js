@@ -6,7 +6,7 @@ const HOST_MAP = {
   "cinechicken.xyz": "cinewaffle.xyz",
   "cinecake.xyz": "cinewaffle.xyz",
   "chicken.xyz": "cinewaffle.xyz",
-  "fries.xyz": "cinewaffle.xyz"
+  "fries.xyz": "cinewaffle.xyz",
   "waffle.xyz": "cinewaffle.xyz"
 };
 
@@ -83,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
