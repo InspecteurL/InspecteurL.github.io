@@ -10,7 +10,6 @@ const HOST_MAP = {
   "waffle.xyz": "cinewaffle.xyz"
 };
 
-
 function autoReplaceDomain(raw) {
   if (!raw || typeof raw !== "string") return raw;
   try {
@@ -41,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     video.src = autoReplaceDomain(video.src);
   }
 
-  if (video) {
+  if (video && video.querySelectorAll) {
     video.querySelectorAll("source").forEach(srcEl => {
       const s = srcEl.getAttribute("src");
       if (s) srcEl.setAttribute("src", autoReplaceDomain(s));
@@ -70,11 +69,14 @@ document.addEventListener("DOMContentLoaded", () => {
 // ---------------------
 (function () {
   const oldPlayMovie = window.playMovie;
+
   window.playMovie = function (src) {
     src = autoReplaceDomain(src);
+
     if (typeof oldPlayMovie === "function") {
       return oldPlayMovie(src);
     }
+
     const video = document.getElementById("video");
     if (video) {
       video.src = src;
@@ -83,8 +85,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
-
-
-
-
-
