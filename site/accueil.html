@@ -480,11 +480,15 @@
 /* 🌌 Style général */
 body {
     font-family: 'Poppins', sans-serif;
-    background: url('https://wallpapers.com/images/hd/red-space-ga1meaa2eqq3fvpw.jpg');
+    background-image: url('https://wallpapers.com/images/hd/red-space-ga1meaa2eqq3fvpw.jpg');
+    background-repeat: no-repeat;      /* empêche la répétition */
+    background-size: cover;             /* couvre tout l’écran */
+    background-position: center center; /* centre l’image */
     overflow-x: hidden;
     margin: 0;
     padding: 0;
 }
+
 
 * {
   margin: 0;
@@ -1458,6 +1462,7 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
+
 
 
 
