@@ -61,9 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.querySelector(".vote-container")) return;
 
   const movieId = location.pathname
-    .split("/")
-    .filter(Boolean)
-    .pop()
+    .split("/").filter(Boolean).pop()
     .replace(".html", "");
 
   // ---------- CSS ----------
@@ -71,49 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const style = document.createElement("style");
     style.id = "vote-css";
     style.textContent = `
-.vote-container {
-  display: flex;
-  gap: 1rem;
-  margin-top: 20px;
-}
-.vote-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border: none;
-  background: #f4f4f4;
-  padding: 10px 18px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.vote-btn:hover {
-  background: #e9e9e9;
-  transform: translateY(-1px);
-}
-.vote-btn svg {
-  transition: fill 0.2s ease;
-}
-.vote-btn span {
-  font-weight: bold;
-  color: #333;
-  font-size: 16px;
-}
-.active-like {
-  background-color: #d6ebff !important;
-  box-shadow: 0 0 8px rgba(0, 128, 255, 0.4);
-}
-.active-like svg {
-  fill: #007bff;
-}
-.active-dislike {
-  background-color: #ffe2e2 !important;
-  box-shadow: 0 0 8px rgba(255, 80, 80, 0.4);
-}
-.active-dislike svg {
-  fill: #ff3333;
-}`;
+.vote-container { display: flex; gap: 1rem; margin-top: 20px; }
+.vote-btn { display: flex; align-items: center; gap: 8px; border: none; background: #f4f4f4; padding: 10px 18px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.vote-btn:hover { background: #e9e9e9; transform: translateY(-1px); }
+.vote-btn svg { transition: fill 0.2s ease; }
+.vote-btn span { font-weight: bold; color: #333; font-size: 16px; }
+.active-like { background-color: #d6ebff !important; box-shadow: 0 0 8px rgba(0, 128, 255, 0.4); }
+.active-like svg { fill: #007bff; }
+.active-dislike { background-color: #ffe2e2 !important; box-shadow: 0 0 8px rgba(255, 80, 80, 0.4); }
+.active-dislike svg { fill: #ff3333; }`;
     document.head.appendChild(style);
   }
 
@@ -138,14 +102,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const btnWatch = document.querySelector(".btn-watch");
   const ficheInfo = document.querySelector(".fiche-info");
-
-  if (btnWatch) {
-    btnWatch.insertAdjacentElement("afterend", voteWrapper);
-  } else if (ficheInfo) {
-    ficheInfo.appendChild(voteWrapper);
-  } else {
-    document.body.appendChild(voteWrapper);
-  }
+  if (btnWatch) btnWatch.insertAdjacentElement("afterend", voteWrapper);
+  else if (ficheInfo) ficheInfo.appendChild(voteWrapper);
+  else document.body.appendChild(voteWrapper);
 
   // ---------- Supabase ----------
   import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
@@ -162,20 +121,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let userId = null;
     let currentVote = null;
 
-    // Désactiver les boutons avant récupération user
-    likeBtn.disabled = true;
-    dislikeBtn.disabled = true;
-
     async function initUser() {
       const { data } = await supabase.auth.getUser();
       userId = data?.user?.id || null;
-
-      if (userId) {
-        likeBtn.disabled = false;
-        dislikeBtn.disabled = false;
-      }
-
-      loadVotes();
     }
 
     async function loadVotes() {
@@ -184,22 +132,27 @@ document.addEventListener("DOMContentLoaded", () => {
         .select("user_id, liked")
         .eq("movie_id", movieId);
 
-      likeCount.textContent = data?.filter(v => v.liked).length || 0;
-      dislikeCount.textContent = data?.filter(v => !v.liked).length || 0;
-
-      if (userId) {
-        const uv = data.find(v => v.user_id === userId);
-        currentVote = uv ? (uv.liked ? "like" : "dislike") : null;
-      } else {
-        currentVote = null;
+      if (!data) {
+        likeCount.textContent = 0;
+        dislikeCount.textContent = 0;
+        return;
       }
 
+      // Affiche le nombre total de votes pour tous les utilisateurs
+      likeCount.textContent = data.filter(v => v.liked).length;
+      dislikeCount.textContent = data.filter(v => !v.liked).length;
+
+      // Etat du vote de l'utilisateur actuel
+      currentVote = userId ? (data.find(v => v.user_id === userId)?.liked ? "like" : "dislike") : null;
       likeBtn.classList.toggle("active-like", currentVote === "like");
       dislikeBtn.classList.toggle("active-dislike", currentVote === "dislike");
     }
 
     async function vote(liked) {
-      if (!userId) return alert("Connecte-toi pour voter !");
+      if (!userId) {
+        alert("Connecte-toi pour voter !");
+        return;
+      }
 
       await supabase.from("movie_likes")
         .delete()
@@ -220,9 +173,11 @@ document.addEventListener("DOMContentLoaded", () => {
       loadVotes();
     }
 
+    // Gestion des clics
     likeBtn.onclick = () => vote(true);
     dislikeBtn.onclick = () => vote(false);
 
+    // Realtime updates
     supabase
       .channel("movie_likes_realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, p => {
@@ -232,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .subscribe();
 
-    initUser();
+    initUser().then(loadVotes);
   });
 });
 
