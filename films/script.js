@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.head.appendChild(style);
   }
 
-  // ---------- HTML (SVG IDENTIQUES AUX PAGES EXISTANTES) ----------
+  // ---------- HTML ----------
   const voteWrapper = document.createElement("div");
   voteWrapper.innerHTML = `
 <div class="vote-container">
@@ -130,13 +130,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   <button id="dislikeBtn" class="vote-btn">
     <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#555">
-      <path d="M240-840h440v520L400-40l-50-50q-7-7-11.5-19t-4.5-23v-14l44-174H120q-32 0-56-24t-24-56v-80q0-7 2-15t4-15l120-282q9-20 30-34t44-14Zm360 80H240L120-480v80h360l-54 220 174-174v-406Zm0 406v-406 406Zm80 34v-80h120v-360H680v-80h200v520H680Z"/>
+      <path d="M240-840h440v520L400-40l-50-50q-7-7-11.5-19t4.5-23v-14l44-174H120q-32 0-56-24t-24-56v-80q0-7 2-15t4-15l120-282q9-20 30-34t44-14Zm360 80H240L120-480v80h360l-54 220 174-174v-406Zm0 406v-406 406Zm80 34v-80h120v-360H680v-80h200v520H680Z"/>
     </svg>
     <span id="dislikeCount">0</span>
   </button>
 </div>`;
 
-  // ---------- INSERTION ----------
   const btnWatch = document.querySelector(".btn-watch");
   const ficheInfo = document.querySelector(".fiche-info");
 
@@ -148,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(voteWrapper);
   }
 
-  // ---------- Supabase (avec compteur total exact) ----------
+  // ---------- Supabase ----------
   import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     const supabase = createClient(
       "https://wuagahavmbugmnuzsouf.supabase.co",
@@ -169,34 +168,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function loadVotes() {
-      // Compteurs exacts
-      const { count: likeTotal } = await supabase
-        .from("movie_likes")
-        .select("liked", { count: "exact", head: false })
-        .eq("movie_id", movieId)
-        .eq("liked", true);
-
-      const { count: dislikeTotal } = await supabase
-        .from("movie_likes")
-        .select("liked", { count: "exact", head: false })
-        .eq("movie_id", movieId)
-        .eq("liked", false);
-
-      likeCount.textContent = likeTotal || 0;
-      dislikeCount.textContent = dislikeTotal || 0;
-
-      // Etat du vote de l'utilisateur
-      if (!userId) return;
+      // Récupérer tous les votes pour le film
       const { data } = await supabase
         .from("movie_likes")
-        .select("liked")
-        .eq("movie_id", movieId)
-        .eq("user_id", userId)
-        .limit(1)
-        .single()
-        .catch(() => ({ data: null }));
+        .select("user_id, liked")
+        .eq("movie_id", movieId);
 
-      currentVote = data ? (data.liked ? "like" : "dislike") : null;
+      if (!data) return;
+
+      likeCount.textContent = data.filter(v => v.liked).length;
+      dislikeCount.textContent = data.filter(v => !v.liked).length;
+
+      // Etat du vote de l'utilisateur
+      const uv = userId ? data.find(v => v.user_id === userId) : null;
+      currentVote = uv ? (uv.liked ? "like" : "dislike") : null;
 
       likeBtn.classList.toggle("active-like", currentVote === "like");
       dislikeBtn.classList.toggle("active-dislike", currentVote === "dislike");
