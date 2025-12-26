@@ -186,52 +186,59 @@ document.addEventListener("DOMContentLoaded", () => {
     initUser().then(loadVotes);
   });
 
-  // ---------------------
-  // Fullscreen + orientation paysage sur mobile
-  // ---------------------
-  (function() {
-    const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-    if (!isMobile) return;
+ // ---------------------
+// Fullscreen + orientation paysage sur mobile
+// ---------------------
+(function() {
+  const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+  if (!isMobile) return;
 
-    const btnWatchMobile = document.getElementById("btnWatch");
-    const backButton = document.getElementById("backButton");
+  const btnWatchMobile = document.getElementById("btnWatch");
+  const backButton = document.getElementById("backButton");
+  const videoEl = document.getElementById("video");
 
-    async function enterFullscreenLandscape() {
-      try {
-        if (video) {
-          if (video.requestFullscreen) await video.requestFullscreen();
-          else if (video.webkitRequestFullscreen) await video.webkitRequestFullscreen();
-          else if (video.msRequestFullscreen) await video.msRequestFullscreen();
+  async function enterFullscreenLandscape() {
+    if (!videoEl) return;
 
-          if (screen.orientation && screen.orientation.lock) {
-            await screen.orientation.lock('landscape');
-          }
-        }
-      } catch (err) {
-        console.warn("Impossible de passer en plein écran paysage :", err);
+    try {
+      // S'assurer que le lecteur est visible et chargé
+      videoEl.style.display = "block"; // ou flex selon ton layout
+      await videoEl.play().catch(() => {}); // déclenche l'interaction utilisateur
+
+      // Fullscreen
+      if (videoEl.requestFullscreen) await videoEl.requestFullscreen();
+      else if (videoEl.webkitRequestFullscreen) await videoEl.webkitRequestFullscreen();
+      else if (videoEl.msRequestFullscreen) await videoEl.msRequestFullscreen();
+
+      // Orientation paysage
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('landscape');
       }
+    } catch (err) {
+      console.warn("Impossible de passer en plein écran paysage :", err);
     }
+  }
 
-    async function exitFullscreenPortrait() {
-      try {
-        if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
-          if (document.exitFullscreen) await document.exitFullscreen();
-          else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
-          else if (document.msExitFullscreen) await document.msExitFullscreen();
-        }
-
-        if (screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock();
-        }
-      } catch (err) {
-        console.warn("Impossible de quitter le plein écran / orientation :", err);
+  async function exitFullscreenPortrait() {
+    try {
+      if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+        else if (document.msExitFullscreen) await document.msExitFullscreen();
       }
-    }
 
-    btnWatchMobile?.addEventListener("click", enterFullscreenLandscape);
-    backButton?.addEventListener("click", exitFullscreenPortrait);
-  })();
-});
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
+      }
+    } catch (err) {
+      console.warn("Impossible de quitter le plein écran / orientation :", err);
+    }
+  }
+
+  btnWatchMobile?.addEventListener("click", enterFullscreenLandscape);
+  backButton?.addEventListener("click", exitFullscreenPortrait);
+})();
+
 
 // ---------------------
 // Sécuriser playMovie()
@@ -248,3 +255,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
