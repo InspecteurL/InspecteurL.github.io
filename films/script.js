@@ -20,7 +20,7 @@ function autoReplaceDomain(raw) {
       return u.href;
     }
     return raw;
-  } catch (err) {
+  } catch {
     for (const from in HOST_MAP) {
       const re = new RegExp(from.replace(/\./g, "\\."), "ig");
       if (re.test(raw)) return raw.replace(re, HOST_MAP[from]);
@@ -35,96 +35,124 @@ function autoReplaceDomain(raw) {
 document.addEventListener("DOMContentLoaded", () => {
   const video = document.getElementById("video");
 
-  if (video && video.src) {
+  if (video?.src) {
     video.src = autoReplaceDomain(video.src);
   }
 
-  if (video && video.querySelectorAll) {
-    video.querySelectorAll("source").forEach(srcEl => {
-      const s = srcEl.getAttribute("src");
-      if (s) srcEl.setAttribute("src", autoReplaceDomain(s));
-    });
-  }
+  video?.querySelectorAll?.("source").forEach(srcEl => {
+    const s = srcEl.getAttribute("src");
+    if (s) srcEl.setAttribute("src", autoReplaceDomain(s));
+  });
 
   document.querySelectorAll("[data-video]").forEach(el => {
-    if (el.dataset.video) {
-      el.dataset.video = autoReplaceDomain(el.dataset.video);
-    }
+    if (el.dataset.video) el.dataset.video = autoReplaceDomain(el.dataset.video);
   });
 
   document.querySelectorAll("[data-src]").forEach(el => {
-    if (el.dataset.src) {
-      el.dataset.src = autoReplaceDomain(el.dataset.src);
-    }
+    if (el.dataset.src) el.dataset.src = autoReplaceDomain(el.dataset.src);
   });
 
   document.querySelectorAll("a[href]").forEach(a => {
     a.href = autoReplaceDomain(a.href);
   });
 
-  // =====================
-  // 🔥 SYSTÈME LIKE / DISLIKE AUTOMATIQUE (FILMS)
-  // =====================
+  // ==================================================
+  // ❤️ LIKE / DISLIKE — AUTO, SANS DOUBLON, FILMS ONLY
+  // ==================================================
+
+  // seulement dans /films/
   if (!location.pathname.includes("/films/")) return;
 
-  // --- movieId auto depuis l'URL
+  // ❌ si déjà présent, on ne touche à rien
+  if (document.querySelector(".vote-container")) return;
+
+  // movieId automatique depuis l’URL
   const movieId = location.pathname
     .split("/")
     .filter(Boolean)
     .pop()
     .replace(".html", "");
 
-  // --- Injection CSS (une seule fois)
+  // ---------- CSS EXACT ----------
   if (!document.getElementById("vote-css")) {
     const style = document.createElement("style");
     style.id = "vote-css";
     style.textContent = `
-      .vote-container {
-        display: flex;
-        gap: 1rem;
-        margin-top: 20px;
-      }
-      .vote-btn {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border: none;
-        background: #f4f4f4;
-        padding: 10px 18px;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      .vote-btn:hover {
-        background: #e9e9e9;
-        transform: translateY(-1px);
-      }
-      .vote-btn span {
-        font-weight: bold;
-        font-size: 16px;
-      }
-      .active-like {
-        background-color: #d6ebff !important;
-      }
-      .active-dislike {
-        background-color: #ffe2e2 !important;
-      }
-    `;
+.vote-container {
+  display: flex;
+  gap: 1rem;
+  margin-top: 20px;
+}
+
+.vote-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: #f4f4f4;
+  padding: 10px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.vote-btn:hover {
+  background: #e9e9e9;
+  transform: translateY(-1px);
+}
+
+.vote-btn svg {
+  transition: fill 0.2s ease;
+}
+
+.vote-btn span {
+  font-weight: bold;
+  color: #333;
+  font-size: 16px;
+}
+
+.active-like {
+  background-color: #d6ebff !important;
+  box-shadow: 0 0 8px rgba(0, 128, 255, 0.4);
+}
+
+.active-like svg {
+  fill: #007bff;
+}
+
+.active-dislike {
+  background-color: #ffe2e2 !important;
+  box-shadow: 0 0 8px rgba(255, 80, 80, 0.4);
+}
+
+.active-dislike svg {
+  fill: #ff3333;
+}`;
     document.head.appendChild(style);
   }
 
-  // --- Injection HTML
+  // ---------- HTML EXACT ----------
   const voteWrapper = document.createElement("div");
   voteWrapper.innerHTML = `
-    <div class="vote-container">
-      <button id="likeBtn" class="vote-btn">👍 <span id="likeCount">0</span></button>
-      <button id="dislikeBtn" class="vote-btn">👎 <span id="dislikeCount">0</span></button>
-    </div>
-  `;
+<div class="vote-container">
+  <button id="likeBtn" class="vote-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#555">
+      <path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/>
+    </svg>
+    <span id="likeCount">0</span>
+  </button>
+
+  <button id="dislikeBtn" class="vote-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#555">
+      <path d="M240-840h440v520L400-40l-50-50q-7-7-11.5-19t-4.5-23v-14l44-174H120q-32 0-56-24t-24-56v-80q0-7 2-15t4-15l120-282q9-20 30-34t44-14Zm360 80H240L120-480v80h360l-54 220 174-174v-406Zm0 406v-406 406Zm80 34v-80h120v-360H680v-80h200v520H680Z"/>
+    </svg>
+    <span id="dislikeCount">0</span>
+  </button>
+</div>`;
   document.body.appendChild(voteWrapper);
 
-  // --- Supabase
+  // ---------- Supabase ----------
   import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     const supabase = createClient(
       "https://wuagahavmbugmnuzsouf.supabase.co",
@@ -163,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function vote(liked) {
-      if (!userId) return alert("Connecte-toi pour voter");
+      if (!userId) return alert("Connecte-toi pour voter !");
 
       await supabase.from("movie_likes")
         .delete()
