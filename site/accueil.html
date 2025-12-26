@@ -121,16 +121,6 @@
 
 
    <section class="moviesection">
-       <h1>Classement des films les plus aimés</h1>
-<hr class="rounded">
-
-<div class="carousel">
-  <button class="carousel-btn left" onclick="scrollCarousel('top10', -1)">&#10094;</button>
-  <div class="carousel-track" id="top10"></div>
-  <button class="carousel-btn right" onclick="scrollCarousel('top10', 1)">&#10095;</button>
-</div>
-
-       
        <h1 class="line">Les Films pour Noël</h1>
        <hr class="rounded">
 
@@ -1469,87 +1459,6 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 
     </script>
-    
-<script>
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-const supabase = createClient(
-  "https://wuagahavmbugmnuzsouf.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
-);
 
-async function loadTop10Carousel() {
-  // Récupérer les 10 films les plus likés
-  const { data, error } = await supabase
-    .from("movie_likes")
-    .select("movie_id, liked")
-    .eq("liked", true);
-
-  if (error || !data) return;
-
-  const counts = {};
-  data.forEach(v => counts[v.movie_id] = (counts[v.movie_id] || 0) + 1);
-
-  const top10 = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
-
-  const container = document.getElementById("top10");
-  container.innerHTML = "";
-
-  top10.forEach(([movieId, likes], index) => {
-    // On peut récupérer l'image et le titre depuis une map côté JS ou via l'API TMDB
-    // Ici on suppose que le HTML existe dans un dossier films avec image et titre standardisé
-    const movie = {
-      title: movieId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()), // simple format
-      genre: "Inconnu",
-      url: `/films/${movieId}.html`,
-      img: `/films/${movieId}.jpg` // à adapter selon ton dossier
-    };
-
-    const div = document.createElement("div");
-    div.className = "movieimg";
-    div.dataset.title = movie.title;
-    div.dataset.genre = movie.genre;
-
-    div.innerHTML = `
-      <div class="myimages">
-        <span class="favorite-badge">⭐ ${likes}</span>
-        <a href="${movie.url}"><img src="${movie.img}" alt="${movie.title}"></a>
-      </div>
-      <h2>${movie.title}</h2>
-      <span>${movie.genre}</span>
-      <div class="rating-stars"></div>
-    `;
-    container.appendChild(div);
-  });
-}
-
-// Charger initialement
-loadTop10Carousel();
-
-// Realtime Supabase pour mettre à jour automatiquement le top 10
-supabase
-  .channel("public:movie_likes")
-  .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, payload => {
-    loadTop10Carousel();
-  })
-  .subscribe();
-
-</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
