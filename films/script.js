@@ -57,7 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==================================================
   // ❤️ LIKE / DISLIKE — INSERTION PARFAITE
   // ==================================================
-
   if (!location.pathname.includes("/films/")) return;
   if (document.querySelector(".vote-container")) return;
 
@@ -77,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
   gap: 1rem;
   margin-top: 20px;
 }
-
 .vote-btn {
   display: flex;
   align-items: center;
@@ -90,36 +88,29 @@ document.addEventListener("DOMContentLoaded", () => {
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-
 .vote-btn:hover {
   background: #e9e9e9;
   transform: translateY(-1px);
 }
-
 .vote-btn svg {
   transition: fill 0.2s ease;
 }
-
 .vote-btn span {
   font-weight: bold;
   color: #333;
   font-size: 16px;
 }
-
 .active-like {
   background-color: #d6ebff !important;
   box-shadow: 0 0 8px rgba(0, 128, 255, 0.4);
 }
-
 .active-like svg {
   fill: #007bff;
 }
-
 .active-dislike {
   background-color: #ffe2e2 !important;
   box-shadow: 0 0 8px rgba(255, 80, 80, 0.4);
 }
-
 .active-dislike svg {
   fill: #ff3333;
 }`;
@@ -139,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   <button id="dislikeBtn" class="vote-btn">
     <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#555">
-      <path d="M240-840h440v520L400-40l-50-50q-7-7-11.5-19t-4.5-23v-14l44-174H120q-32 0-56-24t-24-56v-80q0-7 2-15t4-15l120-282q9-20 30-34t44-14Zm360 80H240L120-480v80h360l-54 220 174-174v-406Zm0 406v-406 406Zm80 34v-80h120v-360H680v-80h200v520H680Z"/>
+      <path d="M240-840h440v520L400-40l-50-50q-7-7-11.5-19t4.5-23v-14l44-174H120q-32 0-56-24t-24-56v-80q0-7 2-15t4-15l120-282q9-20 30-34t44-14Zm360 80H240L120-480v80h360l-54 220 174-174v-406Zm0 406v-406 406Zm80 34v-80h120v-360H680v-80h200v520H680Z"/>
     </svg>
     <span id="dislikeCount">0</span>
   </button>
@@ -157,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(voteWrapper);
   }
 
-  // ---------- Supabase (STRICTEMENT INCHANGÉ) ----------
+  // ---------- Supabase (avec compteur total réel) ----------
   import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     const supabase = createClient(
       "https://wuagahavmbugmnuzsouf.supabase.co",
@@ -185,6 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!data) return;
 
+      // Compteur total exact
       likeCount.textContent = data.filter(v => v.liked).length;
       dislikeCount.textContent = data.filter(v => !v.liked).length;
 
