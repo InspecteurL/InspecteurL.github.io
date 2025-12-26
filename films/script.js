@@ -138,9 +138,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // Affiche le nombre total de votes pour tous les utilisateurs
       likeCount.textContent = data.filter(v => v.liked).length;
       dislikeCount.textContent = data.filter(v => !v.liked).length;
 
+      // Etat du vote de l'utilisateur actuel
       currentVote = userId ? (data.find(v => v.user_id === userId)?.liked ? "like" : "dislike") : null;
       likeBtn.classList.toggle("active-like", currentVote === "like");
       dislikeBtn.classList.toggle("active-dislike", currentVote === "dislike");
@@ -171,9 +173,11 @@ document.addEventListener("DOMContentLoaded", () => {
       loadVotes();
     }
 
+    // Gestion des clics
     likeBtn.onclick = () => vote(true);
     dislikeBtn.onclick = () => vote(false);
 
+    // Realtime updates
     supabase
       .channel("movie_likes_realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, p => {
@@ -185,63 +189,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initUser().then(loadVotes);
   });
-
- // ---------------------
-// Fullscreen + orientation paysage sur mobile
-// ---------------------
-(function() {
-  const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-  if (!isMobile) return;
-
-  const btnWatchMobile = document.getElementById("btnWatch");
-  const backButton = document.getElementById("backButton");
-  const videoEl = document.getElementById("video");
-
-  async function enterFullscreenLandscape() {
-    if (!videoEl) return;
-
-    try {
-      // S'assurer que le lecteur est visible et chargé
-      videoEl.style.display = "block"; // ou flex selon ton layout
-      await videoEl.play().catch(() => {}); // déclenche l'interaction utilisateur
-
-      // Fullscreen
-      if (videoEl.requestFullscreen) await videoEl.requestFullscreen();
-      else if (videoEl.webkitRequestFullscreen) await videoEl.webkitRequestFullscreen();
-      else if (videoEl.msRequestFullscreen) await videoEl.msRequestFullscreen();
-
-      // Orientation paysage
-      if (screen.orientation && screen.orientation.lock) {
-        await screen.orientation.lock('landscape');
-      }
-    } catch (err) {
-      console.warn("Impossible de passer en plein écran paysage :", err);
-    }
-  }
-
-  async function exitFullscreenPortrait() {
-    try {
-      if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
-        if (document.exitFullscreen) await document.exitFullscreen();
-        else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
-        else if (document.msExitFullscreen) await document.msExitFullscreen();
-      }
-
-      if (screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock();
-      }
-    } catch (err) {
-      console.warn("Impossible de quitter le plein écran / orientation :", err);
-    }
-  }
-
-  btnWatchMobile?.addEventListener("click", enterFullscreenLandscape);
-  backButton?.addEventListener("click", exitFullscreenPortrait);
-})();
-
+});
 
 // ---------------------
 // Sécuriser playMovie()
+// ---------------------
 (function () {
   const oldPlayMovie = window.playMovie;
   window.playMovie = function (src) {
@@ -255,4 +207,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
-
