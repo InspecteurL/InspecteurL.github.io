@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
   import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     const supabase = createClient(
       "https://wuagahavmbugmnuzsouf.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+      "CLE_API_SUPABASE" // <-- Remplacer par ta clé
     );
 
     const likeBtn = document.getElementById("likeBtn");
@@ -168,20 +168,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function loadVotes() {
-      // Récupérer tous les votes pour le film
+      // Récupérer tous les votes pour ce film, tous utilisateurs
       const { data } = await supabase
         .from("movie_likes")
         .select("user_id, liked")
         .eq("movie_id", movieId);
 
-      if (!data) return;
+      if (!data) {
+        likeCount.textContent = 0;
+        dislikeCount.textContent = 0;
+        return;
+      }
 
       likeCount.textContent = data.filter(v => v.liked).length;
       dislikeCount.textContent = data.filter(v => !v.liked).length;
 
-      // Etat du vote de l'utilisateur
-      const uv = userId ? data.find(v => v.user_id === userId) : null;
-      currentVote = uv ? (uv.liked ? "like" : "dislike") : null;
+      // Etat du vote pour l'utilisateur actuel
+      currentVote = userId ? data.find(v => v.user_id === userId)?.liked ? "like" : "dislike" : null;
 
       likeBtn.classList.toggle("active-like", currentVote === "like");
       dislikeBtn.classList.toggle("active-dislike", currentVote === "dislike");
@@ -210,6 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
     likeBtn.onclick = () => vote(true);
     dislikeBtn.onclick = () => vote(false);
 
+    // Realtime updates
     supabase
       .channel("movie_likes_realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, p => {
