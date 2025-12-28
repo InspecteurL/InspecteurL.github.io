@@ -474,407 +474,253 @@
 </div>
 
 <style>
-/* Import de la police */
-@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+/* ========================== */
+/*      IMPORT DE POLICE      */
+/* ========================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
-/* 🌌 Style général */
+/* ========================== */
+/*       STYLE GLOBAL         */
+/* ========================== */
 body {
+    margin: 0;
+    padding: 0;
     font-family: 'Poppins', sans-serif;
-    background-image: url('https://i.pinimg.com/736x/fc/44/60/fc44603946afb186b2901ec3c9a80ae3.jpg');
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center center;
+    background-color: #141414;
+    color: #fff;
     overflow-x: hidden;
-    margin: 0;
-    padding: 0;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Animation fade */
-@keyframes fade {
-    from { opacity: 0.4; }
-    to { opacity: 1; }
-}
-
-/* Slider */
-#slider {
-    position: relative;
-}
-
-.slides {
-    position: relative;
-    overflow: hidden;
-    animation-name: fade;
-    animation-duration: 1s;
-    display: none;
-}
-
-.slides.active {
-    display: block;
-}
-
-.slides img {
-    width: 100%;
-    height: 500px;
-    object-fit: cover;
-    display: block;
-}
-
-.slides::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0) -10%, rgba(0,0,0,0.85) 100%);
-    pointer-events: none;
-    z-index: 1;
-}
-
-/* Infos Slider */
-#slide-info {
-    position: absolute;
-    top: 50%;
-    left: 5%;
-    transform: translateY(-50%);
-    z-index: 2;
-    color: white;
-    text-align: left;
-    max-width: 45%;
-    background: rgba(0,0,0,0.65);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 0 25px black;
-}
-
-#slide-info h2 {
-    font-size: 2em;
-    margin-bottom: 25px;
-    font-weight: bold;
-}
-
-#slide-info p {
-    font-size: 1em;
-    line-height: 1.8;
-    margin-bottom: 30px;
-}
-
-#slide-button {
-    padding: 20px 40px;
-    font-size: 1.6em;
-    border-radius: 15px;
-    background: red;
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-#slide-button:hover {
-    background: darkred;
-}
-
-#dot {
-    margin: 0 auto;
-    text-align: center;
-}
-.dot {
-    display: inline-block;
-    border-radius: 50%;
-    background: #d3d3d3;
-    padding: 8px;
-    margin: 10px 5px;
-}
-.active {
-    background: black;
-}
-
-/* Responsiveness */
-@media (max-width: 567px) {
-    #slider { width: 100%; }
-}
-
-#heading {
-    display: block;
-    text-align: center;
-    font-size: 2em;
-    margin: 10px 0;
-}
-
-/* 🖼️ Image de fond */
-.image-wrapper {
-    position: relative;
-    max-height: 620px;
-    overflow: hidden;
-}
-#berserkimage {
-    width: 100%;
-    height: auto;
-    max-height: 620px;
-    object-fit: cover;
-    display: block;
-}
-.gradient-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 10;
-    pointer-events: none;
-    background-image: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 1) calc(-510px + 50vw),
-        rgba(0, 0, 0, 1) 50%,
-        transparent 100%
-    );
-    background-size: cover;
-}
-
-/* 🧭 Navigation */
-ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: transparent;
-    font-size: 1.6em;
-}
-li {
-    float: left;
-}
-li a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 20px 24px;
-    text-decoration: none;
-    transition: background 0.3s;
-}
-li a:hover {
-    background-color: red;
-    border-radius: 10px;
-}
-
-/* 🔍 Barre de recherche */
-.search-large {
-    padding: 12px 16px;
-    width: 220px;
-    font-size: 1em;
-    border-radius: 10px;
-    border: none;
-    outline: none;
-    background-color: white;
-    color: black;
-    margin: 10px 16px;
-    box-shadow: none;
-}
-
-/* 🎬 Section animes */
-hr.rounded {
-    border-top: 3px solid red;
-    border-radius: 5px;
-}
-.movieimg h2,
-.movieimg span,
-.rating-stars {
-    text-align: center;
-}
-.moviesection {
-    max-width: 1300px;
-    margin: 0 auto;
-    padding: 0 20px;
-    color: white;
-    text-transform: uppercase;
-}
-
-/* Grille de films */
-.moviecontainer {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    padding: 40px 20px;
-    max-width: 1300px;
-    margin: 0 auto;
-    justify-content: center;
-    justify-items: center;
-    pointer-events: none !important;
-}
-
-.movieimg {
-    width: 300px;
-    text-align: center;
-    color: white;
-    position: relative;
-    transition: transform 0.3s ease;
-    transform: scale(1);
-    pointer-events: auto !important;
-    will-change: transform;
-}
-.movieimg:hover { z-index: 1; }
-.movieimg:hover > .myimages {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px red;
-    border: 3px solid #0385fe;
-}
-.myimages { transition: transform 0.3s ease; }
-.movieimg .myimages {
-    width: 100%;
-    height: 450px;
-    overflow: hidden;
-    border-radius: 10px;
-    background-color: #000;
-    position: relative;
-}
-.movieimg .myimages img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
-    display: block;
-}
-.movieimg:hover .myimages img {
-    box-shadow: 0 0 20px red;
-    border: 3px solid #0385fe;
-}
-
-/* 🎨 Menu contextuel */
-.context-menu {
-    display: none;
-    position: absolute;
-    background: #fff;
-    border: 1px solid #ccc;
-    z-index: 1000;
-}
-.context-menu-item {
-    padding: 8px;
-    cursor: pointer;
-}
-.context-menu-item:hover { background: #eee; }
-
-/* 🎥 Modale vidéo */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 10;
-    left: 0;
+/* ========================== */
+/*       NAVIGATION           */
+/* ========================== */
+nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 40px;
+    background-color: rgba(20,20,20,0.85);
+    position: sticky;
     top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-    padding-top: 60px;
-}
-.modal-content {
-    background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
-    margin: 5% auto;
-    padding: 20px;
-    width: 80%;
-    text-align: center;
-    color: white;
-    border-radius: 10px;
-}
-.modal-content h1 { color: white; }
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-.close:hover, .close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-#videoPlayer {
-    width: 640px;
-    height: 360px;
-    display: block;
-    margin: 20px auto;
-}
-.controls { text-align: center; }
-select {
-    width: 200px;
-    height: 50px;
-    font-size: 16px;
+    z-index: 100;
 }
 
-/* 🧭 Carrousel */
+nav .logo {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #E50914; /* rouge Netflix */
+    cursor: pointer;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+nav ul li a:hover {
+    color: #E50914;
+}
+
+/* ========================== */
+/*        HERO / SLIDER       */
+/* ========================== */
+.hero {
+    position: relative;
+    width: 100%;
+    height: 70vh;
+    overflow: hidden;
+}
+
+.hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, #141414 10%, transparent 70%);
+}
+
+.hero-content {
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    max-width: 500px;
+    z-index: 10;
+}
+
+.hero-content h1 {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+.hero-content p {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.hero-content button {
+    padding: 12px 30px;
+    font-size: 1em;
+    background-color: #E50914;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+.hero-content button:hover {
+    background-color: #b00610;
+}
+
+/* ========================== */
+/*       CARROUSEL FILMS       */
+/* ========================== */
 .carousel {
     position: relative;
-    width: 100%;
-    max-width: 1200px;
-    margin: 20px auto;
-    overflow: hidden;
+    margin: 40px 0;
+    padding: 0 40px;
 }
+
+.carousel-title {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
 .carousel-track {
     display: flex;
     gap: 15px;
     overflow-x: auto;
     scroll-behavior: smooth;
-    scrollbar-width: none;
 }
-.carousel-track::-webkit-scrollbar { display: none; }
-.carousel-track.animate { transition: transform 0.5s cubic-bezier(.68,-0.55,.27,1.55); }
 
-.carousel-btn {
-    position: absolute;
-    top: 35%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.6);
-    color: white;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    z-index: 10;
-    transition: background 0.3s;
-}
-.carousel-btn:hover { background: red; }
-.carousel-btn.left { left: 5px; }
-.carousel-btn.right { right: 5px; }
-
-.carousel-track .movieimg {
-    flex: 0 0 220px;
-    font-size: 0.9em;
-}
-.movieimg .myimages { height: 320px; }
-.movieimg h2 { font-size: 1.1em; }
-.movieimg span { font-size: 0.9em; }
-.rating-stars { font-size: 16px; }
-
-.favorite-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 24px;
-    color: gold;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 50%;
-    padding: 4px;
+.carousel-track::-webkit-scrollbar {
     display: none;
+}
+
+.movie-card {
+    flex: 0 0 200px;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
     z-index: 2;
 }
 
-/* Responsivité */
-@media screen and (max-width: 1000px) {
-    #berserkimage { width: 100%; }
-    ul { width: 100%; }
-}
-@media screen and (max-width: 600px) {
-    .moviecontainer { grid-template-columns: 1fr; padding: 20px; }
-    .movieimg { width: 100%; max-width: 300px; }
-    .movieimg .myimages {
-        height: auto;
-        aspect-ratio: 2 / 3;
-    }
-    .movieimg .myimages img {
-        height: 100%;
-        width: 100%;
-        object-fit: cover;
-    }
+.movie-card img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
 }
 
+.movie-card .movie-info {
+    padding: 10px;
+}
+
+.movie-card .movie-info h3 {
+    font-size: 1em;
+    margin: 5px 0;
+    font-weight: 600;
+}
+
+.movie-card .movie-info span {
+    font-size: 0.85em;
+    color: #aaa;
+}
+
+/* ========================== */
+/*        MODAL VIDEO          */
+/* ========================== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    position: relative;
+    max-width: 800px;
+    width: 90%;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.modal-content video {
+    width: 100%;
+    display: block;
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.5em;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* ========================== */
+/*        FOOTER               */
+/* ========================== */
+footer {
+    padding: 30px 40px;
+    background: #141414;
+    color: #666;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+/* ========================== */
+/*        RESPONSIVE           */
+/* ========================== */
+@media screen and (max-width: 768px) {
+    nav { padding: 15px 20px; }
+    .hero-content h1 { font-size: 2em; }
+    .hero-content p { font-size: 1em; }
+    .carousel-track { gap: 10px; }
+    .movie-card { flex: 0 0 150px; }
+    .movie-card img { height: 220px; }
+}
+
+@media screen and (max-width: 480px) {
+    .hero-content { left: 20px; bottom: 30px; max-width: 80%; }
+    .hero-content h1 { font-size: 1.5em; }
+    .hero-content p { font-size: 0.9em; }
+    .movie-card { flex: 0 0 120px; }
+    .movie-card img { height: 180px; }
+}
 
 </style>
 
@@ -1406,6 +1252,7 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
+
 
 
 
