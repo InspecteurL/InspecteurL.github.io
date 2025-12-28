@@ -335,12 +335,12 @@ body {
    🎞️ CATALOGUE / CAROUSELS
    ========================================================= */
 .catalog {
-    padding: 50px;
+    padding: 40px 50px;
 }
 
 .catalog h2 {
-    font-size: 2rem;
-    margin-bottom: 20px;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
 }
 
 /* Carrousel */
@@ -353,46 +353,45 @@ body {
 
 .carousel-inner {
     display: flex;
-    gap: 20px;
+    gap: 12px; /* 🔥 espacement réduit */
 }
 
+/* Carte film */
 .movie-card {
     position: relative;
-    min-width: 150px;          /* ✅ plus petit */
-    aspect-ratio: 2 / 3;       /* format affiche cinéma */
+    min-width: 110px;        /* 🔥 taille compacte réelle */
+    aspect-ratio: 2 / 3;    /* format affiche cinéma */
     cursor: pointer;
     overflow: hidden;
-    border-radius: 8px;
-    transition: transform 0.3s ease;
+    border-radius: 6px;
+    transition: transform 0.25s ease;
 }
 
 .movie-card:hover {
-    transform: scale(1.08);
+    transform: scale(1.04); /* hover discret */
 }
 
 .movie-card img {
     width: 100%;
     height: 100%;
-    object-fit: cover;         /* coupe proprement */
+    object-fit: cover;
     display: block;
 }
-
-
 
 /* Overlay */
 .movie-card .overlay {
     position: absolute;
     inset: 0;
 
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.65);
+    border-radius: 6px;
 
     display: flex;
     justify-content: center;
     align-items: center;
 
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.25s ease;
 }
 
 .movie-card:hover .overlay {
@@ -403,9 +402,9 @@ body {
 .movie-card .overlay button {
     background: #e50914;
     border: none;
-    padding: 15px;
+    padding: 10px;
     border-radius: 50%;
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: #fff;
     cursor: pointer;
 }
@@ -413,12 +412,13 @@ body {
 /* Note */
 .movie-card .overlay .rating {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 6px;
+    right: 6px;
 
     background: #e50914;
-    padding: 5px 8px;
-    border-radius: 5px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
 }
 
 
@@ -479,6 +479,7 @@ setInterval(nextSlide, 5000); // slide automatique toutes les 5s
     </script>
 </body>
 </html>
+
 
 
 
