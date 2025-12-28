@@ -475,288 +475,461 @@
 
 <style>
 /* Import de la police */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
 
-/* 🌌 Global */
+/* 🌌 Style général */
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: #121212;
-    color: #fff;
+    background-image: url('https://i.pinimg.com/736x/fc/44/60/fc44603946afb186b2901ec3c9a80ae3.jpg');
+    background-repeat: no-repeat;      /* empêche la répétition */
+    background-size: cover;             /* couvre tout l’écran */
+    background-position: center center; /* centre l’image */
+    overflow-x: hidden;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
 }
 
-* { box-sizing: border-box; }
 
-/* 🌟 Animations */
-@keyframes fade { from {opacity:0.3;} to {opacity:1;} }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-/* 🖼️ Slider Hero */
+@keyframes fade {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
 #slider {
-    position: relative;
-    width: 100%;
-    height: 600px;
-    overflow: hidden;
+  position: relative;
 }
 
 .slides {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: none;
-    animation: fade 1s ease-in-out;
+  position: relative;
+  overflow: hidden;
+  animation-name: fade;
+  animation-duration: 1s;
+  display: none;
 }
 
 .slides.active { display: block; }
 
 .slides img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  display: block;
 }
 
 .slides::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 100%);
-    pointer-events: none;
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+    rgba(0, 0, 0, 0) -10%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
 #slide-info {
-    position: absolute;
-    bottom: 60px;
-    left: 60px;
-    max-width: 500px;
-    background: rgba(0,0,0,0.6);
-    padding: 30px;
-    border-radius: 12px;
-    z-index: 2;
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  transform: translateY(-50%);
+  z-index: 2;
+  color: white;
+  text-align: left;
+  max-width: 45%;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 25px black;
 }
 
 #slide-info h2 {
-    font-size: 2.8em;
-    margin-bottom: 15px;
-    font-weight: 800;
+  font-size: 2em;
+  margin-bottom: 25px;
+  font-weight: bold;
 }
 
 #slide-info p {
-    font-size: 1.1em;
-    line-height: 1.5;
-    margin-bottom: 20px;
+  font-size: 1em;
+  line-height: 1,8;
+  margin-bottom: 30px;
 }
 
 #slide-button {
-    background-color: #e50914;
-    color: #fff;
-    padding: 15px 35px;
-    font-size: 1.2em;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
+  padding: 20px 40px;
+  font-size: 1.6em;
+  border-radius: 15px;
+  background: red;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+#slide-button:hover { background: darkred; }
+
+img { width: 100%; }
+
+#dot { margin: 0 auto; text-align: center; }
+.dot {
+  display: inline-block;
+  border-radius: 50%;
+  background: #d3d3d3;
+  padding: 8px;
+  margin: 10px 5px;
+}
+.active { background: black; }
+
+@media (max-width:567px) {
+  #slider { width: 100%; }
 }
 
-#slide-button:hover {
-    background-color: #f6121d;
-    transform: scale(1.05);
+#heading {
+  display: block;
+  text-align: center;
+  font-size: 2em;
+  margin: 10px 0px;
 }
 
-/* 💠 Navigation */
+/* 🖼️ Image de fond */
+.image-wrapper {
+  position: relative;
+  max-height: 620px;
+  overflow: hidden;
+}
+#berserkimage {
+  width: 100%;
+  height: auto;
+  max-height: 620px;
+  object-fit: cover;
+  display: block;
+}
+.gradient-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background-image: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 1) calc(-510px + 50vw),
+    rgba(0, 0, 0, 1) 50%,
+    transparent 100%
+  );
+  background-size: cover;
+}
+
+/* 🧭 Navigation */
 ul {
-    display: flex;
-    padding: 0 20px;
-    list-style: none;
-    background-color: transparent;
-    align-items: center;
-    font-size: 1em;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: transparent;
+  font-size: 1.6em;
 }
 
-li { margin-right: 20px; }
+li {
+  float: left;
+}
 
 li a {
-    color: #fff;
-    text-decoration: none;
-    padding: 12px 16px;
-    border-radius: 5px;
-    transition: background 0.3s;
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 20px 24px;
+  text-decoration: none;
+  transition: background 0.3s;
 }
 
-li a:hover { background-color: rgba(229,9,20,0.8); }
+li a:hover {
+  background-color: red;
+  border-radius: 10px;
+}
 
-/* 🔎 Barre de recherche */
+/* 🔍 Barre de recherche intégrée */
 .search-large {
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: none;
-    font-size: 1em;
-    margin-left: auto;
-    background-color: #222;
-    color: #fff;
+  padding: 12px 16px;          /* proche du padding des liens */
+  width: 220px;                /* largeur réduite */
+  font-size: 1em;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background-color: white;     /* couleur pour contraster */
+  color: black;
+  margin: 10px 16px;           /* espace pour s’aligner verticalement */
+  box-shadow: none;            /* pas d’ombre pour mieux s’intégrer */
 }
 
-/* 🎬 Section films */
-.moviesection { max-width: 1300px; margin: 40px auto; padding: 0 20px; }
 
+/* 🎬 Section animes */
 hr.rounded {
-    border-top: 3px solid #e50914;
-    border-radius: 5px;
-    margin: 20px 0;
+  border-top: 3px solid red;
+  border-radius: 5px;
 }
 
-/* 🎨 Carrousel */
+.movieimg h2,
+.movieimg span,
+.rating-stars {
+  text-align: center;
+}
+
+.moviesection {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 20px;
+  color: white;
+  text-transform: uppercase;
+}
+
+/* Ancienne grille (remplacée par le carrousel mais gardée pour compatibilité) */
+.moviecontainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  padding: 40px 20px;
+  max-width: 1300px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  justify-content: center;
+  justify-items: center;
+  pointer-events: none !important;
+}
+
+.movieimg {
+  width: 300px;
+  text-align: center;
+  color: white;
+  position: relative;
+  transition: transform 0.3s ease;
+  transform: scale(1);
+  pointer-events: auto !important;
+  will-change: transform;
+}
+.movieimg:hover { z-index: 1; }
+.movieimg:hover > .myimages {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px red;
+  border: 3px solid #0385fe;
+}
+.myimages { transition: transform 0.3s ease; }
+.movieimg .myimages {
+  width: 100%;
+  height: 450px;
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: #000;
+  position: relative;
+}
+.movieimg .myimages img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+.movieimg:hover .myimages img {
+  box-shadow: 0 0 20px red;
+  border: 3px solid #0385fe;
+}
+
+/* 🎨 Menu contextuel */
+.context-menu {
+  display: none;
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ccc;
+  z-index: 1000;
+}
+.context-menu-item {
+  padding: 8px;
+  cursor: pointer;
+}
+.context-menu-item:hover { background: #eee; }
+
+/* 🎥 Modale vidéo */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+  padding-top: 60px;
+}
+.modal-content {
+  background: radial-gradient(circle, rgba(34,7,54,1) 0%, rgba(77,0,172,1) 100%);
+  margin: 5% auto;
+  padding: 20px;
+  width: 80%;
+  text-align: center;
+  color: white;
+  border-radius: 10px;
+}
+.modal-content h1 { color: white; }
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+.close:hover, .close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+#videoPlayer {
+  width: 640px;
+  height: 360px;
+  display: block;
+  margin: 20px auto;
+}
+.controls { text-align: center; }
+select {
+  width: 200px;
+  height: 50px;
+  font-size: 16px;
+}
+
+/* 🧭 Carrousel (version compacte + animée) */
 .carousel {
-    position: relative;
-    overflow: hidden;
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 20px auto;
+  overflow: hidden;
 }
-
 .carousel-track {
-    display: flex;
-    gap: 15px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    padding-bottom: 10px;
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
 }
-
 .carousel-track::-webkit-scrollbar { display: none; }
 
+/* ✨ Animation ajoutée */
+.carousel-track.animate {
+  transition: transform 0.5s cubic-bezier(.68,-0.55,.27,1.55); /* rebond */
+}
+
 .carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.6);
-    color: #fff;
-    border: none;
-    padding: 10px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background 0.3s;
-    z-index: 10;
+  position: absolute;
+  top: 35%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  z-index: 10;
+  transition: background 0.3s;
+}
+.carousel-btn:hover { background: red; }
+.carousel-btn.left { left: 5px; }
+.carousel-btn.right { right: 5px; }
+
+.carousel-track .movieimg {
+  flex: 0 0 220px;
+  font-size: 0.9em;
+}
+.movieimg .myimages { height: 320px; }
+.movieimg h2 { font-size: 1.1em; }
+.movieimg span { font-size: 0.9em; }
+.rating-stars { font-size: 16px; }
+
+/* Ancien carrousel type wrapper (optionnel) */
+.wrapper { display: flex; grid-gap: 1em; overflow: hidden; width: 70em; }
+.wrapper .inner {
+  display: flex;
+  grid-gap: 1em;
+  transition: all 1s ease-in-out;
+  width: calc(17.5em * 12);
+}
+.card {
+  border-radius: 0.5em;
+  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+  background-color: navy;
+  width: 17.5em;
+  height: 25em;
+  overflow: hidden;
+}
+.card img {
+  border-top-right-radius: inherit;
+  border-top-left-radius: inherit;
+  display: block;
+  width: 100%;
+  height: 75%;
+  object-fit: cover;
+}
+.card .content {
+  background-color: darkblue;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  padding: 1em;
+  text-align: center;
+  height: 25%;
+}
+.card .content h1 {
+  color: #fff;
+  font-size: 1.25rem;
+  margin: 0.35em 0;
+}
+.card .content h3 {
+  color: #ccc;
+  font-size: 0.9rem;
+  font-weight: 300;
+  margin: 0.35em 0;
 }
 
-.carousel-btn:hover { background-color: #e50914; }
-
-.carousel-btn.left { left: 10px; }
-.carousel-btn.right { right: 10px; }
-
-/* 🎥 Cartes films type Netflix */
-.movieimg {
-    position: relative;
-    width: 220px;
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+.favorite-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 24px;
+  color: gold;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  padding: 4px;
+  display: none;
+  z-index: 2;
 }
 
-.movieimg:hover { transform: scale(1.05); z-index: 2; }
-
-.movieimg .myimages {
-    width: 100%;
-    height: 320px;
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #111;
-    position: relative;
-}
-
-.movieimg .myimages img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.3s ease;
-}
-
-.movieimg:hover .myimages img { transform: scale(1.1); }
-
-.movieimg h2 {
-    font-size: 1em;
-    margin-top: 8px;
-    text-align: center;
-    font-weight: 600;
-}
-
-.movieimg span {
-    display: block;
-    font-size: 0.85em;
-    color: #aaa;
-    text-align: center;
-}
-
-/* ⭐ Badge “Nouveau / Populaire” */
-.movieimg .badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: #e50914;
-    color: #fff;
-    padding: 4px 8px;
-    font-size: 0.75em;
-    font-weight: 600;
-    border-radius: 3px;
-}
-
-/* ⭐ Étoiles de notation */
 .rating-stars {
-    text-align: center;
-    color: gold;
-    font-size: 16px;
-    margin-top: 5px;
+  margin-top: 5px;
+  font-size: 18px;
+  color: gold;
+  text-align: center;
 }
 
-/* ⚡ Modale vidéo */
-.modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0,0,0,0.8);
-    z-index: 100;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
+@media screen and (max-width: 1000px) {
+  #berserkimage { width: 100%; }
+  ul { width: 100%; }
 }
 
-.modal-content {
-    background: #181818;
-    border-radius: 10px;
-    max-width: 800px;
+@media screen and (max-width: 600px) {
+  .moviecontainer { grid-template-columns: 1fr; padding: 20px; }
+  .movieimg { width: 100%; max-width: 300px; }
+  .movieimg .myimages {
+    height: auto;
+    aspect-ratio: 2 / 3;
+  }
+  .movieimg .myimages img {
+    height: 100%;
     width: 100%;
-    padding: 20px;
-    text-align: center;
-    color: #fff;
+    object-fit: cover;
+  }
 }
 
-.close {
-    color: #fff;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close:hover { color: #e50914; }
-
-#videoPlayer {
-    width: 100%;
-    max-width: 720px;
-    height: 405px;
-    margin: 20px auto;
-}
-
-/* 📱 Responsive */
-@media (max-width: 1000px) {
-    .carousel-track .movieimg { flex: 0 0 180px; }
-    .movieimg .myimages { height: 250px; }
-}
-
-@media (max-width: 600px) {
-    .carousel-track { gap: 10px; padding-bottom: 5px; }
-    .carousel-track .movieimg { flex: 0 0 140px; }
-    .movieimg .myimages { height: 200px; }
-    #slide-info { max-width: 300px; padding: 20px; bottom: 30px; left: 20px; }
-    #slide-info h2 { font-size: 1.5em; }
-    #slide-button { font-size: 1em; padding: 10px 20px; }
-}
 
 
 </style>
@@ -1289,11 +1462,6 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
-
-
-
-
-
 
 
 
