@@ -359,24 +359,27 @@ body {
 /* Carte film */
 .movie-card {
     position: relative;
-    min-width: 110px;        /* 🔥 taille compacte réelle */
-    aspect-ratio: 2 / 3;    /* format affiche cinéma */
+    width: 100px;           /* 🔥 taille réelle contrôlée */
+    aspect-ratio: 2 / 3;
     cursor: pointer;
     overflow: hidden;
     border-radius: 6px;
     transition: transform 0.25s ease;
 }
 
+
 .movie-card:hover {
-    transform: scale(1.04); /* hover discret */
+    transform: scale(1.03); /* PAS PLUS */
 }
 
+
 .movie-card img {
-    width: 50%;
-    height: 50%;
-    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;      /* coupe sans déformer */
     display: block;
 }
+
 
 /* Overlay */
 .movie-card .overlay {
@@ -479,6 +482,7 @@ setInterval(nextSlide, 5000); // slide automatique toutes les 5s
     </script>
 </body>
 </html>
+
 
 
 
