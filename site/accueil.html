@@ -39,54 +39,76 @@
 
 <!-- HERO SLIDER -->
 <section class="hero">
-    <div class="hero-slide" style="background-image:url('https://flix0.net/assets/img/bg/slide__bg-1.jpg');">
-        <div class="hero-content">
-            <h1>Savage Beauty <span class="rating">9.8</span></h1>
-            <p>A brilliant scientist discovers a way to harness the power of the ocean's currents to create a new energy source...</p>
-            <a href="#" class="btn">Watch Now</a>
+    <div class="slides">
+        <div class="hero-slide active" style="background-image:url('https://flix0.net/assets/img/bg/slide__bg-1.jpg');">
+            <div class="hero-content">
+                <h1>Savage Beauty <span class="rating">9.8</span></h1>
+                <p>A brilliant scientist discovers a way to harness the power of the ocean's currents to create a new energy source...</p>
+                <a href="#" class="btn">Watch Now</a>
+            </div>
+        </div>
+        <div class="hero-slide" style="background-image:url('https://flix0.net/assets/img/bg/slide__bg-2.jpg');">
+            <div class="hero-content">
+                <h1>From the Other Side <span class="rating">6.9</span></h1>
+                <p>In a world where magic is outlawed, a young witch must use her powers to fight back...</p>
+                <a href="#" class="btn">Watch Now</a>
+            </div>
+        </div>
+        <div class="hero-slide" style="background-image:url('https://flix0.net/assets/img/bg/slide__bg-3.jpg');">
+            <div class="hero-content">
+                <h1>Endless Horizon <span class="rating">6.2</span></h1>
+                <p>When a renowned archaeologist goes missing, his daughter sets out on a perilous journey...</p>
+                <a href="#" class="btn">Watch Now</a>
+            </div>
         </div>
     </div>
-    <div class="hero-slide" style="background-image:url('https://flix0.net/assets/img/bg/slide__bg-2.jpg');">
-        <div class="hero-content">
-            <h1>From the Other Side <span class="rating">6.9</span></h1>
-            <p>In a world where magic is outlawed, a young witch must use her powers to fight back...</p>
-            <a href="#" class="btn">Watch Now</a>
-        </div>
-    </div>
+    <button class="prev"><i class="fas fa-chevron-left"></i></button>
+    <button class="next"><i class="fas fa-chevron-right"></i></button>
 </section>
 
-<!-- MOVIE CATALOG -->
+<!-- MOVIE CAROUSEL -->
 <section class="catalog">
     <h2>Popular Movies</h2>
-    <div class="grid">
-        <div class="movie-card">
-            <img src="https://flix0.net/assets/img/covers/cover.jpg" alt="Movie">
-            <div class="overlay">
-                <button><i class="fas fa-play"></i></button>
-                <span class="rating">8.4</span>
+    <div class="carousel">
+        <div class="carousel-inner">
+            <div class="movie-card">
+                <img src="https://flix0.net/assets/img/covers/cover.jpg" alt="Movie">
+                <div class="overlay">
+                    <button><i class="fas fa-play"></i></button>
+                    <span class="rating">8.4</span>
+                </div>
+                <h3>I Dream in Another Language</h3>
+                <p>Action, Thriller</p>
             </div>
-            <h3>I Dream in Another Language</h3>
-            <p>Action, Thriller</p>
-        </div>
-        <div class="movie-card">
-            <img src="https://flix0.net/assets/img/covers/cover2.jpg" alt="Movie">
-            <div class="overlay">
-                <button><i class="fas fa-play"></i></button>
-                <span class="rating">7.1</span>
+            <div class="movie-card">
+                <img src="https://flix0.net/assets/img/covers/cover2.jpg" alt="Movie">
+                <div class="overlay">
+                    <button><i class="fas fa-play"></i></button>
+                    <span class="rating">7.1</span>
+                </div>
+                <h3>Benched</h3>
+                <p>Comedy</p>
             </div>
-            <h3>Benched</h3>
-            <p>Comedy</p>
-        </div>
-        <div class="movie-card">
-            <img src="https://flix0.net/assets/img/covers/cover3.jpg" alt="Movie">
-            <div class="overlay">
-                <button><i class="fas fa-play"></i></button>
-                <span class="rating">6.3</span>
+            <div class="movie-card">
+                <img src="https://flix0.net/assets/img/covers/cover3.jpg" alt="Movie">
+                <div class="overlay">
+                    <button><i class="fas fa-play"></i></button>
+                    <span class="rating">6.3</span>
+                </div>
+                <h3>Whitney</h3>
+                <p>Romance, Drama</p>
             </div>
-            <h3>Whitney</h3>
-            <p>Romance, Drama</p>
+            <div class="movie-card">
+                <img src="https://flix0.net/assets/img/covers/cover4.jpg" alt="Movie">
+                <div class="overlay">
+                    <button><i class="fas fa-play"></i></button>
+                    <span class="rating">6.9</span>
+                </div>
+                <h3>Blindspotting</h3>
+                <p>Comedy, Drama</p>
+            </div>
+            <!-- Ajouter plus de films ici -->
         </div>
-        <!-- Ajoute plus de films ici -->
     </div>
 </section>
 
@@ -105,15 +127,12 @@
     </div>
 </footer>
 <style>
-    /* === GLOBAL RESET === */
+    /* === GLOBAL === */
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'Poppins', sans-serif; background:#000; color:#fff; }
+body { font-family: 'Poppins', sans-serif; background:#000; color:#fff; overflow-x:hidden; }
 
-/* === HEADER === */
-.header {
-    display:flex; justify-content:space-between; align-items:center;
-    padding:15px 50px; background:#111; position:fixed; width:100%; top:0; z-index:1000;
-}
+/* HEADER */
+.header { display:flex; justify-content:space-between; align-items:center; padding:15px 50px; background:#111; position:fixed; width:100%; top:0; z-index:1000; }
 .header .logo img { height:40px; }
 .nav ul { list-style:none; display:flex; gap:30px; }
 .nav ul li a { text-decoration:none; color:#fff; transition:0.3s; }
@@ -122,19 +141,24 @@ body { font-family: 'Poppins', sans-serif; background:#000; color:#fff; }
 .search input { padding:5px 10px; border:none; border-radius:5px; }
 .search button { background:#e50914; border:none; padding:5px 10px; color:#fff; border-radius:5px; cursor:pointer; }
 
-/* === HERO SLIDER === */
-.hero { margin-top:80px; position:relative; overflow:hidden; }
-.hero-slide { height:500px; background-size:cover; background-position:center; display:flex; align-items:flex-end; padding:50px; transition:all 0.5s ease; }
+/* HERO SLIDER */
+.hero { margin-top:80px; position:relative; overflow:hidden; height:500px; }
+.hero-slide { position:absolute; top:0; left:100%; width:100%; height:100%; background-size:cover; background-position:center; display:flex; align-items:flex-end; padding:50px; transition:0.5s; opacity:0; }
+.hero-slide.active { left:0; opacity:1; }
 .hero-content h1 { font-size:2.5rem; margin-bottom:15px; }
-.hero-content .rating { background:#e50914; padding:3px 8px; border-radius:3px; font-size:1rem; margin-left:10px; }
+.hero-content .rating { background:#e50914; padding:3px 8px; border-radius:3px; margin-left:10px; }
 .hero-content p { max-width:500px; margin-bottom:15px; }
 .hero-content .btn { background:#e50914; color:#fff; padding:10px 20px; border-radius:5px; text-decoration:none; }
+.hero button.prev, .hero button.next { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); border:none; color:#fff; padding:10px; cursor:pointer; font-size:1.5rem; border-radius:50%; }
+.hero button.prev { left:20px; }
+.hero button.next { right:20px; }
 
-/* === CATALOG === */
+/* CAROUSEL */
 .catalog { padding:50px; }
 .catalog h2 { font-size:2rem; margin-bottom:20px; }
-.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:20px; }
-.movie-card { position:relative; cursor:pointer; transition:0.3s; }
+.carousel { overflow-x:auto; overflow-y:hidden; white-space:nowrap; padding-bottom:10px; }
+.carousel-inner { display:flex; gap:20px; }
+.movie-card { display:inline-block; position:relative; min-width:200px; cursor:pointer; transition:0.3s; }
 .movie-card img { width:100%; border-radius:8px; }
 .movie-card .overlay {
     position:absolute; top:0; left:0; width:100%; height:100%;
@@ -145,7 +169,7 @@ body { font-family: 'Poppins', sans-serif; background:#000; color:#fff; }
 .movie-card .overlay button { background:#e50914; border:none; padding:15px; border-radius:50%; font-size:1.2rem; color:#fff; cursor:pointer; }
 .movie-card .overlay .rating { position:absolute; top:10px; right:10px; background:#e50914; padding:5px 8px; border-radius:5px; }
 
-/* === FOOTER === */
+/* FOOTER */
 .footer { background:#111; text-align:center; padding:30px 50px; margin-top:50px; }
 .footer-content img { height:30px; margin-bottom:10px; }
 .footer-nav { margin-top:10px; display:flex; justify-content:center; gap:20px; }
@@ -153,5 +177,24 @@ body { font-family: 'Poppins', sans-serif; background:#000; color:#fff; }
 .footer-nav a:hover { color:#fff; }
 
 </style>
+<script src="custom.js">
+    // === HERO SLIDER AUTOMATIC ===
+let slides = document.querySelectorAll('.hero-slide');
+let current = 0;
+const nextSlide = () => {
+    slides[current].classList.remove('active');
+    current = (current + 1) % slides.length;
+    slides[current].classList.add('active');
+};
+const prevSlide = () => {
+    slides[current].classList.remove('active');
+    current = (current - 1 + slides.length) % slides.length;
+    slides[current].classList.add('active');
+};
+document.querySelector('.hero .next').addEventListener('click', nextSlide);
+document.querySelector('.hero .prev').addEventListener('click', prevSlide);
+setInterval(nextSlide, 5000); // slide automatique toutes les 5s
+
+</script>
 </body>
 </html>
