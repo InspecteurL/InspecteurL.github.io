@@ -411,7 +411,6 @@ body {
     z-index: 2;
 }
 
-/* Texte h3 + p en bas */
 .movie-card h3 {
     position: absolute;
     left: 8px;
@@ -422,6 +421,12 @@ body {
     z-index: 2;
     text-shadow: 0 2px 5px rgba(0,0,0,0.7);
     font-size: 1rem;
+
+    display: -webkit-box;        /* ✅ permet de gérer le nombre de lignes */
+    -webkit-line-clamp: 2;       /* affiche max 2 lignes, coupe le reste */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;     /* ajoute "..." si le texte est trop long */
 }
 
 .movie-card p {
@@ -434,7 +439,14 @@ body {
     color: #ccc;
     z-index: 2;
     text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+
+    display: -webkit-box;
+    -webkit-line-clamp: 1;       /* max 1 ligne pour le genre */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
 
 
 /* Note */
@@ -507,6 +519,7 @@ setInterval(nextSlide, 5000); // slide automatique toutes les 5s
     </script>
 </body>
 </html>
+
 
 
 
