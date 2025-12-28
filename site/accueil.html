@@ -388,9 +388,29 @@ body {
     margin-bottom: 15px;
 }
 
+/* Container carousel */
 .carousel {
     position: relative;
-    padding: 0 60px; /* espace pour les flèches */
+    overflow: hidden; /* cache la scrollbar */
+}
+
+/* Inner carousel */
+.carousel-inner {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+
+    -ms-overflow-style: none;  
+    scrollbar-width: none;     
+}
+.carousel-inner::-webkit-scrollbar {
+    display: none;
+}
+
+/* Positionnement du carousel pour les flèches */
+.carousel {
+    position: relative;
 }
 
 /* Flèches */
@@ -433,7 +453,6 @@ body {
         display: none;
     }
 }
-
 
 
 
@@ -622,7 +641,5 @@ carousels.forEach(carousel => {
     </script>
 </body>
 </html>
-
-
 
 
