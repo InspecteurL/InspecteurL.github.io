@@ -388,40 +388,20 @@ body {
     margin-bottom: 15px;
 }
 
-/* Container carousel */
 .carousel {
     position: relative;
-    overflow: hidden; /* cache la scrollbar */
+    padding: 0 60px; /* espace pour les flèches */
 }
 
-/* Inner carousel */
-.carousel-inner {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-
-    -ms-overflow-style: none;  
-    scrollbar-width: none;     
-}
-.carousel-inner::-webkit-scrollbar {
-    display: none;
-}
-
-/* Positionnement du carousel pour les flèches */
-.carousel {
-    position: relative;
-}
-
-/* Flèches style Netflix */
+/* Flèches */
 .carousel-arrow {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0,0,0,0.6); /* semi-transparent */
+    background: rgba(0,0,0,0.6);
     border: none;
     color: #fff;
-    font-size: 2rem; /* plus grandes */
+    font-size: 2rem;
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -434,27 +414,26 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Hover plus visible */
 .carousel-arrow:hover {
     background: rgba(0,0,0,0.8);
     transform: translateY(-50%) scale(1.1);
 }
 
-/* Décalage complet à l'extérieur */
 .carousel-arrow.left {
-    left: -60px; /* complètement à gauche des cartes */
+    left: 10px; /* juste un peu à gauche du carousel */
 }
 
 .carousel-arrow.right {
-    right: -60px; /* complètement à droite des cartes */
+    right: 10px; /* juste un peu à droite du carousel */
 }
 
-/* Optionnel : cacher sur mobile */
+/* Masquer sur mobile */
 @media (max-width: 768px) {
     .carousel-arrow {
         display: none;
     }
 }
+
 
 
 
@@ -643,6 +622,7 @@ carousels.forEach(carousel => {
     </script>
 </body>
 </html>
+
 
 
 
