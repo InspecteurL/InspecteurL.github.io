@@ -1,160 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-    <!-- CSS principaux -->
-    <link rel="stylesheet" href="https://flix0.net/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://flix0.net/assets/css/splide.min.css">
-    <link rel="stylesheet" href="https://flix0.net/assets/css/slimselect.css">
-    <link rel="stylesheet" href="https://flix0.net/assets/css/plyr.css">
-    <link rel="stylesheet" href="https://flix0.net/assets/css/photoswipe.css">
-    <link rel="stylesheet" href="https://flix0.net/assets/css/default-skin.css">
-    <link rel="stylesheet" href="https://flix0.net/assets/css/main.css">
-    <link rel="stylesheet" href="assets/css/custom.css"> <!-- ton CSS personnalisé -->
-    
-    <link rel="stylesheet" href="https://flix0.net/assets/webfont/tabler-icons.min.css">
-    <link rel="icon" type="image/png" href="https://flix0.net/assets/icon/favicon.webp" sizes="32x32">
-    <title>HotFlix – Online Movies</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HotFlix - Streaming Movies</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- CSS -->
+<link rel="stylesheet" href="custom.css">
 </head>
 <body>
 
 <!-- HEADER -->
 <header class="header">
     <div class="container">
-        <div class="header__content">
-            <a href="/" class="header__logo">
-                <img src="https://flix0.net/assets/img/flix-zero.webp" alt="Logo">
-            </a>
-            <nav class="header__nav">
-                <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/movies.html">Movies</a></li>
-                    <li><a href="/series.html">Series</a></li>
-                    <li><a href="/about.html">About</a></li>
-                </ul>
-            </nav>
-            <div class="header__search-wrapper">
-                <form class="header__search">
-                    <input type="text" placeholder="Search...">
-                    <button type="submit"><i class="ti ti-search"></i></button>
-                </form>
-            </div>
-            <button class="header__menu-toggle"><span></span><span></span><span></span></button>
+        <div class="logo">
+            <a href="#"><img src="https://flix0.net/assets/img/flix-zero.webp" alt="HotFlix Logo"></a>
+        </div>
+        <nav class="nav">
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Movies</a></li>
+                <li><a href="#">Series</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </nav>
+        <div class="search">
+            <input type="text" placeholder="Search...">
+            <button><i class="fas fa-search"></i></button>
         </div>
     </div>
 </header>
 
-<!-- HERO / SLIDER -->
-<section class="home home--hero">
-    <div class="container">
-        <div class="hero splide splide--hero">
-            <div class="splide__arrows">
-                <button class="splide__arrow splide__arrow--prev"><i class="ti ti-chevron-left"></i></button>
-                <button class="splide__arrow splide__arrow--next"><i class="ti ti-chevron-right"></i></button>
-            </div>
-            <div class="splide__track">
-                <ul class="splide__list">
-                    <!-- Exemple de slide -->
-                    <li class="splide__slide">
-                        <div class="hero__slide" data-bg="https://flix0.net/assets/img/bg/slide__bg-1.jpg">
-                            <div class="hero__content">
-                                <h2 class="hero__title">Savage Beauty <sub class="green">9.8</sub></h2>
-                                <p class="hero__text">Une brillante scientifique...</p>
-                                <p class="hero__category">
-                                    <a href="#">Action</a>
-                                    <a href="#">Drama</a>
-                                </p>
-                                <a href="details.html" class="hero__btn">Watch now</a>
-                            </div>
-                        </div>
-                    </li>
-                    <!-- Ajoute tes autres slides ici -->
-                </ul>
-            </div>
+<!-- HERO SLIDER -->
+<section class="hero">
+    <div class="hero-slide" style="background-image:url('https://flix0.net/assets/img/bg/slide__bg-1.jpg');">
+        <div class="hero-content">
+            <h1>Savage Beauty <span class="rating">9.8</span></h1>
+            <p>A brilliant scientist discovers a way to harness the power of the ocean's currents to create a new energy source...</p>
+            <a href="#" class="btn">Watch Now</a>
+        </div>
+    </div>
+    <div class="hero-slide" style="background-image:url('https://flix0.net/assets/img/bg/slide__bg-2.jpg');">
+        <div class="hero-content">
+            <h1>From the Other Side <span class="rating">6.9</span></h1>
+            <p>In a world where magic is outlawed, a young witch must use her powers to fight back...</p>
+            <a href="#" class="btn">Watch Now</a>
         </div>
     </div>
 </section>
 
-<!-- CATALOGUE -->
-<section class="section section--catalog">
-    <div class="container">
-        <div class="row">
-            <!-- Exemple de film -->
-            <div class="col-6 col-sm-4 col-lg-3 col-xl-2">
-                <div class="item">
-                    <div class="item__cover">
-                        <img src="https://flix0.net/assets/img/covers/cover.jpg" alt="Movie Cover">
-                        <a href="details.html" class="item__play"><i class="ti ti-player-play-filled"></i></a>
-                        <span class="item__rate item__rate--green">8.4</span>
-                    </div>
-                    <div class="item__content">
-                        <h3 class="item__title"><a href="details.html">I Dream in Another Language</a></h3>
-                        <span class="item__category"><a href="#">Action</a><a href="#">Triler</a></span>
-                    </div>
-                </div>
+<!-- MOVIE CATALOG -->
+<section class="catalog">
+    <h2>Popular Movies</h2>
+    <div class="grid">
+        <div class="movie-card">
+            <img src="https://flix0.net/assets/img/covers/cover.jpg" alt="Movie">
+            <div class="overlay">
+                <button><i class="fas fa-play"></i></button>
+                <span class="rating">8.4</span>
             </div>
-            <!-- Répète pour chaque film -->
+            <h3>I Dream in Another Language</h3>
+            <p>Action, Thriller</p>
         </div>
+        <div class="movie-card">
+            <img src="https://flix0.net/assets/img/covers/cover2.jpg" alt="Movie">
+            <div class="overlay">
+                <button><i class="fas fa-play"></i></button>
+                <span class="rating">7.1</span>
+            </div>
+            <h3>Benched</h3>
+            <p>Comedy</p>
+        </div>
+        <div class="movie-card">
+            <img src="https://flix0.net/assets/img/covers/cover3.jpg" alt="Movie">
+            <div class="overlay">
+                <button><i class="fas fa-play"></i></button>
+                <span class="rating">6.3</span>
+            </div>
+            <h3>Whitney</h3>
+            <p>Romance, Drama</p>
+        </div>
+        <!-- Ajoute plus de films ici -->
     </div>
 </section>
 
 <!-- FOOTER -->
 <footer class="footer">
     <div class="container">
-        <div class="footer__content">
-            <a href="/" class="footer__logo"><img src="https://flix0.net/assets/img/logo.svg" alt="Logo"></a>
-            <span>© HotFlix, 2019—2025</span>
-            <nav class="footer__nav">
-                <a href="/about.html">About Us</a>
-                <a href="/contacts.html">Contacts</a>
-                <a href="/privacy.html">Privacy policy</a>
-            </nav>
-            <button class="footer__back"><i class="ti ti-arrow-narrow-up"></i></button>
+        <div class="footer-content">
+            <img src="https://flix0.net/assets/img/logo.svg" alt="HotFlix Logo">
+            <p>© HotFlix, 2019—2025</p>
+            <div class="footer-nav">
+                <a href="#">About Us</a>
+                <a href="#">Contacts</a>
+                <a href="#">Privacy Policy</a>
+            </div>
         </div>
     </div>
 </footer>
-  <style>
-/* === RESET / GLOBAL === */
+<style>
+    /* === GLOBAL RESET === */
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: 'Poppins', sans-serif; background:#000; color:#fff; }
 
 /* === HEADER === */
-.header { background:#111; position:fixed; width:100%; z-index:100; }
-.header__nav ul { display:flex; gap:20px; }
-.header__nav a { color:#fff; text-decoration:none; transition:0.3s; }
-.header__nav a:hover { color:#e50914; }
+.header {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:15px 50px; background:#111; position:fixed; width:100%; top:0; z-index:1000;
+}
+.header .logo img { height:40px; }
+.nav ul { list-style:none; display:flex; gap:30px; }
+.nav ul li a { text-decoration:none; color:#fff; transition:0.3s; }
+.nav ul li a:hover { color:#e50914; }
+.search { display:flex; gap:5px; }
+.search input { padding:5px 10px; border:none; border-radius:5px; }
+.search button { background:#e50914; border:none; padding:5px 10px; color:#fff; border-radius:5px; cursor:pointer; }
 
-/* === HERO / SLIDER === */
-.hero__slide { position:relative; height:500px; }
-.hero__content { position:absolute; bottom:50px; left:50px; max-width:500px; }
-.hero__btn { background:#e50914; color:#fff; padding:10px 20px; border-radius:5px; }
+/* === HERO SLIDER === */
+.hero { margin-top:80px; position:relative; overflow:hidden; }
+.hero-slide { height:500px; background-size:cover; background-position:center; display:flex; align-items:flex-end; padding:50px; transition:all 0.5s ease; }
+.hero-content h1 { font-size:2.5rem; margin-bottom:15px; }
+.hero-content .rating { background:#e50914; padding:3px 8px; border-radius:3px; font-size:1rem; margin-left:10px; }
+.hero-content p { max-width:500px; margin-bottom:15px; }
+.hero-content .btn { background:#e50914; color:#fff; padding:10px 20px; border-radius:5px; text-decoration:none; }
 
-/* === CATALOG / MOVIES === */
-.item__cover { position:relative; }
-.item__play { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
-.item__rate--green { background:#e50914; padding:2px 6px; border-radius:3px; }
+/* === CATALOG === */
+.catalog { padding:50px; }
+.catalog h2 { font-size:2rem; margin-bottom:20px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:20px; }
+.movie-card { position:relative; cursor:pointer; transition:0.3s; }
+.movie-card img { width:100%; border-radius:8px; }
+.movie-card .overlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; opacity:0; transition:0.3s;
+    border-radius:8px;
+}
+.movie-card:hover .overlay { opacity:1; }
+.movie-card .overlay button { background:#e50914; border:none; padding:15px; border-radius:50%; font-size:1.2rem; color:#fff; cursor:pointer; }
+.movie-card .overlay .rating { position:absolute; top:10px; right:10px; background:#e50914; padding:5px 8px; border-radius:5px; }
 
 /* === FOOTER === */
-.footer { background:#111; color:#888; padding:30px 0; text-align:center; }
-.footer__nav a { color:#888; margin:0 10px; }
-.footer__nav a:hover { color:#fff; }
+.footer { background:#111; text-align:center; padding:30px 50px; margin-top:50px; }
+.footer-content img { height:30px; margin-bottom:10px; }
+.footer-nav { margin-top:10px; display:flex; justify-content:center; gap:20px; }
+.footer-nav a { color:#888; text-decoration:none; transition:0.3s; }
+.footer-nav a:hover { color:#fff; }
 
-/* === RESPONSIVE === */
-@media(max-width:768px){
-  .hero__content { max-width:90%; left:20px; bottom:30px; }
-  .header__nav ul { flex-direction:column; }
-}
 </style>
-<!-- JS -->
-<script src="https://flix0.net/assets/js/bootstrap.bundle.min.js"></script>
-<script src="https://flix0.net/assets/js/splide.min.js"></script>
-<script src="https://flix0.net/assets/js/slimselect.min.js"></script>
-<script src="https://flix0.net/assets/js/smooth-scrollbar.js"></script>
-<script src="https://flix0.net/assets/js/plyr.min.js"></script>
-<script src="https://flix0.net/assets/js/photoswipe.min.js"></script>
-<script src="https://flix0.net/assets/js/photoswipe-ui-default.min.js"></script>
-<script src="https://flix0.net/assets/js/main.js"></script>
 </body>
 </html>
