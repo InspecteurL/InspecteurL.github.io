@@ -334,7 +334,6 @@ body {
 /* =========================================================
    🎞️ CATALOGUE / CAROUSELS
    ========================================================= */
-
 .catalog {
     padding: 40px 50px;
 }
@@ -344,10 +343,7 @@ body {
     margin-bottom: 15px;
 }
 
-/* =========================================================
-   🎠 CAROUSEL
-   ========================================================= */
-
+/* Carrousel */
 .carousel {
     overflow-x: auto;
     overflow-y: hidden;
@@ -360,14 +356,11 @@ body {
     gap: 12px;
 }
 
-/* =========================================================
-   🎬 MOVIE CARD
-   ========================================================= */
-
+/* Carte film */
 .movie-card {
     position: relative;
-    width: 250px;               /* ✅ taille finale maîtrisée */
-    aspect-ratio: 2 / 3;        /* format affiche */
+    width: 250px;
+    aspect-ratio: 2 / 3;
     cursor: pointer;
     overflow: hidden;
     border-radius: 6px;
@@ -375,35 +368,22 @@ body {
 }
 
 .movie-card:hover {
-    transform: scale(1.04);
+    transform: scale(1.03);
 }
 
-/* Image */
 .movie-card img {
     width: 100%;
     height: 100%;
-    object-fit: cover;          /* 🔥 JAMAIS déformée */
+    object-fit: cover;
     display: block;
 }
 
+/* Overlay bouton + dégradé pour texte */
 .movie-card .overlay {
     position: absolute;
     inset: 0;
-
-    background: linear-gradient(
-        to top,
-        rgba(0,0,0,0.9) 0%,
-        rgba(0,0,0,0.6) 40%,
-        rgba(0,0,0,0.2) 70%,
-        rgba(0,0,0,0) 100%
-    );
-
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%);
     border-radius: 6px;
-    padding: 10px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end; /* ✅ texte en bas */
     opacity: 0;
     transition: opacity 0.25s ease;
 }
@@ -412,21 +392,7 @@ body {
     opacity: 1;
 }
 
-/* TEXTE */
-.movie-card .overlay h3 {
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin: 0 0 2px 0;
-    color: #fff;
-}
-
-.movie-card .overlay p {
-    font-size: 0.7rem;
-    color: #ccc;
-    margin: 0 0 5px 0;
-}
-
-/* BOUTON PLAY */
+/* Bouton play centré */
 .movie-card .overlay button {
     position: absolute;
     top: 50%;
@@ -439,18 +405,38 @@ body {
     font-size: 1rem;
     color: #fff;
     cursor: pointer;
+    z-index: 2;
 }
 
-/* NOTE */
-.movie-card .overlay .rating {
+/* Texte h3 + p en bas */
+.movie-card h3,
+.movie-card p {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    margin: 0;
+    color: #fff;
+    z-index: 2;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.7);
+}
+
+.movie-card p {
+    font-size: 0.75rem;
+    color: #ccc;
+    bottom: 2px; /* légèrement sous le titre */
+}
+
+/* Note */
+.movie-card .rating {
     position: absolute;
     top: 6px;
     right: 6px;
     background: #e50914;
-    color: white;
     padding: 3px 6px;
     border-radius: 4px;
     font-size: 0.75rem;
+    z-index: 2;
 }
 
 
@@ -510,6 +496,7 @@ setInterval(nextSlide, 5000); // slide automatique toutes les 5s
     </script>
 </body>
 </html>
+
 
 
 
