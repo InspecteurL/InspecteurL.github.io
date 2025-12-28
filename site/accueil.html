@@ -334,6 +334,7 @@ body {
 /* =========================================================
    🎞️ CATALOGUE / CAROUSELS
    ========================================================= */
+
 .catalog {
     padding: 40px 50px;
 }
@@ -343,7 +344,10 @@ body {
     margin-bottom: 15px;
 }
 
-/* Carrousel */
+/* =========================================================
+   🎠 CAROUSEL
+   ========================================================= */
+
 .carousel {
     overflow-x: auto;
     overflow-y: hidden;
@@ -353,45 +357,57 @@ body {
 
 .carousel-inner {
     display: flex;
-    gap: 12px; /* 🔥 espacement réduit */
+    gap: 12px;
 }
 
-/* Carte film */
+/* =========================================================
+   🎬 MOVIE CARD
+   ========================================================= */
+
 .movie-card {
     position: relative;
-    width: 250px;           /* 🔥 taille réelle contrôlée */
-    aspect-ratio: 2 / 3;
+    width: 180px;               /* ✅ taille finale maîtrisée */
+    aspect-ratio: 2 / 3;        /* format affiche */
     cursor: pointer;
     overflow: hidden;
     border-radius: 6px;
     transition: transform 0.25s ease;
 }
 
-
 .movie-card:hover {
-    transform: scale(1.03); /* PAS PLUS */
+    transform: scale(1.04);
 }
 
-
+/* Image */
 .movie-card img {
     width: 100%;
     height: 100%;
-    object-fit: cover;      /* coupe sans déformer */
+    object-fit: cover;          /* 🔥 JAMAIS déformée */
     display: block;
 }
 
+/* =========================================================
+   🌑 OVERLAY
+   ========================================================= */
 
-/* Overlay */
 .movie-card .overlay {
     position: absolute;
     inset: 0;
 
-    background: rgba(0, 0, 0, 0.65);
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.9) 0%,
+        rgba(0, 0, 0, 0.6) 40%,
+        rgba(0, 0, 0, 0.2) 70%,
+        rgba(0, 0, 0, 0) 100%
+    );
+
     border-radius: 6px;
+    padding: 10px;
 
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
 
     opacity: 0;
     transition: opacity 0.25s ease;
@@ -401,8 +417,14 @@ body {
     opacity: 1;
 }
 
-/* Bouton play */
+/* =========================================================
+   ▶ PLAY BUTTON
+   ========================================================= */
+
 .movie-card .overlay button {
+    align-self: center;
+    margin: auto;
+
     background: #e50914;
     border: none;
     padding: 10px;
@@ -412,11 +434,12 @@ body {
     cursor: pointer;
 }
 
-/* Note */
+/* =========================================================
+   ⭐ RATING
+   ========================================================= */
+
 .movie-card .overlay .rating {
-    position: absolute;
-    top: 6px;
-    right: 6px;
+    align-self: flex-end;
 
     background: #e50914;
     padding: 3px 6px;
@@ -424,6 +447,21 @@ body {
     font-size: 0.75rem;
 }
 
+/* =========================================================
+   📝 TEXT (TITLE + GENRES)
+   ========================================================= */
+
+.movie-card .overlay h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.movie-card .overlay p {
+    font-size: 0.7rem;
+    color: #ccc;
+    margin-top: 2px;
+}
 
 
 /* =========================================================
@@ -482,6 +520,7 @@ setInterval(nextSlide, 5000); // slide automatique toutes les 5s
     </script>
 </body>
 </html>
+
 
 
 
