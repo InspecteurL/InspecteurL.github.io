@@ -192,63 +192,77 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ---------------------
-// Bouton "Lire le film" → Plein écran + fondu
+// BTN WATCH → animation cinéma + clic fullscreen du lecteur
 // ---------------------
 document.addEventListener("DOMContentLoaded", () => {
   const btnWatch = document.getElementById("btnWatch");
-  const video = document.getElementById("video");
+  const fullscreenBtn = document.getElementById("fullscreen");
+  const videoContainer = document.getElementById("videoContainer");
 
-  if (!btnWatch || !video) return;
+  if (!btnWatch || !fullscreenBtn || !videoContainer) return;
 
-  // CSS fondu (injecté une seule fois)
-  if (!document.getElementById("fade-css")) {
+  // ===== CSS CINÉMA =====
+  if (!document.getElementById("cinema-css")) {
     const style = document.createElement("style");
-    style.id = "fade-css";
+    style.id = "cinema-css";
     style.textContent = `
-      .fade-overlay {
+      .cinema-overlay {
         position: fixed;
         inset: 0;
-        background: black;
+        background: radial-gradient(circle at center, #111 0%, #000 70%);
         opacity: 0;
         pointer-events: none;
+        z-index: 99999;
         transition: opacity 0.6s ease;
-        z-index: 9999;
       }
-      .fade-overlay.active {
+
+      .cinema-overlay.active {
         opacity: 1;
+      }
+
+      .cinema-zoom {
+        animation: cinemaZoom 0.8s cubic-bezier(.25,.8,.25,1) forwards;
+      }
+
+      @keyframes cinemaZoom {
+        from {
+          transform: scale(0.92);
+          filter: blur(6px);
+        }
+        to {
+          transform: scale(1);
+          filter: blur(0);
+        }
       }
     `;
     document.head.appendChild(style);
   }
 
-  // Overlay
+  // ===== Overlay =====
   const overlay = document.createElement("div");
-  overlay.className = "fade-overlay";
+  overlay.className = "cinema-overlay";
   document.body.appendChild(overlay);
 
-  btnWatch.addEventListener("click", async () => {
+  btnWatch.addEventListener("click", () => {
+    // fondu cinéma
     overlay.classList.add("active");
 
-    // attendre le fondu
-    setTimeout(async () => {
-      // Plein écran (cross-browser)
-      if (video.requestFullscreen) {
-        await video.requestFullscreen();
-      } else if (video.webkitRequestFullscreen) {
-        video.webkitRequestFullscreen();
-      } else if (video.msRequestFullscreen) {
-        video.msRequestFullscreen();
-      }
+    // zoom stylé du lecteur
+    videoContainer.classList.add("cinema-zoom");
 
-      video.play().catch(() => {});
+    // timing synchro
+    setTimeout(() => {
+      // 🔥 SIMULATION DU CLIC FULLSCREEN DU LECTEUR
+      fullscreenBtn.click();
 
-      // retirer le fondu
+      // retirer l'overlay
       setTimeout(() => {
         overlay.classList.remove("active");
       }, 200);
     }, 600);
   });
 });
+
 
 
 // ---------------------
@@ -267,4 +281,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
