@@ -477,7 +477,7 @@
 /* Import de la police */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
 
-/* 🌌 Style général */
+/* 🌌 Global */
 body {
     font-family: 'Poppins', sans-serif;
     background-color: #121212;
@@ -487,11 +487,12 @@ body {
     overflow-x: hidden;
 }
 
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
-/* 🌟 Slider/Hero */
+/* 🌟 Animations */
+@keyframes fade { from {opacity:0.3;} to {opacity:1;} }
+
+/* 🖼️ Slider Hero */
 #slider {
     position: relative;
     width: 100%;
@@ -525,9 +526,9 @@ body {
 
 #slide-info {
     position: absolute;
-    bottom: 50px;
-    left: 50px;
-    max-width: 450px;
+    bottom: 60px;
+    left: 60px;
+    max-width: 500px;
     background: rgba(0,0,0,0.6);
     padding: 30px;
     border-radius: 12px;
@@ -535,7 +536,7 @@ body {
 }
 
 #slide-info h2 {
-    font-size: 2.5em;
+    font-size: 2.8em;
     margin-bottom: 15px;
     font-weight: 800;
 }
@@ -554,10 +555,13 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: background 0.3s, transform 0.2s;
 }
 
-#slide-button:hover { background-color: #f6121d; }
+#slide-button:hover {
+    background-color: #f6121d;
+    transform: scale(1.05);
+}
 
 /* 💠 Navigation */
 ul {
@@ -569,9 +573,7 @@ ul {
     font-size: 1em;
 }
 
-li {
-    margin-right: 20px;
-}
+li { margin-right: 20px; }
 
 li a {
     color: #fff;
@@ -581,9 +583,7 @@ li a {
     transition: background 0.3s;
 }
 
-li a:hover {
-    background-color: rgba(229, 9, 20, 0.8);
-}
+li a:hover { background-color: rgba(229,9,20,0.8); }
 
 /* 🔎 Barre de recherche */
 .search-large {
@@ -597,11 +597,7 @@ li a:hover {
 }
 
 /* 🎬 Section films */
-.moviesection {
-    max-width: 1300px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
+.moviesection { max-width: 1300px; margin: 40px auto; padding: 0 20px; }
 
 hr.rounded {
     border-top: 3px solid #e50914;
@@ -644,7 +640,7 @@ hr.rounded {
 .carousel-btn.left { left: 10px; }
 .carousel-btn.right { right: 10px; }
 
-/* 🎥 Cartes films */
+/* 🎥 Cartes films type Netflix */
 .movieimg {
     position: relative;
     width: 220px;
@@ -652,10 +648,7 @@ hr.rounded {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.movieimg:hover {
-    transform: scale(1.05);
-    z-index: 2;
-}
+.movieimg:hover { transform: scale(1.05); z-index: 2; }
 
 .movieimg .myimages {
     width: 100%;
@@ -663,6 +656,7 @@ hr.rounded {
     border-radius: 8px;
     overflow: hidden;
     background-color: #111;
+    position: relative;
 }
 
 .movieimg .myimages img {
@@ -673,14 +667,13 @@ hr.rounded {
     transition: transform 0.3s ease;
 }
 
-.movieimg:hover .myimages img {
-    transform: scale(1.1);
-}
+.movieimg:hover .myimages img { transform: scale(1.1); }
 
 .movieimg h2 {
     font-size: 1em;
     margin-top: 8px;
     text-align: center;
+    font-weight: 600;
 }
 
 .movieimg span {
@@ -690,11 +683,25 @@ hr.rounded {
     text-align: center;
 }
 
+/* ⭐ Badge “Nouveau / Populaire” */
+.movieimg .badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #e50914;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 0.75em;
+    font-weight: 600;
+    border-radius: 3px;
+}
+
 /* ⭐ Étoiles de notation */
 .rating-stars {
     text-align: center;
     color: gold;
     font-size: 16px;
+    margin-top: 5px;
 }
 
 /* ⚡ Modale vidéo */
@@ -746,10 +753,11 @@ hr.rounded {
     .carousel-track { gap: 10px; padding-bottom: 5px; }
     .carousel-track .movieimg { flex: 0 0 140px; }
     .movieimg .myimages { height: 200px; }
-    #slide-info { max-width: 300px; padding: 20px; }
+    #slide-info { max-width: 300px; padding: 20px; bottom: 30px; left: 20px; }
     #slide-info h2 { font-size: 1.5em; }
     #slide-button { font-size: 1em; padding: 10px 20px; }
 }
+
 
 </style>
 
@@ -1281,6 +1289,7 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
+
 
 
 
