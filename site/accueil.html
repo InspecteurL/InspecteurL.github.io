@@ -409,22 +409,47 @@ body {
     display: none;
 }
 
-/* Flèches simples */
+/* Flèches du carousel */
+.carousel {
+    position: relative; /* nécessaire pour positionner les flèches */
+}
+
 .carousel-arrow {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.5); /* semi-transparent */
     border: none;
     color: #fff;
     font-size: 1.5rem;
-    padding: 10px;
+    padding: 12px;
     border-radius: 50%;
     cursor: pointer;
     z-index: 10;
+    transition: background 0.3s, transform 0.2s;
 }
-.carousel-arrow.left { left: 10px; }
-.carousel-arrow.right { right: 10px; }
+
+.carousel-arrow:hover {
+    background: rgba(0,0,0,0.8);
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Position gauche et droite */
+.carousel-arrow.left {
+    left: -25px; /* à l'extérieur du carousel */
+}
+
+.carousel-arrow.right {
+    right: -25px; /* à l'extérieur du carousel */
+}
+
+/* Masquer les flèches sur mobile si besoin */
+@media (max-width: 768px) {
+    .carousel-arrow {
+        display: none;
+    }
+}
+
 
 
 /* Chaque carte */
@@ -612,3 +637,4 @@ carousels.forEach(carousel => {
     </script>
 </body>
 </html>
+
