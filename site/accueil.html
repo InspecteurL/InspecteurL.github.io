@@ -386,28 +386,43 @@ body {
     margin-bottom: 15px;
 }
 
-/* Carrousel sans scrollbar */
+/* Container carousel */
 .carousel {
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    padding-bottom: 10px;
-
-    -ms-overflow-style: none;  /* IE et Edge */
-    scrollbar-width: none;      /* Firefox */
-}
-.carousel::-webkit-scrollbar {
-    display: none;              /* Chrome, Safari, Opera */
+    position: relative;
+    overflow: hidden; /* cache la scrollbar */
 }
 
-/* Conteneur des cartes */
+/* Inner carousel */
 .carousel-inner {
     display: flex;
     gap: 12px;
-    scroll-behavior: smooth;    /* défilement doux */
-    flex-wrap: nowrap;          /* empêcher le wrap */
-    scroll-snap-type: x mandatory; /* snap sur chaque carte */
+    overflow-x: auto;
+    scroll-behavior: smooth;
+
+    -ms-overflow-style: none;  
+    scrollbar-width: none;     
 }
+.carousel-inner::-webkit-scrollbar {
+    display: none;
+}
+
+/* Flèches simples */
+.carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+}
+.carousel-arrow.left { left: 10px; }
+.carousel-arrow.right { right: 10px; }
+
 
 /* Chaque carte */
 .movie-card {
@@ -575,8 +590,26 @@ document.querySelector('.hero .prev').addEventListener('click', prevSlide);
 setInterval(nextSlide, 5000); // slide automatique toutes les 5s
 
     </script>
+    <script>
+        const carousels = document.querySelectorAll('.carousel');
+
+carousels.forEach(carousel => {
+    const inner = carousel.querySelector('.carousel-inner');
+    const btnLeft = carousel.querySelector('.carousel-arrow.left');
+    const btnRight = carousel.querySelector('.carousel-arrow.right');
+
+    btnLeft.addEventListener('click', () => {
+        inner.scrollBy({ left: -inner.offsetWidth / 2, behavior: 'smooth' });
+    });
+    btnRight.addEventListener('click', () => {
+        inner.scrollBy({ left: inner.offsetWidth / 2, behavior: 'smooth' });
+    });
+});
+
+    </script>
 </body>
 </html>
+
 
 
 
