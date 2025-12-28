@@ -513,7 +513,10 @@ video {
 <!-- --- Lecteur vidéo --- -->
 <div class="video-container" id="videoContainer">
   <button class="back-button" id="backButton">← Retour à la fiche</button>
-  <video id="video" src="https://cinetacos.xyz/movies/Charlie-et-la-chocolaterie.mp4"></video>
+  <video id="video" src="https://cinetacos.xyz/movies/Charlie-et-la-chocolaterie.mp4">
+    <track id="track-en" label="Anglais" kind="subtitles" srclang="en" src="https://inspecteurl.github.io/subtitles/subencharlieetlachocolaterie.vtt">
+  <track id="track-fr" label="Français" kind="subtitles" srclang="fr" src="https://inspecteurl.github.io/subtitles/subfrcharlieetlachocolaterie.vtt">
+  </video>
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
   <div class="progress-wrapper" id="progressWrapper">
@@ -553,7 +556,10 @@ video {
     <button data-src="https://cinepizza.xyz/movies/Interstellar.mp4">Interstellar</button>
   </div>
 
-  <div id="subtitleMenu" class="menu">
+ <div id="subtitleMenu" class="menu">
+    <button data-track="fr">Français</button>
+    <button data-track="en">Anglais</button>
+    <button data-track="none">Désactiver</button>
   </div>
 </div>
 
