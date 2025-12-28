@@ -394,26 +394,27 @@ body {
     padding-bottom: 10px;
 
     -ms-overflow-style: none;  /* IE et Edge */
-    scrollbar-width: none;     /* Firefox */
+    scrollbar-width: none;      /* Firefox */
 }
 .carousel::-webkit-scrollbar {
-    display: none;             /* Chrome, Safari, Opera */
+    display: none;              /* Chrome, Safari, Opera */
 }
 
-/* Scroll fluide */
+/* Conteneur des cartes */
 .carousel-inner {
     display: flex;
     gap: 12px;
-    scroll-behavior: smooth;   /* défilement doux */
+    scroll-behavior: smooth;    /* défilement doux */
+    flex-wrap: nowrap;          /* empêcher le wrap */
+    scroll-snap-type: x mandatory; /* snap sur chaque carte */
 }
 
-/* Optionnel : ajout d'un "snap" pour chaque carte */
-.carousel-inner {
-    scroll-snap-type: x mandatory;
-}
+/* Chaque carte */
 .movie-card {
+    flex: 0 0 auto;             /* obligatoire pour le scroll horizontal */
     scroll-snap-align: start;
 }
+
 
 
 /* Carte film */
@@ -576,6 +577,7 @@ setInterval(nextSlide, 5000); // slide automatique toutes les 5s
     </script>
 </body>
 </html>
+
 
 
 
