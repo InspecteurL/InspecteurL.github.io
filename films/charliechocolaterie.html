@@ -853,23 +853,64 @@ sourceMenu.querySelectorAll('button').forEach(btn => {
 });
 
 // ---------------------
-// Subtitles menu
+// Subtitles menu (robuste)
 // ---------------------
 subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
+
+function setSubtitleByLang(lang) {
+  // Récupère les <track> DOM (éléments HTML)
+  const trackEls = Array.from(video.querySelectorAll('track'));
+
+  // Désactive toutes les pistes TextTrack (si elles existent)
+  trackEls.forEach(trackEl => {
+    if (trackEl.track) trackEl.track.mode = 'disabled';
+  });
+
+  if (lang === 'none') {
+    // On veut désactiver les sous-titres -> rien d'autre à faire
+    return;
+  }
+
+  // 1) cherche une correspondance exacte sur srclang (ex: "fr" ou "en")
+  let chosenEl = trackEls.find(te => {
+    const srclang = (te.getAttribute('srclang') || '').toLowerCase();
+    return srclang === lang.toLowerCase();
+  });
+
+  // 2) sinon, cherche par label (tolérant, ex: "Français" contient "fr")
+  if (!chosenEl) {
+    chosenEl = trackEls.find(te => {
+      const label = (te.getAttribute('label') || '').toLowerCase();
+      return label.includes(lang.toLowerCase()) || label.startsWith(lang.toLowerCase());
+    });
+  }
+
+  // 3) si trouvé, active la piste correspondante
+  if (chosenEl && chosenEl.track) {
+    chosenEl.track.mode = 'showing';
+  } else {
+    // debug utile si ça ne matche pas (tu peux enlever le console.log plus tard)
+    console.warn('Aucune piste de sous-titres trouvée pour :', lang, trackEls.map(te => ({ label: te.label, srclang: te.srclang })));
+  }
+}
+
 subtitleMenu.addEventListener('click', e => {
-  if(e.target.tagName === 'BUTTON'){
-    const subUrl = e.target.dataset.sub;
-    video.querySelectorAll('track').forEach(t => t.remove());
-    if(subUrl){
-      const track = document.createElement('track');
-      track.src = subUrl;
-      track.kind = 'subtitles';
-      track.default = true;
-      video.appendChild(track);
-    }
+  if (e.target.tagName === 'BUTTON') {
+    const lang = e.target.dataset.track; // "fr", "en" ou "none"
+    setSubtitleByLang(lang);
     subtitleMenu.style.display = 'none';
   }
 });
+
+// Optionnel : si tu veux forcer le comportement au démarrage selon un "default" dans le HTML
+video.addEventListener('loadedmetadata', () => {
+  // Si une piste a l'attribut 'default' -> active-la
+  const defaultTrack = Array.from(video.querySelectorAll('track')).find(t => t.hasAttribute('default'));
+  if (defaultTrack && defaultTrack.getAttribute('srclang')) {
+    setSubtitleByLang(defaultTrack.getAttribute('srclang'));
+  }
+});
+
 
 // ---------------------
 // Fullscreen
