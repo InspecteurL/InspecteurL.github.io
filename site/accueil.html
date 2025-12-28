@@ -409,23 +409,30 @@ body {
 }
 
 /* Texte h3 + p en bas */
-.movie-card h3,
-.movie-card p {
+.movie-card h3 {
     position: absolute;
     left: 8px;
     right: 8px;
-    bottom: 8px;
+    bottom: 20px; /* espace au-dessus du genre */
     margin: 0;
     color: #fff;
     z-index: 2;
     text-shadow: 0 2px 5px rgba(0,0,0,0.7);
+    font-size: 1rem;
 }
 
 .movie-card p {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 5px; /* légèrement sous le titre */
+    margin: 0;
     font-size: 0.75rem;
     color: #ccc;
-    bottom: 2px; /* légèrement sous le titre */
+    z-index: 2;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
+
 
 /* Note */
 .movie-card .rating {
@@ -496,6 +503,7 @@ setInterval(nextSlide, 5000); // slide automatique toutes les 5s
     </script>
 </body>
 </html>
+
 
 
 
