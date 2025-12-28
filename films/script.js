@@ -263,53 +263,127 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// ---------------------
-// BACK BUTTON → animation inverse cinéma
-// ---------------------
+// ==================================================
+// BACK BUTTON → RETOUR CINÉMA PREMIUM (animation inverse)
+// ==================================================
 document.addEventListener("DOMContentLoaded", () => {
   const backButton = document.getElementById("backButton");
   const videoContainer = document.getElementById("videoContainer");
 
   if (!backButton || !videoContainer) return;
 
-  // réutilise l'overlay existant
-  const overlay = document.querySelector(".cinema-overlay");
-
-  backButton.addEventListener("click", () => {
-    if (!overlay) return;
-
-    // fondu inverse
-    overlay.classList.add("active");
-
-    // animation inverse
-    videoContainer.style.animation = "cinemaOut 0.7s cubic-bezier(.4,0,.2,1) forwards";
-
-    setTimeout(() => {
-      overlay.classList.remove("active");
-      videoContainer.classList.remove("cinema-zoom");
-      videoContainer.style.animation = "";
-    }, 700);
-  });
-
-  // ===== animation inverse =====
-  if (!document.getElementById("cinema-out-css")) {
+  // ---------------------
+  // Injection CSS (1 seule fois)
+  // ---------------------
+  if (!document.getElementById("cinema-back-css")) {
     const style = document.createElement("style");
-    style.id = "cinema-out-css";
+    style.id = "cinema-back-css";
     style.textContent = `
-      @keyframes cinemaOut {
-        from {
-          transform: scale(1);
-          filter: blur(0);
+      /* Overlay fondu */
+      .cinema-back-overlay {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle at center, #111 0%, #000 75%);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 99990;
+        transition: opacity 0.7s ease;
+      }
+      .cinema-back-overlay.active {
+        opacity: 1;
+      }
+
+      /* Barres cinéma */
+      .cinema-back-bars::before,
+      .cinema-back-bars::after {
+        content: "";
+        position: fixed;
+        left: 0;
+        width: 100%;
+        height: 0;
+        background: black;
+        z-index: 99991;
+        transition: height 0.6s cubic-bezier(.77,0,.18,1);
+      }
+      .cinema-back-bars::before { top: 0; }
+      .cinema-back-bars::after { bottom: 0; }
+
+      .cinema-back-bars.active::before,
+      .cinema-back-bars.active::after {
+        height: 12vh;
+      }
+
+      /* Animation sortie */
+      @keyframes cinemaBackExit {
+        0% {
+          transform: scale(1) perspective(1200px);
+          filter: blur(0) brightness(1);
         }
-        to {
-          transform: scale(0.92);
-          filter: blur(8px);
+        60% {
+          filter: blur(6px) brightness(0.85);
         }
+        100% {
+          transform: scale(0.88) perspective(1200px) rotateX(4deg);
+          filter: blur(10px) brightness(0.65);
+        }
+      }
+
+      .cinema-back-exit {
+        animation: cinemaBackExit 0.9s cubic-bezier(.4,0,.2,1) forwards;
+      }
+
+      /* Grain cinéma */
+      .cinema-back-grain {
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 99992;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+      .cinema-back-grain.active {
+        opacity: 1;
       }
     `;
     document.head.appendChild(style);
   }
+
+  // ---------------------
+  // Création des éléments
+  // ---------------------
+  const overlay = document.createElement("div");
+  overlay.className = "cinema-back-overlay";
+  document.body.appendChild(overlay);
+
+  const bars = document.createElement("div");
+  bars.className = "cinema-back-bars";
+  document.body.appendChild(bars);
+
+  const grain = document.createElement("div");
+  grain.className = "cinema-back-grain";
+  document.body.appendChild(grain);
+
+  // ---------------------
+  // Click bouton retour
+  // ---------------------
+  backButton.addEventListener("click", () => {
+    overlay.classList.add("active");
+    bars.classList.add("active");
+    grain.classList.add("active");
+
+    videoContainer.classList.add("cinema-back-exit");
+
+    setTimeout(() => {
+      overlay.classList.remove("active");
+      bars.classList.remove("active");
+      grain.classList.remove("active");
+
+      videoContainer.classList.remove("cinema-back-exit");
+    }, 900);
+  });
 });
+
 
 
 // ---------------------
@@ -328,6 +402,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
