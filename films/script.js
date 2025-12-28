@@ -263,6 +263,53 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// ---------------------
+// BACK BUTTON → animation inverse cinéma
+// ---------------------
+document.addEventListener("DOMContentLoaded", () => {
+  const backButton = document.getElementById("backButton");
+  const videoContainer = document.getElementById("videoContainer");
+
+  if (!backButton || !videoContainer) return;
+
+  // réutilise l'overlay existant
+  const overlay = document.querySelector(".cinema-overlay");
+
+  backButton.addEventListener("click", () => {
+    if (!overlay) return;
+
+    // fondu inverse
+    overlay.classList.add("active");
+
+    // animation inverse
+    videoContainer.style.animation = "cinemaOut 0.7s cubic-bezier(.4,0,.2,1) forwards";
+
+    setTimeout(() => {
+      overlay.classList.remove("active");
+      videoContainer.classList.remove("cinema-zoom");
+      videoContainer.style.animation = "";
+    }, 700);
+  });
+
+  // ===== animation inverse =====
+  if (!document.getElementById("cinema-out-css")) {
+    const style = document.createElement("style");
+    style.id = "cinema-out-css";
+    style.textContent = `
+      @keyframes cinemaOut {
+        from {
+          transform: scale(1);
+          filter: blur(0);
+        }
+        to {
+          transform: scale(0.92);
+          filter: blur(8px);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+});
 
 
 // ---------------------
@@ -281,5 +328,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
