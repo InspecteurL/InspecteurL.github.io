@@ -474,131 +474,145 @@
 </div>
 
 <style>
-/* ========================== */
-/*      IMPORT DE POLICE      */
-/* ========================== */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+/* Import de la police */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
 
-/* ========================== */
-/*       STYLE GLOBAL         */
-/* ========================== */
+/* 🌌 Style général */
 body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #121212;
+    color: #fff;
     margin: 0;
     padding: 0;
-    font-family: 'Poppins', sans-serif;
-    background-color: #141414;
-    color: #fff;
     overflow-x: hidden;
 }
 
-/* ========================== */
-/*       NAVIGATION           */
-/* ========================== */
-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px 40px;
-    background-color: rgba(20,20,20,0.85);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+* {
+    box-sizing: border-box;
 }
 
-nav .logo {
-    font-size: 1.8em;
-    font-weight: 700;
-    color: #E50914; /* rouge Netflix */
-    cursor: pointer;
-}
-
-nav ul {
-    list-style: none;
-    display: flex;
-    gap: 25px;
-}
-
-nav ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s;
-}
-nav ul li a:hover {
-    color: #E50914;
-}
-
-/* ========================== */
-/*        HERO / SLIDER       */
-/* ========================== */
-.hero {
+/* 🌟 Slider/Hero */
+#slider {
     position: relative;
     width: 100%;
-    height: 70vh;
+    height: 600px;
     overflow: hidden;
 }
 
-.hero img {
+.slides {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: none;
+    animation: fade 1s ease-in-out;
+}
+
+.slides.active { display: block; }
+
+.slides img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
 }
 
-.hero::after {
-    content: '';
+.slides::after {
+    content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, #141414 10%, transparent 70%);
+    background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 100%);
+    pointer-events: none;
 }
 
-.hero-content {
+#slide-info {
     position: absolute;
     bottom: 50px;
     left: 50px;
-    max-width: 500px;
-    z-index: 10;
+    max-width: 450px;
+    background: rgba(0,0,0,0.6);
+    padding: 30px;
+    border-radius: 12px;
+    z-index: 2;
 }
 
-.hero-content h1 {
-    font-size: 3em;
+#slide-info h2 {
+    font-size: 2.5em;
     margin-bottom: 15px;
+    font-weight: 800;
 }
 
-.hero-content p {
-    font-size: 1.2em;
-    margin-bottom: 20px;
+#slide-info p {
+    font-size: 1.1em;
     line-height: 1.5;
+    margin-bottom: 20px;
 }
 
-.hero-content button {
-    padding: 12px 30px;
-    font-size: 1em;
-    background-color: #E50914;
+#slide-button {
+    background-color: #e50914;
+    color: #fff;
+    padding: 15px 35px;
+    font-size: 1.2em;
     border: none;
     border-radius: 5px;
-    color: #fff;
     cursor: pointer;
-    font-weight: 600;
     transition: background 0.3s;
 }
-.hero-content button:hover {
-    background-color: #b00610;
+
+#slide-button:hover { background-color: #f6121d; }
+
+/* 💠 Navigation */
+ul {
+    display: flex;
+    padding: 0 20px;
+    list-style: none;
+    background-color: transparent;
+    align-items: center;
+    font-size: 1em;
 }
 
-/* ========================== */
-/*       CARROUSEL FILMS       */
-/* ========================== */
+li {
+    margin-right: 20px;
+}
+
+li a {
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 16px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+li a:hover {
+    background-color: rgba(229, 9, 20, 0.8);
+}
+
+/* 🔎 Barre de recherche */
+.search-large {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: none;
+    font-size: 1em;
+    margin-left: auto;
+    background-color: #222;
+    color: #fff;
+}
+
+/* 🎬 Section films */
+.moviesection {
+    max-width: 1300px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+hr.rounded {
+    border-top: 3px solid #e50914;
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+/* 🎨 Carrousel */
 .carousel {
     position: relative;
-    margin: 40px 0;
-    padding: 0 40px;
-}
-
-.carousel-title {
-    font-size: 1.5em;
-    font-weight: 600;
-    margin-bottom: 20px;
+    overflow: hidden;
 }
 
 .carousel-track {
@@ -606,120 +620,135 @@ nav ul li a:hover {
     gap: 15px;
     overflow-x: auto;
     scroll-behavior: smooth;
+    padding-bottom: 10px;
 }
 
-.carousel-track::-webkit-scrollbar {
-    display: none;
-}
+.carousel-track::-webkit-scrollbar { display: none; }
 
-.movie-card {
-    flex: 0 0 200px;
-    background-color: #1e1e1e;
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
     cursor: pointer;
-    transition: transform 0.3s;
+    transition: background 0.3s;
+    z-index: 10;
 }
 
-.movie-card:hover {
+.carousel-btn:hover { background-color: #e50914; }
+
+.carousel-btn.left { left: 10px; }
+.carousel-btn.right { right: 10px; }
+
+/* 🎥 Cartes films */
+.movieimg {
+    position: relative;
+    width: 220px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.movieimg:hover {
     transform: scale(1.05);
     z-index: 2;
 }
 
-.movie-card img {
+.movieimg .myimages {
     width: 100%;
-    height: 300px;
+    height: 320px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #111;
+}
+
+.movieimg .myimages img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
 }
 
-.movie-card .movie-info {
-    padding: 10px;
+.movieimg:hover .myimages img {
+    transform: scale(1.1);
 }
 
-.movie-card .movie-info h3 {
+.movieimg h2 {
     font-size: 1em;
-    margin: 5px 0;
-    font-weight: 600;
+    margin-top: 8px;
+    text-align: center;
 }
 
-.movie-card .movie-info span {
+.movieimg span {
+    display: block;
     font-size: 0.85em;
     color: #aaa;
+    text-align: center;
 }
 
-/* ========================== */
-/*        MODAL VIDEO          */
-/* ========================== */
+/* ⭐ Étoiles de notation */
+.rating-stars {
+    text-align: center;
+    color: gold;
+    font-size: 16px;
+}
+
+/* ⚡ Modale vidéo */
 .modal {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.85);
+    inset: 0;
+    background-color: rgba(0,0,0,0.8);
+    z-index: 100;
     justify-content: center;
     align-items: center;
-    z-index: 999;
-}
-
-.modal.active {
-    display: flex;
+    padding: 20px;
 }
 
 .modal-content {
-    position: relative;
+    background: #181818;
+    border-radius: 10px;
     max-width: 800px;
-    width: 90%;
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.modal-content video {
     width: 100%;
-    display: block;
+    padding: 20px;
+    text-align: center;
+    color: #fff;
 }
 
-.modal-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 1.5em;
+.close {
     color: #fff;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
     cursor: pointer;
 }
 
-/* ========================== */
-/*        FOOTER               */
-/* ========================== */
-footer {
-    padding: 30px 40px;
-    background: #141414;
-    color: #666;
-    text-align: center;
-    font-size: 0.9em;
+.close:hover { color: #e50914; }
+
+#videoPlayer {
+    width: 100%;
+    max-width: 720px;
+    height: 405px;
+    margin: 20px auto;
 }
 
-/* ========================== */
-/*        RESPONSIVE           */
-/* ========================== */
-@media screen and (max-width: 768px) {
-    nav { padding: 15px 20px; }
-    .hero-content h1 { font-size: 2em; }
-    .hero-content p { font-size: 1em; }
-    .carousel-track { gap: 10px; }
-    .movie-card { flex: 0 0 150px; }
-    .movie-card img { height: 220px; }
+/* 📱 Responsive */
+@media (max-width: 1000px) {
+    .carousel-track .movieimg { flex: 0 0 180px; }
+    .movieimg .myimages { height: 250px; }
 }
 
-@media screen and (max-width: 480px) {
-    .hero-content { left: 20px; bottom: 30px; max-width: 80%; }
-    .hero-content h1 { font-size: 1.5em; }
-    .hero-content p { font-size: 0.9em; }
-    .movie-card { flex: 0 0 120px; }
-    .movie-card img { height: 180px; }
+@media (max-width: 600px) {
+    .carousel-track { gap: 10px; padding-bottom: 5px; }
+    .carousel-track .movieimg { flex: 0 0 140px; }
+    .movieimg .myimages { height: 200px; }
+    #slide-info { max-width: 300px; padding: 20px; }
+    #slide-info h2 { font-size: 1.5em; }
+    #slide-button { font-size: 1em; padding: 10px 20px; }
 }
 
 </style>
@@ -1252,6 +1281,7 @@ if (slides.length > 0 && dot.length > 0) {  // Vérifie que le carrousel existe
 
 </body>
 </html>
+
 
 
 
