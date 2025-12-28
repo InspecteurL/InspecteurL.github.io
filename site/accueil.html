@@ -16,9 +16,8 @@
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="header">
-    <div class="container">
+    <div class="container header-container">
         <div class="logo">
             <a href="#"><img src="https://flix0.net/assets/img/flix-zero.webp" alt="HotFlix Logo"></a>
         </div>
@@ -27,12 +26,17 @@
                 <li><a href="#">Home</a></li>
                 <li><a href="#">Movies</a></li>
                 <li><a href="#">Series</a></li>
-                <li><a href="#">About</a></li>
+                <li><a href="#">My List</a></li>
             </ul>
         </nav>
-        <div class="search">
-            <input type="text" placeholder="Search...">
-            <button><i class="fas fa-search"></i></button>
+        <div class="header-right">
+            <div class="search">
+                <input type="text" placeholder="Search...">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+            <div class="profile">
+                <img src="https://i.pravatar.cc/40" alt="Profile">
+            </div>
         </div>
     </div>
 </header>
@@ -127,54 +131,315 @@
     </div>
 </footer>
 <style>
-    /* === GLOBAL === */
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'Poppins', sans-serif; background:#000; color:#fff; overflow-x:hidden; }
-
-/* HEADER */
-.header { display:flex; justify-content:space-between; align-items:center; padding:15px 50px; background:#111; position:fixed; width:100%; top:0; z-index:1000; }
-.header .logo img { height:40px; }
-.nav ul { list-style:none; display:flex; gap:30px; }
-.nav ul li a { text-decoration:none; color:#fff; transition:0.3s; }
-.nav ul li a:hover { color:#e50914; }
-.search { display:flex; gap:5px; }
-.search input { padding:5px 10px; border:none; border-radius:5px; }
-.search button { background:#e50914; border:none; padding:5px 10px; color:#fff; border-radius:5px; cursor:pointer; }
-
-/* HERO SLIDER */
-.hero { margin-top:80px; position:relative; overflow:hidden; height:500px; }
-.hero-slide { position:absolute; top:0; left:100%; width:100%; height:100%; background-size:cover; background-position:center; display:flex; align-items:flex-end; padding:50px; transition:0.5s; opacity:0; }
-.hero-slide.active { left:0; opacity:1; }
-.hero-content h1 { font-size:2.5rem; margin-bottom:15px; }
-.hero-content .rating { background:#e50914; padding:3px 8px; border-radius:3px; margin-left:10px; }
-.hero-content p { max-width:500px; margin-bottom:15px; }
-.hero-content .btn { background:#e50914; color:#fff; padding:10px 20px; border-radius:5px; text-decoration:none; }
-.hero button.prev, .hero button.next { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); border:none; color:#fff; padding:10px; cursor:pointer; font-size:1.5rem; border-radius:50%; }
-.hero button.prev { left:20px; }
-.hero button.next { right:20px; }
-
-/* CAROUSEL */
-.catalog { padding:50px; }
-.catalog h2 { font-size:2rem; margin-bottom:20px; }
-.carousel { overflow-x:auto; overflow-y:hidden; white-space:nowrap; padding-bottom:10px; }
-.carousel-inner { display:flex; gap:20px; }
-.movie-card { display:inline-block; position:relative; min-width:200px; cursor:pointer; transition:0.3s; }
-.movie-card img { width:100%; border-radius:8px; }
-.movie-card .overlay {
-    position:absolute; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; opacity:0; transition:0.3s;
-    border-radius:8px;
+/* =========================================================
+   🔧 RESET & BASE
+   ========================================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
-.movie-card:hover .overlay { opacity:1; }
-.movie-card .overlay button { background:#e50914; border:none; padding:15px; border-radius:50%; font-size:1.2rem; color:#fff; cursor:pointer; }
-.movie-card .overlay .rating { position:absolute; top:10px; right:10px; background:#e50914; padding:5px 8px; border-radius:5px; }
 
-/* FOOTER */
-.footer { background:#111; text-align:center; padding:30px 50px; margin-top:50px; }
-.footer-content img { height:30px; margin-bottom:10px; }
-.footer-nav { margin-top:10px; display:flex; justify-content:center; gap:20px; }
-.footer-nav a { color:#888; text-decoration:none; transition:0.3s; }
-.footer-nav a:hover { color:#fff; }
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #000;
+    color: #fff;
+    overflow-x: hidden;
+}
+
+
+
+/* =========================================================
+   🧭 HEADER / NAVIGATION
+   ========================================================= */
+/* HEADER - STYLE NETFLIX */
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 50px;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo img {
+    height: 40px;
+}
+
+.nav ul {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+}
+
+.nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    position: relative;
+    transition: 0.3s;
+}
+
+.nav ul li a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background: #e50914;
+    left: 0;
+    bottom: -5px;
+    transition: 0.3s;
+}
+
+.nav ul li a:hover::after {
+    width: 100%;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-right .search {
+    display: flex;
+    align-items: center;
+    background: #222;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.header-right .search input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    outline: none;
+    width: 120px;
+}
+
+.header-right .search button {
+    background: #e50914;
+    border: none;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.header-right .profile img {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+
+
+/* =========================================================
+   🎬 HERO SLIDER
+   ========================================================= */
+.hero {
+    margin-top: 80px; /* espace pour le header fixed */
+    position: relative;
+    height: 500px;
+    overflow: hidden;
+}
+
+/* Slide */
+.hero-slide {
+    position: absolute;
+    inset: 0;
+
+    background-size: cover;
+    background-position: center;
+
+    display: flex;
+    align-items: flex-end;
+    padding: 50px;
+
+    opacity: 0;
+    transform: translateX(100%);
+    transition: 0.5s;
+}
+
+.hero-slide.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Contenu */
+.hero-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.hero-content p {
+    max-width: 500px;
+    margin-bottom: 15px;
+}
+
+.hero-content .rating {
+    background: #e50914;
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-left: 10px;
+}
+
+.hero-content .btn {
+    background: #e50914;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+/* Boutons slider */
+.hero button.prev,
+.hero button.next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: #fff;
+
+    padding: 10px;
+    cursor: pointer;
+    font-size: 1.5rem;
+    border-radius: 50%;
+}
+
+.hero button.prev { left: 20px; }
+.hero button.next { right: 20px; }
+
+
+
+/* =========================================================
+   🎞️ CATALOGUE / CAROUSELS
+   ========================================================= */
+.catalog {
+    padding: 50px;
+}
+
+.catalog h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+/* Carrousel */
+.carousel {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    padding-bottom: 10px;
+}
+
+.carousel-inner {
+    display: flex;
+    gap: 20px;
+}
+
+/* Carte film */
+.movie-card {
+    position: relative;
+    min-width: 200px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
+}
+
+.movie-card img {
+    width: 100%;
+    border-radius: 8px;
+}
+
+/* Overlay */
+.movie-card .overlay {
+    position: absolute;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.movie-card:hover .overlay {
+    opacity: 1;
+}
+
+/* Bouton play */
+.movie-card .overlay button {
+    background: #e50914;
+    border: none;
+    padding: 15px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* Note */
+.movie-card .overlay .rating {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+    background: #e50914;
+    padding: 5px 8px;
+    border-radius: 5px;
+}
+
+
+
+/* =========================================================
+   🦶 FOOTER
+   ========================================================= */
+.footer {
+    background: #111;
+    text-align: center;
+    padding: 30px 50px;
+    margin-top: 50px;
+}
+
+.footer-content img {
+    height: 30px;
+    margin-bottom: 10px;
+}
+
+.footer-nav {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.footer-nav a {
+    color: #888;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-nav a:hover {
+    color: #fff;
+}
 
 </style>
 <script src="custom.js">
@@ -198,3 +463,4 @@ setInterval(nextSlide, 5000); // slide automatique toutes les 5s
 </script>
 </body>
 </html>
+
