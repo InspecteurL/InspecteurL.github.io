@@ -27,7 +27,7 @@
                 <li><a href="https://inspecteurl.github.io/site/amis.html">Trouver Utilisateur</a></li>
                 <li><a href="https://inspecteurl.github.io/site/mes-amis.html">Mes Amis</a></li>
                 <li><a href="https://inspecteurl.github.io/site/catalogue.html">Catalogue</a></li>
-                <li><a href="https://inspecteurl.github.io/site/suggestions.html">Suggestion</a></li>
+                <li><a href="https://inspecteurl.github.io/site/suggestion.html">Suggestion</a></li>
             </ul>
         </nav>
         <div class="header-right">
@@ -36,7 +36,7 @@
                 <button><i class="fas fa-search"></i></button>
             </div>
             <div class="profile">
-                <img src="https://i.pravatar.cc/40" alt="Profile">
+                <a href="https://inspecteurl.github.io/site/compte.html"<img src="https://i.pravatar.cc/40" alt="Profile"></a>
             </div>
         </div>
     </div>
@@ -45,25 +45,25 @@
 <!-- HERO SLIDER -->
 <section class="hero">
     <div class="slides">
-        <div class="hero-slide active" style="background-image:url('https://flix0.net/assets/img/bg/slide__bg-1.jpg');">
+        <div class="hero-slide active" style="background-image:url('https://media.themoviedb.org/t/p/w1066_and_h600_face/3nWJG962dkHiCXE5iwWKwgz6duH.jpg');">
             <div class="hero-content">
-                <h1>Savage Beauty <span class="rating">9.8</span></h1>
-                <p>A brilliant scientist discovers a way to harness the power of the ocean's currents to create a new energy source...</p>
-                <a href="#" class="btn">Watch Now</a>
+                <h1>Fate Stay Night : Unlimited Blade Works <span class="rating">8.18</span></h1>
+                <p>Shirô Emiya, un lycéen solitaire doté de pouvoirs magiques rudimentaires, est plongé malgré lui dans une guerre sanglante pour le Saint Graal après avoir invoqué Saber pour le protéger.</p>
+                <a href="https://inspecteurl.github.io/animes/fatestaynightubw.html" class="btn">Regarder Maintenant</a>
             </div>
         </div>
-        <div class="hero-slide" style="background-image:url('https://flix0.net/assets/img/bg/slide__bg-2.jpg');">
+        <div class="hero-slide" style="background-image:url('https://media.themoviedb.org/t/p/w1000_and_h563_face/8oouyeJMRBwErWae7e0vgVECC8u.jpg');">
             <div class="hero-content">
-                <h1>From the Other Side <span class="rating">6.9</span></h1>
-                <p>In a world where magic is outlawed, a young witch must use her powers to fight back...</p>
-                <a href="#" class="btn">Watch Now</a>
+                <h1>Avatar <span class="rating">7.9</span></h1>
+                <p>Un marine paraplégique envoyé sur la lune Pandora pour une mission unique est tiraillé entre suivre ses ordres et protéger le monde qu'il considère le sien.</p>
+                <a href="https://inspecteurl.github.io/films/avatarun.html" class="btn">Regarder Maintenant</a>
             </div>
         </div>
-        <div class="hero-slide" style="background-image:url('https://flix0.net/assets/img/bg/slide__bg-3.jpg');">
+        <div class="hero-slide" style="background-image:url('https://media.themoviedb.org/t/p/w1000_and_h563_face/2H2YYbn8wDzYXtak83Md6PAwMdp.jpg');">
             <div class="hero-content">
-                <h1>Endless Horizon <span class="rating">6.2</span></h1>
-                <p>When a renowned archaeologist goes missing, his daughter sets out on a perilous journey...</p>
-                <a href="#" class="btn">Watch Now</a>
+                <h1>Retour vers le futur <span class="rating">8.5</span></h1>
+                <p>Marty McFly, un lycéen de 17 ans, est accidentellement envoyé trente ans plus tôt avec une voiture DeLorean qui voyage dans le temps, inventé par son ami le scientifique non-conformiste Doc Brown.</p>
+                <a href="https://inspecteurl.github.io/films/retourverslefuturun.html" class="btn">Regarder Maintenant</a>
             </div>
         </div>
     </div>
@@ -443,8 +443,9 @@ body {
 }
 
 </style>
-<script src="custom.js">
-    // === HERO SLIDER AUTOMATIC ===
+<script src="custom.js"></script>
+    <script>
+           // === HERO SLIDER AUTOMATIC ===
 let slides = document.querySelectorAll('.hero-slide');
 let current = 0;
 const nextSlide = () => {
@@ -461,9 +462,10 @@ document.querySelector('.hero .next').addEventListener('click', nextSlide);
 document.querySelector('.hero .prev').addEventListener('click', prevSlide);
 setInterval(nextSlide, 5000); // slide automatique toutes les 5s
 
-</script>
+    </script>
 </body>
 </html>
+
 
 
 
