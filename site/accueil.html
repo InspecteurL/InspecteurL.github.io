@@ -360,18 +360,19 @@
         <div class="carousel-inner">
 
             <div class="movie-card coming-soon"
-                 data-release="2025-12-30T12:15:00"
-                 data-link="https://inspecteurl.github.io/films/avatar3.html">
+     data-release="2025-12-30T12:22:00"
+     data-link="https://inspecteurl.github.io/films/avatar3.html">
 
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7p5MzMb4h0Y2WUn73r4MHKNeh3X.jpg" alt="Avatar 3">
+    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/a89SLEtX9AsooDEHOXKoSvj9BRG.jpg" alt="Avatar 3">
 
-                <div class="overlay coming-overlay">
-                    <span class="countdown">Disponible bientôt</span>
-                </div>
+    <div class="overlay coming-overlay">
+        <span class="countdown"></span>
+    </div>
 
-                <h3>Avatar 3</h3>
-                <p>Science-Fiction, Aventure</p>
-            </div>
+    <h3>Avatar 3</h3>
+    <p>Science-Fiction, Aventure</p>
+</div>
+
 
             <!-- Tu peux en ajouter autant que tu veux -->
         </div>
@@ -504,25 +505,25 @@ body {
     background: rgba(0, 0, 0, 0.7);
     padding: 10px 50px;
 }
-    /* Carte prochainement */
+/* Carte prochainement */
 .movie-card.coming-soon {
     cursor: not-allowed;
     filter: grayscale(80%);
-    position: relative;
 }
 
-/* Overlay spécifique */
+/* Overlay compte à rebours */
 .coming-overlay {
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 14px;
     background: rgba(0,0,0,0.75);
-    color: #fff;
-    opacity: 0;
+    color: white;
     transition: opacity 0.3s ease;
 }
+
+
+
 
 /* Affiche le compte à rebours au survol */
 .movie-card.coming-soon:hover .coming-overlay {
@@ -998,26 +999,37 @@ carousels.forEach(carousel => {
 
     </script>
 
-    <script>
+   <script>
 document.querySelectorAll('.coming-soon').forEach(card => {
     const releaseDate = new Date(card.dataset.release);
-    const countdownEl = card.querySelector('.countdown');
+    const overlay = card.querySelector('.coming-overlay');
+    const countdownEl = overlay.querySelector('.countdown');
 
     function updateCountdown() {
         const now = new Date();
         const diff = releaseDate - now;
 
         if (diff <= 0) {
-            // Disponible !
+            // Le film devient disponible
             const link = card.dataset.link;
 
+            // Création du lien cliquable
             const anchor = document.createElement('a');
             anchor.href = link;
-            anchor.appendChild(card.cloneNode(true));
 
-            card.replaceWith(anchor);
-            anchor.firstChild.classList.remove('coming-soon');
-            anchor.firstChild.classList.add('available');
+            // Bouton play identique aux autres cartes
+            overlay.innerHTML = `
+                <button><i class="fas fa-play"></i></button>
+            `;
+
+            card.classList.remove('coming-soon');
+            card.classList.add('available');
+
+            // Rend toute la carte cliquable
+            card.addEventListener('click', () => {
+                window.location.href = link;
+            });
+
             return;
         }
 
@@ -1037,6 +1049,7 @@ document.querySelectorAll('.coming-soon').forEach(card => {
 
 </body>
 </html>
+
 
 
 
