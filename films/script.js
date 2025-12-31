@@ -263,15 +263,15 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-//MOVIE CARD + ANIMATION FONDU + FULLSCREEN DU LECTEUR
 document.addEventListener("DOMContentLoaded", () => {
-  const card = document.querySelector(".card");
-  const fullscreenBtn = document.getElementById("fullscreen");
-  const videoContainer = document.getElementById("videoContainer");
+  const cards = document.querySelectorAll(".card");
+  const videoContainer = document.getElementById("videoContainer"); // lecteur global
+  const video = videoContainer?.querySelector("video");            // vidéo existante
+  const fullscreenBtn = document.getElementById("fullscreen");     // bouton fullscreen existant
 
-  if (!card || !fullscreenBtn || !videoContainer) return;
+  if (!cards.length || !video || !videoContainer || !fullscreenBtn) return;
 
-  // ===== CSS CINÉMA =====
+  // ===== CSS CINÉMA (une seule fois) =====
   if (!document.getElementById("cinema-css")) {
     const style = document.createElement("style");
     style.id = "cinema-css";
@@ -295,14 +295,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       @keyframes cinemaZoom {
-        from {
-          transform: scale(0.92);
-          filter: blur(6px);
-        }
-        to {
-          transform: scale(1);
-          filter: blur(0);
-        }
+        from { transform: scale(0.92); filter: blur(6px); }
+        to   { transform: scale(1); filter: blur(0); }
       }
     `;
     document.head.appendChild(style);
@@ -313,24 +307,33 @@ document.addEventListener("DOMContentLoaded", () => {
   overlay.className = "cinema-overlay";
   document.body.appendChild(overlay);
 
-  // ===== CLICK SUR LA CARD =====
-  card.addEventListener("click", () => {
-    // effet cinéma
-    overlay.classList.add("active");
+  // ===== Click sur chaque carte =====
+  cards.forEach(card => {
+    card.addEventListener("click", () => {
+      const videoSrc = card.dataset.video;
+      if (!videoSrc) return;
 
-    // zoom lecteur
-    videoContainer.classList.add("cinema-zoom");
+      // charger la vidéo dans le lecteur global
+      video.src = videoSrc;
+      video.load();
 
-    setTimeout(() => {
-      // fullscreen du lecteur
-      fullscreenBtn.click();
+      // effet cinéma
+      overlay.classList.add("active");
+      videoContainer.classList.add("cinema-zoom");
 
       setTimeout(() => {
-        overlay.classList.remove("active");
-      }, 200);
-    }, 600);
+        video.play();
+        fullscreenBtn.click();
+
+        setTimeout(() => {
+          overlay.classList.remove("active");
+          videoContainer.classList.remove("cinema-zoom");
+        }, 200);
+      }, 600);
+    });
   });
 });
+
 
 
 // ==================================================
@@ -472,6 +475,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
