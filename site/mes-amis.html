@@ -129,10 +129,12 @@ h2 {
   align-items: center;
   box-shadow: var(--shadow-sm);
   transition: var(--transition);
+  position: relative;
+  overflow: hidden;
 }
 
 .friend-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px) scale(1.02);
   box-shadow: var(--shadow-md);
 }
 
@@ -148,11 +150,11 @@ h2 {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform 0.4s ease;
 }
 
 .friend-card:hover .banner img {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 /* Avatar */
@@ -160,6 +162,7 @@ h2 {
   position: relative;
   margin-top: -40px;
   text-align: center;
+  z-index: 2;
 }
 
 .friend-card .avatar img {
@@ -171,8 +174,8 @@ h2 {
 }
 
 .friend-card .avatar img:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 20px rgba(229,9,20,.4);
+  transform: scale(1.15);
+  box-shadow: 0 8px 25px rgba(229,9,20,.5);
 }
 
 /* Content */
@@ -180,18 +183,18 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  position: relative;
+  z-index: 1;
 }
 
 .friend-card .name {
   font-size: 18px;
   font-weight: 700;
   color: var(--accent);
-  text-align: left;
 }
 
 .friend-card .status {
   font-size: 14px;
-  margin-bottom: 10px;
 }
 
 .friend-card .status.online {
@@ -202,22 +205,33 @@ h2 {
   color: var(--offline);
 }
 
-.friend-card .watching-activity {
+/* ============================= */
+/*      WATCHING ACTIVITY        */
+/* ============================= */
+.watching-activity {
   font-size: 15px;
   line-height: 1.3;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  opacity: 0;
+  max-height: 0;
+  transition: opacity 0.4s ease, max-height 0.4s ease;
 }
 
-.friend-card .watching-activity strong {
+.friend-card:hover .watching-activity {
+  opacity: 1;
+  max-height: 200px;
+}
+
+.watching-activity strong {
   font-weight: bold;
 }
 
 .watching-thumb {
   width: 80%;
   max-width: 320px;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 16/9;
   object-fit: cover;
   border-radius: var(--radius-md);
   border: 1px solid #333;
@@ -228,15 +242,26 @@ h2 {
 
 .watching-thumb:hover {
   transform: scale(1.03);
-  box-shadow: 0 6px 20px rgba(0,0,0,.4);
+  box-shadow: 0 6px 20px rgba(0,0,0,.45);
 }
 
-/* Actions / Buttons */
+/* ============================= */
+/*         ACTION BUTTONS        */
+/* ============================= */
 .friend-card-actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
   align-items: stretch;
+  transition: transform 0.3s ease;
+  opacity: 0;
+  max-height: 0;
+}
+
+.friend-card:hover .friend-card-actions {
+  opacity: 1;
+  max-height: 100px;
+  transform: translateY(0);
 }
 
 button {
@@ -256,9 +281,11 @@ button.chat-btn {
 
 button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0,0,0,.4);
+  box-shadow: 0 6px 16px rgba(0,0,0,.45);
 }
 
+/* ============================= */
+/*          BACK LINK            */
 a.back-link {
   color: var(--accent);
   text-decoration: none;
@@ -273,8 +300,30 @@ a.back-link:hover {
 }
 
 /* ============================= */
-/*          RESPONSIVE           */
+/*       SCROLL ANIMATIONS       */
 /* ============================= */
+.friend-card {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered delay for multiple cards */
+.friend-card:nth-child(1) { animation-delay: 0.1s; }
+.friend-card:nth-child(2) { animation-delay: 0.2s; }
+.friend-card:nth-child(3) { animation-delay: 0.3s; }
+.friend-card:nth-child(4) { animation-delay: 0.4s; }
+.friend-card:nth-child(5) { animation-delay: 0.5s; }
+
+/* ============================= */
+/*          RESPONSIVE           */
 @media (max-width: 768px) {
   header {
     flex-direction: column;
@@ -295,7 +344,6 @@ a.back-link:hover {
   .friend-card-actions {
     flex-direction: row;
     justify-content: flex-start;
-    gap: 8px;
   }
 
   .watching-thumb {
@@ -303,6 +351,7 @@ a.back-link:hover {
     max-width: 300px;
   }
 }
+
 
   </style>
 </head>
@@ -509,5 +558,6 @@ setInterval(manageSession, 10000);
 </script>
 </body>
 </html>
+
 
 
