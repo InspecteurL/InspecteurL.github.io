@@ -5,49 +5,157 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mes amis</title>
   <style>
-    :root {
-      --accent: #e50914;
-      --bg-1: #121212;
-      --bg-2: #1e1e1e;
-      --bg-header: #141414;
-      --online: #00ff88;
-      --offline: #888;
-    }
+   /* ============================= */
+/*         DESIGN TOKENS         */
+/* ============================= */
+:root {
+  --accent: #e50914;
+  --bg-main: #121212;
+  --bg-panel: #1e1e1e;
+  --bg-header: #141414;
+  --online: #00ff88;
+  --offline: #888;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 6px 16px rgba(0,0,0,.35);
+  --shadow-md: 0 15px 35px rgba(0,0,0,.55);
+  --transition: all .3s ease;
+}
 
-    body {
-      font-family: Arial, sans-serif;
-      background: var(--bg-1);
-      color: #ffffff;
-      padding: 20px;
-      margin: 0;
-    }
+/* ============================= */
+/*            BASE               */
+/* ============================= */
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-    header {
-      background-color: var(--bg-header);
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+body {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-main);
+  color: #fff;
+  margin: 0;
+  padding: 20px;
+}
 
-    .logo {
-      font-weight: bold;
-      font-size: 20px;
-      color: var(--accent);
-    }
+/* ============================= */
+/*           HEADER              */
+/* ============================= */
+header {
+  background: var(--bg-header);
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--accent);
+}
+
+.nav-links {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 22px;
+  margin: 0;
+}
+
+.nav-links a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  opacity: .85;
+  position: relative;
+  transition: var(--transition);
+}
+
+.nav-links a:hover {
+  opacity: 1;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: var(--transition);
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+/* ============================= */
+/*            TITLES             */
+/* ============================= */
+h1 {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 2rem;
+  color: var(--accent);
+}
+
+h2 {
+  border-bottom: 1px solid #444;
+  padding-bottom: 5px;
+  margin-top: 40px;
+  margin-bottom: 10px;
+  font-size: 20px;
+  color: #fff;
+}
+
+/* ============================= */
+/*           FRIEND CARD          */
+/* ============================= */
+.friend-card {
+  background: var(--bg-panel);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin: 14px 0;
+  display: grid;
+  grid-template-columns: auto 100px;
+  gap: 16px;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.friend-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Banner */
 .friend-card .banner {
   width: 100%;
   height: 120px;
   overflow: hidden;
-  border-radius: 15px 15px 0 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .friend-card .banner img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
+.friend-card:hover .banner img {
+  transform: scale(1.05);
+}
+
+/* Avatar */
 .friend-card .avatar {
   position: relative;
   margin-top: -40px;
@@ -58,193 +166,144 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 3px solid #121212;
+  border: 3px solid var(--bg-main);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.friend-card .avatar img:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 20px rgba(229,9,20,.4);
+}
+
+/* Content */
+.friend-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .friend-card .name {
   font-size: 18px;
-  font-weight: bold;
-  color: #e50914;
-  text-align: center;
-  margin-top: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: left;
 }
 
 .friend-card .status {
   font-size: 14px;
-  color: #888;
-  text-align: center;
   margin-bottom: 10px;
 }
 
 .friend-card .status.online {
-  color: #00ff88;
-}
-
-.friend-card .status.offline {
-  color: #888;
-}
-
-.friend-card .watching-activity {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-
-
-/* Statut online / offline */
-.friend-status {
-  font-size: 14px;
-  text-align: center;
-  margin-bottom: 10px;
-  color: var(--offline);
-}
-
-.friend-status.online {
   color: var(--online);
 }
 
+.friend-card .status.offline {
+  color: var(--offline);
+}
 
-    .nav-links {
-      list-style: none;
-      padding: 0;
-      display: flex;
-      gap: 20px;
-      margin: 0;
-    }
+.friend-card .watching-activity {
+  font-size: 15px;
+  line-height: 1.3;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-    .nav-links a {
-      color: #ffffff;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    h1 {
-      margin-top: 30px;
-    }
-
-    h2 {
-      border-bottom: 1px solid #444;
-      padding-bottom: 5px;
-      margin-top: 40px;
-      margin-bottom: 10px;
-      font-size: 20px;
-    }
-
-    .friend-card {
-      background: var(--bg-2);
-      padding: 16px 20px;
-      margin: 12px 0;
-      border-radius: 10px;
-      display: grid;
-      grid-template-columns: auto 100px;
-      gap: 16px;
-      align-items: center;
-    }
-
-    .friend-card-content {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .friend-name-line {
-      font-size: 18px;
-    }
-
-    .online {
-      color: var(--online);
-      font-size: 14px;
-      margin-left: 4px;
-    }
-
-    .offline {
-      color: var(--offline);
-      font-size: 14px;
-      margin-left: 4px;
-    }
-
-    .watching-activity {
-      font-size: 15px;
-      line-height: 1.3;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .watching-activity strong {
-      font-weight: bold;
-    }
+.friend-card .watching-activity strong {
+  font-weight: bold;
+}
 
 .watching-thumb {
   width: 80%;
   max-width: 320px;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid #333;
   margin: 12px auto;
   display: block;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.watching-thumb:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 20px rgba(0,0,0,.4);
+}
 
-    .friend-card-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: stretch;
-    }
+/* Actions / Buttons */
+.friend-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
 
-    button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-      line-height: 1.2;
-    }
+button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  transition: var(--transition);
+}
 
-    button.chat-btn {
-      background: #0066ff;
-    }
+button.chat-btn {
+  background: #0066ff;
+}
 
-    a.back-link {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: bold;
-      display: inline-block;
-      margin-top: 10px;
-    }
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.4);
+}
 
-    /* Responsive */
-    @media (max-width: 768px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+a.back-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: bold;
+  display: inline-block;
+  margin-top: 10px;
+  transition: var(--transition);
+}
 
-      .nav-links {
-        flex-direction: column;
-        gap: 10px;
-        width: 100%;
-      }
+a.back-link:hover {
+  text-decoration: underline;
+}
 
-      .friend-card {
-        grid-template-columns: 1fr;
-      }
+/* ============================= */
+/*          RESPONSIVE           */
+/* ============================= */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-      .friend-card-actions {
-        flex-direction: row;
-        justify-content: flex-start;
-      }
+  .nav-links {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
 
-      .watching-thumb {
-        width: 100%;
-        max-width: 300px;
-      }
-    }
+  .friend-card {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .friend-card-actions {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .watching-thumb {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -450,4 +509,5 @@ setInterval(manageSession, 10000);
 </script>
 </body>
 </html>
+
 
