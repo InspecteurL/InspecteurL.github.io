@@ -5,15 +5,20 @@
   <title>Suggestions</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+/* ============================= */
+/*        DESIGN TOKENS          */
+/* ============================= */
+
 :root {
-  --bg-main: #0f0f12;
-  --bg-panel: #1a1a1f;
-  --bg-card: #22222a;
-  --bg-input: #2b2b35;
+  --bg-main: #0f0f14;
+  --bg-panel: #17171d;
+  --bg-card: #1f1f27;
+  --bg-input: #2a2a34;
 
   --border-soft: rgba(255,255,255,.08);
-  --text-main: #f1f1f1;
-  --text-muted: #a0a0b0;
+
+  --text-main: #f5f5f7;
+  --text-muted: #9ca3af;
 
   --primary: #3b82f6;
   --primary-hover: #2563eb;
@@ -23,16 +28,26 @@
   --radius-md: 10px;
   --radius-lg: 14px;
 
-  --shadow-sm: 0 4px 10px rgba(0,0,0,.25);
-  --shadow-md: 0 10px 30px rgba(0,0,0,.35);
+  --shadow-sm: 0 6px 16px rgba(0,0,0,.35);
+  --shadow-md: 0 20px 40px rgba(0,0,0,.45);
+
   --transition: all .25s ease;
 }
 
-/* Base */
+/* ============================= */
+/*          RESET & BASE         */
+/* ============================= */
+
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: radial-gradient(circle at top, #1b1b22, var(--bg-main));
   margin: 0;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at top, #1a1a22, var(--bg-main));
   color: var(--text-main);
 }
 
@@ -43,15 +58,18 @@ a, a:visited {
 
 h1 {
   text-align: center;
-  margin: 30px 0;
+  margin: 32px 0;
   font-weight: 700;
   letter-spacing: .4px;
 }
 
-/* Header */
+/* ============================= */
+/*            HEADER             */
+/* ============================= */
+
 header {
   background: rgba(20,20,28,.85);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   padding: 14px 24px;
   display: flex;
   justify-content: space-between;
@@ -59,14 +77,16 @@ header {
   box-shadow: var(--shadow-sm);
 }
 
-/* Layout */
+/* ============================= */
+/*            LAYOUT             */
+/* ============================= */
+
 .container {
   max-width: 1000px;
-  margin: 0 auto 80px;
+  margin: 0 auto 90px;
   padding: 0 16px;
 }
 
-/* Board */
 .board-header {
   display: flex;
   gap: 10px;
@@ -75,19 +95,22 @@ header {
   align-items: center;
 }
 
-/* Form */
+/* ============================= */
+/*             FORM              */
+/* ============================= */
+
 .suggestion-form {
-  background: linear-gradient(180deg, #23232c, #1b1b22);
+  background: linear-gradient(180deg, #23232c, #1a1a22);
   padding: 18px;
   border-radius: var(--radius-lg);
-  margin-bottom: 30px;
+  margin-bottom: 32px;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-soft);
 }
 
 .suggestion-form textarea {
   width: 100%;
-  min-height: 80px;
+  min-height: 85px;
   resize: vertical;
   padding: 12px;
   border-radius: var(--radius-md);
@@ -98,19 +121,11 @@ header {
   transition: var(--transition);
 }
 
-.suggestion-form textarea:focus,
-.suggestion-form select:focus,
-.inline-form input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(59,130,246,.25);
-}
-
 .row {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  margin-top: 12px;
+  margin-top: 14px;
 }
 
 .suggestion-form select,
@@ -139,28 +154,53 @@ header {
   background: linear-gradient(135deg, var(--primary-hover), var(--primary));
 }
 
-/* Suggestions */
+/* ============================= */
+/*           SUGGESTIONS         */
+/* ============================= */
+
 .suggestions-list {
   display: grid;
-  gap: 18px;
+  gap: 20px;
 }
 
 .suggestion {
-  background: linear-gradient(180deg, var(--bg-card), #1d1d25);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-lg);
-  padding: 16px;
   position: relative;
-  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-soft);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18)),
+    var(--bg-card);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.04) inset,
+    0 20px 40px rgba(0,0,0,.45);
   transition: var(--transition);
 }
 
 .suggestion:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-3px) scale(1.005);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.06) inset,
+    0 30px 60px rgba(0,0,0,.6);
 }
 
-/* Header */
+.suggestion::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.08),
+    transparent
+  );
+}
+
+/* ============================= */
+/*           HEADER CARD         */
+/* ============================= */
+
 .suggestion-header {
   display: flex;
   flex-wrap: wrap;
@@ -175,7 +215,10 @@ header {
   color: var(--text-muted);
 }
 
-/* Status */
+/* ============================= */
+/*            STATUS             */
+/* ============================= */
+
 .status-badge {
   padding: 5px 12px;
   font-size: 11px;
@@ -186,24 +229,33 @@ header {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.1);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.15) inset,
+    0 4px 12px rgba(0,0,0,.4);
 }
 
-.status-Attente { background: #7c3aed; color: #f5ebff; }
-.status-Planifié { background: #1e40af; color: #dbeafe; }
-.status-En-cours { background: #6d28d9; color: #ede9fe; }
-.status-Terminé { background: #15803d; color: #dcfce7; }
-.status-Refusé { background: #991b1b; color: #fee2e2; }
+.status-Attente   { background: #7c3aed; color: #f5ebff; }
+.status-Planifié  { background: #1e40af; color: #dbeafe; }
+.status-En-cours  { background: #6d28d9; color: #ede9fe; }
+.status-Terminé   { background: #15803d; color: #dcfce7; }
+.status-Refusé    { background: #991b1b; color: #fee2e2; }
 
-/* Content */
+/* ============================= */
+/*            CONTENT            */
+/* ============================= */
+
 .content {
   white-space: pre-wrap;
-  line-height: 1.5;
+  line-height: 1.65;
+  letter-spacing: .15px;
   font-size: 15px;
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 }
 
-/* Actions */
+/* ============================= */
+/*            ACTIONS            */
+/* ============================= */
+
 .actions {
   display: flex;
   gap: 8px;
@@ -221,6 +273,7 @@ header {
   cursor: pointer;
   font-size: 12px;
   transition: var(--transition);
+  position: relative;
 }
 
 .actions button:hover,
@@ -228,19 +281,33 @@ header {
   background: #3a3a48;
 }
 
-/* Comments */
+button:active {
+  transform: translateY(1px);
+}
+
+/* ============================= */
+/*           COMMENTS            */
+/* ============================= */
+
 .comment-section {
-  margin-top: 12px;
+  margin-top: 14px;
   border-top: 1px dashed var(--border-soft);
-  padding-top: 12px;
+  padding-top: 14px;
 }
 
 .comment {
-  background: #2a2a35;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), transparent),
+    #2a2a35;
+  border: 1px solid rgba(255,255,255,.06);
   padding: 8px 10px;
   border-radius: var(--radius-sm);
   font-size: 13px;
   margin-bottom: 6px;
+}
+
+.comment strong {
+  color: #fff;
 }
 
 .comment time {
@@ -249,7 +316,10 @@ header {
   margin-left: 6px;
 }
 
-/* Inline form */
+/* ============================= */
+/*          INLINE FORM          */
+/* ============================= */
+
 .inline-form {
   display: flex;
   gap: 8px;
@@ -264,14 +334,18 @@ header {
   background: var(--bg-input);
   color: var(--text-main);
   font-size: 13px;
+  transition: var(--transition);
 }
 
-/* Filter */
+/* ============================= */
+/*            FILTER             */
+/* ============================= */
+
 .filter-bar {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  margin: 18px 0;
+  margin: 20px 0;
 }
 
 .filter-bar select {
@@ -282,14 +356,12 @@ header {
   border-radius: var(--radius-sm);
 }
 
-/* Misc */
-.no-data {
-  text-align: center;
-  color: var(--text-muted);
-  padding: 40px 0;
-}
+/* ============================= */
+/*         BADGES & STATES       */
+/* ============================= */
 
 .admin-badge {
+  position: relative;
   background: linear-gradient(135deg, #e50914, #b20710);
   padding: 4px 10px;
   font-size: 11px;
@@ -297,6 +369,16 @@ header {
   font-weight: 800;
   margin-left: 8px;
   box-shadow: var(--shadow-sm);
+}
+
+.admin-badge::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #ff4d4d, transparent);
+  opacity: .35;
+  z-index: -1;
 }
 
 .danger {
@@ -308,10 +390,47 @@ header {
   background: #b91c1c !important;
 }
 
+/* ============================= */
+/*          FOCUS STATES         */
+/* ============================= */
+
+textarea:focus-visible,
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow:
+    0 0 0 2px rgba(59,130,246,.25),
+    0 0 30px rgba(59,130,246,.15);
+}
+
+/* ============================= */
+/*           EMPTY / LOAD        */
+/* ============================= */
+
+.no-data {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px 0;
+}
+
 .loading {
   text-align: center;
   padding: 40px;
   color: var(--text-muted);
+}
+
+.loading::after {
+  content: "…";
+  animation: dots 1.4s infinite;
+}
+
+@keyframes dots {
+  0%   { content: ""; }
+  33%  { content: "."; }
+  66%  { content: ".."; }
+  100% { content: "..."; }
 }
 
   </style>
