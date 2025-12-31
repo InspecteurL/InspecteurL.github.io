@@ -172,7 +172,14 @@ button.active {
 /*      HOVER MICRO INTERACTION  */
 /* ============================= */
 .movieimg:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px) scale(1.02); /* lift + léger agrandissement */
+  box-shadow:
+    -6px -6px 18px rgba(255,255,255,.12),
+     12px 12px 26px rgba(0,0,0,.95); /* ombre renforcée pour la profondeur */
+  background:
+    linear-gradient(145deg, #2e2e2e, #1e1414); /* léger changement de ton pour le hover */
+}
+
 
   /* Ombre renforcée */
   box-shadow: var(--shadow-hover);
