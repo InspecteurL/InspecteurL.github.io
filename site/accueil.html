@@ -30,12 +30,21 @@
                 <li><a href="https://inspecteurl.github.io/site/suggestion.html">Suggestion</a></li>
             </ul>
         </nav>
-        <div class="search">
-  <input type="text" id="searchInput" placeholder="Search...">
-  <button id="searchBtn"><i class="fas fa-search"></i></button>
+        <div class="search search-premium">
+  <i class="fas fa-search search-icon"></i>
+
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Rechercher un film, une série, un animé…"
+    autocomplete="off"
+  >
+
+  <button id="searchBtn" aria-label="Search"></button>
 
   <div id="searchSuggestions" class="search-suggestions"></div>
 </div>
+
 
             <div class="profile">
                 <a href="https://inspecteurl.github.io/site/compte.html"<img src="https://i.pravatar.cc/40" alt="Profile"></a>
@@ -1023,51 +1032,114 @@ body {
     cursor: pointer;
 }
 
-    .search {
+    /* ===== SEARCH BAR PREMIUM ===== */
+.search-premium {
   position: relative;
+  width: 420px;
+  max-width: 90vw;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+
+  background: rgba(20, 20, 20, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border-radius: 999px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  transition: border 0.3s, box-shadow 0.3s;
 }
 
+.search-premium:focus-within {
+  border-color: #e50914;
+  box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.25);
+}
+
+/* 🔍 icon */
+.search-icon {
+  color: #aaa;
+  font-size: 16px;
+  margin-right: 12px;
+}
+
+/* ✏️ input */
+.search-premium input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+
+  color: #fff;
+  font-size: 15px;
+}
+
+.search-premium input::placeholder {
+  color: #888;
+}
+
+/* bouton invisible (Enter fonctionne aussi) */
+.search-premium button {
+  display: none;
+}
+
+/* ===== SUGGESTIONS ===== */
 .search-suggestions {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 10px);
   left: 0;
   right: 0;
-  background: #111;
-  border-radius: 10px;
-  margin-top: 8px;
+
+  background: rgba(15, 15, 15, 0.95);
+  backdrop-filter: blur(20px);
+
+  border-radius: 16px;
+  padding: 6px;
+
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+
   max-height: 420px;
   overflow-y: auto;
+
   display: none;
   z-index: 9999;
 }
 
+/* suggestion item */
 .suggestion {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   padding: 10px;
+  border-radius: 12px;
   cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
 }
 
 .suggestion:hover {
-  background: #1f1f1f;
+  background: rgba(255, 255, 255, 0.06);
+  transform: scale(1.02);
 }
 
 .suggestion img {
-  width: 50px;
-  height: 75px;
+  width: 48px;
+  height: 72px;
+  border-radius: 8px;
   object-fit: cover;
-  border-radius: 6px;
 }
 
 .suggestion h4 {
   margin: 0;
   font-size: 15px;
+  color: #fff;
 }
 
 .suggestion span {
   font-size: 12px;
   color: #aaa;
 }
+
 
 
 
@@ -1595,6 +1667,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 </body>
 </html>
+
 
 
 
