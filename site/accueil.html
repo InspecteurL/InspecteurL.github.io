@@ -31,10 +31,13 @@
             </ul>
         </nav>
         <div class="header-right">
-            <div class="search">
-                <input type="text" placeholder="Search...">
-                <button><i class="fas fa-search"></i></button>
-            </div>
+  <div class="search">
+    <input type="text" id="searchInput" placeholder="Search...">
+    <button id="searchBtn">
+      <i class="fas fa-search"></i>
+    </button>
+  </div>
+</div>
             <div class="profile">
                 <a href="https://inspecteurl.github.io/site/compte.html"<img src="https://i.pravatar.cc/40" alt="Profile"></a>
             </div>
@@ -1452,9 +1455,35 @@ document.querySelectorAll('.coming-soon').forEach(card => {
     setInterval(updateCountdown, 1000);
 });
 </script>
+   
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("searchInput");
+  const button = document.getElementById("searchBtn");
+
+  if (!input || !button) return;
+
+  function goToCatalogue() {
+    const query = input.value.trim();
+    if (!query) return;
+
+    // encodage URL propre
+    const url = `catalogue.html?search=${encodeURIComponent(query)}`;
+    window.location.href = url;
+  }
+
+  button.addEventListener("click", goToCatalogue);
+
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") goToCatalogue();
+  });
+});
+
+    </script>
 
 </body>
 </html>
+
 
 
 
