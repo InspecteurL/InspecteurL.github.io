@@ -6,86 +6,278 @@
     <title>Horizoncine</title>
     <link rel="icon" type="image/x-icon" href="horizonlogo.png">
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #141414;
-            color: #ffffff;
-        }
-        header {
-            background-color: #141414;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .logo {
-            font-weight: bold;
-            font-size: 24px;
-            color: #e50914;
-        }
-        .nav-links {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            gap: 20px;
-            margin: 0;
-        }
-        .nav-links li {
-            display: inline;
-        }
-        .nav-links a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .banner {
-            background-color: #222;
-            height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        .banner-content {
-            background-color: rgba(0,0,0,0.5);
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .btn-watch {
-            padding: 10px 20px;
-            background-color: #e50914;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        #auth-form {
-            max-width: 400px;
-            margin: 40px auto;
-            background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        #auth-form input, #auth-form button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: none;
-            border-radius: 5px;
-        }
-        #auth-form input {
-            background-color: #2a2a2a;
-            color: white;
-        }
-        #auth-form button {
-            background-color: #e50914;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        /* ============================= */
+/*        DESIGN TOKENS          */
+/* ============================= */
+
+:root {
+  --bg-main: #0f0f14;
+  --bg-header: rgba(15,15,20,.85);
+  --bg-panel: #1a1a22;
+  --bg-input: #2a2a34;
+
+  --primary: #e50914;
+  --primary-hover: #b20710;
+
+  --text-main: #f5f5f7;
+  --text-muted: #9ca3af;
+
+  --border-soft: rgba(255,255,255,.08);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 6px 16px rgba(0,0,0,.35);
+  --shadow-md: 0 30px 60px rgba(0,0,0,.55);
+
+  --transition: all .25s ease;
+}
+
+/* ============================= */
+/*            RESET              */
+/* ============================= */
+
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at top, #1a1a22, var(--bg-main));
+  color: var(--text-main);
+}
+
+/* ============================= */
+/*            HEADER             */
+/* ============================= */
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-header);
+  backdrop-filter: blur(10px);
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: .6px;
+  color: var(--primary);
+}
+
+/* ============================= */
+/*          NAVIGATION           */
+/* ============================= */
+
+.nav-links {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 22px;
+  margin: 0;
+}
+
+.nav-links a {
+  position: relative;
+  color: var(--text-main);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  opacity: .85;
+  transition: var(--transition);
+}
+
+.nav-links a:hover {
+  opacity: 1;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  transition: var(--transition);
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+/* ============================= */
+/*             HERO              */
+/* ============================= */
+
+.banner {
+  position: relative;
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background:
+    linear-gradient(to bottom, rgba(0,0,0,.2), rgba(0,0,0,.85)),
+    radial-gradient(circle at top, #2a2a35, #0f0f14);
+  overflow: hidden;
+}
+
+.banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(229,9,20,.25), transparent 60%);
+  pointer-events: none;
+}
+
+.banner-content {
+  position: relative;
+  max-width: 640px;
+  background: rgba(20,20,28,.65);
+  backdrop-filter: blur(12px);
+  padding: 40px 32px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-soft);
+}
+
+.banner-content h1 {
+  margin-top: 0;
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: .6px;
+}
+
+.banner-content p {
+  color: var(--text-muted);
+  font-size: 17px;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+/* ============================= */
+/*            BUTTONS            */
+/* ============================= */
+
+.btn-watch {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, var(--primary), #ff3d3d);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  transition: var(--transition);
+  box-shadow: 0 10px 30px rgba(229,9,20,.45);
+}
+
+.btn-watch:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+  box-shadow: 0 16px 40px rgba(229,9,20,.6);
+}
+
+.btn-watch:active {
+  transform: translateY(0);
+}
+
+/* ============================= */
+/*          AUTH FORM            */
+/* ============================= */
+
+#auth-form {
+  max-width: 420px;
+  margin: 70px auto;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.2)),
+    var(--bg-panel);
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-soft);
+}
+
+#auth-form h2 {
+  margin-top: 0;
+  text-align: center;
+  font-weight: 800;
+  margin-bottom: 24px;
+}
+
+#auth-form input,
+#auth-form button {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+#auth-form input {
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border-soft);
+  transition: var(--transition);
+}
+
+#auth-form input::placeholder {
+  color: #8b8b9a;
+}
+
+#auth-form input:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow:
+    0 0 0 2px rgba(229,9,20,.25),
+    0 0 25px rgba(229,9,20,.15);
+}
+
+#auth-form button {
+  background: linear-gradient(135deg, var(--primary), #ff3d3d);
+  color: white;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+#auth-form button:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+  transform: translateY(-1px);
+}
+
+/* ============================= */
+/*          RESPONSIVE           */
+/* ============================= */
+
+@media (max-width: 768px) {
+  .banner-content {
+    padding: 28px 22px;
+  }
+
+  .banner-content h1 {
+    font-size: 30px;
+  }
+
+  .nav-links {
+    gap: 14px;
+  }
+}
+
     </style>
 </head>
 <body>
@@ -184,3 +376,4 @@
     </script>
 </body>
 </html>
+
