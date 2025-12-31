@@ -5,156 +5,246 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mes amis</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #121212;
-      color: white;
-      padding: 20px;
-    }
+    /* ============================= */
+/*         DESIGN TOKENS         */
+/* ============================= */
+:root {
+  --bg-main: #121212;
+  --bg-header: rgba(18,18,18,.95);
+  --bg-panel: #1e1e28;
+  --bg-input: #1c1c1c;
 
-    header {
-      background-color: #141414;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+  --primary: #e50914;
+  --primary-hover: #c40611;
 
-    .nav-links {
-      list-style: none;
-      padding: 0;
-      display: flex;
-      gap: 20px;
-    }
+  --text-main: #f5f5f7;
+  --text-muted: #9ca3af;
+  --text-online: #00ff88;
 
-    .nav-links li {
-      display: inline;
-    }
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 
-    .nav-links a {
-      color: #ffffff;
-      text-decoration: none;
-      font-weight: bold;
-    }
+  --shadow-sm: 0 6px 16px rgba(0,0,0,.35);
+  --shadow-md: 0 15px 35px rgba(0,0,0,.5);
 
-    .search-container {
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: center;
-    }
+  --transition: all .3s ease;
+}
 
-    .search-container input {
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      width: 300px;
-      background-color: #1e1e1e;
-      color: white;
-    }
+/* ============================= */
+/*            BASE               */
+/* ============================= */
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-    .user-cards {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-    }
+body {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  margin: 0;
+  padding: 20px;
+}
 
-    .user-card {
-      background: #1e1e1e;
-      padding: 20px;
-      border-radius: 15px;
-      width: 250px;
-      text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
-    }
+/* ============================= */
+/*           HEADER              */
+/* ============================= */
+header {
+  background: var(--bg-header);
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
 
-    .user-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.5);
-    }
+.nav-links {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 22px;
+  margin: 0;
+}
 
-    .user-card img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: 15px;
-      transition: transform 0.3s ease;
-    }
+.nav-links a {
+  color: var(--text-main);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  position: relative;
+  opacity: 0.85;
+  transition: var(--transition);
+}
 
-    .user-card img:hover {
-      transform: scale(1.2);
-    }
+.nav-links a:hover {
+  opacity: 1;
+}
 
-    .user-card .name {
-      font-size: 18px;
-      font-weight: bold;
-      color: #e50914;
-    }
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  transition: var(--transition);
+}
 
-    .user-card .status {
-      margin-top: 5px;
-      font-size: 14px;
-      color: #888;
-    }
-
-    .user-card .status.online {
-      color: #00ff88;
-    }
-
-    .user-card .status.offline {
-      color: #888;
-    }
-
-    .user-card button {
-      background: #e50914;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      margin-top: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    .user-card button:hover {
-      background-color: #c40611;
-    }
-    .user-card .banner {
+.nav-links a:hover::after {
   width: 100%;
-  height: 120px; /* Hauteur de la bannière */
+}
+
+/* ============================= */
+/*          SEARCH BAR           */
+/* ============================= */
+.search-container {
+  margin: 30px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.search-container input {
+  width: 300px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid #444;
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.search-container input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(229,9,20,.4);
+}
+
+/* ============================= */
+/*           USER CARDS          */
+/* ============================= */
+.user-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+
+.user-card {
+  background: var(--bg-panel);
+  border-radius: var(--radius-lg);
+  width: 260px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+}
+
+.user-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+/* Banner */
+.user-card .banner {
+  width: 100%;
+  height: 120px;
   overflow: hidden;
 }
 
 .user-card .banner img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Remplir l'espace */
+  object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
+.user-card:hover .banner img {
+  transform: scale(1.05);
+}
+
+/* Avatar */
 .user-card .avatar {
   position: relative;
-  margin-top: -40px; /* Superposer l'avatar sur la bannière */
+  margin-top: -40px;
 }
 
 .user-card .avatar img {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 3px solid #121212; /* Bordure pour séparer de la bannière */
+  border: 3px solid var(--bg-main);
+  transition: transform 0.3s ease;
 }
 
+.user-card .avatar img:hover {
+  transform: scale(1.1);
+}
 
-    @media (max-width: 768px) {
-      .user-cards {
-        flex-direction: column;
-        align-items: center;
-      }
+/* Name & Status */
+.user-card .name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 8px;
+}
 
-      .user-card {
-        width: 80%;
-      }
-    }
+.user-card .status {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.user-card .status.online {
+  color: var(--text-online);
+}
+
+.user-card .status.offline {
+  color: var(--text-muted);
+}
+
+/* Button */
+.user-card button {
+  margin-top: 12px;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: linear-gradient(135deg, var(--primary), #ff3d3d);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 6px 20px rgba(229,9,20,.4);
+}
+
+.user-card button:hover {
+  background: linear-gradient(135deg, #c40611, var(--primary));
+  transform: translateY(-1px);
+}
+
+/* ============================= */
+/*           RESPONSIVE          */
+/* ============================= */
+@media (max-width: 768px) {
+  .user-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .user-card {
+    width: 85%;
+  }
+
+  .search-container input {
+    width: 90%;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -301,4 +391,5 @@
 
 </body>
 </html>
+
 
