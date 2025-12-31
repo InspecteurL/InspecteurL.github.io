@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catalogue </title>
   <style>
-   /* ============================= */
+  /* ============================= */
 /*        DESIGN TOKENS          */
 /* ============================= */
 :root {
@@ -13,21 +13,27 @@
 
   --bg-main: #0a0a0a;
   --bg-nav: #141414;
-  --bg-card: rgba(28,28,28,.85);
+
+  /* Carte */
+  --card-grad: linear-gradient(
+    145deg,
+    rgba(40,40,40,.95),
+    rgba(18,18,18,.95)
+  );
 
   --accent: #e50914;
   --accent-hover: #ff2d2d;
 
   --text-main: #ffffff;
-  --text-muted: #a0a0a0;
+  --text-muted: #b0b0b0;
 
   --radius-lg: 18px;
   --radius-pill: 999px;
 
-  --shadow-soft: 0 8px 24px rgba(0,0,0,.45);
-  --shadow-strong: 0 24px 50px rgba(0,0,0,.65);
+  --shadow-soft: 0 10px 26px rgba(0,0,0,.5);
+  --shadow-strong: 0 35px 70px rgba(0,0,0,.75);
 
-  --transition: all .28s cubic-bezier(.4,0,.2,1);
+  --transition: all .35s cubic-bezier(.4,0,.2,1);
 }
 
 /* ============================= */
@@ -42,7 +48,7 @@ body {
   margin: 0;
   font-family: 'Segoe UI', Arial, sans-serif;
   background:
-    radial-gradient(circle at top, #151515, #000 70%);
+    radial-gradient(circle at top, #181818, #000 70%);
   color: var(--text-main);
 }
 
@@ -89,9 +95,8 @@ header {
 header h1 {
   font-size: clamp(2.2rem, 4vw, 3rem);
   margin-bottom: .6rem;
-  background: linear-gradient(135deg, #fff, #cfcfcf);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  letter-spacing: .5px;
 }
 
 header p {
@@ -155,7 +160,6 @@ header p {
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
-  backdrop-filter: blur(6px);
 }
 
 .type-filters button:hover,
@@ -172,9 +176,10 @@ button.active {
 .grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.8rem;
+  gap: 2rem;
   justify-content: center;
   padding: 0 2rem 3rem;
+  perspective: 1200px; /* clé pour la 3D */
 }
 
 /* ============================= */
@@ -183,18 +188,24 @@ button.active {
 .movieimg {
   width: var(--card-w);
   flex: 0 0 var(--card-w);
-  background: var(--bg-card);
+  background: var(--card-grad);
   border-radius: var(--radius-lg);
   overflow: hidden;
   text-align: center;
   box-shadow: var(--shadow-soft);
   transition: var(--transition);
   cursor: pointer;
+
+  transform-style: preserve-3d;
 }
 
-/* SAFE hover : aucune couche au-dessus */
+/* Effet 3D safe */
 .movieimg:hover {
-  transform: translateY(-8px) scale(1.045);
+  transform:
+    translateY(-10px)
+    rotateX(6deg)
+    rotateY(-6deg)
+    scale(1.05);
   box-shadow: var(--shadow-strong);
 }
 
@@ -204,13 +215,18 @@ button.active {
   height: 280px;
   object-fit: cover;
   display: block;
+  transform: translateZ(20px);
 }
 
-/* Title */
+/* TITRE — PLUS VISIBLE */
 .movieimg h2 {
-  margin: .75rem .6rem .25rem;
-  font-size: 1.05rem;
-  font-weight: 600;
+  margin: .9rem .6rem .25rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: .3px;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0,0,0,.8);
+  transform: translateZ(30px);
 }
 
 /* Subtitle */
@@ -218,7 +234,8 @@ button.active {
   display: block;
   font-size: .85rem;
   color: var(--text-muted);
-  margin-bottom: .8rem;
+  margin-bottom: 1rem;
+  transform: translateZ(25px);
 }
 
 /* ============================= */
@@ -228,7 +245,7 @@ button.active {
   display: inline-block;
   background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   color: white;
-  font-weight: 700;
+  font-weight: 800;
   padding: 3px 9px;
   border-radius: 6px;
   font-size: .75rem;
@@ -257,6 +274,10 @@ button.active {
 
   .movieimg img {
     height: 48vw;
+  }
+
+  .movieimg:hover {
+    transform: translateY(-6px) scale(1.03);
   }
 }
 
