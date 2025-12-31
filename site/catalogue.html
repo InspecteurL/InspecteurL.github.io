@@ -1132,6 +1132,37 @@
     document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
   }
 </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search);
+  const searchQuery = params.get("search");
+
+  const items = document.querySelectorAll(".movieimg");
+  if (!searchQuery || !items.length) return;
+
+  const normalize = text =>
+    text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+  const query = normalize(searchQuery);
+
+  items.forEach(item => {
+    const fullText = normalize(
+      `
+      ${item.dataset.title || ""}
+      ${item.dataset.genre || ""}
+      ${item.dataset.type || ""}
+      ${item.innerText || ""}
+      `
+    );
+
+    item.style.display = fullText.includes(query) ? "block" : "none";
+  });
+});
+
+  </script>
 
 </body>
 </html>
