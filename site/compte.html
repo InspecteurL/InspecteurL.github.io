@@ -5,151 +5,269 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>👤 Mon Profil</title>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background: #f4f4f4;
-      color: #333;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-    }
+    /* ============================= */
+/*         DESIGN TOKENS         */
+/* ============================= */
+:root {
+  --bg-main: #f4f4f4;
+  --bg-card: #ffffff;
+  --bg-input: #f0f0f5;
+  --primary: #e50914;
+  --primary-hover: #c40811;
+  --text-main: #333;
+  --text-muted: #555;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --shadow-sm: 0 6px 16px rgba(0,0,0,.15);
+  --shadow-md: 0 12px 30px rgba(0,0,0,.2);
+  --transition: all .3s ease;
+}
 
-      header {
-      background-color: #141414;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+/* ============================= */
+/*            BASE               */
+/* ============================= */
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-    .nav-links {
-      list-style: none;
-      padding: 0;
-      display: flex;
-      gap: 20px;
-    }
+body {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  flex-direction: column;
+}
 
-    .nav-links li {
-      display: inline;
-    }
+/* ============================= */
+/*           HEADER              */
+/* ============================= */
+header {
+  width: 100%;
+  background: #141414;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
 
-    .nav-links a {
-      color: #ffffff;
-      text-decoration: none;
-      font-weight: bold;
-    }
+.nav-links {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 22px;
+  margin: 0;
+}
 
-    h1 {
-      font-size: 2rem;
-      color: #e50914;
-      margin-bottom: 20px;
-    }
+.nav-links a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  position: relative;
+  opacity: .85;
+  transition: var(--transition);
+}
 
-    .container {
-      background: white;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 500px;
-      text-align: center;
-    }
+.nav-links a:hover {
+  opacity: 1;
+}
 
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  transition: var(--transition);
+}
 
-    label {
-      font-size: 1rem;
-      color: #555;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+.nav-links a:hover::after {
+  width: 100%;
+}
 
-    input[type="text"], input[type="url"], input[type="file"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1rem;
-      margin-top: 5px;
-    }
+/* ============================= */
+/*           TITLE / CARD        */
+/* ============================= */
+h1 {
+  font-size: 2.2rem;
+  color: var(--primary);
+  margin-bottom: 25px;
+  text-align: center;
+}
 
-    button {
-      padding: 12px 20px;
-      background-color: #e50914;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.3s;
-    }
+.container {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 35px 30px;
+  box-shadow: var(--shadow-md);
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+  transition: var(--transition);
+}
 
-    button:hover {
-      background-color: #c40811;
-    }
+.container:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(0,0,0,.25);
+}
 
-    .input-label {
-      font-size: 1rem;
-      color: #555;
-    }
+/* ============================= */
+/*            FORM               */
+/* ============================= */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
 
-    .profile-preview {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;
-    }
+label {
+  font-size: 1rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
 
-    .profile-preview img {
-      border-radius: 50%;
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      border: 2px solid #e50914;
-    }
+input[type="text"],
+input[type="url"],
+input[type="file"] {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #ccc;
+  background: var(--bg-input);
+  font-size: 1rem;
+  transition: var(--transition);
+}
 
-    .profile-preview .banner-preview {
-      width: 300px;
-      height: 100px;
-      border-radius: 10px;
-      object-fit: cover;
-    }
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(229,9,20,.3);
+}
 
-    .alert {
-      margin-top: 15px;
-      padding: 10px;
-      background-color: #4CAF50;
-      color: white;
-      border-radius: 5px;
-      text-align: center;
-      display: none;
-    }
+/* ============================= */
+/*           BUTTONS             */
+/* ============================= */
+button {
+  padding: 14px 22px;
+  background: linear-gradient(135deg, var(--primary), #ff3d3d);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: var(--transition);
+  box-shadow: 0 8px 20px rgba(229,9,20,.35);
+}
 
-    .back-button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #555;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.3s;
-    }
+button:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+  transform: translateY(-1px);
+}
 
-    .back-button:hover {
-      background-color: #333;
-    }
+/* ============================= */
+/*       PROFILE PREVIEW         */
+/* ============================= */
+.profile-preview {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.profile-preview img {
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border: 3px solid var(--primary);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-preview img:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 20px rgba(229,9,20,.4);
+}
+
+.profile-preview .banner-preview {
+  width: 300px;
+  height: 100px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-preview .banner-preview:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ============================= */
+/*            ALERT              */
+.alert {
+  margin-top: 18px;
+  padding: 12px;
+  background-color: #4CAF50;
+  color: #fff;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  display: none;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================= */
+/*         BACK BUTTON           */
+.back-button {
+  margin-top: 25px;
+  padding: 12px 22px;
+  background-color: #555;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.back-button:hover {
+  background-color: #333;
+  transform: translateY(-1px);
+}
+
+/* ============================= */
+/*          RESPONSIVE           */
+@media (max-width: 600px) {
+  .container {
+    padding: 25px 20px;
+  }
+
+  .profile-preview {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .profile-preview .banner-preview {
+    width: 90%;
+    height: 90px;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -290,4 +408,5 @@
 
 </body>
 </html>
+
 
