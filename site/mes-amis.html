@@ -264,25 +264,64 @@ h2 {
   transform: translateY(0);
 }
 
+/* ============================= */
+/*        BOUTONS PREMIUM        */
+/* ============================= */
 button {
-  background: var(--accent);
-  color: white;
+  background: linear-gradient(135deg, #e50914, #ff3d3d);
+  color: #fff;
   border: none;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 14px;
-  transition: var(--transition);
+  font-weight: 600;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(229,9,20,0.4);
+  position: relative;
+  overflow: hidden;
 }
 
-button.chat-btn {
-  background: #0066ff;
+button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.15);
+  transform: skewX(-25deg);
+  transition: all 0.5s ease;
+}
+
+button:hover::after {
+  left: 200%;
 }
 
 button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0,0,0,.45);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(229,9,20,0.5);
 }
+
+button:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(229,9,20,0.4);
+}
+
+/* Bouton chat bleu */
+button.chat-btn {
+  background: linear-gradient(135deg, #0066ff, #3399ff);
+  box-shadow: 0 4px 12px rgba(0,102,255,0.4);
+}
+
+button.chat-btn:hover {
+  box-shadow: 0 8px 24px rgba(0,102,255,0.5);
+}
+
+button.chat-btn:active {
+  transform: scale(0.98);
+}
+
 
 /* ============================= */
 /*          BACK LINK            */
@@ -558,6 +597,7 @@ setInterval(manageSession, 10000);
 </script>
 </body>
 </html>
+
 
 
 
