@@ -263,6 +263,76 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+//MOVIE CARD + ANIMATION FONDU + FULLSCREEN DU LECTEUR
+document.addEventListener("DOMContentLoaded", () => {
+  const card = document.querySelector(".card");
+  const fullscreenBtn = document.getElementById("fullscreen");
+  const videoContainer = document.getElementById("videoContainer");
+
+  if (!card || !fullscreenBtn || !videoContainer) return;
+
+  // ===== CSS CINÉMA =====
+  if (!document.getElementById("cinema-css")) {
+    const style = document.createElement("style");
+    style.id = "cinema-css";
+    style.textContent = `
+      .cinema-overlay {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle at center, #111 0%, #000 70%);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 99999;
+        transition: opacity 0.6s ease;
+      }
+
+      .cinema-overlay.active {
+        opacity: 1;
+      }
+
+      .cinema-zoom {
+        animation: cinemaZoom 0.8s cubic-bezier(.25,.8,.25,1) forwards;
+      }
+
+      @keyframes cinemaZoom {
+        from {
+          transform: scale(0.92);
+          filter: blur(6px);
+        }
+        to {
+          transform: scale(1);
+          filter: blur(0);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ===== Overlay =====
+  const overlay = document.createElement("div");
+  overlay.className = "cinema-overlay";
+  document.body.appendChild(overlay);
+
+  // ===== CLICK SUR LA CARD =====
+  card.addEventListener("click", () => {
+    // effet cinéma
+    overlay.classList.add("active");
+
+    // zoom lecteur
+    videoContainer.classList.add("cinema-zoom");
+
+    setTimeout(() => {
+      // fullscreen du lecteur
+      fullscreenBtn.click();
+
+      setTimeout(() => {
+        overlay.classList.remove("active");
+      }, 200);
+    }, 600);
+  });
+});
+
+
 // ==================================================
 // BACK BUTTON → RETOUR CINÉMA PREMIUM (animation inverse)
 // ==================================================
@@ -402,6 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
