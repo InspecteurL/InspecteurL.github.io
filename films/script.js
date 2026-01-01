@@ -457,40 +457,44 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Bouton Episode suivant //
-(function injectNextEpisodeCSS() {
-  if (document.getElementById("next-episode-css")) return;
+// ==================================================
+// PLAYER GLOBAL — ÉPISODE SUIVANT + SKIP INTRO + RESUME
+// ==================================================
+
+// ---------- CSS ----------
+(function injectPlayerCSS() {
+  if (document.getElementById("player-global-css")) return;
 
   const style = document.createElement("style");
-  style.id = "next-episode-css";
+  style.id = "player-global-css";
   style.textContent = `
-    .next-episode-overlay {
+    .overlay-btn {
       position: absolute;
       right: 40px;
       bottom: 90px;
       background: rgba(0,0,0,.85);
       color: white;
-      padding: 16px 20px;
+      padding: 14px 18px;
       border-radius: 14px;
       box-shadow: 0 15px 40px rgba(0,0,0,.5);
       z-index: 99999;
       opacity: 0;
       transform: translateY(15px);
       pointer-events: none;
-      transition: all .35s cubic-bezier(.25,.8,.25,1);
+      transition: all .3s ease;
       display: flex;
       flex-direction: column;
       gap: 8px;
       min-width: 220px;
     }
 
-    .next-episode-overlay.visible {
+    .overlay-btn.visible {
       opacity: 1;
       transform: translateY(0);
       pointer-events: auto;
     }
 
-    .next-episode-overlay button {
+    .overlay-btn button {
       border: none;
       border-radius: 10px;
       padding: 10px;
@@ -498,12 +502,12 @@ document.addEventListener("DOMContentLoaded", () => {
       font-weight: bold;
     }
 
-    .next-btn {
+    .primary-btn {
       background: white;
       color: black;
     }
 
-    .cancel-btn {
+    .secondary-btn {
       background: transparent;
       color: #aaa;
       font-size: 13px;
@@ -513,124 +517,188 @@ document.addEventListener("DOMContentLoaded", () => {
       font-size: 13px;
       opacity: .8;
     }
+
+    /* Badge VU */
+    .card.watched::after {
+      content: "VU";
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #00e676;
+      color: black;
+      font-weight: bold;
+      font-size: 11px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      animation: pop .4s ease;
+    }
+
+    @keyframes pop {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    /* Skip intro */
+    .skip-intro {
+      position: absolute;
+      left: 40px;
+      bottom: 90px;
+      background: rgba(0,0,0,.75);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s;
+      z-index: 99999;
+    }
+
+    .skip-intro.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
   `;
   document.head.appendChild(style);
 })();
 
+// ---------- SCRIPT ----------
 document.addEventListener("DOMContentLoaded", () => {
   const video = document.getElementById("video");
   const container = document.getElementById("videoContainer");
   if (!video || !container) return;
 
-  // ===== UI =====
-  const overlay = document.createElement("div");
-  overlay.className = "next-episode-overlay";
-  overlay.innerHTML = `
+  // ====== UI ======
+  const nextOverlay = document.createElement("div");
+  nextOverlay.className = "overlay-btn";
+  nextOverlay.innerHTML = `
     <strong>Épisode suivant</strong>
     <span class="countdown">Lecture auto dans <b id="count">10</b>s</span>
-    <button class="next-btn">▶ Lancer maintenant</button>
-    <button class="cancel-btn">Annuler</button>
+    <button class="primary-btn">▶ Lancer maintenant</button>
+    <button class="secondary-btn">Annuler</button>
   `;
-  container.appendChild(overlay);
+  container.appendChild(nextOverlay);
 
-  const nextBtn = overlay.querySelector(".next-btn");
-  const cancelBtn = overlay.querySelector(".cancel-btn");
-  const countEl = overlay.querySelector("#count");
+  const skipIntro = document.createElement("div");
+  skipIntro.className = "skip-intro";
+  skipIntro.textContent = "⏭️ Passer l’intro";
+  container.appendChild(skipIntro);
 
-  let shown = false;          // bouton déjà affiché
-  let cancelled = false;     // utilisateur a annulé
-  let lastTime = 0;
+  const nextBtn = nextOverlay.querySelector(".primary-btn");
+  const cancelBtn = nextOverlay.querySelector(".secondary-btn");
+  const countEl = nextOverlay.querySelector("#count");
+
+  // ====== ÉTAT ======
+  let shown = false;
+  let cancelled = false;
   let countdown = null;
-  let seconds = 15;
+  let seconds = 17;
+  let lastTime = 0;
 
-  // ===== Utils =====
-  function getCards() {
-    return [...document.querySelectorAll(".card")];
-  }
+  // ====== UTILS ======
+  const cards = () => [...document.querySelectorAll(".card")];
 
-  function getCurrentIndex() {
-    return getCards().findIndex(c => c.dataset.video === video.currentSrc);
-  }
+  const currentIndex = () =>
+    cards().findIndex(c => c.dataset.video === video.currentSrc);
 
-  function getNextEpisodeSrc() {
-    const cards = getCards();
-    const i = getCurrentIndex();
-    return cards[i + 1]?.dataset.video || null;
-  }
+  const nextSrc = () => cards()[currentIndex() + 1]?.dataset.video;
 
-  function resetUI(fullReset = false) {
-    overlay.classList.remove("visible");
+  // ====== RESUME ======
+  video.addEventListener("timeupdate", () => {
+    if (video.currentTime > 5 && video.duration) {
+      localStorage.setItem(
+        "resume:" + video.currentSrc,
+        video.currentTime
+      );
+    }
+  });
+
+  video.addEventListener("loadedmetadata", () => {
+    const saved = localStorage.getItem("resume:" + video.currentSrc);
+    if (saved && saved < video.duration - 30) {
+      video.currentTime = saved;
+    }
+    resetUI(true);
+    lastTime = 0;
+  });
+
+  // ====== SKIP INTRO ======
+  video.addEventListener("timeupdate", () => {
+    if (video.currentTime > 5 && video.currentTime < 85) {
+      skipIntro.classList.add("visible");
+    } else {
+      skipIntro.classList.remove("visible");
+    }
+  });
+
+  skipIntro.onclick = () => {
+    video.currentTime = 85;
+    skipIntro.classList.remove("visible");
+  };
+
+  // ====== ÉPISODE SUIVANT ======
+  function resetUI(full) {
+    nextOverlay.classList.remove("visible");
     clearInterval(countdown);
     countdown = null;
-    seconds = 15;
+    seconds = 17;
     countEl.textContent = seconds;
     shown = false;
-
-    if (fullReset) {
-      cancelled = false; // seulement quand nouvel épisode
-    }
+    if (full) cancelled = false;
   }
 
-  // ===== Countdown autoplay =====
   function startCountdown() {
     if (countdown) return;
-
     countdown = setInterval(() => {
       seconds--;
       countEl.textContent = seconds;
-
-      if (seconds <= 0) {
-        clearInterval(countdown);
-        playNext();
-      }
+      if (seconds <= 0) playNext();
     }, 1000);
   }
 
-  function playNext() {
-    const nextSrc = getNextEpisodeSrc();
-    if (!nextSrc) return;
+  function markWatched() {
+    localStorage.setItem("watched:" + video.currentSrc, "1");
+    const card = cards().find(c => c.dataset.video === video.currentSrc);
+    if (card) card.classList.add("watched");
+  }
 
-    video.src = nextSrc;
+  function playNext() {
+    markWatched();
+    const src = nextSrc();
+    if (!src) return;
+    video.src = src;
     video.load();
     video.play().catch(() => {});
     resetUI(true);
   }
 
-  // ===== Détection générique (20s avant fin) =====
   video.addEventListener("timeupdate", () => {
     if (!video.duration || shown || cancelled) return;
-
-    // rewind = on ne réaffiche PAS si annulé
-    if (video.currentTime < lastTime - 1) {
-      lastTime = video.currentTime;
-      return;
-    }
+    if (video.currentTime < lastTime - 1) return;
     lastTime = video.currentTime;
 
-    const remaining = video.duration - video.currentTime;
-
-    if (remaining <= 20 && getNextEpisodeSrc()) {
+    if (video.duration - video.currentTime <= 20 && nextSrc()) {
       shown = true;
-      overlay.classList.add("visible");
+      nextOverlay.classList.add("visible");
       startCountdown();
     }
   });
 
-  // ===== Reset à chaque nouvel épisode =====
-  video.addEventListener("loadedmetadata", () => {
-    resetUI(true);
-    lastTime = 0;
-  });
-
-  // ===== Actions =====
+  // ====== ACTIONS ======
   nextBtn.onclick = playNext;
-
   cancelBtn.onclick = () => {
-    cancelled = true;   // 🔥 clé du bug corrigé
+    cancelled = true;
     resetUI(false);
   };
-});
 
+  // ====== BADGE VU AU CHARGEMENT ======
+  cards().forEach(card => {
+    if (localStorage.getItem("watched:" + card.dataset.video)) {
+      card.classList.add("watched");
+    }
+  });
+});
 
 
 // ---------------------
@@ -649,6 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
