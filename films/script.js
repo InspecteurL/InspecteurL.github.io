@@ -464,106 +464,161 @@ document.addEventListener("DOMContentLoaded", () => {
   const style = document.createElement("style");
   style.id = "next-episode-css";
   style.textContent = `
-    .next-episode-btn {
+    .next-episode-overlay {
       position: absolute;
       right: 40px;
       bottom: 90px;
-      padding: 14px 20px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 12px;
-      background: white;
-      color: black;
-      cursor: pointer;
+      background: rgba(0,0,0,.85);
+      color: white;
+      padding: 16px 20px;
+      border-radius: 14px;
+      box-shadow: 0 15px 40px rgba(0,0,0,.5);
       z-index: 99999;
-      box-shadow: 0 8px 25px rgba(0,0,0,.35);
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(15px);
       pointer-events: none;
-      transition: all .3s ease;
+      transition: all .35s cubic-bezier(.25,.8,.25,1);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 220px;
     }
 
-    .next-episode-btn.visible {
+    .next-episode-overlay.visible {
       opacity: 1;
       transform: translateY(0);
       pointer-events: auto;
     }
+
+    .next-episode-overlay button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .next-btn {
+      background: white;
+      color: black;
+    }
+
+    .cancel-btn {
+      background: transparent;
+      color: #aaa;
+      font-size: 13px;
+    }
+
+    .countdown {
+      font-size: 13px;
+      opacity: .8;
+    }
   `;
   document.head.appendChild(style);
 })();
+
 document.addEventListener("DOMContentLoaded", () => {
   const video = document.getElementById("video");
-  const videoContainer = document.getElementById("videoContainer");
-  if (!video || !videoContainer) return;
+  const container = document.getElementById("videoContainer");
+  if (!video || !container) return;
 
-  // ===== Bouton =====
-  const nextBtn = document.createElement("button");
-  nextBtn.className = "next-episode-btn";
-  nextBtn.textContent = "▶ Épisode suivant";
-  videoContainer.appendChild(nextBtn);
+  // ===== UI =====
+  const overlay = document.createElement("div");
+  overlay.className = "next-episode-overlay";
+  overlay.innerHTML = `
+    <strong>Épisode suivant</strong>
+    <span class="countdown">Lecture auto dans <b id="count">5</b>s</span>
+    <button class="next-btn">▶ Lancer maintenant</button>
+    <button class="cancel-btn">Annuler</button>
+  `;
+  container.appendChild(overlay);
+
+  const nextBtn = overlay.querySelector(".next-btn");
+  const cancelBtn = overlay.querySelector(".cancel-btn");
+  const countEl = overlay.querySelector("#count");
 
   let shown = false;
   let lastTime = 0;
+  let countdown = null;
+  let seconds = 5;
 
-  // ===== Trouver épisode suivant =====
+  // ===== Utils =====
+  function getCards() {
+    return [...document.querySelectorAll(".card")];
+  }
+
+  function getCurrentIndex() {
+    return getCards().findIndex(c => c.dataset.video === video.currentSrc);
+  }
+
   function getNextEpisodeSrc() {
-    const cards = [...document.querySelectorAll(".card")];
-    const current = video.currentSrc;
-
-    const index = cards.findIndex(c => c.dataset.video === current);
-    if (index === -1) return null;
-
-    return cards[index + 1]?.dataset.video || null;
+    const cards = getCards();
+    const i = getCurrentIndex();
+    return cards[i + 1]?.dataset.video || null;
   }
 
-  // ===== Affichage bouton =====
-  function showNextButton() {
-    if (!getNextEpisodeSrc()) return; // dernier épisode
-    nextBtn.classList.add("visible");
+  function saveEpisodeWatched() {
+    const src = video.currentSrc;
+    if (!src) return;
+    localStorage.setItem("watched:" + src, "1");
   }
 
-  function hideNextButton() {
-    nextBtn.classList.remove("visible");
+  function resetUI() {
+    overlay.classList.remove("visible");
+    clearInterval(countdown);
+    seconds = 5;
+    countEl.textContent = seconds;
+    shown = false;
+  }
+
+  // ===== Countdown autoplay =====
+  function startCountdown() {
+    countdown = setInterval(() => {
+      seconds--;
+      countEl.textContent = seconds;
+      if (seconds <= 0) {
+        clearInterval(countdown);
+        playNext();
+      }
+    }, 1000);
+  }
+
+  function playNext() {
+    const nextSrc = getNextEpisodeSrc();
+    if (!nextSrc) return;
+
+    saveEpisodeWatched();
+    video.src = nextSrc;
+    video.load();
+    video.play().catch(() => {});
+    resetUI();
   }
 
   // ===== Détection générique =====
   video.addEventListener("timeupdate", () => {
     if (!video.duration || shown) return;
 
-    // si l'utilisateur rewind → reset
-    if (video.currentTime < lastTime - 1) {
-      shown = false;
-      hideNextButton();
-    }
+    // rewind = reset
+    if (video.currentTime < lastTime - 1) resetUI();
     lastTime = video.currentTime;
 
     const remaining = video.duration - video.currentTime;
 
-    // ⚠️ seuil générique (ajuste si besoin)
-    if (remaining <= 20) {
+    if (remaining <= 20 && getNextEpisodeSrc()) {
       shown = true;
-      showNextButton();
+      overlay.classList.add("visible");
+      startCountdown();
     }
   });
 
-  // ===== Reset au chargement d’un nouvel épisode =====
-  video.addEventListener("loadedmetadata", () => {
-    shown = false;
-    lastTime = 0;
-    hideNextButton();
-  });
+  // ===== Reset à chaque épisode =====
+  video.addEventListener("loadedmetadata", resetUI);
 
-  // ===== Click épisode suivant =====
-  nextBtn.addEventListener("click", () => {
-    const nextSrc = getNextEpisodeSrc();
-    if (!nextSrc) return;
-
-    video.src = nextSrc;
-    video.load();
-    video.play().catch(() => {});
-    hideNextButton();
-  });
+  // ===== Actions =====
+  nextBtn.onclick = playNext;
+  cancelBtn.onclick = resetUI;
 });
+
 
 
 // ---------------------
@@ -582,6 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
