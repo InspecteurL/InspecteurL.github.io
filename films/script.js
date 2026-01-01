@@ -527,7 +527,7 @@ document.addEventListener("DOMContentLoaded", () => {
   overlay.className = "next-episode-overlay";
   overlay.innerHTML = `
     <strong>Épisode suivant</strong>
-    <span class="countdown">Lecture auto dans <b id="count">5</b>s</span>
+    <span class="countdown">Lecture auto dans <b id="count">10</b>s</span>
     <button class="next-btn">▶ Lancer maintenant</button>
     <button class="cancel-btn">Annuler</button>
   `;
@@ -537,7 +537,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelBtn = overlay.querySelector(".cancel-btn");
   const countEl = overlay.querySelector("#count");
 
-  let shown = false;
+  let shown = false;          // bouton déjà affiché
+  let cancelled = false;     // utilisateur a annulé
   let lastTime = 0;
   let countdown = null;
   let seconds = 10;
@@ -557,25 +558,27 @@ document.addEventListener("DOMContentLoaded", () => {
     return cards[i + 1]?.dataset.video || null;
   }
 
-  function saveEpisodeWatched() {
-    const src = video.currentSrc;
-    if (!src) return;
-    localStorage.setItem("watched:" + src, "1");
-  }
-
-  function resetUI() {
+  function resetUI(fullReset = false) {
     overlay.classList.remove("visible");
     clearInterval(countdown);
-    seconds = 5;
+    countdown = null;
+    seconds = 10;
     countEl.textContent = seconds;
     shown = false;
+
+    if (fullReset) {
+      cancelled = false; // seulement quand nouvel épisode
+    }
   }
 
   // ===== Countdown autoplay =====
   function startCountdown() {
+    if (countdown) return;
+
     countdown = setInterval(() => {
       seconds--;
       countEl.textContent = seconds;
+
       if (seconds <= 0) {
         clearInterval(countdown);
         playNext();
@@ -587,36 +590,45 @@ document.addEventListener("DOMContentLoaded", () => {
     const nextSrc = getNextEpisodeSrc();
     if (!nextSrc) return;
 
-    saveEpisodeWatched();
     video.src = nextSrc;
     video.load();
     video.play().catch(() => {});
-    resetUI();
+    resetUI(true);
   }
 
-  // ===== Détection générique =====
+  // ===== Détection générique (20s avant fin) =====
   video.addEventListener("timeupdate", () => {
-    if (!video.duration || shown) return;
+    if (!video.duration || shown || cancelled) return;
 
-    // rewind = reset
-    if (video.currentTime < lastTime - 1) resetUI();
+    // rewind = on ne réaffiche PAS si annulé
+    if (video.currentTime < lastTime - 1) {
+      lastTime = video.currentTime;
+      return;
+    }
     lastTime = video.currentTime;
 
     const remaining = video.duration - video.currentTime;
 
-    if (remaining <= 10 && getNextEpisodeSrc()) {
+    if (remaining <= 20 && getNextEpisodeSrc()) {
       shown = true;
       overlay.classList.add("visible");
       startCountdown();
     }
   });
 
-  // ===== Reset à chaque épisode =====
-  video.addEventListener("loadedmetadata", resetUI);
+  // ===== Reset à chaque nouvel épisode =====
+  video.addEventListener("loadedmetadata", () => {
+    resetUI(true);
+    lastTime = 0;
+  });
 
   // ===== Actions =====
   nextBtn.onclick = playNext;
-  cancelBtn.onclick = resetUI;
+
+  cancelBtn.onclick = () => {
+    cancelled = true;   // 🔥 clé du bug corrigé
+    resetUI(false);
+  };
 });
 
 
@@ -637,6 +649,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
