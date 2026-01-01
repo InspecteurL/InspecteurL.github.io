@@ -457,6 +457,113 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// Bouton Episode suivant //
+(function injectNextEpisodeCSS() {
+  if (document.getElementById("next-episode-css")) return;
+
+  const style = document.createElement("style");
+  style.id = "next-episode-css";
+  style.textContent = `
+    .next-episode-btn {
+      position: absolute;
+      right: 40px;
+      bottom: 90px;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 12px;
+      background: white;
+      color: black;
+      cursor: pointer;
+      z-index: 99999;
+      box-shadow: 0 8px 25px rgba(0,0,0,.35);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: all .3s ease;
+    }
+
+    .next-episode-btn.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+  `;
+  document.head.appendChild(style);
+})();
+document.addEventListener("DOMContentLoaded", () => {
+  const video = document.getElementById("video");
+  const videoContainer = document.getElementById("videoContainer");
+  if (!video || !videoContainer) return;
+
+  // ===== Bouton =====
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "next-episode-btn";
+  nextBtn.textContent = "▶ Épisode suivant";
+  videoContainer.appendChild(nextBtn);
+
+  let shown = false;
+  let lastTime = 0;
+
+  // ===== Trouver épisode suivant =====
+  function getNextEpisodeSrc() {
+    const cards = [...document.querySelectorAll(".card")];
+    const current = video.currentSrc;
+
+    const index = cards.findIndex(c => c.dataset.video === current);
+    if (index === -1) return null;
+
+    return cards[index + 1]?.dataset.video || null;
+  }
+
+  // ===== Affichage bouton =====
+  function showNextButton() {
+    if (!getNextEpisodeSrc()) return; // dernier épisode
+    nextBtn.classList.add("visible");
+  }
+
+  function hideNextButton() {
+    nextBtn.classList.remove("visible");
+  }
+
+  // ===== Détection générique =====
+  video.addEventListener("timeupdate", () => {
+    if (!video.duration || shown) return;
+
+    // si l'utilisateur rewind → reset
+    if (video.currentTime < lastTime - 1) {
+      shown = false;
+      hideNextButton();
+    }
+    lastTime = video.currentTime;
+
+    const remaining = video.duration - video.currentTime;
+
+    // ⚠️ seuil générique (ajuste si besoin)
+    if (remaining <= 20) {
+      shown = true;
+      showNextButton();
+    }
+  });
+
+  // ===== Reset au chargement d’un nouvel épisode =====
+  video.addEventListener("loadedmetadata", () => {
+    shown = false;
+    lastTime = 0;
+    hideNextButton();
+  });
+
+  // ===== Click épisode suivant =====
+  nextBtn.addEventListener("click", () => {
+    const nextSrc = getNextEpisodeSrc();
+    if (!nextSrc) return;
+
+    video.src = nextSrc;
+    video.load();
+    video.play().catch(() => {});
+    hideNextButton();
+  });
+});
 
 
 // ---------------------
@@ -475,6 +582,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
