@@ -457,10 +457,82 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// ==================================================
-// PLAYER GLOBAL — AUTOPLAY, SKIP INTRO & UI DISPARITION
-// ==================================================
+// ---------------------
+// CSS pour Next Episode / Skip Intro / Options
+// ---------------------
+(function injectPlayerCSS() {
+  if (document.getElementById("player-css")) return;
 
+  const style = document.createElement("style");
+  style.id = "player-css";
+  style.textContent = `
+    /* Bouton Episode Suivant */
+    .overlay-btn {
+      position: absolute;
+      right: 40px;
+      bottom: 90px;
+      background: rgba(0,0,0,.85);
+      color: white;
+      padding: 16px 20px;
+      border-radius: 14px;
+      box-shadow: 0 15px 40px rgba(0,0,0,.5);
+      z-index: 99999;
+      opacity: 0;
+      transform: translateY(15px);
+      pointer-events: none;
+      transition: all .35s cubic-bezier(.25,.8,.25,1);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 220px;
+    }
+    .overlay-btn.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .overlay-btn button { border: none; border-radius: 10px; padding: 10px; cursor: pointer; font-weight: bold; }
+    .overlay-btn .primary-btn { background: white; color: black; }
+    .overlay-btn .secondary-btn { background: transparent; color: #aaa; font-size: 13px; }
+    .overlay-btn .countdown { font-size: 13px; opacity: .8; }
+
+    /* Skip Intro */
+    .skip-intro {
+      position: absolute;
+      left: 50%;
+      bottom: 60px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.7);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s ease;
+      z-index: 99999;
+    }
+    .skip-intro.visible { opacity: 1; pointer-events: auto; }
+
+    /* Options utilisateur */
+    .player-settings {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,.7);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      transition: opacity .3s ease;
+      z-index: 99999;
+    }
+    .player-settings.hidden { opacity: 0; pointer-events: none; }
+    .player-settings label { display: block; margin-bottom: 4px; cursor: pointer; }
+    .player-settings input { margin-right: 6px; }
+  `;
+  document.head.appendChild(style);
+})();
+
+// ---------------------
+// Script Player
+// ---------------------
 document.addEventListener("DOMContentLoaded", () => {
   const video = document.getElementById("video");
   const container = document.getElementById("videoContainer");
@@ -469,64 +541,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- Paramètres utilisateur ----------
   const SETTINGS_KEY = "playerSettings";
   const defaultSettings = { autoplayNext: true, skipIntro: true };
-
-  function getSettings() {
-    return { ...defaultSettings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") };
-  }
-
-  function saveSettings(settings) {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  }
-
-  let settings = getSettings();
-
-  // ---------- CSS ----------
-  (function injectCSS() {
-    if (document.getElementById("player-global-css")) return;
-
-    const style = document.createElement("style");
-    style.id = "player-global-css";
-    style.textContent = `
-      .overlay-btn, .skip-intro, .player-settings {
-        position: absolute;
-        background: rgba(0,0,0,.85);
-        color: white;
-        z-index: 99999;
-        border-radius: 14px;
-        box-shadow: 0 15px 40px rgba(0,0,0,.5);
-        font-size: 14px;
-        transition: opacity .3s, transform .3s;
-      }
-
-      .overlay-btn, .skip-intro, .player-settings {
-        opacity: 1;
-        pointer-events: auto;
-      }
-
-      .overlay-btn.hidden, .skip-intro.hidden, .player-settings.hidden {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      .overlay-btn {
-        right: 40px; bottom: 90px;
-        padding: 14px 18px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        min-width: 220px;
-      }
-
-      .overlay-btn button { border: none; border-radius: 10px; padding: 10px; cursor: pointer; font-weight: bold; }
-      .primary-btn { background: white; color: black; }
-      .secondary-btn { background: transparent; color: #aaa; font-size: 13px; }
-
-      .skip-intro { left: 40px; bottom: 90px; padding: 10px 14px; font-weight: bold; cursor: pointer; }
-      .player-settings { right: 40px; top: 40px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-      .player-settings label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; }
-    `;
-    document.head.appendChild(style);
-  })();
+  let settings = { ...defaultSettings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") };
+  function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
 
   // ---------- UI ----------
   const nextOverlay = document.createElement("div");
@@ -552,32 +568,32 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
   container.appendChild(settingsUI);
 
+  // ---------- Inputs ----------
   const autoplayToggle = settingsUI.querySelector("#autoplayToggle");
   const skipIntroToggle = settingsUI.querySelector("#skipIntroToggle");
   autoplayToggle.checked = settings.autoplayNext;
   skipIntroToggle.checked = settings.skipIntro;
-
-  autoplayToggle.onchange = () => { settings.autoplayNext = autoplayToggle.checked; saveSettings(settings); };
-  skipIntroToggle.onchange = () => { settings.skipIntro = skipIntroToggle.checked; saveSettings(settings); skipIntro.classList.remove("visible"); };
+  autoplayToggle.onchange = () => { settings.autoplayNext = autoplayToggle.checked; saveSettings(); };
+  skipIntroToggle.onchange = () => { settings.skipIntro = skipIntroToggle.checked; skipIntro.classList.remove("visible"); saveSettings(); };
 
   const nextBtn = nextOverlay.querySelector(".primary-btn");
   const cancelBtn = nextOverlay.querySelector(".secondary-btn");
   const countEl = nextOverlay.querySelector("#count");
 
-  let shown = false, cancelled = false, countdown = null, seconds = 10, lastTime = 0;
+  let countdown = null, seconds = 10, lastTime = 0, shownNext = false, cancelledNext = false;
 
   const cards = () => [...document.querySelectorAll(".card")];
   const nextSrc = () => cards()[cards().findIndex(c => c.dataset.video === video.currentSrc) + 1]?.dataset.video;
 
   // ---------- Skip intro ----------
   video.addEventListener("timeupdate", () => {
-    if (!settings.skipIntro) return;
-    if (video.currentTime > 5 && video.currentTime < 85) skipIntro.classList.add("visible");
+    if (!settings.skipIntro) { skipIntro.classList.remove("visible"); return; }
+    if (video.currentTime > 5 && video.currentTime < 80) skipIntro.classList.add("visible");
     else skipIntro.classList.remove("visible");
   });
   skipIntro.onclick = () => { video.currentTime = 85; skipIntro.classList.remove("visible"); };
 
-  // ---------- Autoplay next ----------
+  // ---------- Autoplay Next ----------
   function startCountdown() {
     if (!settings.autoplayNext || countdown) return;
     countdown = setInterval(() => {
@@ -587,14 +603,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
   }
 
-  function resetUI(full = false) {
+  function resetNextUI(full = false) {
     nextOverlay.classList.remove("visible");
     clearInterval(countdown);
     countdown = null;
     seconds = 10;
     countEl.textContent = seconds;
-    shown = false;
-    if (full) cancelled = false;
+    shownNext = false;
+    if (full) cancelledNext = false;
   }
 
   function playNext() {
@@ -603,45 +619,35 @@ document.addEventListener("DOMContentLoaded", () => {
     video.src = src;
     video.load();
     video.play().catch(() => {});
-    resetUI(true);
+    resetNextUI(true);
   }
 
   video.addEventListener("timeupdate", () => {
-    if (!video.duration || shown || cancelled) return;
+    if (!video.duration || shownNext || cancelledNext) return;
     if (video.currentTime < lastTime - 1) return;
     lastTime = video.currentTime;
 
     if (video.duration - video.currentTime <= 20 && nextSrc()) {
-      shown = true;
+      shownNext = true;
       nextOverlay.classList.add("visible");
       startCountdown();
     }
   });
 
   nextBtn.onclick = playNext;
-  cancelBtn.onclick = () => { cancelled = true; resetUI(false); };
+  cancelBtn.onclick = () => { cancelledNext = true; resetNextUI(false); };
 
-  // ---------- Auto hide controls ----------
-  const controls = [nextOverlay, skipIntro, settingsUI];
+  // ---------- Options auto-hide ----------
+  const options = [settingsUI];
   let hideTimer;
-
-  function showControls() { 
-    controls.forEach(c => c.classList.remove("hidden")); 
-    resetHideTimer();
-  }
-
-  function hideControls() { controls.forEach(c => c.classList.add("hidden")); }
-
-  function resetHideTimer() {
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(hideControls, 3500);
-  }
-
-  document.addEventListener("mousemove", showControls);
-  resetHideTimer(); // lancer au départ
+  function showOptions() { options.forEach(c => c.classList.remove("hidden")); resetHideTimer(); }
+  function hideOptions() { options.forEach(c => c.classList.add("hidden")); }
+  function resetHideTimer() { clearTimeout(hideTimer); hideTimer = setTimeout(hideOptions, 3500); }
+  document.addEventListener("mousemove", showOptions);
+  resetHideTimer();
 
   // ---------- Reset sur nouvel épisode ----------
-  video.addEventListener("loadedmetadata", () => { resetUI(true); lastTime = 0; });
+  video.addEventListener("loadedmetadata", () => { resetNextUI(true); lastTime = 0; });
 });
 
 
@@ -662,6 +668,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
