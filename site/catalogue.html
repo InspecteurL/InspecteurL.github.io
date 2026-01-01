@@ -5,53 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catalogue </title>
   <style>
- :root {
+ /* ============================= */
+/*        DESIGN TOKENS          */
+/* ============================= */
+
+:root {
   --card-w: clamp(160px, 20vw, 200px);
-  --bg-main: #0f0f0f;
-  --bg-nav: #1c1c1c;
-  --bg-card: #222;
 
-  --accent: #e50914;
-  --text-main: #ffffff;
-  --text-muted: #b0b0b0;
+  --bg-main: #0f0f14;
+  --bg-nav: #1a1a22;
+  --bg-card: #1f1f28;
+  --bg-input: #2a2a34;
 
-  --radius: 12px;
+  --primary: #e50914;
+  --primary-hover: #b20710;
+
+  --text-main: #f5f5f7;
+  --text-muted: #9ca3af;
+
+  --border-soft: rgba(255,255,255,.08);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 15px;
+
+  --shadow-card: 0 6px 16px rgba(0,0,0,.45);
+
+  --transition: all .25s ease;
 }
 
-/* BASE */
+/* ============================= */
+/*            BASE               */
+/* ============================= */
 
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: "Inter", Arial, sans-serif;
   background: linear-gradient(to bottom, #111, #000);
   color: var(--text-main);
 }
 
-/* NAV */
+/* ============================= */
+/*            NAV                */
+/* ============================= */
 
 ul {
-  list-style: none;
+  list-style-type: none;
   margin: 0;
   padding: 0;
-  display: flex;
+  overflow: hidden;
   background-color: var(--bg-nav);
+}
+
+li {
+  float: left;
 }
 
 li a {
   display: block;
+  color: var(--text-main);
+  text-align: center;
   padding: 14px 16px;
-  font-size: 18px;
-  color: white;
   text-decoration: none;
-  transition: background 0.2s ease;
+  font-size: 18px;
+  transition: var(--transition);
 }
 
 li a:hover {
-  background-color: var(--accent);
-  border-radius: 4px;
+  background-color: var(--primary);
+  border-radius: var(--radius-sm);
 }
 
-/* HEADER */
+/* ============================= */
+/*           HEADER              */
+/* ============================= */
 
 header {
   text-align: center;
@@ -61,13 +88,16 @@ header {
 header h1 {
   font-size: 2.4rem;
   margin-bottom: 0.4rem;
+  font-weight: 700;
 }
 
 header p {
   color: var(--text-muted);
 }
 
-/* SEARCH */
+/* ============================= */
+/*         SEARCH BAR            */
+/* ============================= */
 
 .search-bar {
   display: flex;
@@ -80,12 +110,26 @@ header p {
   max-width: 400px;
   padding: 0.6rem 1rem;
   border-radius: 20px;
-  border: none;
-  font-size: 1rem;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-input);
+  color: var(--text-main);
   outline: none;
+  font-size: 1rem;
+  transition: var(--transition);
 }
 
-/* FILTERS */
+.search-bar input::placeholder {
+  color: #8b8b9a;
+}
+
+.search-bar input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(229,9,20,.25);
+}
+
+/* ============================= */
+/*            FILTERS            */
+/* ============================= */
 
 .type-filters,
 .filters {
@@ -99,21 +143,23 @@ header p {
 .type-filters button,
 .filters button {
   padding: 0.6rem 1.2rem;
-  border-radius: 20px;
   border: none;
-  background: #333;
-  color: white;
+  border-radius: 20px;
+  background: var(--bg-input);
+  color: var(--text-main);
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: var(--transition);
 }
 
 button.active,
 .type-filters button:hover,
 .filters button:hover {
-  background: var(--accent);
+  background: var(--primary);
 }
 
-/* GRID */
+/* ============================= */
+/*             GRID              */
+/* ============================= */
 
 .grid {
   display: flex;
@@ -123,17 +169,19 @@ button.active,
   padding: 0 2rem 2rem;
 }
 
-/* CARD */
+/* ============================= */
+/*             CARD              */
+/* ============================= */
 
 .movieimg {
   background: var(--bg-card);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: transform .25s ease;
+  text-align: center;
   width: var(--card-w);
   flex: 0 0 var(--card-w);
-  text-align: center;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-  transition: transform 0.2s ease;
 }
 
 .movieimg:hover {
@@ -144,26 +192,30 @@ button.active,
   width: 100%;
   height: 280px;
   object-fit: cover;
+  border-bottom: 1px solid var(--border-soft);
   display: block;
-  border-bottom: 1px solid #333;
 }
 
-/* TEXTE CARTE */
+/* ============================= */
+/*         CARD TEXT             */
+/* ============================= */
 
 .movieimg h2 {
-  margin: 0.5rem 0 0.2rem;
+  margin: 0.6rem 0 0.25rem;
   font-size: 1rem;
-  font-weight: normal;
+  font-weight: 500;
 }
 
 .movieimg span {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
   font-size: 0.85rem;
   color: var(--text-muted);
 }
 
-/* NO RESULTS */
+/* ============================= */
+/*          NO RESULTS            */
+/* ============================= */
 
 #noResults {
   text-align: center;
@@ -173,25 +225,35 @@ button.active,
   padding-bottom: 2rem;
 }
 
-/* BADGE */
+/* ============================= */
+/*             BADGE             */
+/* ============================= */
 
 .badge-provisoire {
   display: inline-block;
-  background-color: var(--accent);
+  background-color: var(--primary);
   color: white;
-  font-weight: bold;
+  font-weight: 700;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-top: 5px;
   font-size: 0.75em;
 }
 
-/* MOBILE */
+/* ============================= */
+/*           MOBILE              */
+/* ============================= */
 
 @media (max-width: 400px) {
-  :root { --card-w: 46vw; }
-  .movieimg img { height: 48vw; }
+  :root {
+    --card-w: 46vw;
+  }
+
+  .movieimg img {
+    height: 48vw;
+  }
 }
+
 
   </style>
 </head>
