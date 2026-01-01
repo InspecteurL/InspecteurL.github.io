@@ -458,7 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ---------------------
-// CSS pour Next Episode / Skip Intro / Options
+// CSS pour Next Episode / Skip Intro / Options (version améliorée)
 // ---------------------
 (function injectPlayerCSS() {
   if (document.getElementById("player-css")) return;
@@ -473,9 +473,9 @@ document.addEventListener("DOMContentLoaded", () => {
       bottom: 90px;
       background: rgba(0,0,0,.85);
       color: white;
-      padding: 16px 20px;
+      padding: 14px 18px;
       border-radius: 14px;
-      box-shadow: 0 15px 40px rgba(0,0,0,.5);
+      box-shadow: 0 10px 30px rgba(0,0,0,.5);
       z-index: 99999;
       opacity: 0;
       transform: translateY(15px);
@@ -483,21 +483,21 @@ document.addEventListener("DOMContentLoaded", () => {
       transition: all .35s cubic-bezier(.25,.8,.25,1);
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      min-width: 220px;
+      gap: 6px;
+      min-width: 200px;
+      font-family: sans-serif;
     }
     .overlay-btn.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .overlay-btn button { border: none; border-radius: 10px; padding: 10px; cursor: pointer; font-weight: bold; }
+    .overlay-btn button { border: none; border-radius: 10px; padding: 8px; cursor: pointer; font-weight: bold; }
     .overlay-btn .primary-btn { background: white; color: black; }
-    .overlay-btn .secondary-btn { background: transparent; color: #aaa; font-size: 13px; }
+    .overlay-btn .secondary-btn { background: transparent; color: #ccc; font-size: 13px; }
     .overlay-btn .countdown { font-size: 13px; opacity: .8; }
 
     /* Skip Intro */
     .skip-intro {
       position: absolute;
-      left: 50%;
-      bottom: 60px;
-      transform: translateX(-50%);
+      right: 40px;
+      bottom: 150px; /* légèrement au-dessus du bouton Episode Suivant */
       background: rgba(0,0,0,.7);
       color: white;
       padding: 8px 16px;
@@ -507,6 +507,8 @@ document.addEventListener("DOMContentLoaded", () => {
       pointer-events: none;
       transition: opacity .3s ease;
       z-index: 99999;
+      font-size: 14px;
+      font-weight: bold;
     }
     .skip-intro.visible { opacity: 1; pointer-events: auto; }
 
@@ -515,16 +517,18 @@ document.addEventListener("DOMContentLoaded", () => {
       position: absolute;
       top: 20px;
       right: 20px;
-      background: rgba(0,0,0,.7);
+      background: rgba(0,0,0,.6);
       color: white;
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-radius: 10px;
       font-size: 13px;
       transition: opacity .3s ease;
       z-index: 99999;
+      width: 180px;
+      font-family: sans-serif;
     }
     .player-settings.hidden { opacity: 0; pointer-events: none; }
-    .player-settings label { display: block; margin-bottom: 4px; cursor: pointer; }
+    .player-settings label { display: block; margin-bottom: 6px; cursor: pointer; }
     .player-settings input { margin-right: 6px; }
   `;
   document.head.appendChild(style);
@@ -668,6 +672,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
