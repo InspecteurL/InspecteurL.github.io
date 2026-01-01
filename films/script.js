@@ -458,7 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ---------------------
-// CSS pour Next Episode / Skip Intro / Options (version améliorée)
+// CSS global pour Player / Next Episode / Skip Intro / Options
 // ---------------------
 (function injectPlayerCSS() {
   if (document.getElementById("player-css")) return;
@@ -497,7 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .skip-intro {
       position: absolute;
       right: 40px;
-      bottom: 150px; /* légèrement au-dessus du bouton Episode Suivant */
+      bottom: 150px;
       background: rgba(0,0,0,.7);
       color: white;
       padding: 8px 16px;
@@ -524,31 +524,76 @@ document.addEventListener("DOMContentLoaded", () => {
       font-size: 13px;
       transition: opacity .3s ease;
       z-index: 99999;
-      width: 180px;
+      width: 240px;
       font-family: sans-serif;
     }
     .player-settings.hidden { opacity: 0; pointer-events: none; }
     .player-settings label { display: block; margin-bottom: 6px; cursor: pointer; }
-    .player-settings input { margin-right: 6px; }
+    .player-settings input[type="number"] { width: 50px; margin-left: 6px; }
+    .player-settings input[type="checkbox"] { margin-right: 6px; }
   `;
   document.head.appendChild(style);
 })();
 
 // ---------------------
-// Script Player
+// Player + Next Episode + Skip Intro + Options
 // ---------------------
 document.addEventListener("DOMContentLoaded", () => {
   const video = document.getElementById("video");
   const container = document.getElementById("videoContainer");
   if (!video || !container) return;
 
-  // ---------- Paramètres utilisateur ----------
-  const SETTINGS_KEY = "playerSettings";
-  const defaultSettings = { autoplayNext: true, skipIntro: true };
-  let settings = { ...defaultSettings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") };
-  function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+  // ===== Paramètres par défaut =====
+  const userOptions = {
+    autoplay: true,
+    skipIntroEnabled: true,
+    nextEpisodeEnabled: true,
+    nextEpisodeShowTime: 20,      // s avant la fin
+    nextEpisodeCountdown: 10,     // compte à rebours
+    skipIntroStart: 0,            // début intro à skipper
+    skipIntroEnd: 60              // fin intro
+  };
 
-  // ---------- UI ----------
+  // --- Charger sauvegarde localStorage ---
+  const saved = JSON.parse(localStorage.getItem("playerOptions") || "{}");
+  Object.assign(userOptions, saved);
+
+  // ===== UI Options =====
+  const settingsDiv = document.createElement("div");
+  settingsDiv.className = "player-settings";
+  settingsDiv.innerHTML = `
+    <label><input type="checkbox" id="optAutoplay" ${userOptions.autoplay ? "checked":""}/> Autoplay</label>
+    <label><input type="checkbox" id="optSkipIntro" ${userOptions.skipIntroEnabled ? "checked":""}/> Activer Skip Intro</label>
+    <label><input type="checkbox" id="optNextEp" ${userOptions.nextEpisodeEnabled ? "checked":""}/> Activer Episode Suivant</label>
+    <label>Apparition (s) : <input type="number" id="optNextShowTime" value="${userOptions.nextEpisodeShowTime}"/></label>
+    <label>Countdown (s) : <input type="number" id="optNextCountdown" value="${userOptions.nextEpisodeCountdown}"/></label>
+    <label>Skip Intro Start : <input type="number" id="optSkipStart" value="${userOptions.skipIntroStart}"/></label>
+    <label>Skip Intro End : <input type="number" id="optSkipEnd" value="${userOptions.skipIntroEnd}"/></label>
+  `;
+  container.appendChild(settingsDiv);
+
+  // ===== Sauvegarde options =====
+  function saveOptions() {
+    localStorage.setItem("playerOptions", JSON.stringify(userOptions));
+  }
+
+  ["optAutoplay","optSkipIntro","optNextEp","optNextShowTime","optNextCountdown","optSkipStart","optSkipEnd"].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener("input", () => {
+      switch(id) {
+        case "optAutoplay": userOptions.autoplay = el.checked; break;
+        case "optSkipIntro": userOptions.skipIntroEnabled = el.checked; break;
+        case "optNextEp": userOptions.nextEpisodeEnabled = el.checked; break;
+        case "optNextShowTime": userOptions.nextEpisodeShowTime = parseFloat(el.value)||20; break;
+        case "optNextCountdown": userOptions.nextEpisodeCountdown = parseFloat(el.value)||10; break;
+        case "optSkipStart": userOptions.skipIntroStart = parseFloat(el.value)||0; break;
+        case "optSkipEnd": userOptions.skipIntroEnd = parseFloat(el.value)||60; break;
+      }
+      saveOptions();
+    });
+  });
+
+  // ===== UI Bouton Episode Suivant =====
   const nextOverlay = document.createElement("div");
   nextOverlay.className = "overlay-btn";
   nextOverlay.innerHTML = `
@@ -558,100 +603,58 @@ document.addEventListener("DOMContentLoaded", () => {
     <button class="secondary-btn">Annuler</button>
   `;
   container.appendChild(nextOverlay);
-
-  const skipIntro = document.createElement("div");
-  skipIntro.className = "skip-intro";
-  skipIntro.textContent = "Passer l’intro ▶▶";
-  container.appendChild(skipIntro);
-
-  const settingsUI = document.createElement("div");
-  settingsUI.className = "player-settings";
-  settingsUI.innerHTML = `
-    <label><input type="checkbox" id="autoplayToggle"> Autoplay épisode suivant</label>
-    <label><input type="checkbox" id="skipIntroToggle"> Bouton passer l’intro</label>
-  `;
-  container.appendChild(settingsUI);
-
-  // ---------- Inputs ----------
-  const autoplayToggle = settingsUI.querySelector("#autoplayToggle");
-  const skipIntroToggle = settingsUI.querySelector("#skipIntroToggle");
-  autoplayToggle.checked = settings.autoplayNext;
-  skipIntroToggle.checked = settings.skipIntro;
-  autoplayToggle.onchange = () => { settings.autoplayNext = autoplayToggle.checked; saveSettings(); };
-  skipIntroToggle.onchange = () => { settings.skipIntro = skipIntroToggle.checked; skipIntro.classList.remove("visible"); saveSettings(); };
-
   const nextBtn = nextOverlay.querySelector(".primary-btn");
   const cancelBtn = nextOverlay.querySelector(".secondary-btn");
   const countEl = nextOverlay.querySelector("#count");
 
-  let countdown = null, seconds = 17, lastTime = 0, shownNext = false, cancelledNext = false;
+  let countdown = null, seconds = userOptions.nextEpisodeCountdown;
+  let shown = false, cancelled = false, lastTime = 0;
 
-  const cards = () => [...document.querySelectorAll(".card")];
-  const nextSrc = () => cards()[cards().findIndex(c => c.dataset.video === video.currentSrc) + 1]?.dataset.video;
-
-  // ---------- Skip intro ----------
-  video.addEventListener("timeupdate", () => {
-    if (!settings.skipIntro) { skipIntro.classList.remove("visible"); return; }
-    if (video.currentTime > 5 && video.currentTime < 80) skipIntro.classList.add("visible");
-    else skipIntro.classList.remove("visible");
-  });
-  skipIntro.onclick = () => { video.currentTime = 85; skipIntro.classList.remove("visible"); };
-
-  // ---------- Autoplay Next ----------
-  function startCountdown() {
-    if (!settings.autoplayNext || countdown) return;
-    countdown = setInterval(() => {
-      seconds--;
-      countEl.textContent = seconds;
-      if (seconds <= 0) playNext();
-    }, 1000);
-  }
-
-  function resetNextUI(full = false) {
-    nextOverlay.classList.remove("visible");
-    clearInterval(countdown);
-    countdown = null;
-    seconds = 17;
-    countEl.textContent = seconds;
-    shownNext = false;
-    if (full) cancelledNext = false;
-  }
-
-  function playNext() {
-    const src = nextSrc();
-    if (!src) return;
-    video.src = src;
-    video.load();
-    video.play().catch(() => {});
-    resetNextUI(true);
-  }
+  function getCards() { return [...document.querySelectorAll(".card")]; }
+  function getCurrentIndex() { return getCards().findIndex(c => c.dataset.video === video.currentSrc); }
+  function getNextEpisodeSrc() { const cards = getCards(); const i = getCurrentIndex(); return cards[i+1]?.dataset.video || null; }
+  function resetNextUI(fullReset=false) { nextOverlay.classList.remove("visible"); clearInterval(countdown); countdown=null; seconds=userOptions.nextEpisodeCountdown; countEl.textContent=seconds; shown=false; if(fullReset) cancelled=false; }
+  function startCountdown() { if(countdown) return; countdown=setInterval(()=>{ seconds--; countEl.textContent=seconds; if(seconds<=0){ clearInterval(countdown); playNext(); } },1000);}
+  function playNext(){ const nextSrc=getNextEpisodeSrc(); if(!nextSrc)return; video.src=nextSrc; video.load(); video.play().catch(()=>{}); resetNextUI(true);}
 
   video.addEventListener("timeupdate", () => {
-    if (!video.duration || shownNext || cancelledNext) return;
-    if (video.currentTime < lastTime - 1) return;
-    lastTime = video.currentTime;
-
-    if (video.duration - video.currentTime <= 20 && nextSrc()) {
-      shownNext = true;
+    if(!video.duration || shown || cancelled || !userOptions.nextEpisodeEnabled) return;
+    if(video.currentTime < lastTime-1){ lastTime=video.currentTime; return;}
+    lastTime=video.currentTime;
+    const remaining = video.duration - video.currentTime;
+    if(remaining <= userOptions.nextEpisodeShowTime && getNextEpisodeSrc()){
+      shown=true;
       nextOverlay.classList.add("visible");
-      startCountdown();
+      seconds = userOptions.nextEpisodeCountdown;
+      countEl.textContent = seconds;
+      if(userOptions.autoplay) startCountdown();
+    }
+  });
+  video.addEventListener("loadedmetadata", ()=>{ resetNextUI(true); lastTime=0; });
+  nextBtn.onclick = playNext;
+  cancelBtn.onclick = ()=>{ cancelled=true; resetNextUI(false); }
+
+  // ===== Skip Intro =====
+  const skipBtn = document.createElement("div");
+  skipBtn.className="skip-intro";
+  skipBtn.textContent="Passer l'intro ▶";
+  container.appendChild(skipBtn);
+  skipBtn.addEventListener("click", () => { video.currentTime = userOptions.skipIntroEnd; skipBtn.classList.remove("visible"); });
+
+  video.addEventListener("timeupdate", () => {
+    if(!userOptions.skipIntroEnabled) return;
+    if(video.currentTime >= userOptions.skipIntroStart && video.currentTime <= userOptions.skipIntroEnd){
+      skipBtn.classList.add("visible");
+    } else {
+      skipBtn.classList.remove("visible");
     }
   });
 
-  nextBtn.onclick = playNext;
-  cancelBtn.onclick = () => { cancelledNext = true; resetNextUI(false); };
-
-  // ---------- Options auto-hide ----------
-  const options = [settingsUI];
-  let hideTimer;
-  function showOptions() { options.forEach(c => c.classList.remove("hidden")); resetHideTimer(); }
-  function hideOptions() { options.forEach(c => c.classList.add("hidden")); }
-  function resetHideTimer() { clearTimeout(hideTimer); hideTimer = setTimeout(hideOptions, 3500); }
-  document.addEventListener("mousemove", showOptions);
-  resetHideTimer();
-
-  // ---------- Reset sur nouvel épisode ----------
-  video.addEventListener("loadedmetadata", () => { resetNextUI(true); lastTime = 0; });
+  // ===== Auto-hide options =====
+  let hideTimeout = null;
+  function showOptions(){ settingsDiv.classList.remove("hidden"); clearTimeout(hideTimeout); hideTimeout=setTimeout(()=>{ settingsDiv.classList.add("hidden"); }, 3000);}
+  container.addEventListener("mousemove", showOptions);
+  showOptions(); // au chargement
 });
 
 
@@ -672,6 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
