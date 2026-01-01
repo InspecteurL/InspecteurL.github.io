@@ -561,7 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const skipIntro = document.createElement("div");
   skipIntro.className = "skip-intro";
-  skipIntro.textContent = "⏭️ Passer l’intro";
+  skipIntro.textContent = "Passer l’intro ▶▶";
   container.appendChild(skipIntro);
 
   const settingsUI = document.createElement("div");
@@ -584,7 +584,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelBtn = nextOverlay.querySelector(".secondary-btn");
   const countEl = nextOverlay.querySelector("#count");
 
-  let countdown = null, seconds = 10, lastTime = 0, shownNext = false, cancelledNext = false;
+  let countdown = null, seconds = 17, lastTime = 0, shownNext = false, cancelledNext = false;
 
   const cards = () => [...document.querySelectorAll(".card")];
   const nextSrc = () => cards()[cards().findIndex(c => c.dataset.video === video.currentSrc) + 1]?.dataset.video;
@@ -611,7 +611,7 @@ document.addEventListener("DOMContentLoaded", () => {
     nextOverlay.classList.remove("visible");
     clearInterval(countdown);
     countdown = null;
-    seconds = 10;
+    seconds = 17;
     countEl.textContent = seconds;
     shownNext = false;
     if (full) cancelledNext = false;
@@ -672,6 +672,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
