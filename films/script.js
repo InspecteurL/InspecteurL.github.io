@@ -540,7 +540,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let shown = false;
   let lastTime = 0;
   let countdown = null;
-  let seconds = 5;
+  let seconds = 10;
 
   // ===== Utils =====
   function getCards() {
@@ -604,7 +604,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const remaining = video.duration - video.currentTime;
 
-    if (remaining <= 20 && getNextEpisodeSrc()) {
+    if (remaining <= 10 && getNextEpisodeSrc()) {
       shown = true;
       overlay.classList.add("visible");
       startCountdown();
@@ -637,6 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
