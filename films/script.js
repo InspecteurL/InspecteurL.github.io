@@ -541,7 +541,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let cancelled = false;     // utilisateur a annulé
   let lastTime = 0;
   let countdown = null;
-  let seconds = 10;
+  let seconds = 15;
 
   // ===== Utils =====
   function getCards() {
@@ -562,7 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
     overlay.classList.remove("visible");
     clearInterval(countdown);
     countdown = null;
-    seconds = 10;
+    seconds = 15;
     countEl.textContent = seconds;
     shown = false;
 
@@ -649,6 +649,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
