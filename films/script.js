@@ -458,8 +458,27 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==================================================
-// PLAYER GLOBAL — ÉPISODE SUIVANT + SKIP INTRO + RESUME
+// PLAYER GLOBAL — AVEC OPTIONS UTILISATEUR
 // ==================================================
+
+// ---------- PARAMÈTRES UTILISATEUR ----------
+const SETTINGS_KEY = "playerSettings";
+
+const defaultSettings = {
+  autoplayNext: true,
+  skipIntro: true
+};
+
+function getSettings() {
+  return {
+    ...defaultSettings,
+    ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}")
+  };
+}
+
+function saveSettings(settings) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
 
 // ---------- CSS ----------
 (function injectPlayerCSS() {
@@ -468,20 +487,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const style = document.createElement("style");
   style.id = "player-global-css";
   style.textContent = `
-    .overlay-btn {
+    .overlay-btn, .skip-intro, .player-settings {
       position: absolute;
-      right: 40px;
-      bottom: 90px;
       background: rgba(0,0,0,.85);
       color: white;
-      padding: 14px 18px;
+      z-index: 99999;
       border-radius: 14px;
       box-shadow: 0 15px 40px rgba(0,0,0,.5);
-      z-index: 99999;
+      font-size: 14px;
+    }
+
+    .overlay-btn {
+      right: 40px;
+      bottom: 90px;
+      padding: 14px 18px;
       opacity: 0;
       transform: translateY(15px);
       pointer-events: none;
-      transition: all .3s ease;
+      transition: .3s;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -502,23 +525,42 @@ document.addEventListener("DOMContentLoaded", () => {
       font-weight: bold;
     }
 
-    .primary-btn {
-      background: white;
-      color: black;
+    .primary-btn { background: white; color: black; }
+    .secondary-btn { background: transparent; color: #aaa; font-size: 13px; }
+
+    .skip-intro {
+      left: 40px;
+      bottom: 90px;
+      padding: 10px 14px;
+      font-weight: bold;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s;
     }
 
-    .secondary-btn {
-      background: transparent;
-      color: #aaa;
+    .skip-intro.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .player-settings {
+      right: 40px;
+      top: 40px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .player-settings label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
       font-size: 13px;
     }
 
-    .countdown {
-      font-size: 13px;
-      opacity: .8;
-    }
-
-    /* Badge VU */
     .card.watched::after {
       content: "VU";
       position: absolute;
@@ -530,34 +572,6 @@ document.addEventListener("DOMContentLoaded", () => {
       font-size: 11px;
       padding: 4px 6px;
       border-radius: 6px;
-      animation: pop .4s ease;
-    }
-
-    @keyframes pop {
-      from { transform: scale(0); opacity: 0; }
-      to   { transform: scale(1); opacity: 1; }
-    }
-
-    /* Skip intro */
-    .skip-intro {
-      position: absolute;
-      left: 40px;
-      bottom: 90px;
-      background: rgba(0,0,0,.75);
-      color: white;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-weight: bold;
-      cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
-      transition: .25s;
-      z-index: 99999;
-    }
-
-    .skip-intro.visible {
-      opacity: 1;
-      pointer-events: auto;
     }
   `;
   document.head.appendChild(style);
@@ -569,12 +583,48 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("videoContainer");
   if (!video || !container) return;
 
-  // ====== UI ======
+  let settings = getSettings();
+
+  // ===== SETTINGS UI =====
+  const settingsUI = document.createElement("div");
+  settingsUI.className = "player-settings";
+  settingsUI.innerHTML = `
+    <label>
+      <input type="checkbox" id="autoplayToggle">
+      Autoplay épisode suivant
+    </label>
+    <label>
+      <input type="checkbox" id="skipIntroToggle">
+      Bouton passer l’intro
+    </label>
+  `;
+  container.appendChild(settingsUI);
+
+  const autoplayToggle = settingsUI.querySelector("#autoplayToggle");
+  const skipIntroToggle = settingsUI.querySelector("#skipIntroToggle");
+
+  autoplayToggle.checked = settings.autoplayNext;
+  skipIntroToggle.checked = settings.skipIntro;
+
+  autoplayToggle.onchange = () => {
+    settings.autoplayNext = autoplayToggle.checked;
+    saveSettings(settings);
+  };
+
+  skipIntroToggle.onchange = () => {
+    settings.skipIntro = skipIntroToggle.checked;
+    saveSettings(settings);
+    skipIntro.classList.remove("visible");
+  };
+
+  // ===== UI =====
   const nextOverlay = document.createElement("div");
   nextOverlay.className = "overlay-btn";
   nextOverlay.innerHTML = `
     <strong>Épisode suivant</strong>
-    <span class="countdown">Lecture auto dans <b id="count">10</b>s</span>
+    <span class="countdown">
+      Lecture auto dans <b id="count">10</b>s
+    </span>
     <button class="primary-btn">▶ Lancer maintenant</button>
     <button class="secondary-btn">Annuler</button>
   `;
@@ -589,42 +639,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelBtn = nextOverlay.querySelector(".secondary-btn");
   const countEl = nextOverlay.querySelector("#count");
 
-  // ====== ÉTAT ======
+  // ===== ÉTAT =====
   let shown = false;
   let cancelled = false;
   let countdown = null;
   let seconds = 17;
   let lastTime = 0;
 
-  // ====== UTILS ======
   const cards = () => [...document.querySelectorAll(".card")];
+  const nextSrc = () =>
+    cards()[cards().findIndex(c => c.dataset.video === video.currentSrc) + 1]
+      ?.dataset.video;
 
-  const currentIndex = () =>
-    cards().findIndex(c => c.dataset.video === video.currentSrc);
-
-  const nextSrc = () => cards()[currentIndex() + 1]?.dataset.video;
-
-  // ====== RESUME ======
+  // ===== SKIP INTRO =====
   video.addEventListener("timeupdate", () => {
-    if (video.currentTime > 5 && video.duration) {
-      localStorage.setItem(
-        "resume:" + video.currentSrc,
-        video.currentTime
-      );
-    }
-  });
+    if (!settings.skipIntro) return;
 
-  video.addEventListener("loadedmetadata", () => {
-    const saved = localStorage.getItem("resume:" + video.currentSrc);
-    if (saved && saved < video.duration - 30) {
-      video.currentTime = saved;
-    }
-    resetUI(true);
-    lastTime = 0;
-  });
-
-  // ====== SKIP INTRO ======
-  video.addEventListener("timeupdate", () => {
     if (video.currentTime > 5 && video.currentTime < 85) {
       skipIntro.classList.add("visible");
     } else {
@@ -637,7 +667,17 @@ document.addEventListener("DOMContentLoaded", () => {
     skipIntro.classList.remove("visible");
   };
 
-  // ====== ÉPISODE SUIVANT ======
+  // ===== AUTOPLAY NEXT =====
+  function startCountdown() {
+    if (!settings.autoplayNext || countdown) return;
+
+    countdown = setInterval(() => {
+      seconds--;
+      countEl.textContent = seconds;
+      if (seconds <= 0) playNext();
+    }, 1000);
+  }
+
   function resetUI(full) {
     nextOverlay.classList.remove("visible");
     clearInterval(countdown);
@@ -648,23 +688,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (full) cancelled = false;
   }
 
-  function startCountdown() {
-    if (countdown) return;
-    countdown = setInterval(() => {
-      seconds--;
-      countEl.textContent = seconds;
-      if (seconds <= 0) playNext();
-    }, 1000);
-  }
-
-  function markWatched() {
-    localStorage.setItem("watched:" + video.currentSrc, "1");
-    const card = cards().find(c => c.dataset.video === video.currentSrc);
-    if (card) card.classList.add("watched");
-  }
-
   function playNext() {
-    markWatched();
     const src = nextSrc();
     if (!src) return;
     video.src = src;
@@ -685,19 +709,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ====== ACTIONS ======
   nextBtn.onclick = playNext;
   cancelBtn.onclick = () => {
     cancelled = true;
     resetUI(false);
   };
-
-  // ====== BADGE VU AU CHARGEMENT ======
-  cards().forEach(card => {
-    if (localStorage.getItem("watched:" + card.dataset.video)) {
-      card.classList.add("watched");
-    }
-  });
 });
 
 
@@ -717,6 +733,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
