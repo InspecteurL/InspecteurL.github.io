@@ -456,6 +456,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 900);
   });
 });
+
+// ---------------------
+// Sécuriser playMovie()
+// ---------------------
+(function () {
+  const oldPlayMovie = window.playMovie;
+  window.playMovie = function (src) {
+    src = autoReplaceDomain(src);
+    if (typeof oldPlayMovie === "function") return oldPlayMovie(src);
+    const video = document.getElementById("video");
+    if (video) {
+      video.src = src;
+      video.load();
+      video.play().catch(() => {});
+    }
+  };
+})();
+
 // =====================
 // PLAYER – limité à /animes/ et /séries/
 // =====================
@@ -666,22 +684,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-// ---------------------
-// Sécuriser playMovie()
-// ---------------------
-(function () {
-  const oldPlayMovie = window.playMovie;
-  window.playMovie = function (src) {
-    src = autoReplaceDomain(src);
-    if (typeof oldPlayMovie === "function") return oldPlayMovie(src);
-    const video = document.getElementById("video");
-    if (video) {
-      video.src = src;
-      video.load();
-      video.play().catch(() => {});
-    }
-  };
-})();
+
 
 
 
