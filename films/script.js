@@ -691,54 +691,71 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("videoContainer");
   const titleEl = document.getElementById("mediaTitle");
 
-  if (!video || !container || !titleEl) return;
+  if (!video || !container || !titleEl) {
+    console.warn("Episode info: éléments manquants");
+    return;
+  }
 
   const info = document.createElement("div");
   info.className = "episode-info";
   container.appendChild(info);
 
+  function getFilename(url) {
+    return url?.split("/").pop()?.split("?")[0];
+  }
+
   function getCurrentCard() {
-    return [...document.querySelectorAll(".card")]
-      .find(c => c.dataset.video === video.currentSrc);
+    const videoFile = getFilename(video.currentSrc);
+    return [...document.querySelectorAll(".card")].find(card =>
+      getFilename(card.dataset.video) === videoFile
+    );
   }
 
   function updateEpisodeInfo() {
     const card = getCurrentCard();
-    if (!card) return;
+    if (!card) {
+      console.warn("Episode info: carte non trouvée");
+      return;
+    }
 
     const mediaTitle = titleEl.textContent.trim();
     const type = titleEl.dataset.type || "series";
 
     if (type === "movie") {
       info.textContent = mediaTitle;
-      return;
+    } else {
+      const season = card.dataset.season || "";
+      const episodeText = card.querySelector("h3")?.textContent || "";
+      const epNumber = episodeText.replace(/\D/g, "");
+
+      const s = season ? `S${String(season).padStart(2, "0")}` : "";
+      const e = epNumber ? `E${String(epNumber).padStart(2, "0")}` : "";
+
+      info.textContent = `${s} • ${e} — ${mediaTitle}`;
     }
 
-    const season = card.dataset.season;
-    const episodeText = card.querySelector("h3")?.textContent || "";
-
-    const s = season ? `S${String(season).padStart(2, "0")}` : "";
-    const e = episodeText.replace(/[^0-9]/g, "");
-    const eFormatted = e ? `E${String(e).padStart(2, "0")}` : "";
-
-    info.textContent = `${s} • ${eFormatted} — ${mediaTitle}`;
+    showInfo(true);
   }
 
-  // Mise à jour à chaque changement d’épisode
-  video.addEventListener("loadedmetadata", updateEpisodeInfo);
-
-  // Apparition / disparition comme les contrôles
   let hideTimer;
-  function showInfo() {
+  function showInfo(force = false) {
     info.classList.add("visible");
     clearTimeout(hideTimer);
     hideTimer = setTimeout(() => {
       info.classList.remove("visible");
-    }, 3000);
+    }, force ? 4000 : 3000);
   }
 
-  container.addEventListener("mousemove", showInfo);
+  // 🔥 ÉVÉNEMENTS CRITIQUES
+  video.addEventListener("loadedmetadata", updateEpisodeInfo);
+  video.addEventListener("play", updateEpisodeInfo);
+
+  container.addEventListener("mousemove", () => showInfo(false));
+
+  // 🔁 Sécurité : tentative après 500ms si tout était déjà chargé
+  setTimeout(updateEpisodeInfo, 500);
 });
+
 
 // ---------------------
 // Sécuriser playMovie()
@@ -756,6 +773,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
