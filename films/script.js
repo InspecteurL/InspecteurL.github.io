@@ -457,34 +457,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// ---------------------
-// Sécuriser playMovie()
-// ---------------------
-(function () {
-  const oldPlayMovie = window.playMovie;
-  window.playMovie = function (src) {
-    src = autoReplaceDomain(src);
-    if (typeof oldPlayMovie === "function") return oldPlayMovie(src);
-    const video = document.getElementById("video");
-    if (video) {
-      video.src = src;
-      video.load();
-      video.play().catch(() => {});
-    }
-  };
-})();
 
-// =====================
-// PLAYER – limité à /animes/ et /séries/
-// =====================
-(function playerOnlyOnAnimesSeries() {
-
-  const path = window.location.pathname;
-
-  // ⛔ Ne concerne que cette fonctionnalité
-  if (!path.startsWith("/animes/") && !path.startsWith("/séries/")) {
-    return; // sort SEULEMENT de ce module
-  }
 // ---------------------
 // CSS pour Next Episode / Skip Intro / Options (version améliorée)
 // ---------------------
@@ -682,6 +655,22 @@ document.addEventListener("DOMContentLoaded", () => {
   video.addEventListener("loadedmetadata", () => { resetNextUI(true); lastTime = 0; });
 });
 
+// ---------------------
+// Sécuriser playMovie()
+// ---------------------
+(function () {
+  const oldPlayMovie = window.playMovie;
+  window.playMovie = function (src) {
+    src = autoReplaceDomain(src);
+    if (typeof oldPlayMovie === "function") return oldPlayMovie(src);
+    const video = document.getElementById("video");
+    if (video) {
+      video.src = src;
+      video.load();
+      video.play().catch(() => {});
+    }
+  };
+})();
 
 
 
