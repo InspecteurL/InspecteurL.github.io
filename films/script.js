@@ -655,6 +655,84 @@ document.addEventListener("DOMContentLoaded", () => {
   video.addEventListener("loadedmetadata", () => { resetNextUI(true); lastTime = 0; });
 });
 
+// ------------AFFICHER LE TITRE ET LE NUMERO D EPISODE DANS LE LECTEUR //
+(function injectEpisodeInfoCSS() {
+  if (document.getElementById("episode-info-css")) return;
+
+  const style = document.createElement("style");
+  style.id = "episode-info-css";
+  style.textContent = `
+    .episode-info {
+      position: absolute;
+      top: 70px; /* juste sous le bouton retour */
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.55);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 99999;
+      opacity: 0;
+      transition: opacity .3s ease;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .episode-info.visible {
+      opacity: 1;
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
+document.addEventListener("DOMContentLoaded", () => {
+  const video = document.getElementById("video");
+  const container = document.getElementById("videoContainer");
+  if (!video || !container) return;
+
+  const info = document.createElement("div");
+  info.className = "episode-info";
+  container.appendChild(info);
+
+  function getCurrentCard() {
+    return [...document.querySelectorAll(".card")]
+      .find(c => c.dataset.video === video.currentSrc);
+  }
+
+  function updateEpisodeInfo() {
+    const card = getCurrentCard();
+    if (!card) return;
+
+    const title = card.dataset.title || "";
+    const type = card.dataset.type || "series";
+    const season = card.dataset.season;
+    const episode = card.dataset.episode;
+
+    if (type === "movie") {
+      info.textContent = title;
+    } else {
+      const s = season ? `S${String(season).padStart(2,"0")}` : "";
+      const e = episode ? `E${String(episode).padStart(2,"0")}` : "";
+      info.textContent = `${s} • ${e} — ${title}`;
+    }
+  }
+
+  // Mise à jour à chaque épisode
+  video.addEventListener("loadedmetadata", updateEpisodeInfo);
+
+  // Apparition/disparition comme les contrôles
+  let hideTimer;
+  function showInfo() {
+    info.classList.add("visible");
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => info.classList.remove("visible"), 3000);
+  }
+
+  container.addEventListener("mousemove", showInfo);
+});
+
 // ---------------------
 // Sécuriser playMovie()
 // ---------------------
@@ -671,6 +749,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
