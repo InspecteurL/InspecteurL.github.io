@@ -664,27 +664,36 @@ document.addEventListener("DOMContentLoaded", () => {
   style.textContent = `
     .episode-info {
       position: absolute;
-      top: 70px;
+      top: 78px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,.55);
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,.75),
+        rgba(0,0,0,.55)
+      );
       color: white;
-      padding: 8px 16px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 16px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: .3px;
       z-index: 99999;
       opacity: 0;
-      transition: opacity .3s ease;
+      transition: opacity .25s ease, transform .25s ease;
       pointer-events: none;
       white-space: nowrap;
+      box-shadow: 0 10px 30px rgba(0,0,0,.45);
     }
+
     .episode-info.visible {
       opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
   `;
   document.head.appendChild(style);
 })();
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const video = document.getElementById("video");
@@ -780,6 +789,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
