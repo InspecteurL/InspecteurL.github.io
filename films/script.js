@@ -689,10 +689,14 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", () => {
   const video = document.getElementById("video");
   const container = document.getElementById("videoContainer");
-  const titleEl = document.getElementById("mediaTitle");
+  const titleEl = document.querySelector(".fiche-info h1");
 
   if (!video || !container || !titleEl) {
-    console.warn("Episode info: éléments manquants");
+    console.warn("Episode info: éléments manquants", {
+      video: !!video,
+      container: !!container,
+      title: !!titleEl
+    });
     return;
   }
 
@@ -711,29 +715,33 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  function isMovie() {
+    return document.querySelectorAll(".card").length === 0;
+  }
+
   function updateEpisodeInfo() {
+    const title = titleEl.textContent.trim();
+
+    if (isMovie()) {
+      info.textContent = title;
+      showInfo(true);
+      return;
+    }
+
     const card = getCurrentCard();
     if (!card) {
       console.warn("Episode info: carte non trouvée");
       return;
     }
 
-    const mediaTitle = titleEl.textContent.trim();
-    const type = titleEl.dataset.type || "series";
+    const season = card.dataset.season || "";
+    const episodeText = card.querySelector("h3")?.textContent || "";
+    const epNumber = episodeText.replace(/\D/g, "");
 
-    if (type === "movie") {
-      info.textContent = mediaTitle;
-    } else {
-      const season = card.dataset.season || "";
-      const episodeText = card.querySelector("h3")?.textContent || "";
-      const epNumber = episodeText.replace(/\D/g, "");
+    const s = season ? `S${String(season).padStart(2, "0")}` : "";
+    const e = epNumber ? `E${String(epNumber).padStart(2, "0")}` : "";
 
-      const s = season ? `S${String(season).padStart(2, "0")}` : "";
-      const e = epNumber ? `E${String(epNumber).padStart(2, "0")}` : "";
-
-      info.textContent = `${s} • ${e} — ${mediaTitle}`;
-    }
-
+    info.textContent = `${s} • ${e} — ${title}`;
     showInfo(true);
   }
 
@@ -746,13 +754,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }, force ? 4000 : 3000);
   }
 
-  // 🔥 ÉVÉNEMENTS CRITIQUES
+  // 🎬 événements fiables
   video.addEventListener("loadedmetadata", updateEpisodeInfo);
   video.addEventListener("play", updateEpisodeInfo);
-
   container.addEventListener("mousemove", () => showInfo(false));
 
-  // 🔁 Sécurité : tentative après 500ms si tout était déjà chargé
+  // sécurité si la vidéo est déjà chargée
   setTimeout(updateEpisodeInfo, 500);
 });
 
@@ -773,6 +780,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
