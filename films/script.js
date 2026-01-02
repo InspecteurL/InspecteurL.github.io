@@ -456,7 +456,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 900);
   });
 });
+// =====================
+// PLAYER – limité à /animes/ et /séries/
+// =====================
+(function playerOnlyOnAnimesSeries() {
 
+  const path = window.location.pathname;
+
+  // ⛔ Ne concerne que cette fonctionnalité
+  if (!path.startsWith("/animes/") && !path.startsWith("/séries/")) {
+    return; // sort SEULEMENT de ce module
+  }
 // ---------------------
 // CSS pour Next Episode / Skip Intro / Options (version améliorée)
 // ---------------------
@@ -672,6 +682,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
