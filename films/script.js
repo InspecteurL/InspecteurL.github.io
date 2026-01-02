@@ -664,7 +664,7 @@ document.addEventListener("DOMContentLoaded", () => {
   style.textContent = `
     .episode-info {
       position: absolute;
-      top: 70px; /* juste sous le bouton retour */
+      top: 70px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0,0,0,.55);
@@ -679,7 +679,6 @@ document.addEventListener("DOMContentLoaded", () => {
       pointer-events: none;
       white-space: nowrap;
     }
-
     .episode-info.visible {
       opacity: 1;
     }
@@ -690,7 +689,9 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", () => {
   const video = document.getElementById("video");
   const container = document.getElementById("videoContainer");
-  if (!video || !container) return;
+  const titleEl = document.getElementById("mediaTitle");
+
+  if (!video || !container || !titleEl) return;
 
   const info = document.createElement("div");
   info.className = "episode-info";
@@ -705,29 +706,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const card = getCurrentCard();
     if (!card) return;
 
-    const title = card.dataset.title || "";
-    const type = card.dataset.type || "series";
-    const season = card.dataset.season;
-    const episode = card.dataset.episode;
+    const mediaTitle = titleEl.textContent.trim();
+    const type = titleEl.dataset.type || "series";
 
     if (type === "movie") {
-      info.textContent = title;
-    } else {
-      const s = season ? `S${String(season).padStart(2,"0")}` : "";
-      const e = episode ? `E${String(episode).padStart(2,"0")}` : "";
-      info.textContent = `${s} • ${e} — ${title}`;
+      info.textContent = mediaTitle;
+      return;
     }
+
+    const season = card.dataset.season;
+    const episodeText = card.querySelector("h3")?.textContent || "";
+
+    const s = season ? `S${String(season).padStart(2, "0")}` : "";
+    const e = episodeText.replace(/[^0-9]/g, "");
+    const eFormatted = e ? `E${String(e).padStart(2, "0")}` : "";
+
+    info.textContent = `${s} • ${eFormatted} — ${mediaTitle}`;
   }
 
-  // Mise à jour à chaque épisode
+  // Mise à jour à chaque changement d’épisode
   video.addEventListener("loadedmetadata", updateEpisodeInfo);
 
-  // Apparition/disparition comme les contrôles
+  // Apparition / disparition comme les contrôles
   let hideTimer;
   function showInfo() {
     info.classList.add("visible");
     clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => info.classList.remove("visible"), 3000);
+    hideTimer = setTimeout(() => {
+      info.classList.remove("visible");
+    }, 3000);
   }
 
   container.addEventListener("mousemove", showInfo);
@@ -749,6 +756,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
