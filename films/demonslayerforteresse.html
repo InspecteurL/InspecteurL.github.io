@@ -447,7 +447,9 @@ video {
 <!-- --- Lecteur vidéo --- -->
 <div class="video-container" id="videoContainer">
   <button class="back-button" id="backButton">← Retour à la fiche</button>
-  <video id="video" src="https://cinefries.xyz/movies/Demon-Slayer-Kimetsu-no-Yaiba-Le-La-Forteresse-infinie.mp4"></video>
+  <video id="video" src="https://cinefries.xyz/movies/Demon-Slayer-Kimetsu-no-Yaiba-Le-La-Forteresse-infinie.mp4">
+    <track id="track-fr" label="Français" kind="subtitles" srclang="fr" src="https://inspecteurl.github.io/subtitles/subfrdemonslayer.vtt">
+  </video>
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
   <div class="progress-wrapper" id="progressWrapper">
@@ -492,7 +494,7 @@ video {
     <button data-track="none">Désactiver</button>
   </div>
 </div>
-  <track id="track-fr" label="Français" kind="subtitles" srclang="fr" src="https://inspecteurl.github.io/subtitles/subfrdemonslayer.vtt">
+  
 <script>
 const video = document.getElementById('video');
 const videoContainer = document.getElementById('videoContainer');
