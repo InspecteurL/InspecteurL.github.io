@@ -1,15 +1,14 @@
-// ---------------------
-// Remplacement automatique des domaines (corrigé)
-// ---------------------
 const HOST_MAP = {
   "cinetacos.xyz": "cinedonuts.xyz",
   "cinechicken.xyz": "cinedonuts.xyz",
   "cinecake.xyz": "cinedonuts.xyz",
+  "cinefries.xyz": "cinedonuts.xyz", // ✅ MANQUANT
   "chicken.xyz": "cinedonuts.xyz",
   "fries.xyz": "cinedonuts.xyz",
   "waffle.xyz": "cinedonuts.xyz",
   "donuts.xyz": "cinedonuts.xyz"
 };
+
 
 function autoReplaceDomain(raw) {
   if (!raw || typeof raw !== "string") return raw;
@@ -790,6 +789,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
