@@ -853,7 +853,8 @@ document.addEventListener('DOMContentLoaded', () => {
       hls.destroy();
       hls = null;
       iframe.src = "";
-iframe.style.display = "none";
+iframe.style.display = "none"
+  ;
 
 controls.style.display = "flex";
 progressWrapper.style.display = "flex";
@@ -864,10 +865,15 @@ centerPlay.style.display = "block";
 
   backButton.addEventListener('click', closeVideo);
 
-  function playMovie(src) {
+  function playMovie(src){
   openVideo();
 
   // RESET
+  if(hls){
+    hls.destroy();
+    hls = null;
+  }
+
   video.pause();
   video.removeAttribute("src");
   video.load();
@@ -876,27 +882,28 @@ centerPlay.style.display = "block";
   iframe.style.display = "none";
   video.style.display = "block";
 
-  if(hls){
-    hls.destroy();
-    hls = null;
-  }
+  // ===== SI CE N'EST PAS UN FICHIER VIDÉO =====
+  const isVideoFile =
+      src.endsWith(".mp4") ||
+      src.endsWith(".m3u8") ||
+      src.endsWith(".webm");
 
-  // ===== EMBED MODE (Vidmoly etc) =====
-  if(src.includes("embed") || src.includes("vidmoly")){
+  if(!isVideoFile){
 
     video.style.display = "none";
     iframe.style.display = "block";
+    iframe.src = src;
 
+    // cacher tes contrôles perso
     controls.style.display = "none";
     progressWrapper.style.display = "none";
     centerPlay.style.display = "none";
 
-    iframe.src = src;
     return;
   }
 
   // ===== HLS =====
-  if(src.endsWith('.m3u8')){
+  if(src.endsWith(".m3u8")){
     if(Hls.isSupported()){
       hls = new Hls();
       hls.loadSource(src);
@@ -907,17 +914,18 @@ centerPlay.style.display = "block";
       video.play();
     }
   }
-
   // ===== MP4 =====
   else{
     video.src = src;
     video.play();
   }
 
+  // afficher contrôles
   controls.style.display = "flex";
   progressWrapper.style.display = "flex";
   centerPlay.style.display = "block";
 }
+
 
 
   function togglePlay() {
@@ -1160,4 +1168,5 @@ document.getElementById("backButton").addEventListener("click", () => {
 <script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
 </html>
+
 
