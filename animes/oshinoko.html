@@ -892,7 +892,7 @@ const cards = document.querySelectorAll('.card');
 
 btnVF.addEventListener('click', () => {
   cards.forEach(card => {
-    card.dataset.video = card.dataset.video.replace('/VOSTFR/', '/VF/');
+    card.dataset.video = card.dataset.video.replace('/VOST/', '/VF/');
   });
   btnVF.classList.add('active');
   btnVO.classList.remove('active');
@@ -900,7 +900,7 @@ btnVF.addEventListener('click', () => {
 
 btnVO.addEventListener('click', () => {
   cards.forEach(card => {
-    card.dataset.video = card.dataset.video.replace('/VF/', '/VOSTFR/');
+    card.dataset.video = card.dataset.video.replace('/VF/', '/VOST/');
   });
   btnVO.classList.add('active');
   btnVF.classList.remove('active');
@@ -1344,6 +1344,7 @@ document.getElementById("backButton").addEventListener("click", () => {
 <script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
 </html>
+
 
 
 
