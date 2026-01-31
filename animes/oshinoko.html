@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-<title>Erased - BNZ</title>
+<title>Oshi no Ko - BNZ</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 
@@ -13,7 +13,7 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: url('https://media.themoviedb.org/t/p/w1066_and_h600_face/fBU6tguE3GwfyQgXagwBrOUGuA5.jpg') no-repeat center center fixed;
+  background: url('https://media.themoviedb.org/t/p/w1000_and_h563_face/s76eYQi6hcAcOVYpVd9hofdyt11.jpg') no-repeat center center fixed;
   background-size: cover;
   color: #fff;
   position: relative;
@@ -531,6 +531,24 @@ video {
     fill: #ff3333;
   }
 
+  .episode-links {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.episode-links a {
+  padding: 5px 10px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  color: white;
+}
+
+.episode-links a.vf { background-color: #ff4b4b; }      /* rouge VF */
+.episode-links a.vostfr { background-color: #4b9fff; } /* bleu VOSTFR */
+
+
 </style>
 </head>
 <body>
@@ -543,13 +561,13 @@ video {
 
   <div class="container">
     <div class="fiche">
-      <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/mDKN9bHeML6TRNnYkFkKXhM174p.jpg" alt="Interstellar Poster">
+      <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/uh8w3NkgP3xBsfXmEMuQp1rRIVu.jpg" alt="Interstellar Poster">
       <div class="fiche-info">
-        <h1>Erased (2016)</h1>
-        <p><strong>Genre:</strong> Animation, Drame, Mystère</p>
-        <p><strong>Réalisateur:</strong> A-1 Pictures</p>
-        <p><strong>Acteurs:</strong> Shinnosuke Mitsushima, Tao Tsuchiya, Minami Takayama</p>
-        <p><strong>Synopsis:</strong> Mangaka raté et livreur de pizza par dépit, Satoru Fujinuma possède sans pouvoir l’expliquer la capacité exceptionnelle de pouvoir agir sur le temps. A chaque fois qu’un incident croise sa route, il se retrouve projeté quelques instants dans le passé, implicitement afin d’empêcher que l’inévitable ne se produise. D’un naturel effacé et peu sûr de lui, c’est avec une attitude résignée qu’il aborde son quotidien et son pouvoir qu’il vit comme une malédiction. De rencontres perturbantes en événements dramatiques, Satoru va replonger de plus en plus loin vers une enfance traumatisante qu’il avait fait le choix d’éloigner de sa mémoire ...</p>
+        <h1>Oshi no Ko (2023)</h1>
+        <p><strong>Genre:</strong> Animation et Drame</p>
+        <p><strong>Réalisateur:</strong> Doga Kobo</p>
+        <p><strong>Acteurs:</strong> Takeo Otsuka, Yurie Igoma, Megumi Han</p>
+        <p><strong>Synopsis:</strong> Gorô Amemiya, un obstétricien exerçant dans un hôpital de campagne, n’a d’yeux que pour la sublime Aï Hoshino, une célèbre et talentueuse idole. Au détour d’une rencontre fortuite, la découverte d’un terrible secret va changer leur destin à tout jamais…</p>
       </div>
     </div>
     <!-- --- Boutons Like / Dislike --- -->
@@ -574,11 +592,6 @@ video {
   <div class="video-container" id="videoContainer">
     <button class="back-button" id="backButton">← Retour à la fiche</button>
     <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
-    <iframe id="embedFrame"
-        allowfullscreen
-        referrerpolicy="no-referrer"
-        style="display:none;width:100%;height:100%;border:none;">
-</iframe>
     <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
 
     <div class="progress-wrapper" id="progressWrapper">
@@ -625,75 +638,369 @@ video {
 <!-- Sélecteur de saison -->
 <div class="season-selector">
   <button class="active" data-season="1">Saison 1</button>
+  
 </div>
 
-<!-- Cartes des épisodes -->
+<!-- Cartes des épisodes Oshi no Ko - Saison 1 avec VF/VOSTFR -->
 <div class="cards-container" id="season-episodes">
-  <!-- Saison 1 -->
-  <div class="card" data-season="1" data-video="https://vidmoly.net/embed-klaytcbudty5.html">
-<img src="https://media.themoviedb.org/t/p/w454_and_h254_face/y4hrTZ6xxI3rcRlhBzzeGit4h0h.jpg" alt="Épisode 1">
-    <h3>Épisode 0</h3>
-  </div>
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E01.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/y4hrTZ6xxI3rcRlhBzzeGit4h0h.jpg" alt="Épisode 1">
+
+  <!-- Épisodes 1 à 35 -->
+  <!-- Remplir les images en remplaçant src="" -->
+
+  <!-- Début des cartes -->
+  <!-- Épisode 1 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/rvy4W28wYkct3IFxU0RGF2uHppG.jpg" alt="Épisode 1">
     <h3>Épisode 1</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E01.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E01.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
 
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E02.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/4onDQglp8pYTpcUeHyfCrLWMb0c.jpg" alt="Épisode 2">
+  <!-- Épisode 2 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/klFBxM7QHRtYvuqBcHGSoJaY5ES.jpg" alt="Épisode 2">
     <h3>Épisode 2</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E02.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E02.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
 
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E03.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/jnVl5Dav1ztbC9aRJYTSL76NHZG.jpg" alt="Épisode 3">
+  <!-- Épisode 3 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/gRmEOAKLkF2qWUT0GB4QQcI2X1q.jpg" alt="Épisode 3">
     <h3>Épisode 3</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E03.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E03.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
 
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E04.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/vgpzJ0NrwQHQGw0e6JyChNORLXU.jpg" alt="Épisode 4">
+  <!-- Épisode 4 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/h44DwOqXqq44KzNHOzkNpcTRVRR.jpg" alt="Épisode 4">
     <h3>Épisode 4</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E04.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E04.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
 
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E05.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/31dJ7S4BKPkwtThmmnhD312s5qN.jpg" alt="Épisode 5">
+  <!-- Épisode 5 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/h0wFnTNhZzQ23IUJmyR7uy9bwVa.jpg" alt="Épisode 5">
     <h3>Épisode 5</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E05.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E05.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
 
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E06.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/buPFRzvcacNWfXWiUxk95ahLaQ0.jpg" alt="Épisode 6">
+  <!-- Épisode 6 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/dTnNfowpkkjSG8fxDprhHxJD465.jpg" alt="Épisode 6">
     <h3>Épisode 6</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E06.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E06.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
 
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E07.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/xv4cIOlx9r9etE8UKhhBrGiUFBE.jpg" alt="Épisode 7">
+  <!-- Épisode 7 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/culBlCRSAeAbCmOqw6QnCo0z7td.jpg" alt="Épisode 7">
     <h3>Épisode 7</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E07.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E07.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
 
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E08.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/7nJxGDWGh63GO91o7B6i1UWZ5v.jpg" alt="Épisode 8">
+  <!-- Épisode 8 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/1NqAdx1Ii9OHR12PzC4IVTDQXti.jpg" alt="Épisode 8">
     <h3>Épisode 8</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E08.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E08.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
 
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E09.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/o46SNs16XqWfN7CMGhE2hN7Eiyx.jpg" alt="Épisode 9">
+  <!-- Épisode 9 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/hGvzVPKuNBUThYsBlpxGMFkuueU.jpg" alt="Épisode 9">
     <h3>Épisode 9</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E09.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E09.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
 
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E10.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/lwxy5UW6VeKrTkfohC1YpVrGglX.jpg" alt="Épisode 10">
+  <!-- Épisode 10 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/aNYlFnW3TsubWgi3GphiBdI0WgZ.jpg" alt="Épisode 10">
     <h3>Épisode 10</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E10.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E10.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
 
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E11.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/gg05XBD20GoD8BPmjAP4cduFJ50.jpg" alt="Épisode 11">
+  <!-- Épisode 11 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/3OnHltmntZhMm1DE9urxnoLxRVj.jpg" alt="Épisode 11">
     <h3>Épisode 11</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E11.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E11.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
 
-  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E12.mp4">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/3niedt2snGE71gkFZHueW8aT0aI.jpg" alt="Épisode 12">
+  <!-- Épisode 12 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/z05lf0LjvKIFw4sX3TFvN97hAvF.jpg" alt="Épisode 12">
     <h3>Épisode 12</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E12.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E12.mp4" class="vostfr">VOSTFR</a>
+    </div>
   </div>
+
+  <!-- Épisode 13 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/tYPdMObN5OskrhIBmTMqNHrNm14.jpg" alt="Épisode 13">
+    <h3>Épisode 13</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E13.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E13.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 14 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/mcZdAr7RsCI55CdvEh4YDdWAIP2.jpg" alt="Épisode 14">
+    <h3>Épisode 14</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E14.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E14.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 15 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/zPxK6cTsqnrAjiAzIYgq46mSGL0.jpg" alt="Épisode 15">
+    <h3>Épisode 15</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E15.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E15.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 16 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/gWlvxad1umSUdNpxoGRbBXG8xyM.jpg" alt="Épisode 16">
+    <h3>Épisode 16</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E16.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E16.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 17 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/ggKVUgYx5p8vqlfXN15g2f9zRwc.jpg" alt="Épisode 17">
+    <h3>Épisode 17</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E17.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E17.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 18 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/pG324GkmFrLK1K8MP1MtNPvGORE.jpg" alt="Épisode 18">
+    <h3>Épisode 18</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E18.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E18.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 19 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/y28v99JXNngNCBamnFf6HIpMMPC.jpg" alt="Épisode 19">
+    <h3>Épisode 19</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E19.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E19.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 20 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/2988OOYtTt2cgPqQXD8LWtjawCg.jpg" alt="Épisode 20">
+    <h3>Épisode 20</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E20.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E20.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 21 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/utlwIdXY7Wn55AXAkB1rsBR0gbV.jpg" alt="Épisode 21">
+    <h3>Épisode 21</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E21.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E21.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 22 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/obJ4P3XsGyN1I0IeVGeC9FYGxZE.jpg" alt="Épisode 22">
+    <h3>Épisode 22</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E22.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E22.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 23 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/gsL6lGmwWXTG3McvxI8EfiRBp7W.jpg" alt="Épisode 23">
+    <h3>Épisode 23</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E23.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E23.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 24 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/vVfo7FUIPjJrb92ERlfAsKgsObl.jpg" alt="Épisode 24">
+    <h3>Épisode 24</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E24.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E24.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 25 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/1XPtlsRHFY4H7CdYZItnSZa7Knc.jpg" alt="Épisode 25">
+    <h3>Épisode 25</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E25.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E25.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 26 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/fHEVXh9dU2L2geDU7wDBmUt1yw2.jpg" alt="Épisode 26">
+    <h3>Épisode 26</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E26.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E26.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 27 -->
+  <div class="card" data-season="1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/p1JNFzUHUi6iuC8m6KfhW0EF7ZJ.jpg" alt="Épisode 27">
+    <h3>Épisode 27</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E27.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E27.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 28 -->
+  <div class="card" data-season="1">
+    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 28">
+    <h3>Épisode 28</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E28.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E28.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 29 -->
+  <div class="card" data-season="1">
+    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 29">
+    <h3>Épisode 29</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E29.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E29.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 30 -->
+  <div class="card" data-season="1">
+    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 30">
+    <h3>Épisode 30</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E30.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E30.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 31 -->
+  <div class="card" data-season="1">
+    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 31">
+    <h3>Épisode 31</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E31.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E31.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 32 -->
+  <div class="card" data-season="1">
+    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 32">
+    <h3>Épisode 32</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E32.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E32.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 33 -->
+  <div class="card" data-season="1">
+    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 33">
+    <h3>Épisode 33</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E33.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E33.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 34 -->
+  <div class="card" data-season="1">
+    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 34">
+    <h3>Épisode 34</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E34.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E34.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
+  <!-- Épisode 35 -->
+  <div class="card" data-season="1">
+    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 35">
+    <h3>Épisode 35</h3>
+    <div class="episode-links">
+      <a href="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E35.mp4" class="vf">VF</a>
+      <a href="https://cinedonuts.xyz/animes/VOSTFR/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E35.mp4" class="vostfr">VOSTFR</a>
+    </div>
+  </div>
+
 </div>
+
+
 
 
 
@@ -706,7 +1013,7 @@ video {
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  const movieId = "erased";
+  const movieId = "oshi-no-ko";
   const likeBtn = document.getElementById("likeBtn");
   const dislikeBtn = document.getElementById("dislikeBtn");
   const likeCount = document.getElementById("likeCount");
@@ -834,8 +1141,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const subtitleMenu = document.getElementById('subtitleMenu');
   const forwardBtn = document.getElementById('forward');
   const backwardBtn = document.getElementById('backward');
-  const iframe = document.getElementById('embedFrame');
-
 
   let hls;
 
@@ -852,81 +1157,48 @@ document.addEventListener('DOMContentLoaded', () => {
     if(hls && hls.media) {
       hls.destroy();
       hls = null;
-      iframe.src = "";
-iframe.style.display = "none"
-  ;
-
-controls.style.display = "flex";
-progressWrapper.style.display = "flex";
-centerPlay.style.display = "block";
-
     }
   }
 
   backButton.addEventListener('click', closeVideo);
 
-  function playMovie(src){
-  openVideo();
+  function playMovie(src) {
+    openVideo();
 
-  // RESET
-  if(hls){
-    hls.destroy();
-    hls = null;
-  }
+    if(hls && hls.media) {
+      hls.destroy();
+      hls = null;
+    }
 
-  video.pause();
-  video.removeAttribute("src");
-  video.load();
-
-  iframe.src = "";
-  iframe.style.display = "none";
-  video.style.display = "block";
-
-  // ===== SI CE N'EST PAS UN FICHIER VIDÉO =====
-  const isVideoFile =
-      src.endsWith(".mp4") ||
-      src.endsWith(".m3u8") ||
-      src.endsWith(".webm");
-
-  if(!isVideoFile){
-
-    video.style.display = "none";
-    iframe.style.display = "block";
-    iframe.src = src;
-
-    // cacher tes contrôles perso
-    controls.style.display = "none";
-    progressWrapper.style.display = "none";
-    centerPlay.style.display = "none";
-
-    return;
-  }
-
-  // ===== HLS =====
-  if(src.endsWith(".m3u8")){
-    if(Hls.isSupported()){
-      hls = new Hls();
-      hls.loadSource(src);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, ()=> video.play());
+    if(src.endsWith('.m3u8')) {
+      if(video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = src;
+        video.play().catch(err => console.warn(err));
+      } else if(Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(src);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play().catch(err => console.warn(err));
+        });
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          console.error('HLS.js error', data);
+        });
+      } else {
+        alert("Votre navigateur ne supporte pas HLS (.m3u8)");
+      }
     } else {
       video.src = src;
-      video.play();
+      video.play().catch(err => console.warn(err));
     }
   }
-  // ===== MP4 =====
-  else{
-    video.src = src;
-    video.play();
-  }
 
-  // afficher contrôles
-  controls.style.display = "flex";
-  progressWrapper.style.display = "flex";
-  centerPlay.style.display = "block";
-}
-
-
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      const videoSrc = card.dataset.video;
+      if(videoSrc) playMovie(videoSrc);
+    });
+  });
 
   function togglePlay() {
     if(video.paused) video.play();
@@ -1168,5 +1440,7 @@ document.getElementById("backButton").addEventListener("click", () => {
 <script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
 </html>
+
+
 
 
