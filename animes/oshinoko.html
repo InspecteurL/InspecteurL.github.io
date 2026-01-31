@@ -1,263 +1,1124 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0" />
-  <title>BNZ - Oshi no Ko</title>
-  <meta
-    name="description"
-    content="Regardez tous les épisodes de Oshi no Ko, saisons 1 et 2. Streaming en ligne gratuit et rapide." />
-  <style>
-    body {
-      background: linear-gradient(to top, #000000 0%, #000066 100%);
-      color: white;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    ul {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background-color: #1c1c1c;
-    }
-    li { float: left; }
-    li a {
-      display: block;
-      color: white;
-      text-align: center;
-      padding: 14px 16px;
-      text-decoration: none;
-      font-size: 20px;
-    }
-    li a:hover {
-      background-color: red;
-      border-radius: 5px;
-    }
-    .episode-card {
-      width: 250px;
-      margin: 10px;
-      background: linear-gradient(to bottom, #000066 0%, #660066 100%);
-      padding: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      text-align: center;
-      display: inline-block;
-      transition: transform 0.2s;
-    }
-    .episode-card:hover { transform: scale(1.05); }
-    .episode-card img {
-      width: 100%;
-      border-radius: 5px;
-    }
-    #episode-list {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 20px;
-    }
-    #video-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.95);
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      transform: scale(0.95);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-    }
-    #video-container.show {
-      display: flex;
-      opacity: 1;
-      transform: scale(1);
-    }
-    #episode-video {
-      width: 80%;
-      height: 60vh;
-      border: none;
-    }
-    #back-button,
-    #next-button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 18px;
-      background-color: blue;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .hidden { display: none; }
-    #loader {
-      color: white;
-      font-size: 20px;
-      margin-top: 15px;
-      display: none;
-    }
-    @media (max-width: 600px) {
-      .episode-card { width: 90%; }
-      #episode-video {
-        width: 95%;
-        height: 40vh;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<title>Erased - BNZ</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+
+<style>
+/* --- Styles globaux --- */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: url('https://media.themoviedb.org/t/p/w1066_and_h600_face/fBU6tguE3GwfyQgXagwBrOUGuA5.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+  position: relative;
+  z-index: 0;
+}
+
+/* Overlay sombre */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: -1;
+}
+
+/* --- Navbar --- */
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #1c1c1c;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 20px;
+}
+
+li a:hover {
+  background-color: red;
+  border-radius: 5px;
+}
+
+/* Navbar responsive */
+#navbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* --- Conteneur des cartes --- */
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin: 20px 0;
+  padding: 0 20px;
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Cartes individuelles */
+.card {
+  flex: 1 1 calc(20% - 20px);
+  max-width: 220px;
+  background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+  border-radius: 15px;
+  overflow: hidden;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  border-bottom: 2px solid #333;
+}
+
+.card:hover img {
+  transform: scale(1.05);
+}
+
+.card h3 {
+  margin: 10px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff416c;
+  text-shadow: 1px 1px 3px #000;
+}
+
+.card:hover {
+  transform: scale(1.08);
+  box-shadow: 0 10px 25px rgba(255,65,108,0.5);
+}
+
+/* --- Sélecteur de saison --- */
+.season-selector {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.season-selector button {
+  background: linear-gradient(90deg, #ff416c, #ff4b2b);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.season-selector button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(255,65,108,0.6);
+}
+
+.season-selector button.active {
+  box-shadow: 0 0 15px rgba(255,65,108,0.8);
+}
+
+/* --- Fiche du film --- */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.fiche {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.fiche img {
+  width: 300px;
+  border-radius: 10px;
+}
+
+.fiche-info {
+  flex: 1;
+}
+
+.fiche-info h1 {
+  margin-top: 0;
+}
+
+.fiche-info p {
+  line-height: 1.5;
+}
+
+/* --- Bouton regarder --- */
+.btn-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: #ff3d00;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.btn-watch:hover {
+  background-color: #ff5722;
+}
+
+.btn-watch:hover .material-symbols-outlined {
+  transform: scale(1.2);
+}
+
+/* --- Conteneur du lecteur vidéo --- */
+.video-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* --- Bouton retour --- */
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  z-index: 1100;
+}
+
+.back-button:hover {
+  background: rgba(255, 65, 108, 0.8);
+}
+
+/* --- Barre de progression et contrôles --- */
+.progress-wrapper {
+  position: absolute;
+  bottom: 70px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 14px;
+  font-family: monospace;
+}
+
+.progress {
+  flex: 1;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff4b2b, #ff416c);
+  border-radius: 6px;
+}
+
+.controls {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+.controls-left,
+.controls-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.center-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  padding: 20px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.center-play.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.material-symbols-outlined {
+  cursor: pointer;
+  color: white;
+  font-size: 35px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 35;
+}
+
+/* Volume */
+.volume-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#volume-slider {
+  width: 100px;
+  height: 5px;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+}
+
+#volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Menu contextuel */
+.menu {
+  position: absolute;
+  bottom: 60px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.menu button {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.menu button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.hide {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.4s ease;
+}
+
+.controls,
+.progress-wrapper,
+#centerPlay,
+.back-button {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease;
+}
+
+/* --- Media Queries pour la responsivité --- */
+
+/* Tablettes */
+@media (max-width: 1024px) {
+  .card {
+    flex: 1 1 calc(33.333% - 20px);
+    max-width: 200px;
+  }
+
+  .fiche {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .fiche img {
+    width: 80%;
+    max-width: 300px;
+  }
+
+  .fiche-info {
+    text-align: center;
+  }
+
+  li {
+    float: none;
+    text-align: center;
+  }
+
+  li a {
+    font-size: 18px;
+  }
+}
+
+/* Mobiles */
+@media (max-width: 768px) {
+  .card {
+    flex: 1 1 calc(50% - 20px);
+    max-width: 180px;
+  }
+
+  .season-selector {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .fiche img {
+    width: 100%;
+    max-width: 250px;
+  }
+
+  .fiche-info h1 {
+    font-size: 22px;
+  }
+
+  .fiche-info p {
+    font-size: 14px;
+  }
+
+  li a {
+    padding: 10px 12px;
+    font-size: 16px;
+  }
+}
+
+/* Très petits écrans */
+@media (max-width: 480px) {
+  .card {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .season-selector {
+    gap: 8px;
+  }
+
+  .fiche-info h1 {
+    font-size: 20px;
+  }
+
+  .fiche-info p {
+    font-size: 13px;
+  }
+}
+
+.vote-container {
+    display: flex;
+    gap: 1rem;
+    margin-top: 20px;
+  }
+
+  .vote-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: #f4f4f4;
+    padding: 10px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .vote-btn:hover {
+    background: #e9e9e9;
+    transform: translateY(-1px);
+  }
+
+  .vote-btn svg {
+    transition: fill 0.2s ease;
+  }
+
+  .vote-btn span {
+    font-weight: bold;
+    color: #333;
+    font-size: 16px;
+  }
+
+  .active-like {
+    background-color: #d6ebff !important;
+    box-shadow: 0 0 8px rgba(0, 128, 255, 0.4);
+  }
+
+  .active-like svg {
+    fill: #007bff;
+  }
+
+  .active-dislike {
+    background-color: #ffe2e2 !important;
+    box-shadow: 0 0 8px rgba(255, 80, 80, 0.4);
+  }
+
+  .active-dislike svg {
+    fill: #ff3333;
+  }
+
+</style>
 </head>
 <body>
-  <!-- Nav -->
-   <ul>
-        <li><a class="active" href="https://inspecteurl.github.io/site/index.html">Home</a></li>
-        <li><a href="https://inspecteurl.github.io/site/compte.html">Votre Compte</a></li>
-        <li><a href="https://inspecteurl.github.io/site/mes-amis.html">Mes amis</a></li>
-        <li><a href="https://inspecteurl.github.io/site/accueil.html">Feuilleter</a></li>
-    </ul>
+ <ul id="navbar">
+  <li><a class="active" href="https://inspecteurl.github.io/site/index.html">Home</a></li>
+  <li><a href="https://inspecteurl.github.io/site/compte.html">Votre Compte</a></li>
+  <li><a href="https://inspecteurl.github.io/site/mes-amis.html">Mes amis</a></li>
+  <li><a href="https://inspecteurl.github.io/site/accueil.html">Feuilleter</a></li>
+</ul>
 
+  <div class="container">
+    <div class="fiche">
+      <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/mDKN9bHeML6TRNnYkFkKXhM174p.jpg" alt="Interstellar Poster">
+      <div class="fiche-info">
+        <h1>Erased (2016)</h1>
+        <p><strong>Genre:</strong> Animation, Drame, Mystère</p>
+        <p><strong>Réalisateur:</strong> A-1 Pictures</p>
+        <p><strong>Acteurs:</strong> Shinnosuke Mitsushima, Tao Tsuchiya, Minami Takayama</p>
+        <p><strong>Synopsis:</strong> Mangaka raté et livreur de pizza par dépit, Satoru Fujinuma possède sans pouvoir l’expliquer la capacité exceptionnelle de pouvoir agir sur le temps. A chaque fois qu’un incident croise sa route, il se retrouve projeté quelques instants dans le passé, implicitement afin d’empêcher que l’inévitable ne se produise. D’un naturel effacé et peu sûr de lui, c’est avec une attitude résignée qu’il aborde son quotidien et son pouvoir qu’il vit comme une malédiction. De rencontres perturbantes en événements dramatiques, Satoru va replonger de plus en plus loin vers une enfance traumatisante qu’il avait fait le choix d’éloigner de sa mémoire ...</p>
+      </div>
+    </div>
+    <!-- --- Boutons Like / Dislike --- -->
+<div class="vote-container">
+  <button id="likeBtn" class="vote-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#555">
+      <path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/>
+    </svg>
+    <span id="likeCount">0</span>
+  </button>
 
-  <br /><br />
-  <div style="text-align: center;">
-    <img
-      src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Oshi_no_Ko_logo.png"
-      width="50%"
-      alt="Logo Oshi no Ko" />
+  <button id="dislikeBtn" class="vote-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#555">
+      <path d="M240-840h440v520L400-40l-50-50q-7-7-11.5-19t-4.5-23v-14l44-174H120q-32 0-56-24t-24-56v-80q0-7 2-15t4-15l120-282q9-20 30-34t44-14Zm360 80H240L120-480v80h360l-54 220 174-174v-406Zm0 406v-406 406Zm80 34v-80h120v-360H680v-80h200v520H680Z"/>
+    </svg>
+    <span id="dislikeCount">0</span>
+  </button>
+</div>
   </div>
 
-  <div style="text-align:center; margin: 20px;">
-    <label for="season-select" style="font-size: 20px;">Choisir la saison :</label>
-    <select
-      id="season-select"
-      style="padding: 10px; font-size: 16px; border-radius: 5px;">
-      <option value="1">Saison 1</option>
-      <option value="2">Saison 2</option>
-    </select>
+  <!-- --- Lecteur vidéo --- -->
+  <div class="video-container" id="videoContainer">
+    <button class="back-button" id="backButton">← Retour à la fiche</button>
+    <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
+    <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
+
+    <div class="progress-wrapper" id="progressWrapper">
+      <span id="currentTime">0:00</span>
+      <div class="progress" id="progress">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <span id="totalTime">0:00</span>
+    </div>
+
+    <div class="controls" id="controls">
+      <div class="controls-left">
+        <span id="backward" class="material-symbols-outlined">replay_10</span>
+        <span id="play" class="material-symbols-outlined">play_arrow</span>
+        <span id="forward" class="material-symbols-outlined">forward_10</span>
+        <div class="volume-container">
+          <span id="volume-icon" class="material-symbols-outlined">volume_up</span>
+          <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
+        </div>
+      </div>
+      <div class="controls-right">
+        <span id="subtitles" class="material-symbols-outlined">subtitles</span>
+        <span id="source" class="material-symbols-outlined">cloud</span>
+        <span id="settings" class="material-symbols-outlined">settings</span>
+        <span id="fullscreen" class="material-symbols-outlined">fullscreen</span>
+      </div>
+    </div>
+
+    <div id="settingsMenu" class="menu">
+      <button data-speed="0.5">0.5x</button>
+      <button data-speed="1">1x</button>
+      <button data-speed="1.5">1.5x</button>
+      <button data-speed="2">2x</button>
+    </div>
+
+    <div id="sourceMenu" class="menu">
+      <button data-src="https://cinepizza.xyz/movies/Interstellar.mp4">Interstellar</button>
+    </div>
+
+    <div id="subtitleMenu" class="menu"></div>
   </div>
 
-  <div id="episode-list"></div>
+  <!-- Navbar transformée en cartes interactives (13 épisodes) -->
+<!-- Sélecteur de saison -->
+<div class="season-selector">
+  <button class="active" data-season="1">Saison 1</button>
+</div>
 
-  <div id="video-container">
-    <iframe id="episode-video" allowfullscreen></iframe>
-    <div id="loader">Chargement de la vidéo...</div>
-    <button id="back-button" onclick="exitFullscreenMode()">Retour</button>
-    <button id="next-button" onclick="nextEpisode()" style="display:none;">Épisode suivant</button>
+<!-- Cartes des épisodes -->
+<div class="cards-container" id="season-episodes">
+  <!-- Saison 1 -->
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E01.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/y4hrTZ6xxI3rcRlhBzzeGit4h0h.jpg" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
+  <!-- Exemple Vidmoly -->
+<div class="card" data-video="https://vidmoly.net/embed-klaytcbudty5.html">
+<img src="https://via.placeholder.com/300x170">
+<h3>Épisode (Embed)</h3>
+</div>
+
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E02.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/4onDQglp8pYTpcUeHyfCrLWMb0c.jpg" alt="Épisode 2">
+    <h3>Épisode 2</h3>
   </div>
 
-  <script type="module">
-    /*************************************************
-     * Supabase init
-     *************************************************/
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E03.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/jnVl5Dav1ztbC9aRJYTSL76NHZG.jpg" alt="Épisode 3">
+    <h3>Épisode 3</h3>
+  </div>
 
-    const supabase = createClient(
-      "https://wuagahavmbugmnuzsouf.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
-    );
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E04.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/vgpzJ0NrwQHQGw0e6JyChNORLXU.jpg" alt="Épisode 4">
+    <h3>Épisode 4</h3>
+  </div>
 
-    /*************************************************
-     * Données épisodes
-     *************************************************/
-   const episodeDataS1 = [
-  { title: "Épisode 1",  description: "Une mère et ses enfants",           image: "https://www.myutaku.com/media/episodes/421069/9207267.jpg",   video: "https://vidmoly.net/embed-klaytcbudty5.html" },
-  { title: "Épisode 2",  description: "La troisième option",               image: "https://www.myutaku.com/media/episodes/421069/9687591.jpg",   video: "https://vidmoly.net/embed-l953y04mvazq.html" },
-  { title: "Épisode 3",  description: "Une série adaptée d'un manga",      image: "https://www.myutaku.com/media/episodes/421069/9687592.jpg",   video: "https://vidmoly.net/embed-jnuueu1ta9vz.html" },
-  { title: "Épisode 4",  description: "Acteur",                            image: "https://www.myutaku.com/media/episodes/421069/9687593.jpg",   video: "https://vidmoly.net/embed-m4ga5ifufkc5.html" },
-  { title: "Épisode 5",  description: "Téléréalité de rencontre",          image: "https://www.myutaku.com/media/episodes/421069/9687594.jpg",   video: "https://vidmoly.net/embed-djfugtfrjysk.html" },
-  { title: "Épisode 6",  description: "Ego-surfing",                        image: "https://www.myutaku.com/media/episodes/421069/9687595.jpg",   video: "https://vidmoly.net/embed-by3ko8au71nr.html" },
-  { title: "Épisode 7",  description: "Buzz",                               image: "https://www.myutaku.com/media/episodes/421069/9687596.jpg",   video: "https://vidmoly.net/embed-rrhocglh67h0.html" },
-  { title: "Épisode 8",  description: "Première fois",                      image: "https://www.myutaku.com/media/episodes/421069/9687597.jpg",   video: "https://vidmoly.net/embed-5ap2t30l9y6r.html" },
-  { title: "Épisode 9",  description: "B Komachi",                          image: "https://www.myutaku.com/media/episodes/421069/9687598.jpg",   video: "https://vidmoly.net/embed-idwudwzgajtf.html" },
-  { title: "Épisode 10", description: "Pression",                           image: "https://www.myutaku.com/media/episodes/421069/9687599.jpg",   video: "https://vidmoly.net/embed-pqzwjm1l8uju.html" },
-  { title: "Épisode 11", description: "Idoles",                             image: "https://www.myutaku.com/media/episodes/421069/9687600.jpg",   video: "https://vidmoly.net/embed-p5eaj287qbfq.html" }
-];
-const episodeDataS2 = [
-  { title: "Épisode 1",  description: "Tokyo Blade",        image: "https://www.myutaku.com/media/episodes/421069/10508996.jpg", video: "https://vidmoly.net/embed-vklwh2n5xxg6.html" },
-  { title: "Épisode 2",  description: "Game of Telephone",  image: "https://www.myutaku.com/media/episodes/421069/10530178.jpg", video: "https://vidmoly.net/embed-b8ingy31xub7.html" },
-  { title: "Épisode 3",  description: "Rewriting",          image: "https://www.myutaku.com/media/episodes/421069/10530179.jpg", video: "https://vidmoly.net/embed-g2popybqkunn.html" },
-  { title: "Épisode 4",  description: "Emotional Acting",   image: "https://www.myutaku.com/media/episodes/421069/10530180.jpg", video: "https://vidmoly.net/embed-m27drh7s2vvr.html" },
-  { title: "Épisode 5",  description: "The Curtain Rises",  image: "https://www.myutaku.com/media/episodes/421069/10530181.jpg", video: "https://vidmoly.net/embed-tekn4lsw6ewz.html" },
-  { title: "Épisode 6",  description: "Growth",             image: "https://www.myutaku.com/media/episodes/421069/10530182.jpg", video: "https://vidmoly.net/embed-ytfcdhjcwb5r.html" },
-  { title: "Épisode 7",  description: "Sun",                image: "https://www.myutaku.com/media/episodes/421069/10530183.jpg", video: "https://vidmoly.net/embed-9jpstigyb869.html" },
-  { title: "Épisode 8",  description: "Trigger",            image: "https://www.myutaku.com/media/episodes/421069/10530184.jpg", video: "https://vidmoly.net/embed-rkkri9r4tpoo.html" },
-  { title: "Épisode 9",  description: "Dream",              image: "https://www.myutaku.com/media/episodes/421069/10530185.jpg", video: "https://vidmoly.net/embed-q7et1rlk3xua.html" },
-  { title: "Épisode 10", description: "Liberation",         image: "https://www.myutaku.com/media/episodes/421069/10530186.jpg", video: "https://vidmoly.net/embed-mqofrqoq21j4.html" },
-  { title: "Épisode 11", description: "Freedom",            image: "https://www.myutaku.com/media/episodes/421069/10530187.jpg", video: "https://vidmoly.net/embed-hn98uo5qjs0u.html" },
-  { title: "Épisode 12", description: "Reunion",            image: "https://www.myutaku.com/media/episodes/421069/10530188.jpg", video: "https://vidmoly.net/embed-nv5lynioiqcp.html" },
-  { title: "Épisode 13", description: "Wish",               image: "https://www.myutaku.com/media/episodes/421069/10569952.jpg", video: "https://vidmoly.net/embed-swoldjrj4wwq.html" }
-];
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E05.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/31dJ7S4BKPkwtThmmnhD312s5qN.jpg" alt="Épisode 5">
+    <h3>Épisode 5</h3>
+  </div>
+
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E06.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/buPFRzvcacNWfXWiUxk95ahLaQ0.jpg" alt="Épisode 6">
+    <h3>Épisode 6</h3>
+  </div>
+
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E07.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/xv4cIOlx9r9etE8UKhhBrGiUFBE.jpg" alt="Épisode 7">
+    <h3>Épisode 7</h3>
+  </div>
+
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E08.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/7nJxGDWGh63GO91o7B6i1UWZ5v.jpg" alt="Épisode 8">
+    <h3>Épisode 8</h3>
+  </div>
+
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E09.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/o46SNs16XqWfN7CMGhE2hN7Eiyx.jpg" alt="Épisode 9">
+    <h3>Épisode 9</h3>
+  </div>
+
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E10.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/lwxy5UW6VeKrTkfohC1YpVrGglX.jpg" alt="Épisode 10">
+    <h3>Épisode 10</h3>
+  </div>
+
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E11.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/gg05XBD20GoD8BPmjAP4cduFJ50.jpg" alt="Épisode 11">
+    <h3>Épisode 11</h3>
+  </div>
+
+  <div class="card" data-season="1" data-video="https://cinecake.xyz/animes/VOST/Erased/S01/Erased-S01-E12.mp4">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/3niedt2snGE71gkFZHueW8aT0aI.jpg" alt="Épisode 12">
+    <h3>Épisode 12</h3>
+  </div>
+</div>
 
 
-    /*************************************************
-     * État
-     *************************************************/
-    const ANIME_TITLE = "Oshi no Ko";
-    let currentSeason = 1;
-    let currentEpisodeData = episodeDataS1;
-    let currentEpisodeIndex = 0;
-    let timeoutId = null;
-    let userId = null;
 
-    /*************************************************
-     * DOM refs
-     *************************************************/
-    const episodeList    = document.getElementById("episode-list");
-    const videoContainer = document.getElementById("video-container");
-    const videoIframe    = document.getElementById("episode-video");
-    const nextButton     = document.getElementById("next-button");
-    const loader         = document.getElementById("loader");
-    const seasonSelect   = document.getElementById("season-select");
 
-    /*************************************************
-     * Session utilisateur
-     *************************************************/
-    async function fetchSession() {
-      const { data: sessionData, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("Erreur session Supabase:", error);
-        return null;
-      }
-      const session = sessionData?.session;
-      if (!session) {
-        console.warn("Pas de session (non connecté).");
-        return null;
-      }
-      return session.user.id;
+
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  const supabaseUrl = "https://wuagahavmbugmnuzsouf.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const movieId = "erased";
+  const likeBtn = document.getElementById("likeBtn");
+  const dislikeBtn = document.getElementById("dislikeBtn");
+  const likeCount = document.getElementById("likeCount");
+  const dislikeCount = document.getElementById("dislikeCount");
+
+  let userId = null;
+  let currentVote = null;
+
+  // --- Auth
+  async function initUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id || null;
+  }
+
+  // --- Charger les votes
+  async function loadVotes() {
+    const { data, error } = await supabase
+      .from("movie_likes")
+      .select("user_id, liked")
+      .eq("movie_id", movieId);
+
+    if (error) console.error(error);
+
+    const likes = data.filter(v => v.liked).length;
+    const dislikes = data.filter(v => !v.liked).length;
+    likeCount.textContent = likes;
+    dislikeCount.textContent = dislikes;
+
+    const userVote = data.find(v => v.user_id === userId);
+    currentVote = userVote ? (userVote.liked ? "like" : "dislike") : null;
+    updateVoteVisual();
+  }
+
+  // --- Visuel
+  function updateVoteVisual() {
+    likeBtn.classList.toggle("active-like", currentVote === "like");
+    dislikeBtn.classList.toggle("active-dislike", currentVote === "dislike");
+  }
+
+  // --- Like
+  likeBtn.addEventListener("click", async () => {
+    if (!userId) return alert("Connecte-toi pour voter !");
+    if (currentVote === "like") {
+      // Annuler le vote
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      currentVote = null;
+    } else {
+      // Supprimer vote précédent avant d'ajouter le nouveau
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      await supabase.from("movie_likes").insert({
+        movie_id: movieId,
+        user_id: userId,
+        liked: true
+      });
+      currentVote = "like";
     }
-    (async () => {
-      userId = await fetchSession();
-    })();
+    updateVoteVisual();
+    loadVotes();
+  });
 
-    /*************************************************
-     * Activité Supabase (profiles table)
-     *************************************************/
-    function activityLabel() {
-      return `${ANIME_TITLE} (Saison ${currentSeason})`;
+  // --- Dislike
+  dislikeBtn.addEventListener("click", async () => {
+    if (!userId) return alert("Connecte-toi pour voter !");
+    if (currentVote === "dislike") {
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      currentVote = null;
+    } else {
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      await supabase.from("movie_likes").insert({
+        movie_id: movieId,
+        user_id: userId,
+        liked: false
+      });
+      currentVote = "dislike";
     }
+    updateVoteVisual();
+    loadVotes();
+  });
 
-async function updateCurrentActivity(episodeIndex) {
+  // --- Realtime
+  supabase
+    .channel("public:movie_likes")
+    .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, payload => {
+      if (payload.new?.movie_id === movieId || payload.old?.movie_id === movieId) {
+        loadVotes();
+      }
+    })
+    .subscribe();
+
+  // --- Init
+  await initUser();
+  loadVotes();
+</script>
+  
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm';
+
+  // Initialisation Supabase
+  const supabase = createClient(
+    'https://wuagahavmbugmnuzsouf.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  );
+
+document.addEventListener('DOMContentLoaded', () => {
+  const cards = document.querySelectorAll('.card');
+  const videoContainer = document.getElementById('videoContainer');
+  const video = document.getElementById('video');
+  const backButton = document.getElementById('backButton');
+  const centerPlay = document.getElementById('centerPlay');
+  const controls = document.getElementById('controls');
+  const progressWrapper = document.getElementById('progressWrapper');
+  const progressBar = document.getElementById('progress-bar');
+  const currentTimeEl = document.getElementById('currentTime');
+  const totalTimeEl = document.getElementById('totalTime');
+  const playBtn = document.getElementById('play');
+  const volumeSlider = document.getElementById('volume-slider');
+  const volumeIcon = document.getElementById('volume-icon');
+  const settingsBtn = document.getElementById('settings');
+  const settingsMenu = document.getElementById('settingsMenu');
+  const sourceBtn = document.getElementById('source');
+  const sourceMenu = document.getElementById('sourceMenu');
+  const subtitleBtn = document.getElementById('subtitles');
+  const subtitleMenu = document.getElementById('subtitleMenu');
+  const forwardBtn = document.getElementById('forward');
+  const backwardBtn = document.getElementById('backward');
+
+  let hls;
+
+  function openVideo() {
+    videoContainer.style.display = 'flex';
+    showControls();
+  }
+
+  function closeVideo() {
+    video.pause();
+    video.currentTime = 0;
+    videoContainer.style.display = 'none';
+    if(document.fullscreenElement) document.exitFullscreen();
+    if(hls && hls.media) {
+      hls.destroy();
+      hls = null;
+      iframe.src = "";
+iframe.style.display = "none";
+
+controls.style.display = "flex";
+progressWrapper.style.display = "flex";
+centerPlay.style.display = "block";
+
+    }
+  }
+
+  backButton.addEventListener('click', closeVideo);
+
+  function playMovie(src) {
+  openVideo();
+
+  // RESET iframe
+  iframe.style.display = "none";
+  iframe.src = "";
+
+  // RESET video
+  video.style.display = "block";
+
+  if(hls && hls.media){
+    hls.destroy();
+    hls = null;
+  }
+
+  // ===== MODE EMBED =====
+  if(src.includes("embed") || src.includes("vidmoly")){
+    video.pause();
+    video.removeAttribute("src");
+
+    video.style.display = "none";
+    iframe.style.display = "block";
+
+    controls.style.display = "none";
+    progressWrapper.style.display = "none";
+    centerPlay.style.display = "none";
+
+    iframe.src = src;
+    return;
+  }
+
+  // ===== MODE M3U8 =====
+  if(src.endsWith('.m3u8')){
+    if(video.canPlayType('application/vnd.apple.mpegurl')){
+      video.src = src;
+      video.play().catch(()=>{});
+    } else if(Hls.isSupported()){
+      hls = new Hls();
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, ()=>{
+        video.play().catch(()=>{});
+      });
+    }
+  }
+
+  // ===== MODE MP4 =====
+  else{
+    video.src = src;
+    video.play().catch(()=>{});
+  }
+
+  // Réaffiche contrôles pour MP4/HLS
+  controls.style.display = "flex";
+  progressWrapper.style.display = "flex";
+  centerPlay.style.display = "block";
+}
+
+
+  function togglePlay() {
+    if(video.paused) video.play();
+    else video.pause();
+  }
+
+  playBtn.addEventListener('click', togglePlay);
+  centerPlay.addEventListener('click', togglePlay);
+
+  video.addEventListener('play', () => {
+    playBtn.textContent = 'pause';
+    centerPlay.textContent = 'pause';
+    showControls();
+  });
+
+  video.addEventListener('pause', () => {
+    playBtn.textContent = 'play_arrow';
+    centerPlay.textContent = 'play_arrow';
+    centerPlay.classList.remove('hide');
+    showControls();
+  });
+
+  forwardBtn.addEventListener('click', () => {
+    if (!isNaN(video.duration)) video.currentTime = Math.min(video.currentTime + 10, video.duration);
+  });
+
+  backwardBtn.addEventListener('click', () => {
+    if (!isNaN(video.duration)) video.currentTime = Math.max(video.currentTime - 10, 0);
+  });
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s.toString().padStart(2,'0')}`;
+  }
+
+  video.addEventListener('timeupdate', () => {
+    if(!isNaN(video.duration) && video.duration > 0) {
+      const percent = (video.currentTime / video.duration) * 100;
+      progressBar.style.width = percent + '%';
+      currentTimeEl.textContent = formatTime(video.currentTime);
+      totalTimeEl.textContent = formatTime(video.duration);
+    }
+  });
+
+  progressWrapper.addEventListener('click', e => {
+    if(!isNaN(video.duration) && video.duration > 0) {
+      const rect = progressWrapper.getBoundingClientRect();
+      const pos = (e.clientX - rect.left) / rect.width;
+      video.currentTime = pos * video.duration;
+    }
+  });
+
+  volumeSlider.addEventListener('input', () => {
+    video.volume = volumeSlider.value;
+    updateVolumeIcon();
+  });
+
+  volumeIcon.addEventListener('click', () => {
+    if(video.volume > 0) { video.volume = 0; volumeSlider.value = 0; }
+    else { video.volume = 1; volumeSlider.value = 1; }
+    updateVolumeIcon();
+  });
+
+  function updateVolumeIcon() {
+    if(video.volume === 0) volumeIcon.textContent = 'volume_off';
+    else if(video.volume < 0.5) volumeIcon.textContent = 'volume_down';
+    else volumeIcon.textContent = 'volume_up';
+  }
+
+  settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
+  settingsMenu.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      video.playbackRate = parseFloat(btn.dataset.speed);
+      settingsMenu.style.display = 'none';
+    });
+  });
+
+  sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
+  subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
+
+  function toggleMenu(menu) {
+    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+  }
+
+  document.getElementById('fullscreen').addEventListener('click', () => {
+    if(!document.fullscreenElement) videoContainer.requestFullscreen();
+    else document.exitFullscreen();
+  });
+
+  let hideTimeout;
+  video.controls = false;
+
+  function showControls() {
+    controls.classList.remove('hide');
+    progressWrapper.classList.remove('hide');
+    centerPlay.classList.remove('hide');
+    backButton.classList.remove('hide');
+    document.body.style.cursor = 'default';
+    clearTimeout(hideTimeout);
+    hideTimeout = setTimeout(hideControls, 3000);
+  }
+
+  function hideControls() {
+    if(!video.paused) centerPlay.classList.add('hide');
+    controls.classList.add('hide');
+    progressWrapper.classList.add('hide');
+    backButton.classList.add('hide');
+    document.body.style.cursor = 'none';
+    [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
+  }
+
+  document.addEventListener('mousemove', showControls);
+  document.addEventListener('keydown', showControls);
+  video.addEventListener('click', showControls);
+  showControls();
+});
+
+     const seasonButtons = document.querySelectorAll('.season-selector button');
+  const allCards = document.querySelectorAll('.cards-container .card');
+
+  seasonButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // active button
+      seasonButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const season = btn.dataset.season;
+
+      // afficher uniquement les cartes de la saison choisie
+      allCards.forEach(card => {
+        if (card.dataset.season === season) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Afficher seulement la saison active au chargement
+  window.addEventListener('DOMContentLoaded', () => {
+    const activeSeason = document.querySelector('.season-selector button.active').dataset.season;
+    allCards.forEach(card => {
+      card.style.display = card.dataset.season === activeSeason ? 'block' : 'none';
+    });
+  });
+
+/*************************************************
+ * Activité Supabase (profiles table)
+ *************************************************/
+const ANIME_TITLE = "Arcane";
+let currentSeason = 1;
+let currentEpisodeIndex = null;
+let userId = null;
+
+/*************************************************
+ * Session utilisateur
+ *************************************************/
+async function fetchSession() {
+  const { data: sessionData, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error("Erreur session Supabase:", error);
+    return null;
+  }
+  const session = sessionData?.session;
+  if (!session) {
+    console.warn("Pas de session (non connecté).");
+    return null;
+  }
+  return session.user.id;
+}
+(async () => {
+  userId = await fetchSession();
+})();
+
+/*************************************************
+ * Mise à jour activité
+ *************************************************/
+async function updateCurrentActivity(episodeCard) {
   if (!userId) return;
-  const episode = currentEpisodeData[episodeIndex];
+
+  // Récupère infos depuis la carte cliquée
+  const episodeTitle = episodeCard.querySelector("h3")?.textContent || "";
+  const episodeNumber = episodeTitle.match(/\d+/) ? parseInt(episodeTitle.match(/\d+/)[0], 10) : null;
+  const episodeImage  = episodeCard.querySelector("img")?.src || null;
 
   const { error } = await supabase
     .from("profiles")
     .update({
-      currently_watching: `${ANIME_TITLE} (Saison ${currentSeason})`,
-      episode_number: episodeIndex + 1,
-      episode_image: episode.image,
-      current_season: currentSeason
+      currently_watching: ANIME_TITLE,   // 🔑 juste le titre
+      episode_number: episodeNumber,     // 🔑 numéro brut
+      episode_image: episodeImage,
+      current_season: currentSeason      // 🔑 numéro brut
     })
     .eq("id", userId);
 
   if (error) console.error("Erreur update activité:", error);
 }
 
-
+/*************************************************
+ * Effacer activité
+ *************************************************/
 async function clearCurrentActivity() {
   if (!userId) return;
   const { error } = await supabase
@@ -273,115 +1134,29 @@ async function clearCurrentActivity() {
   if (error) console.error("Erreur clear activité:", error);
 }
 
+/*************************************************
+ * Intégration avec ton lecteur
+ *************************************************/
+// Quand on clique sur une carte épisode → on lance la vidéo + update activité
+document.querySelectorAll(".card").forEach((card, index) => {
+  card.addEventListener("click", () => {
+    currentSeason = card.dataset.season;
+    currentEpisodeIndex = index;
+    updateCurrentActivity(card);
+  });
+});
 
-    /*************************************************
-     * Rendu des épisodes
-     *************************************************/
-    function renderEpisodes() {
-      episodeList.innerHTML = "";
-      currentEpisodeData.forEach((ep, index) => {
-        const card = document.createElement("div");
-        card.className = "episode-card";
-        card.innerHTML = `
-          <img src="${ep.image}" alt="${ep.title} - ${ep.description}" />
-          <h3>${ep.title}</h3>
-          <p>${ep.description}</p>
-        `;
-        card.addEventListener("click", () => {
-          currentEpisodeIndex = index;
-          playEpisode(index);
-        });
-        episodeList.appendChild(card);
-      });
-    }
+// Quand on ferme le lecteur vidéo → clear activité
+document.getElementById("backButton").addEventListener("click", () => {
+  clearCurrentActivity();
+});
 
-    /*************************************************
-     * Lecture épisode
-     *************************************************/
-    function playEpisode(index) {
-      loader.style.display = "block";
-      videoIframe.src = currentEpisodeData[index].video;
 
-      // animation d'apparition
-      videoContainer.classList.remove("show");
-      videoContainer.style.display = "flex";
-      requestAnimationFrame(() => {
-        videoContainer.classList.add("show");
-      });
+</script>
 
-      // activité (avec saison)
-      updateCurrentActivity(index);
-
-      // bouton suivant (après ~23 min)
-      nextButton.style.display = "none";
-      if (timeoutId) clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        if (index < currentEpisodeData.length - 1) {
-          nextButton.style.display = "inline-block";
-        }
-      }, 1_380_000); // 23 min
-    }
-
-    /*************************************************
-     * Iframe chargée -> loader off
-     *************************************************/
-    videoIframe.onload = () => {
-      loader.style.display = "none";
-    };
-
-    /*************************************************
-     * Épisode suivant
-     *************************************************/
-    function nextEpisode() {
-      if (currentEpisodeIndex < currentEpisodeData.length - 1) {
-        currentEpisodeIndex++;
-        playEpisode(currentEpisodeIndex);
-      }
-    }
-
-    /*************************************************
-     * Retour (clear activité + fermer lecteur)
-     *************************************************/
-    function exitFullscreenMode() {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
-      videoContainer.classList.remove("show");
-      setTimeout(() => {
-        videoContainer.style.display = "none";
-        // tuer flux iframe
-        videoIframe.src = "about:blank";
-        requestAnimationFrame(() => (videoIframe.src = ""));
-        nextButton.style.display = "none";
-        loader.style.display = "none";
-        clearCurrentActivity();
-      }, 500); // durée transition
-    }
-
-    /*************************************************
-     * Changement de saison
-     *************************************************/
-    seasonSelect.addEventListener("change", () => {
-      currentSeason = Number(seasonSelect.value);
-      currentEpisodeData = currentSeason === 2 ? episodeDataS2 : episodeDataS1;
-      currentEpisodeIndex = 0;
-      renderEpisodes();
-      // on efface l'activité si l'utilisateur change de saison sans lancer un épisode
-      clearCurrentActivity();
-    });
-
-    /*************************************************
-     * Exposer global (onclick HTML)
-     *************************************************/
-    window.exitFullscreenMode = exitFullscreenMode;
-    window.nextEpisode = nextEpisode;
-
-    /*************************************************
-     * Init
-     *************************************************/
-    renderEpisodes();
-  </script>
+<script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
 </html>
+
+
 
