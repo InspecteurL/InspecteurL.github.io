@@ -548,7 +548,28 @@ video {
 .episode-links a.vf { background-color: #ff4b4b; }      /* rouge VF */
 .episode-links a.vostfr { background-color: #4b9fff; } /* bleu VOSTFR */
 
-
+.language-buttons {
+  margin-bottom: 20px;
+  text-align: center;
+}
+.language-buttons button {
+  padding: 10px 20px;
+  margin: 0 5px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #444;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+.language-buttons button.active {
+  background-color: #f39c12;
+  color: #000;
+}
+.language-buttons button:hover {
+  background-color: #666;
+}
 </style>
 </head>
 <body>
@@ -641,8 +662,9 @@ video {
   
 </div>
   <div>
-  <!-- Boutons pour VO/VF -->
-  <button id="btn-vf">VF</button>
+  <!-- Boutons de langue -->
+<div class="language-buttons">
+  <button id="btn-vf" class="active">VF</button>
   <button id="btn-vo">VO</button>
 </div>
 
@@ -863,28 +885,26 @@ video {
 
 
 <script>
-  const btnVF = document.getElementById('btn-vf');
-  const btnVO = document.getElementById('btn-vo');
+// Récupère tous les boutons et toutes les cartes
+const btnVF = document.getElementById('btn-vf');
+const btnVO = document.getElementById('btn-vo');
+const cards = document.querySelectorAll('.card');
 
-  function switchLanguage(lang) {
-    const cards = document.querySelectorAll('.card');
-    cards.forEach(card => {
-      let link = card.querySelector('.video-link');
-      let url = card.dataset.video;
-      
-      if(lang === 'vo') {
-        url = url.replace('/VF/', '/VOSTFR/');
-      } else {
-        url = url.replace('/VOSTFR/', '/VF/');
-      }
-      
-      link.href = url;       // change le lien du bouton
-      card.dataset.video = url; // met à jour data-video pour que le toggle fonctionne correctement
-    });
-  }
+btnVF.addEventListener('click', () => {
+  cards.forEach(card => {
+    card.dataset.video = card.dataset.video.replace('/VOSTFR/', '/VF/');
+  });
+  btnVF.classList.add('active');
+  btnVO.classList.remove('active');
+});
 
-  btnVF.addEventListener('click', () => switchLanguage('vf'));
-  btnVO.addEventListener('click', () => switchLanguage('vo'));
+btnVO.addEventListener('click', () => {
+  cards.forEach(card => {
+    card.dataset.video = card.dataset.video.replace('/VF/', '/VOSTFR/');
+  });
+  btnVO.classList.add('active');
+  btnVF.classList.remove('active');
+});
 </script>
 
 
@@ -1324,6 +1344,7 @@ document.getElementById("backButton").addEventListener("click", () => {
 <script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
 </html>
+
 
 
 
