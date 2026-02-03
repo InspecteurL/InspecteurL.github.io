@@ -646,12 +646,12 @@ video {
   <button data-season="2">Saison 2</button>
 </div>
 
-  
   <!-- Boutons de langue -->
 <div class="language-buttons">
   <button id="btn-vf" class="active">VF</button>
   <button id="btn-vo">VO</button>
 </div>
+
   <!-- Cartes des épisodes -->
 <div class="cards-container" id="season-episodes">
 
@@ -800,6 +800,16 @@ btnVF.addEventListener('click', () => {
   btnVF.classList.add('active');
   btnVO.classList.remove('active');
 });
+
+btnVO.addEventListener('click', () => {
+  cards.forEach(card => {
+    card.dataset.video = card.dataset.video.replace('/VF/', '/VOST/');
+  });
+  btnVO.classList.add('active');
+  btnVF.classList.remove('active');
+});
+</script>
+
 
 
 
@@ -1237,6 +1247,7 @@ document.getElementById("backButton").addEventListener("click", () => {
 <script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
 </html>
+
 
 
 
