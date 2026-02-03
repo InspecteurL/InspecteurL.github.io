@@ -531,6 +531,29 @@ video {
     fill: #ff3333;
   }
 
+  .language-buttons {
+  margin-bottom: 20px;
+  text-align: center;
+}
+.language-buttons button {
+  padding: 10px 20px;
+  margin: 0 5px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #444;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+.language-buttons button.active {
+  background-color: #f39c12;
+  color: #000;
+}
+.language-buttons button:hover {
+  background-color: #666;
+}
+
 </style>
 </head>
 <body>
@@ -623,7 +646,13 @@ video {
   <button data-season="2">Saison 2</button>
 </div>
 
-<!-- Cartes des épisodes -->
+  
+  <!-- Boutons de langue -->
+<div class="language-buttons">
+  <button id="btn-vf" class="active">VF</button>
+  <button id="btn-vo">VO</button>
+</div>
+  <!-- Cartes des épisodes -->
 <div class="cards-container" id="season-episodes">
 
   <!-- ================= SAISON 1 ================= -->
@@ -758,9 +787,19 @@ video {
 </div>
 
 
+<script>
+// Récupère tous les boutons et toutes les cartes
+const btnVF = document.getElementById('btn-vf');
+const btnVO = document.getElementById('btn-vo');
+const cards = document.querySelectorAll('.card');
 
-
-
+btnVF.addEventListener('click', () => {
+  cards.forEach(card => {
+    card.dataset.video = card.dataset.video.replace('/VOST/', '/VF/');
+  });
+  btnVF.classList.add('active');
+  btnVO.classList.remove('active');
+});
 
 
 
@@ -1198,6 +1237,7 @@ document.getElementById("backButton").addEventListener("click", () => {
 <script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
 </html>
+
 
 
 
