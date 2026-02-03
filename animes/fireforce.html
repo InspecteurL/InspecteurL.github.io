@@ -531,6 +531,28 @@ video {
     fill: #ff3333;
   }
 
+    .language-buttons {
+  margin-bottom: 20px;
+  text-align: center;
+}
+.language-buttons button {
+  padding: 10px 20px;
+  margin: 0 5px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #444;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+.language-buttons button.active {
+  background-color: #f39c12;
+  color: #000;
+}
+.language-buttons button:hover {
+  background-color: #666;
+}
 </style>
 </head>
 <body>
@@ -622,6 +644,12 @@ video {
   <button class="active" data-season="1">Saison 1</button>
   <button data-season="2">Saison 2</button>
   <button data-season="3">Saison 3</button>
+</div>
+
+  <!-- Boutons de langue -->
+<div class="language-buttons">
+  <button id="btn-vf" class="active">VF</button>
+  <button id="btn-vo">VO</button>
 </div>
 
 <!-- Cartes des épisodes -->
@@ -716,6 +744,28 @@ video {
 
 
 
+<script>
+// Récupère tous les boutons et toutes les cartes
+const btnVF = document.getElementById('btn-vf');
+const btnVO = document.getElementById('btn-vo');
+const cards = document.querySelectorAll('.card');
+
+btnVF.addEventListener('click', () => {
+  cards.forEach(card => {
+    card.dataset.video = card.dataset.video.replace('/VOST/', '/VF/');
+  });
+  btnVF.classList.add('active');
+  btnVO.classList.remove('active');
+});
+
+btnVO.addEventListener('click', () => {
+  cards.forEach(card => {
+    card.dataset.video = card.dataset.video.replace('/VF/', '/VOST/');
+  });
+  btnVO.classList.add('active');
+  btnVF.classList.remove('active');
+});
+</script>
 
 
 
