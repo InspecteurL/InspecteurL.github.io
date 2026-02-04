@@ -1,12 +1,12 @@
 const HOST_MAP = {
-  "cinetacos.xyz": "cinedonuts.xyz",
-  "cinechicken.xyz": "cinedonuts.xyz",
-  "cinecake.xyz": "cinedonuts.xyz",
-  "cinefries.xyz": "cinedonuts.xyz", // ✅ MANQUANT
-  "chicken.xyz": "cinedonuts.xyz",
-  "fries.xyz": "cinedonuts.xyz",
-  "waffle.xyz": "cinedonuts.xyz",
-  "donuts.xyz": "cinedonuts.xyz"
+  "cinetacos.xyz": "cinecake.xyz",
+  "cinechicken.xyz": "cinecake.xyz",
+  "cinecake.xyz": "cinecake.xyz",
+  "cinefries.xyz": "cinecake.xyz", // ✅ MANQUANT
+  "chicken.xyz": "cinecake.xyz",
+  "fries.xyz": "cinecake.xyz",
+  "waffle.xyz": "cinecake.xyz",
+  "donuts.xyz": "cinecake.xyz"
 };
 
 
@@ -789,6 +789,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
