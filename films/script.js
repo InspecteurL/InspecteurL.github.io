@@ -1,13 +1,6 @@
-// ==================================================
-// STREAM CONFIG
-// ==================================================
 const STREAM_BASE = "https://dry-river-6c33.storage121.workers.dev/stream";
 const streamCache = new Map();
 
-/**
- * Convertit une ancienne URL (cinecake.xyz/...)
- * en URL Worker (/stream?file=...)
- */
 function autoReplaceDomain(raw) {
   if (!raw || typeof raw !== "string") return raw;
 
@@ -15,52 +8,45 @@ function autoReplaceDomain(raw) {
 
   try {
     const u = new URL(raw, location.href);
-    let filePath = u.pathname.replace(/^\/+/, "");
+    const filePath = u.pathname.replace(/^\/+/, "");
 
-    // sécurité minimale
-    if (!filePath || !filePath.endsWith(".mp4")) return raw;
+    if (!filePath.endsWith(".mp4")) return raw;
 
-    const finalUrl = `${STREAM_BASE}?file=${encodeURIComponent(filePath)}`;
+    const finalUrl =
+      STREAM_BASE + "?file=" + encodeURIComponent(filePath);
+
     streamCache.set(raw, finalUrl);
     return finalUrl;
-  } catch {
+  } catch (e) {
     return raw;
   }
 }
 
-// ==================================================
-// DOM READY — remplacement global des sources vidéo
-// ==================================================
+
+// ---------------------
+// DOM Ready
+// ---------------------
 document.addEventListener("DOMContentLoaded", () => {
   const video = document.getElementById("video");
 
-  if (video?.src) {
-    video.src = autoReplaceDomain(video.src);
-  }
+  if (video?.src) video.src = autoReplaceDomain(video.src);
 
-  video?.querySelectorAll("source").forEach(srcEl => {
+  video?.querySelectorAll?.("source").forEach(srcEl => {
     const s = srcEl.getAttribute("src");
-    if (!s) return;
-    srcEl.src = autoReplaceDomain(s);
-    srcEl.type = "video/mp4";
+    if (s) srcEl.setAttribute("src", autoReplaceDomain(s));
   });
 
   document.querySelectorAll("[data-video]").forEach(el => {
-    if (el.dataset.video) {
-      el.dataset.video = autoReplaceDomain(el.dataset.video);
-    }
+    if (el.dataset.video) el.dataset.video = autoReplaceDomain(el.dataset.video);
   });
 
   document.querySelectorAll("[data-src]").forEach(el => {
-    if (el.dataset.src) {
-      el.dataset.src = autoReplaceDomain(el.dataset.src);
-    }
+    if (el.dataset.src) el.dataset.src = autoReplaceDomain(el.dataset.src);
   });
 
   document.querySelectorAll("a[href]").forEach(a => {
     a.href = autoReplaceDomain(a.href);
   });
-});
 
   // ==================================================
   // ❤️ LIKE / DISLIKE — INSERTION PARFAITE
@@ -797,20 +783,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
