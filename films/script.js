@@ -1,27 +1,33 @@
-const STREAM_BASE = "https://dry-river-6c33.storage121.workers.dev/stream";
-const streamCache = new Map();
+const HOST_MAP = {
+  "cinetacos.xyz": "cinecake.xyz",
+  "cinechicken.xyz": "cinecake.xyz",
+  "cinecake.xyz": "cinecake.xyz",
+  "cinefries.xyz": "cinecake.xyz", // ✅ MANQUANT
+  "chicken.xyz": "cinecake.xyz",
+  "fries.xyz": "cinecake.xyz",
+  "waffle.xyz": "cinecake.xyz",
+  "donuts.xyz": "cinecake.xyz"
+};
+
 
 function autoReplaceDomain(raw) {
   if (!raw || typeof raw !== "string") return raw;
-
-  if (streamCache.has(raw)) return streamCache.get(raw);
-
   try {
     const u = new URL(raw, location.href);
-    const filePath = u.pathname.replace(/^\/+/, "");
-
-    if (!filePath.endsWith(".mp4")) return raw;
-
-    const finalUrl =
-      STREAM_BASE + "?file=" + encodeURIComponent(filePath);
-
-    streamCache.set(raw, finalUrl);
-    return finalUrl;
-  } catch (e) {
+    const host = u.hostname.toLowerCase();
+    if (HOST_MAP[host]) {
+      u.hostname = HOST_MAP[host];
+      return u.href;
+    }
+    return raw;
+  } catch {
+    for (const from in HOST_MAP) {
+      const re = new RegExp(from.replace(/\./g, "\\."), "ig");
+      if (re.test(raw)) return raw.replace(re, HOST_MAP[from]);
+    }
     return raw;
   }
 }
-
 
 // ---------------------
 // DOM Ready
@@ -783,6 +789,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
+
+
+
+
+
+
+
+
+
+
 
 
 
