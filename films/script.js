@@ -1,33 +1,44 @@
-const HOST_MAP = {
-  "cinetacos.xyz": "cinecake.xyz",
-  "cinechicken.xyz": "cinecake.xyz",
-  "cinecake.xyz": "cinecake.xyz",
-  "cinefries.xyz": "cinecake.xyz", // ✅ MANQUANT
-  "chicken.xyz": "cinecake.xyz",
-  "fries.xyz": "cinecake.xyz",
-  "waffle.xyz": "cinecake.xyz",
-  "donuts.xyz": "cinecake.xyz"
-};
+const STREAM_BASE = "https://dry-river-6c33.storage121.workers.dev/stream";
 
-
+/**
+ * Transforme n'importe quelle ancienne URL
+ * en URL signée Cloudflare Worker
+ */
 function autoReplaceDomain(raw) {
   if (!raw || typeof raw !== "string") return raw;
+
   try {
+    // URL absolue ou relative
     const u = new URL(raw, location.href);
-    const host = u.hostname.toLowerCase();
-    if (HOST_MAP[host]) {
-      u.hostname = HOST_MAP[host];
-      return u.href;
-    }
-    return raw;
+
+    // extrait le chemin fichier
+    // ex: /movies/Cars-3.mp4 → movies/Cars-3.mp4
+    const filePath = u.pathname.replace(/^\/+/, "");
+
+    if (!filePath) return raw;
+
+    return `${STREAM_BASE}?file=${encodeURIComponent(filePath)}`;
   } catch {
-    for (const from in HOST_MAP) {
-      const re = new RegExp(from.replace(/\./g, "\\."), "ig");
-      if (re.test(raw)) return raw.replace(re, HOST_MAP[from]);
-    }
     return raw;
   }
 }
+
+const streamCache = new Map();
+
+function autoReplaceDomain(raw) {
+  if (streamCache.has(raw)) return streamCache.get(raw);
+
+  try {
+    const u = new URL(raw, location.href);
+    const filePath = u.pathname.replace(/^\/+/, "");
+    const finalUrl = `${STREAM_BASE}?file=${encodeURIComponent(filePath)}`;
+    streamCache.set(raw, finalUrl);
+    return finalUrl;
+  } catch {
+    return raw;
+  }
+}
+
 
 // ---------------------
 // DOM Ready
@@ -789,6 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
