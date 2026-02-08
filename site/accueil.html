@@ -81,6 +81,34 @@
     <button class="prev"><i class="fas fa-chevron-left"></i></button>
     <button class="next"><i class="fas fa-chevron-right"></i></button>
 </section>
+    <!-- Bouton admin -->
+<button id="editMovieBtn" class="admin-only" style="display:none;">
+  Modifier le contenu
+</button>
+
+<!-- Panneau admin -->
+<div id="editMoviePanel" class="admin-panel" style="display:none;">
+  <h3>Modifier le lien vidéo d’une page</h3>
+
+  <!-- Sélecteur de page existante -->
+  <label for="pageSelect">Choisir une page :</label>
+  <select id="pageSelect">
+    <option value="">-- Sélectionnez un contenu --</option>
+    <!-- Les options seront générées dynamiquement via JS -->
+  </select>
+
+  <strong>OU</strong>
+
+  <!-- Input URL directe -->
+  <label for="pageUrlInput">Coller l’URL de la page :</label>
+  <input type="text" id="pageUrlInput" placeholder="Ex: https://inspecteurl.github.io/séries/adolescence.html">
+
+  <label for="videoUrlInput">Lien vidéo MP4 :</label>
+  <input type="text" id="videoUrlInput" placeholder="Ex: https://.../video.mp4">
+
+  <button id="saveMovieVideo">Enregistrer</button>
+</div>
+
 <section class="catalog">
     <h2>Nouveautés/Prochainement</h2>
 
@@ -117,26 +145,6 @@
     <h3>La Flamme</h3>
     <p>Comédie</p>
 </div>
-
-            <!-- Bouton admin -->
-<button id="editMovieBtn" style="display:none;" class="admin-only">
-  Modifier le contenu
-</button>
-
-<!-- Panneau admin -->
-<div id="editMoviePanel" style="display:none;" class="admin-panel">
-  <h3>Modifier la source vidéo</h3>
-  <input
-    type="text"
-    id="movieVideoUrl"
-    placeholder="Lien vidéo MP4"
-    style="width:100%;margin-bottom:10px;"
-  >
-  <button id="saveMovieVideo">Enregistrer</button>
-</div>
-
-<!-- Lecteur vidéo -->
-<video id="video" controls></video>
 
 
              <div class="movie-card coming-soon"
@@ -1044,8 +1052,66 @@
     </div>
 
 </section>
+<style>
+/* Bouton admin principal */
+.admin-only {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+
+.admin-only:hover {
+  background-color: #4338ca;
+  transform: translateY(-1px);
+}
+
+/* Panneau admin */
+.admin-panel {
+  background-color: #1f2937;
+  color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 10px;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.admin-panel input, .admin-panel select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  width: 100%;
+}
+
+.admin-panel button {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.admin-panel button:hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+}
+</style>
 
 <style>
+    
 /* =========================================================
    🔧 RESET & BASE
    ========================================================= */
@@ -1818,123 +1884,112 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 
-    <script type="module">
+ <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-/* ========= SUPABASE ========= */
+/* ===== Supabase ===== */
 const supabase = createClient(
   'https://wuagahavmbugmnuzsouf.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
 );
 
-/* ========= ADMIN (REPRISE DE TON SYSTÈME) ========= */
-let currentUser = null;
+/* ===== DOM ===== */
+const editBtn = document.getElementById('editMovieBtn');
+const editPanel = document.getElementById('editMoviePanel');
+const pageSelect = document.getElementById('pageSelect');
+const pageUrlInput = document.getElementById('pageUrlInput');
+const videoUrlInput = document.getElementById('videoUrlInput');
+const saveBtn = document.getElementById('saveMovieVideo');
+
+/* ===== Admin check ===== */
 let isAdmin = false;
 
 function detectLocalUser() {
   try {
     const cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
-    if (cu) {
-      currentUser = cu;
-      isAdmin = !!cu.isAdmin || cu.email === 'lolovp.portrets41@gmail.com';
+    if (cu && (cu.isAdmin || cu.email === 'lolovp.portrets41@gmail.com')) {
+      isAdmin = true;
     }
   } catch {}
 }
 
 async function detectSupabaseUser() {
   const { data } = await supabase.auth.getUser();
-  if (data?.user && !currentUser) {
-    currentUser = {
-      email: data.user.email
-    };
-    isAdmin = currentUser.email === 'lolovp.portrets41@gmail.com';
+  if (data?.user && data.user.email === 'lolovp.portrets41@gmail.com') {
+    isAdmin = true;
   }
 }
 
-detectLocalUser();
 await detectSupabaseUser();
+detectLocalUser();
 
-/* ========= IDENTIFIANT DU FILM ========= */
-/*
-  Exemple :
-  platoon-1986.html → slug = platoon-1986
-*/
-const movieSlug = location.pathname
-  .split('/')
-  .pop()
-  .replace('.html', '');
+if (isAdmin) editBtn.style.display = 'block';
 
-/* ========= DOM ========= */
-const videoEl = document.getElementById('video');
-const editBtn = document.getElementById('editMovieBtn');
-const editPanel = document.getElementById('editMoviePanel');
-const inputUrl = document.getElementById('movieVideoUrl');
-const saveBtn = document.getElementById('saveMovieVideo');
+/* ===== Charger toutes les pages disponibles sur le site ===== */
+async function loadPages() {
+  // Exemple : tu peux créer un fichier JSON listant toutes les pages
+  // ou générer dynamiquement depuis ton catalogue HTML
+  // Ici je montre une méthode simple avec fetch
+  try {
+    const res = await fetch('https://inspecteurl.github.io/site/catalogue.html');
+    const html = await res.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
 
-/* ========= CHARGEMENT DE LA VIDÉO ========= */
-async function loadMovie() {
-  const { data, error } = await supabase
-    .from('movies')
-    .select('video_url')
-    .eq('slug', movieSlug)
-    .single();
-
-  if (data?.video_url) {
-    videoEl.src = data.video_url;
-  } else {
-    console.warn('Aucune source vidéo trouvée');
+    const links = [...doc.querySelectorAll('.movieimg a')];
+    links.forEach(a => {
+      const title = a.querySelector('h2')?.innerText || a.href;
+      const slug = a.href;
+      const opt = document.createElement('option');
+      opt.value = slug;
+      opt.textContent = title;
+      pageSelect.appendChild(opt);
+    });
+  } catch(e) {
+    console.warn('Impossible de charger la liste des pages', e);
   }
 }
 
-await loadMovie();
-
-/* ========= MODE ADMIN ========= */
-if (isAdmin) {
-  editBtn.style.display = 'block';
-}
-
-/* ========= OUVERTURE DU PANNEAU ========= */
-editBtn?.addEventListener('click', async () => {
-  editPanel.style.display = 'block';
-
-  const { data } = await supabase
-    .from('movies')
-    .select('video_url')
-    .eq('slug', movieSlug)
-    .single();
-
-  if (data?.video_url) {
-    inputUrl.value = data.video_url;
-  }
+/* ===== Ouvrir panneau ===== */
+editBtn.addEventListener('click', async () => {
+  editPanel.style.display = 'flex';
+  await loadPages();
 });
 
-/* ========= SAUVEGARDE ========= */
-saveBtn?.addEventListener('click', async () => {
-  const url = inputUrl.value.trim();
-  if (!url) return alert('Lien invalide');
+/* ===== Sauvegarde dans Supabase ===== */
+saveBtn.addEventListener('click', async () => {
+  const pageUrl = pageSelect.value || pageUrlInput.value.trim();
+  const videoUrl = videoUrlInput.value.trim();
+
+  if (!pageUrl) return alert('Veuillez sélectionner une page ou coller l’URL.');
+  if (!videoUrl) return alert('Veuillez saisir le lien vidéo.');
+
+  // Crée ou met à jour la table Supabase
+  const slug = encodeURIComponent(pageUrl.split('/').pop().replace('.html',''));
 
   const { error } = await supabase
     .from('movies')
     .upsert({
-      slug: movieSlug,
-      video_url: url,
+      slug,
+      video_url: videoUrl,
       updated_at: new Date()
     });
 
   if (error) {
-    alert('Erreur Supabase');
+    alert('Erreur lors de la sauvegarde');
     console.error(error);
     return;
   }
 
-  alert('Lien mis à jour ✔');
-  videoEl.src = url;
+  alert('Lien vidéo mis à jour ✔');
 });
 </script>
 
 
+
 </body>
 </html>
+
 
 
 
