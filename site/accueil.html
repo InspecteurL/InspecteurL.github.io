@@ -1985,10 +1985,41 @@ saveBtn.addEventListener('click', async () => {
 });
 </script>
 
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const supabase = createClient(
+  'https://wuagahavmbugmnuzsouf.supabase.co',
+  'PUBLIC_ANON_KEY'
+);
+
+// Identifier le film depuis l’URL
+const movieSlug = encodeURIComponent(location.pathname.split('/').pop().replace('.html',''));
+
+const videoEl = document.getElementById('video');
+
+async function loadVideo() {
+  const { data, error } = await supabase
+    .from('movies')
+    .select('video_url')
+    .eq('slug', movieSlug)
+    .single();
+
+  if (error || !data?.video_url) {
+    console.warn('Lien vidéo introuvable sur Supabase');
+    return;
+  }
+
+  videoEl.src = data.video_url; // <--- Remplace le src
+}
+
+loadVideo();
+</script>
 
 
 </body>
 </html>
+
 
 
 
