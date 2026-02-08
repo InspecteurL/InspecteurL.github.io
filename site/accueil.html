@@ -81,17 +81,14 @@
     <button class="prev"><i class="fas fa-chevron-left"></i></button>
     <button class="next"><i class="fas fa-chevron-right"></i></button>
 </section>
-    <!-- Bouton admin -->
-<!-- Bouton admin -->
-<button id="editMovieBtn" class="admin-only" style="display:none;">
-  Modifier le contenu
-</button>
+  <!-- Bouton admin -->
+<button id="editMovieBtn" class="admin-only" style="display:none;">Modifier le contenu</button>
 
 <!-- Panneau admin -->
 <div id="editMoviePanel" class="admin-panel" style="display:none;">
   <h3>Modifier le lien vidéo d’une page</h3>
 
-  <label for="pageSelect">Choisir une page :</label>
+  <label for="pageSelect">Choisir un contenu :</label>
   <select id="pageSelect">
     <option value="">-- Sélectionnez un contenu --</option>
   </select>
@@ -104,11 +101,14 @@
   <label for="videoUrlInput">Lien vidéo MP4 :</label>
   <input type="text" id="videoUrlInput" placeholder="Ex: https://.../video.mp4">
 
+  <button id="previewVideo">Voir l’aperçu</button>
+  <video id="previewEl" controls style="width:100%; margin-top:10px;"></video>
+
   <button id="saveMovieVideo">Enregistrer</button>
 </div>
 
-<!-- Lecteur vidéo -->
-<video id="video" controls></video>
+<!-- Lecteur principal -->
+<video id="video" controls style="width:100%; max-width:800px;"></video>
 
 <style>
 /* ===== CSS Admin ===== */
@@ -1894,13 +1894,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pageSelect = document.getElementById('pageSelect');
   const pageUrlInput = document.getElementById('pageUrlInput');
   const videoUrlInput = document.getElementById('videoUrlInput');
+  const previewBtn = document.getElementById('previewVideo');
+  const previewEl = document.getElementById('previewEl');
   const saveBtn = document.getElementById('saveMovieVideo');
   const videoEl = document.getElementById('video');
-
-  if(!videoEl) {
-    console.error("Video element introuvable");
-    return;
-  }
 
   /* ===== Admin check ===== */
   let isAdmin = false;
@@ -1908,17 +1905,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   function detectLocalUser() {
     try {
       const cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
-      if (cu && (cu.isAdmin || cu.email === 'lolovp.portrets41@gmail.com')) {
-        isAdmin = true;
-      }
+      if (cu && (cu.isAdmin || cu.email === 'lolovp.portrets41@gmail.com')) isAdmin = true;
     } catch {}
   }
 
   async function detectSupabaseUser() {
     const { data } = await supabase.auth.getUser();
-    if (data?.user && data.user.email === 'lolovp.portrets41@gmail.com') {
-      isAdmin = true;
-    }
+    if (data?.user && data.user.email === 'lolovp.portrets41@gmail.com') isAdmin = true;
   }
 
   await detectSupabaseUser();
@@ -1939,18 +1932,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       .eq('slug', movieSlug)
       .single();
 
-    if(error) {
-      console.error("Erreur Supabase:", error);
-      return;
-    }
-
-    if(data?.video_url) {
-      videoEl.src = data.video_url;
-    } else {
-      console.warn("Lien vidéo introuvable pour", movieSlug);
-    }
+    if(error) { console.error("Erreur Supabase:", error); return; }
+    if(data?.video_url) videoEl.src = data.video_url;
   }
-
   await loadVideo();
 
   /* ===== Charger toutes les pages du site dans le select ===== */
@@ -1981,6 +1965,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadPages();
   });
 
+  /* ===== Aperçu vidéo ===== */
+  previewBtn.addEventListener('click', () => {
+    const videoUrl = videoUrlInput.value.trim();
+    if(!videoUrl) return alert('Veuillez saisir un lien vidéo pour prévisualiser.');
+    previewEl.src = videoUrl;
+  });
+
   /* ===== Sauvegarde / Upsert ===== */
   saveBtn.addEventListener('click', async () => {
     const pageUrl = pageSelect.value || pageUrlInput.value.trim();
@@ -1993,7 +1984,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       pageUrl.split('/').pop().replace('.html','').toLowerCase()
     );
 
-    // ✅ Upsert : permet de créer ou mettre à jour le lien pour le même film
+    // Upsert : créer ou mettre à jour le lien pour le même film
     const { error } = await supabase
       .from('movies')
       .upsert({
@@ -2002,13 +1993,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         updated_at: new Date()
       });
 
-    if(error) {
-      alert('Erreur lors de la sauvegarde');
-      console.error(error);
-      return;
-    }
+    if(error) { alert('Erreur lors de la sauvegarde'); console.error(error); return; }
 
-    // Si on est sur la page courante, on met à jour directement le lecteur
+    // Mise à jour immédiate si on est sur la page courante
     if(slug === movieSlug) videoEl.src = videoUrl;
 
     alert('Lien vidéo mis à jour ✔');
@@ -2019,8 +2006,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
+
 </body>
 </html>
+
 
 
 
