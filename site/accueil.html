@@ -118,6 +118,27 @@
     <p>Comédie</p>
 </div>
 
+            <!-- Bouton admin -->
+<button id="editMovieBtn" style="display:none;" class="admin-only">
+  Modifier le contenu
+</button>
+
+<!-- Panneau admin -->
+<div id="editMoviePanel" style="display:none;" class="admin-panel">
+  <h3>Modifier la source vidéo</h3>
+  <input
+    type="text"
+    id="movieVideoUrl"
+    placeholder="Lien vidéo MP4"
+    style="width:100%;margin-bottom:10px;"
+  >
+  <button id="saveMovieVideo">Enregistrer</button>
+</div>
+
+<!-- Lecteur vidéo -->
+<video id="video" controls></video>
+
+
              <div class="movie-card coming-soon"
      data-release="2026-01-05T16:00:00"
      data-link="https://inspecteurl.github.io/animes/pluto.html">
@@ -1797,9 +1818,124 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 
+    <script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+/* ========= SUPABASE ========= */
+const supabase = createClient(
+  'https://wuagahavmbugmnuzsouf.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+);
+
+/* ========= ADMIN (REPRISE DE TON SYSTÈME) ========= */
+let currentUser = null;
+let isAdmin = false;
+
+function detectLocalUser() {
+  try {
+    const cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    if (cu) {
+      currentUser = cu;
+      isAdmin = !!cu.isAdmin || cu.email === 'lolovp.portrets41@gmail.com';
+    }
+  } catch {}
+}
+
+async function detectSupabaseUser() {
+  const { data } = await supabase.auth.getUser();
+  if (data?.user && !currentUser) {
+    currentUser = {
+      email: data.user.email
+    };
+    isAdmin = currentUser.email === 'lolovp.portrets41@gmail.com';
+  }
+}
+
+detectLocalUser();
+await detectSupabaseUser();
+
+/* ========= IDENTIFIANT DU FILM ========= */
+/*
+  Exemple :
+  platoon-1986.html → slug = platoon-1986
+*/
+const movieSlug = location.pathname
+  .split('/')
+  .pop()
+  .replace('.html', '');
+
+/* ========= DOM ========= */
+const videoEl = document.getElementById('video');
+const editBtn = document.getElementById('editMovieBtn');
+const editPanel = document.getElementById('editMoviePanel');
+const inputUrl = document.getElementById('movieVideoUrl');
+const saveBtn = document.getElementById('saveMovieVideo');
+
+/* ========= CHARGEMENT DE LA VIDÉO ========= */
+async function loadMovie() {
+  const { data, error } = await supabase
+    .from('movies')
+    .select('video_url')
+    .eq('slug', movieSlug)
+    .single();
+
+  if (data?.video_url) {
+    videoEl.src = data.video_url;
+  } else {
+    console.warn('Aucune source vidéo trouvée');
+  }
+}
+
+await loadMovie();
+
+/* ========= MODE ADMIN ========= */
+if (isAdmin) {
+  editBtn.style.display = 'block';
+}
+
+/* ========= OUVERTURE DU PANNEAU ========= */
+editBtn?.addEventListener('click', async () => {
+  editPanel.style.display = 'block';
+
+  const { data } = await supabase
+    .from('movies')
+    .select('video_url')
+    .eq('slug', movieSlug)
+    .single();
+
+  if (data?.video_url) {
+    inputUrl.value = data.video_url;
+  }
+});
+
+/* ========= SAUVEGARDE ========= */
+saveBtn?.addEventListener('click', async () => {
+  const url = inputUrl.value.trim();
+  if (!url) return alert('Lien invalide');
+
+  const { error } = await supabase
+    .from('movies')
+    .upsert({
+      slug: movieSlug,
+      video_url: url,
+      updated_at: new Date()
+    });
+
+  if (error) {
+    alert('Erreur Supabase');
+    console.error(error);
+    return;
+  }
+
+  alert('Lien mis à jour ✔');
+  videoEl.src = url;
+});
+</script>
+
 
 </body>
 </html>
+
 
 
 
