@@ -1888,7 +1888,6 @@ const supabase = createClient(
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-  /* ===== DOM ===== */
   const editBtn = document.getElementById('editMovieBtn');
   const editPanel = document.getElementById('editMoviePanel');
   const pageSelect = document.getElementById('pageSelect');
@@ -1899,25 +1898,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   const saveBtn = document.getElementById('saveMovieVideo');
   const videoEl = document.getElementById('video');
 
+  const placeholder = 'https://via.placeholder.com/440x660?text=Vidéo+introuvable';
+
   /* ===== Admin check ===== */
   let isAdmin = false;
 
   function detectLocalUser() {
     try {
       const cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
-      if (cu && (cu.isAdmin || cu.email === 'lolovp.portrets41@gmail.com')) isAdmin = true;
+      if(cu && (cu.isAdmin || cu.email==='lolovp.portrets41@gmail.com')) isAdmin=true;
     } catch {}
   }
 
   async function detectSupabaseUser() {
     const { data } = await supabase.auth.getUser();
-    if (data?.user && data.user.email === 'lolovp.portrets41@gmail.com') isAdmin = true;
+    if(data?.user && data.user.email==='lolovp.portrets41@gmail.com') isAdmin=true;
   }
 
   await detectSupabaseUser();
   detectLocalUser();
-
-  if(isAdmin) editBtn.style.display = 'block';
+  if(isAdmin) editBtn.style.display='block';
 
   /* ===== Identifier le film depuis l’URL ===== */
   const movieSlug = encodeURIComponent(
@@ -1926,18 +1926,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   /* ===== Charger la vidéo depuis Supabase ===== */
   async function loadVideo() {
-    const { data, error } = await supabase
-      .from('movies')
-      .select('video_url')
-      .eq('slug', movieSlug)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('movies')
+        .select('video_url')
+        .eq('slug', movieSlug)
+        .single();
 
-    if(error) { console.error("Erreur Supabase:", error); return; }
-    if(data?.video_url) videoEl.src = data.video_url;
+      if(error) throw error;
+
+      if(data?.video_url) {
+        // Test rapide si c'est bien un lien MP4
+        if(!/^https?:\/\/.+\.mp4$/i.test(data.video_url)) {
+          console.warn('Lien vidéo invalide :', data.video_url);
+          videoEl.src = '';
+          videoEl.poster = placeholder;
+          return;
+        }
+
+        videoEl.src = data.video_url;
+      } else {
+        console.warn('Lien vidéo introuvable pour', movieSlug);
+        videoEl.src = '';
+        videoEl.poster = placeholder;
+      }
+
+    } catch(e) {
+      console.error("Erreur lors du chargement vidéo:", e);
+      videoEl.src = '';
+      videoEl.poster = placeholder;
+    }
   }
+
   await loadVideo();
 
-  /* ===== Charger toutes les pages du site dans le select ===== */
+  /* ===== Charger toutes les pages dans le select ===== */
   async function loadPages() {
     try {
       const res = await fetch('https://inspecteurl.github.io/site/catalogue.html');
@@ -1946,7 +1969,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const doc = parser.parseFromString(html,'text/html');
 
       const links = [...doc.querySelectorAll('.movieimg a')];
-      links.forEach(a => {
+      links.forEach(a=>{
         const title = a.querySelector('h2')?.innerText || a.href;
         const slug = a.href;
         const opt = document.createElement('option');
@@ -1954,50 +1977,47 @@ document.addEventListener("DOMContentLoaded", async () => {
         opt.textContent = title;
         pageSelect.appendChild(opt);
       });
+
     } catch(e) {
-      console.warn('Impossible de charger la liste des pages', e);
+      console.warn('Impossible de charger les pages', e);
     }
   }
 
   /* ===== Ouvrir panneau admin ===== */
-  editBtn.addEventListener('click', async () => {
-    editPanel.style.display = 'flex';
+  editBtn.addEventListener('click', async ()=>{
+    editPanel.style.display='flex';
     await loadPages();
   });
 
-  /* ===== Aperçu vidéo ===== */
-  previewBtn.addEventListener('click', () => {
+  /* ===== Aperçu vidéo avec validation ===== */
+  previewBtn.addEventListener('click', ()=>{
     const videoUrl = videoUrlInput.value.trim();
     if(!videoUrl) return alert('Veuillez saisir un lien vidéo pour prévisualiser.');
+    if(!/^https?:\/\/.+\.mp4$/i.test(videoUrl)) return alert('Lien non valide : doit être un MP4');
+
     previewEl.src = videoUrl;
   });
 
   /* ===== Sauvegarde / Upsert ===== */
-  saveBtn.addEventListener('click', async () => {
+  saveBtn.addEventListener('click', async ()=>{
     const pageUrl = pageSelect.value || pageUrlInput.value.trim();
     const videoUrl = videoUrlInput.value.trim();
 
     if(!pageUrl) return alert('Veuillez sélectionner une page ou coller l’URL.');
     if(!videoUrl) return alert('Veuillez saisir le lien vidéo.');
+    if(!/^https?:\/\/.+\.mp4$/i.test(videoUrl)) return alert('Lien vidéo invalide (doit être MP4).');
 
     const slug = encodeURIComponent(
       pageUrl.split('/').pop().replace('.html','').toLowerCase()
     );
 
-    // Upsert : créer ou mettre à jour le lien pour le même film
     const { error } = await supabase
       .from('movies')
-      .upsert({
-        slug,
-        video_url: videoUrl,
-        updated_at: new Date()
-      });
+      .upsert({slug, video_url: videoUrl, updated_at:new Date()});
 
     if(error) { alert('Erreur lors de la sauvegarde'); console.error(error); return; }
 
-    // Mise à jour immédiate si on est sur la page courante
-    if(slug === movieSlug) videoEl.src = videoUrl;
-
+    if(slug===movieSlug) videoEl.src = videoUrl;
     alert('Lien vidéo mis à jour ✔');
   });
 
@@ -2009,6 +2029,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 </body>
 </html>
+
 
 
 
