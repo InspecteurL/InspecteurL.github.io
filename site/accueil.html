@@ -82,6 +82,7 @@
     <button class="next"><i class="fas fa-chevron-right"></i></button>
 </section>
     <!-- Bouton admin -->
+<!-- Bouton admin -->
 <button id="editMovieBtn" class="admin-only" style="display:none;">
   Modifier le contenu
 </button>
@@ -90,16 +91,13 @@
 <div id="editMoviePanel" class="admin-panel" style="display:none;">
   <h3>Modifier le lien vidéo d’une page</h3>
 
-  <!-- Sélecteur de page existante -->
   <label for="pageSelect">Choisir une page :</label>
   <select id="pageSelect">
     <option value="">-- Sélectionnez un contenu --</option>
-    <!-- Les options seront générées dynamiquement via JS -->
   </select>
 
   <strong>OU</strong>
 
-  <!-- Input URL directe -->
   <label for="pageUrlInput">Coller l’URL de la page :</label>
   <input type="text" id="pageUrlInput" placeholder="Ex: https://inspecteurl.github.io/séries/adolescence.html">
 
@@ -108,6 +106,57 @@
 
   <button id="saveMovieVideo">Enregistrer</button>
 </div>
+
+<!-- Lecteur vidéo -->
+<video id="video" controls></video>
+
+<style>
+/* ===== CSS Admin ===== */
+.admin-only {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+.admin-only:hover { background-color: #4338ca; transform: translateY(-1px); }
+
+.admin-panel {
+  background-color: #1f2937;
+  color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 10px;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.admin-panel input, .admin-panel select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  width: 100%;
+}
+.admin-panel button {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+.admin-panel button:hover { background-color: #059669; transform: translateY(-1px); }
+</style>
+
 
 <section class="catalog">
     <h2>Nouveautés/Prochainement</h2>
@@ -1052,63 +1101,7 @@
     </div>
 
 </section>
-<style>
-/* Bouton admin principal */
-.admin-only {
-  background-color: #4f46e5;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  margin-bottom: 10px;
-  transition: all 0.2s;
-}
 
-.admin-only:hover {
-  background-color: #4338ca;
-  transform: translateY(-1px);
-}
-
-/* Panneau admin */
-.admin-panel {
-  background-color: #1f2937;
-  color: #fff;
-  padding: 15px;
-  border-radius: 12px;
-  margin-top: 10px;
-  max-width: 500px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
-.admin-panel input, .admin-panel select {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  width: 100%;
-}
-
-.admin-panel button {
-  background-color: #10b981;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.2s;
-}
-
-.admin-panel button:hover {
-  background-color: #059669;
-  transform: translateY(-1px);
-}
-</style>
 
 <style>
     
@@ -1884,13 +1877,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 
- <script type="module">
+<script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 /* ===== Supabase ===== */
 const supabase = createClient(
   'https://wuagahavmbugmnuzsouf.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho' // remplace par ta clé
 );
 
 /* ===== DOM ===== */
@@ -1900,6 +1893,7 @@ const pageSelect = document.getElementById('pageSelect');
 const pageUrlInput = document.getElementById('pageUrlInput');
 const videoUrlInput = document.getElementById('videoUrlInput');
 const saveBtn = document.getElementById('saveMovieVideo');
+const videoEl = document.getElementById('video');
 
 /* ===== Admin check ===== */
 let isAdmin = false;
@@ -1922,19 +1916,32 @@ async function detectSupabaseUser() {
 
 await detectSupabaseUser();
 detectLocalUser();
-
 if (isAdmin) editBtn.style.display = 'block';
 
-/* ===== Charger toutes les pages disponibles sur le site ===== */
+/* ===== Identifier le film depuis l’URL ===== */
+const movieSlug = encodeURIComponent(location.pathname.split('/').pop().replace('.html',''));
+
+/* ===== Charger la vidéo depuis Supabase ===== */
+async function loadVideo() {
+  const { data, error } = await supabase
+    .from('movies')
+    .select('video_url')
+    .eq('slug', movieSlug)
+    .single();
+
+  if (data?.video_url) {
+    videoEl.src = data.video_url;
+  }
+}
+await loadVideo();
+
+/* ===== Charger toutes les pages du site dans le select ===== */
 async function loadPages() {
-  // Exemple : tu peux créer un fichier JSON listant toutes les pages
-  // ou générer dynamiquement depuis ton catalogue HTML
-  // Ici je montre une méthode simple avec fetch
   try {
     const res = await fetch('https://inspecteurl.github.io/site/catalogue.html');
     const html = await res.text();
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
+    const doc = parser.parseFromString(html,'text/html');
 
     const links = [...doc.querySelectorAll('.movieimg a')];
     links.forEach(a => {
@@ -1956,7 +1963,7 @@ editBtn.addEventListener('click', async () => {
   await loadPages();
 });
 
-/* ===== Sauvegarde dans Supabase ===== */
+/* ===== Sauvegarde / Upsert ===== */
 saveBtn.addEventListener('click', async () => {
   const pageUrl = pageSelect.value || pageUrlInput.value.trim();
   const videoUrl = videoUrlInput.value.trim();
@@ -1964,9 +1971,9 @@ saveBtn.addEventListener('click', async () => {
   if (!pageUrl) return alert('Veuillez sélectionner une page ou coller l’URL.');
   if (!videoUrl) return alert('Veuillez saisir le lien vidéo.');
 
-  // Crée ou met à jour la table Supabase
   const slug = encodeURIComponent(pageUrl.split('/').pop().replace('.html',''));
 
+  // ✅ Upsert permet de créer ou remplacer le lien pour un même slug
   const { error } = await supabase
     .from('movies')
     .upsert({
@@ -1981,16 +1988,21 @@ saveBtn.addEventListener('click', async () => {
     return;
   }
 
+  // Si c’est la page courante, on met à jour directement le lecteur
+  if (slug === movieSlug) videoEl.src = videoUrl;
+
   alert('Lien vidéo mis à jour ✔');
 });
 </script>
+
+    
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
   'https://wuagahavmbugmnuzsouf.supabase.co',
-  'PUBLIC_ANON_KEY'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
 );
 
 // Identifier le film depuis l’URL
@@ -2019,6 +2031,7 @@ loadVideo();
 
 </body>
 </html>
+
 
 
 
