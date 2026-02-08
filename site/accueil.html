@@ -98,8 +98,8 @@
   <label for="pageUrlInput">Coller l’URL de la page :</label>
   <input type="text" id="pageUrlInput" placeholder="Ex: https://inspecteurl.github.io/séries/adolescence.html">
 
-  <label for="videoUrlInput">Lien vidéo MP4 :</label>
-  <input type="text" id="videoUrlInput" placeholder="Ex: https://.../video.mp4">
+  <label for="videoUrlInput">Lien vidéo :</label>
+  <input type="text" id="videoUrlInput" placeholder="Ex: https://.../stream?token=...">
 
   <button id="previewVideo">Voir l’aperçu</button>
   <video id="previewEl" controls style="width:100%; margin-top:10px;"></video>
@@ -156,6 +156,7 @@
 }
 .admin-panel button:hover { background-color: #059669; transform: translateY(-1px); }
 </style>
+
 
 
 <section class="catalog">
@@ -1880,7 +1881,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-/* ===== Supabase ===== */
 const supabase = createClient(
   'https://wuagahavmbugmnuzsouf.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
@@ -1900,21 +1900,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const placeholder = 'https://via.placeholder.com/440x660?text=Vidéo+introuvable';
 
+  /* ===== Vérification simple d’URL ===== */
+  function isValidUrl(url) {
+    try { new URL(url); return true; } catch(e) { return false; }
+  }
+
   /* ===== Admin check ===== */
   let isAdmin = false;
-
   function detectLocalUser() {
     try {
       const cu = JSON.parse(localStorage.getItem('currentUser') || 'null');
       if(cu && (cu.isAdmin || cu.email==='lolovp.portrets41@gmail.com')) isAdmin=true;
     } catch {}
   }
-
   async function detectSupabaseUser() {
     const { data } = await supabase.auth.getUser();
     if(data?.user && data.user.email==='lolovp.portrets41@gmail.com') isAdmin=true;
   }
-
   await detectSupabaseUser();
   detectLocalUser();
   if(isAdmin) editBtn.style.display='block';
@@ -1936,28 +1938,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       if(error) throw error;
 
       if(data?.video_url) {
-        // Test rapide si c'est bien un lien MP4
-        if(!/^https?:\/\/.+\.mp4$/i.test(data.video_url)) {
-          console.warn('Lien vidéo invalide :', data.video_url);
-          videoEl.src = '';
-          videoEl.poster = placeholder;
-          return;
-        }
-
         videoEl.src = data.video_url;
       } else {
-        console.warn('Lien vidéo introuvable pour', movieSlug);
         videoEl.src = '';
         videoEl.poster = placeholder;
       }
-
     } catch(e) {
       console.error("Erreur lors du chargement vidéo:", e);
       videoEl.src = '';
       videoEl.poster = placeholder;
     }
   }
-
   await loadVideo();
 
   /* ===== Charger toutes les pages dans le select ===== */
@@ -1977,7 +1968,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         opt.textContent = title;
         pageSelect.appendChild(opt);
       });
-
     } catch(e) {
       console.warn('Impossible de charger les pages', e);
     }
@@ -1989,12 +1979,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadPages();
   });
 
-  /* ===== Aperçu vidéo avec validation ===== */
+  /* ===== Aperçu vidéo ===== */
   previewBtn.addEventListener('click', ()=>{
     const videoUrl = videoUrlInput.value.trim();
     if(!videoUrl) return alert('Veuillez saisir un lien vidéo pour prévisualiser.');
-    if(!/^https?:\/\/.+\.mp4$/i.test(videoUrl)) return alert('Lien non valide : doit être un MP4');
-
+    if(!isValidUrl(videoUrl)) return alert('Lien non valide');
     previewEl.src = videoUrl;
   });
 
@@ -2005,7 +1994,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if(!pageUrl) return alert('Veuillez sélectionner une page ou coller l’URL.');
     if(!videoUrl) return alert('Veuillez saisir le lien vidéo.');
-    if(!/^https?:\/\/.+\.mp4$/i.test(videoUrl)) return alert('Lien vidéo invalide (doit être MP4).');
+    if(!isValidUrl(videoUrl)) return alert('Lien vidéo invalide.');
 
     const slug = encodeURIComponent(
       pageUrl.split('/').pop().replace('.html','').toLowerCase()
@@ -2027,8 +2016,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
+
 </body>
 </html>
+
 
 
 
