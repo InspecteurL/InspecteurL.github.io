@@ -772,6 +772,15 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeout(updateEpisodeInfo, 500);
 });
 
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    togglePlay();
+  }
+  if (e.code === 'ArrowRight') video.currentTime += 10;
+  if (e.code === 'ArrowLeft') video.currentTime -= 10;
+});
+
 
 // ---------------------
 // Sécuriser playMovie()
@@ -789,6 +798,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 })();
+
 
 
 
