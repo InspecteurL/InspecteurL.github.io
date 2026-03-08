@@ -523,26 +523,28 @@ const backButton = document.getElementById("backButton");
 // IndexedDB Setup
 // ---------------------
 let db;
+let storedBlob = null; // <-- Stocke le blob pour la session
+
 const request = indexedDB.open("VideoDB", 1);
 
 request.onupgradeneeded = (event) => {
   db = event.target.result;
-  if(!db.objectStoreNames.contains("videos")){
+  if (!db.objectStoreNames.contains("videos")) {
     db.createObjectStore("videos");
   }
 };
 
 request.onsuccess = (event) => {
   db = event.target.result;
+
   // Vérifie si la vidéo est déjà stockée
   const transaction = db.transaction("videos", "readonly");
   const store = transaction.objectStore("videos");
   const getRequest = store.get("theMaskVideo");
 
   getRequest.onsuccess = () => {
-    if(getRequest.result){
-      const videoURL = URL.createObjectURL(getRequest.result);
-      video.src = videoURL;
+    if (getRequest.result) {
+      storedBlob = getRequest.result; // on garde le blob pour la session
       downloadInfo.textContent = "Film prêt à être lu depuis IndexedDB";
       btnWatch.disabled = false;
     }
@@ -554,15 +556,23 @@ request.onerror = (event) => {
 };
 
 // ---------------------
-// Lecture vidéo
+// Bouton "Lire le film"
 // ---------------------
 btnWatch.addEventListener("click", () => {
+  if (storedBlob) {
+    // Crée un Object URL valide à la volée
+    const videoURL = URL.createObjectURL(storedBlob);
+    video.src = videoURL;
+  }
   videoContainer.style.display = "flex";
-  video.play();
   navbar.style.display = "none";
+  video.play();
   showControls();
 });
 
+// ---------------------
+// Bouton "Retour"
+// ---------------------
 backButton.addEventListener("click", () => {
   video.pause();
   video.currentTime = 0;
@@ -572,12 +582,12 @@ backButton.addEventListener("click", () => {
 });
 
 // ---------------------
-// Télécharger & stocker
+// Bouton "Télécharger"
 // ---------------------
 let controller;
 
 loadBtn.addEventListener("click", async () => {
-  const url = "https://long-frog-ec4e.coupdegrace21799.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D7266212d0802c6714dd556e9ec9cb561%26t%3D1772982342";
+  const url = "https://long-frog-ec4e.coupdegrace21799.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3Dd8cddd9c0f8f716d755d96317715161b%26t%3D1772986718";
 
   downloadBox.style.display = "block";
   downloadBar.style.width = "0%";
@@ -609,25 +619,15 @@ loadBtn.addEventListener("click", async () => {
     }
 
     const blob = new Blob(chunks, { type: "video/mp4" });
+    storedBlob = blob; // garde le blob pour la session
+    btnWatch.disabled = false;
 
     // Stocker dans IndexedDB
     const transaction = db.transaction("videos", "readwrite");
     const store = transaction.objectStore("videos");
-    const putRequest = store.put(blob, "theMaskVideo");
+    store.put(blob, "theMaskVideo");
 
-    putRequest.onsuccess = () => {
-      downloadInfo.textContent = "Film prêt et sauvegardé !";
-      btnWatch.disabled = false;
-    };
-
-    putRequest.onerror = (e) => {
-      console.error("Erreur stockage IndexedDB :", e);
-      downloadInfo.textContent = "Film prêt mais pas sauvegardé";
-      btnWatch.disabled = false;
-    };
-
-    const videoURL = URL.createObjectURL(blob);
-    video.src = videoURL;
+    downloadInfo.textContent = "Film prêt et sauvegardé !";
 
   } catch(err){
     console.error(err);
@@ -636,7 +636,7 @@ loadBtn.addEventListener("click", async () => {
 });
 
 // ---------------------
-// Contrôles personnalisés
+// Contrôles custom (apparition / disparition)
 // ---------------------
 video.controls = false;
 let hideTimeout;
