@@ -508,74 +508,94 @@ Préparation...
   
 <script>
 const loadBtn = document.getElementById("loadMovie");
-
 const downloadBox = document.getElementById("downloadBox");
 const downloadBar = document.getElementById("downloadBar");
 const downloadInfo = document.getElementById("downloadInfo");
 
+const video = document.getElementById("video");
+const videoContainer = document.getElementById("videoContainer");
+const navbar = document.getElementById("navbar");
+
 let controller;
 
+// Fonction pour convertir Blob en base64
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+// Vérifie si la vidéo est déjà en localStorage
+const savedVideo = localStorage.getItem("theMaskVideo");
+if (savedVideo) {
+  video.src = savedVideo;
+  videoContainer.style.display = "flex";
+  navbar.style.display = "none";
+  video.play();
+  downloadInfo.textContent = "Film chargé depuis localStorage";
+}
+
 loadBtn.addEventListener("click", async () => {
+  const url = "https://long-frog-ec4e.coupdegrace21799.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D002790eed34ee490159ee82482e2e8eb%26t%3D1772982487";
 
-const url = "https://long-frog-ec4e.coupdegrace21799.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D002790eed34ee490159ee82482e2e8eb%26t%3D1772982487";
+  downloadBox.style.display = "block";
+  downloadBar.style.width = "0%";
+  downloadInfo.textContent = "Préparation...";
 
-downloadBox.style.display = "block";
+  controller = new AbortController();
 
-controller = new AbortController();
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    const total = +response.headers.get("Content-Length");
+    const reader = response.body.getReader();
+    let received = 0;
+    let chunks = [];
+    const start = Date.now();
 
-try{
+    while(true){
+      const { done, value } = await reader.read();
+      if(done) break;
+      chunks.push(value);
+      received += value.length;
 
-const response = await fetch(url,{signal:controller.signal});
+      const percent = (received / total) * 100;
+      downloadBar.style.width = percent + "%";
 
-const total = +response.headers.get("Content-Length");
+      const seconds = (Date.now() - start) / 1000;
+      const speed = (received / 1024 / 1024) / seconds;
 
-const reader = response.body.getReader();
+      downloadInfo.textContent = `${Math.floor(percent)}% • ${speed.toFixed(2)} MB/s`;
+    }
 
-let received = 0;
-let chunks = [];
-let start = Date.now();
+    const blob = new Blob(chunks, { type: "video/mp4" });
+    const base64Data = await blobToBase64(blob);
 
-while(true){
+    // Stocke dans localStorage
+    try {
+      localStorage.setItem("theMaskVideo", base64Data);
+      downloadInfo.textContent = "Film prêt et sauvegardé !";
+    } catch(e) {
+      console.warn("Impossible de stocker la vidéo dans localStorage :", e);
+      downloadInfo.textContent = "Film prêt mais pas sauvegardé (trop gros)";
+    }
 
-const {done,value} = await reader.read();
+    const videoURL = URL.createObjectURL(blob);
+    video.src = videoURL;
+    videoContainer.style.display = "flex";
+    navbar.style.display = "none";
+    video.play();
 
-if(done) break;
-
-chunks.push(value);
-received += value.length;
-
-let percent = (received/total)*100;
-downloadBar.style.width = percent + "%";
-
-let seconds = (Date.now()-start)/1000;
-let speed = (received/1024/1024)/seconds;
-
-downloadInfo.textContent =
-Math.floor(percent) + "% • " +
-speed.toFixed(2) + " MB/s";
-
-}
-
-const blob = new Blob(chunks,{type:"video/mp4"});
-const videoURL = URL.createObjectURL(blob);
-
-video.src = videoURL;
-
-videoContainer.style.display = "flex";
-navbar.style.display = "none";
-
-video.play();
-
-downloadInfo.textContent = "Film prêt";
-
-}catch(err){
-
-downloadInfo.textContent = "Téléchargement annulé";
-
-}
-
+  } catch(err){
+    console.error(err);
+    downloadInfo.textContent = "Téléchargement annulé ou erreur";
+  }
 });
 </script>
+
+  
 <script>
 const video = document.getElementById('video');
 const videoContainer = document.getElementById('videoContainer');
