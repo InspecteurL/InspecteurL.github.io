@@ -518,26 +518,41 @@ const navbar = document.getElementById("navbar");
 
 let controller;
 
-// Fonction pour convertir Blob en base64
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
+// --- IndexedDB Setup ---
+let db;
+const request = indexedDB.open("VideoDB", 1);
 
-// Vérifie si la vidéo est déjà en localStorage
-const savedVideo = localStorage.getItem("theMaskVideo");
-if (savedVideo) {
-  video.src = savedVideo;
-  videoContainer.style.display = "flex";
-  navbar.style.display = "none";
-  video.play();
-  downloadInfo.textContent = "Film chargé depuis localStorage";
-}
+request.onupgradeneeded = (event) => {
+  db = event.target.result;
+  if(!db.objectStoreNames.contains("videos")){
+    db.createObjectStore("videos");
+  }
+};
 
+request.onsuccess = (event) => {
+  db = event.target.result;
+  // Vérifie si la vidéo est déjà stockée
+  const transaction = db.transaction("videos", "readonly");
+  const store = transaction.objectStore("videos");
+  const getRequest = store.get("theMaskVideo");
+
+  getRequest.onsuccess = () => {
+    if(getRequest.result){
+      const videoURL = URL.createObjectURL(getRequest.result);
+      video.src = videoURL;
+      videoContainer.style.display = "flex";
+      navbar.style.display = "none";
+      video.play();
+      downloadInfo.textContent = "Film chargé depuis IndexedDB";
+    }
+  };
+};
+
+request.onerror = (event) => {
+  console.error("Erreur IndexedDB :", event);
+};
+
+// --- Bouton Charger le film ---
 loadBtn.addEventListener("click", async () => {
   const url = "https://long-frog-ec4e.coupdegrace21799.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D002790eed34ee490159ee82482e2e8eb%26t%3D1772982487";
 
@@ -571,16 +586,20 @@ loadBtn.addEventListener("click", async () => {
     }
 
     const blob = new Blob(chunks, { type: "video/mp4" });
-    const base64Data = await blobToBase64(blob);
 
-    // Stocke dans localStorage
-    try {
-      localStorage.setItem("theMaskVideo", base64Data);
-      downloadInfo.textContent = "Film prêt et sauvegardé !";
-    } catch(e) {
-      console.warn("Impossible de stocker la vidéo dans localStorage :", e);
-      downloadInfo.textContent = "Film prêt mais pas sauvegardé (trop gros)";
-    }
+    // Stocker la vidéo dans IndexedDB
+    const transaction = db.transaction("videos", "readwrite");
+    const store = transaction.objectStore("videos");
+    const putRequest = store.put(blob, "theMaskVideo");
+
+    putRequest.onsuccess = () => {
+      downloadInfo.textContent = "Film prêt et sauvegardé dans IndexedDB !";
+    };
+
+    putRequest.onerror = (e) => {
+      console.error("Erreur stockage IndexedDB :", e);
+      downloadInfo.textContent = "Film prêt mais pas sauvegardé";
+    };
 
     const videoURL = URL.createObjectURL(blob);
     video.src = videoURL;
