@@ -508,6 +508,8 @@ Préparation...
   
 <script>
 const loadBtn = document.getElementById("loadMovie");
+const btnWatch = document.getElementById("btnWatch");
+
 const downloadBox = document.getElementById("downloadBox");
 const downloadBar = document.getElementById("downloadBar");
 const downloadInfo = document.getElementById("downloadInfo");
@@ -515,10 +517,11 @@ const downloadInfo = document.getElementById("downloadInfo");
 const video = document.getElementById("video");
 const videoContainer = document.getElementById("videoContainer");
 const navbar = document.getElementById("navbar");
+const backButton = document.getElementById("backButton");
 
-let controller;
-
-// --- IndexedDB Setup ---
+// ---------------------
+// IndexedDB Setup
+// ---------------------
 let db;
 const request = indexedDB.open("VideoDB", 1);
 
@@ -540,10 +543,8 @@ request.onsuccess = (event) => {
     if(getRequest.result){
       const videoURL = URL.createObjectURL(getRequest.result);
       video.src = videoURL;
-      videoContainer.style.display = "flex";
-      navbar.style.display = "none";
-      video.play();
-      downloadInfo.textContent = "Film chargé depuis IndexedDB";
+      downloadInfo.textContent = "Film prêt à être lu depuis IndexedDB";
+      btnWatch.disabled = false;
     }
   };
 };
@@ -552,9 +553,31 @@ request.onerror = (event) => {
   console.error("Erreur IndexedDB :", event);
 };
 
-// --- Bouton Charger le film ---
+// ---------------------
+// Lecture vidéo
+// ---------------------
+btnWatch.addEventListener("click", () => {
+  videoContainer.style.display = "flex";
+  video.play();
+  navbar.style.display = "none";
+  showControls();
+});
+
+backButton.addEventListener("click", () => {
+  video.pause();
+  video.currentTime = 0;
+  videoContainer.style.display = "none";
+  navbar.style.display = "block";
+  hideControlsImmediate();
+});
+
+// ---------------------
+// Télécharger & stocker
+// ---------------------
+let controller;
+
 loadBtn.addEventListener("click", async () => {
-  const url = "https://long-frog-ec4e.coupdegrace21799.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D002790eed34ee490159ee82482e2e8eb%26t%3D1772982487";
+  const url = "https://long-frog-ec4e.coupdegrace21799.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4";
 
   downloadBox.style.display = "block";
   downloadBar.style.width = "0%";
@@ -587,33 +610,58 @@ loadBtn.addEventListener("click", async () => {
 
     const blob = new Blob(chunks, { type: "video/mp4" });
 
-    // Stocker la vidéo dans IndexedDB
+    // Stocker dans IndexedDB
     const transaction = db.transaction("videos", "readwrite");
     const store = transaction.objectStore("videos");
     const putRequest = store.put(blob, "theMaskVideo");
 
     putRequest.onsuccess = () => {
-      downloadInfo.textContent = "Film prêt et sauvegardé dans IndexedDB !";
+      downloadInfo.textContent = "Film prêt et sauvegardé !";
+      btnWatch.disabled = false;
     };
 
     putRequest.onerror = (e) => {
       console.error("Erreur stockage IndexedDB :", e);
       downloadInfo.textContent = "Film prêt mais pas sauvegardé";
+      btnWatch.disabled = false;
     };
 
     const videoURL = URL.createObjectURL(blob);
     video.src = videoURL;
-    videoContainer.style.display = "flex";
-    navbar.style.display = "none";
-    video.play();
 
   } catch(err){
     console.error(err);
     downloadInfo.textContent = "Téléchargement annulé ou erreur";
   }
 });
-</script>
 
+// ---------------------
+// Contrôles personnalisés
+// ---------------------
+video.controls = false;
+let hideTimeout;
+
+function showControls() {
+  video.style.cursor = "default";
+  document.getElementById("controls").classList.remove("hide");
+  clearTimeout(hideTimeout);
+  hideTimeout = setTimeout(hideControls, 3000);
+}
+
+function hideControls() {
+  document.getElementById("controls").classList.add("hide");
+  video.style.cursor = "none";
+}
+
+function hideControlsImmediate() {
+  document.getElementById("controls").classList.add("hide");
+  video.style.cursor = "default";
+}
+
+document.addEventListener("mousemove", showControls);
+document.addEventListener("keydown", showControls);
+video.addEventListener("click", showControls);
+</script>
   
 <script>
 const video = document.getElementById('video');
