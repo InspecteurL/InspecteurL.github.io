@@ -582,6 +582,10 @@ backButton.addEventListener("click", () => {
   videoContainer.style.display = "none";
   navbar.style.display = "block";
   hideControlsImmediate();
+
+  if(document.fullscreenElement){
+    document.exitFullscreen();
+  }
 });
 
 // ---------------------
@@ -641,12 +645,12 @@ let hideTimeout;
 function showControls(){
   document.getElementById("controls").classList.remove("hide");
   progressWrapper.classList.remove("hide");
-  centerPlay.classList.remove("hide");
   backButton.classList.remove("hide");
   video.style.cursor="default";
 
-  // Masquer le bouton central si la vidéo joue
-  if(!video.paused) centerPlay.classList.add("hide");
+  // Bouton central visible uniquement si la vidéo est en pause
+  if(video.paused) centerPlay.classList.remove("hide");
+  else centerPlay.classList.add("hide");
 
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(hideControls,3000);
