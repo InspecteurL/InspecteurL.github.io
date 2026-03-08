@@ -503,15 +503,20 @@ video {
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 <script>
-// --- Supabase ---
+// ---------------------
+// Supabase
+// ---------------------
 const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-// --- DOM Elements ---
+// ---------------------
+// DOM Elements
+// ---------------------
 const loadBtn = document.getElementById("loadMovie");
+const btnWatch = document.getElementById("btnWatch");
 const downloadBox = document.getElementById("downloadBox");
 const downloadBar = document.getElementById("downloadBar");
 const downloadInfo = document.getElementById("downloadInfo");
@@ -521,11 +526,31 @@ const videoContainer = document.getElementById("videoContainer");
 const navbar = document.getElementById("navbar");
 const backButton = document.getElementById("backButton");
 
-let controller;
+const controls = document.getElementById('controls');
+const progressWrapper = document.getElementById('progressWrapper');
+const progress = document.getElementById('progress');
+const progressBar = document.getElementById('progress-bar');
+const currentTimeEl = document.getElementById('currentTime');
+const totalTimeEl = document.getElementById('totalTime');
+const playBtn = document.getElementById('play');
+const centerPlay = document.getElementById('centerPlay');
+const volumeSlider = document.getElementById('volume-slider');
+const volumeIcon = document.getElementById('volume-icon');
+const settingsBtn = document.getElementById('settings');
+const settingsMenu = document.getElementById('settingsMenu');
+const sourceBtn = document.getElementById('source');
+const sourceMenu = document.getElementById('sourceMenu');
+const subtitleBtn = document.getElementById('subtitles');
+const subtitleMenu = document.getElementById('subtitleMenu');
 
-// --- Bouton Charger le film ---
+let controller;
+let hideTimeout;
+
+// ---------------------
+// Bouton Charger le film
+// ---------------------
 loadBtn.addEventListener("click", async () => {
-  const tempUrl = "https://weathered-frost-60b0.zxcprime361.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D63384be01406d4ab644cdde0f63fdc95%26t%3D1772981739"; // 🔹 lien valide
+  const tempUrl = "https://weathered-frost-60b0.zxcprime361.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D63384be01406d4ab644cdde0f63fdc95%26t%3D1772981739";
   const fileName = "the-mask.mp4";
 
   downloadBox.style.display = "block";
@@ -551,10 +576,8 @@ loadBtn.addEventListener("click", async () => {
       const percent = (received/total)*100;
       downloadBar.style.width = percent + "%";
 
-      const seconds = (Date.now()-start)/1000;
-      const speed = (received/1024/1024)/seconds;
+      const speed = (received/1024/1024)/((Date.now()-start)/1000);
       const remaining = (total-received)/(received/1024/1024)/speed;
-
       downloadInfo.textContent = `${Math.floor(percent)}% • ${speed.toFixed(2)} MB/s • ${Math.floor(remaining)}s restantes`;
     }
 
@@ -581,14 +604,25 @@ loadBtn.addEventListener("click", async () => {
     video.play();
 
     downloadInfo.textContent = "Film prêt !";
-
   } catch(err){
     console.error(err);
     downloadInfo.textContent = "Téléchargement annulé ou erreur";
   }
 });
 
-// --- Bouton Retour ---
+// ---------------------
+// Bouton Lire le film
+// ---------------------
+btnWatch.addEventListener('click', () => {
+  videoContainer.style.display = 'flex';
+  video.play();
+  showControls();
+  navbar.style.display = 'none';
+});
+
+// ---------------------
+// Bouton Retour
+// ---------------------
 backButton.addEventListener("click", () => {
   video.pause();
   video.currentTime = 0;
@@ -596,128 +630,14 @@ backButton.addEventListener("click", () => {
   navbar.style.display = "block";
   if(controller) controller.abort();
 });
-</script>
-  
-<script>
-const video = document.getElementById('video');
-const videoContainer = document.getElementById('videoContainer');
-const controls = document.getElementById('controls');
-const progressWrapper = document.getElementById('progressWrapper');
-const progress = document.getElementById('progress');
-const progressBar = document.getElementById('progress-bar');
-const currentTimeEl = document.getElementById('currentTime');
-const totalTimeEl = document.getElementById('totalTime');
-const playBtn = document.getElementById('play');
-const centerPlay = document.getElementById('centerPlay');
-const volumeSlider = document.getElementById('volume-slider');
-const volumeIcon = document.getElementById('volume-icon');
-const settingsBtn = document.getElementById('settings');
-const settingsMenu = document.getElementById('settingsMenu');
-const sourceBtn = document.getElementById('source');
-const sourceMenu = document.getElementById('sourceMenu');
-const subtitleBtn = document.getElementById('subtitles');
-const subtitleMenu = document.getElementById('subtitleMenu');
-const btnWatch = document.getElementById('btnWatch');
-const backButton = document.getElementById('backButton');
-const navbar = document.getElementById('navbar');
 
-// Quand on clique sur "Lire le film" → cacher la navbar
-btnWatch.addEventListener('click', () => {
-  videoContainer.style.display = 'flex';
-  video.play();
-  showControls();
-  navbar.style.display = 'none'; // 👈 cache la navbar
-});
-
-// Quand on clique sur "Retour à la fiche" → montrer la navbar
-backButton.addEventListener('click', () => {
-  video.pause();
-  video.currentTime = 0;
-  videoContainer.style.display = 'none';
-  if (document.fullscreenElement) document.exitFullscreen();
-  navbar.style.display = 'block'; // 👈 réaffiche la navbar
-});
-
-let hideTimeout;
+// ---------------------
+// Lecture, pause, et contrôle
+// ---------------------
 video.controls = false;
 
-// ✅ Bouton "Lire le film"
-btnWatch.addEventListener('click', () => {
-  videoContainer.style.display = 'flex';
-  video.play();
-  showControls();
-});
-
-// ---------------------
-// Show / hide controls
-// ---------------------
-function showControls() {
-  controls.classList.remove('hide');
-  progressWrapper.classList.remove('hide');
-  centerPlay.classList.remove('hide');
-  backButton.classList.remove('hide');
-  document.body.style.cursor = 'default';
-
-  clearTimeout(hideTimeout);
-  hideTimeout = setTimeout(hideControls, 3000);
-}
-
-function hideControls() {
-  if (!video.paused) {
-    centerPlay.classList.add('hide');
-  }
-  controls.classList.add('hide');
-  progressWrapper.classList.add('hide');
-  backButton.classList.add('hide');
-  document.body.style.cursor = 'none';
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
-}
-
-document.addEventListener('mousemove', showControls);
-document.addEventListener('keydown', showControls);
-video.addEventListener('click', showControls);
-
-showControls();
-
-backButton.addEventListener("click", () => {
-
-video.pause();
-video.currentTime = 0;
-
-videoContainer.style.display = "none";
-navbar.style.display = "block";
-
-if(controller){
-controller.abort();
-}
-
-});
-
-
-// ---------------------
-// Format time
-// ---------------------
-function formatTime(sec) {
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-// ---------------------
-// Update progress & time
-// ---------------------
-video.addEventListener('timeupdate', () => {
-  const percent = (video.currentTime / video.duration) * 100;
-  progressBar.style.width = percent + '%';
-  currentTimeEl.textContent = formatTime(video.currentTime);
-  totalTimeEl.textContent = formatTime(video.duration);
-});
-
-// ---------------------
-// Play / pause
-// ---------------------
 function togglePlay() {
-  if (video.paused) video.play();
+  if(video.paused) video.play();
   else video.pause();
 }
 
@@ -738,8 +658,50 @@ video.addEventListener('pause', () => {
 });
 
 // ---------------------
-// Seek
+// Show / hide controls
 // ---------------------
+function showControls() {
+  controls.classList.remove('hide');
+  progressWrapper.classList.remove('hide');
+  centerPlay.classList.remove('hide');
+  backButton.classList.remove('hide');
+  document.body.style.cursor = 'default';
+
+  clearTimeout(hideTimeout);
+  hideTimeout = setTimeout(hideControls, 3000);
+}
+
+function hideControls() {
+  if(!video.paused) centerPlay.classList.add('hide');
+  controls.classList.add('hide');
+  progressWrapper.classList.add('hide');
+  backButton.classList.add('hide');
+  document.body.style.cursor = 'none';
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
+}
+
+document.addEventListener('mousemove', showControls);
+document.addEventListener('keydown', showControls);
+video.addEventListener('click', showControls);
+
+showControls();
+
+// ---------------------
+// Progression
+// ---------------------
+function formatTime(sec){
+  const m = Math.floor(sec/60);
+  const s = Math.floor(sec%60);
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+video.addEventListener('timeupdate', () => {
+  const percent = (video.currentTime / video.duration) * 100;
+  progressBar.style.width = percent + '%';
+  currentTimeEl.textContent = formatTime(video.currentTime);
+  totalTimeEl.textContent = formatTime(video.duration);
+});
+
 progressWrapper.addEventListener('click', e => {
   const rect = progress.getBoundingClientRect();
   const pos = (e.clientX - rect.left) / rect.width;
@@ -753,64 +715,23 @@ volumeSlider.addEventListener('input', () => {
   video.volume = volumeSlider.value;
   updateVolumeIcon();
 });
+
 volumeIcon.addEventListener('click', () => {
-  if(video.volume > 0){ video.volume = 0; volumeSlider.value = 0; }
-  else { video.volume = 1; volumeSlider.value = 1; }
+  if(video.volume>0){ video.volume=0; volumeSlider.value=0; }
+  else { video.volume=1; volumeSlider.value=1; }
   updateVolumeIcon();
 });
 
-function updateVolumeIcon() {
-  if(video.volume === 0) volumeIcon.textContent = 'volume_off';
-  else if(video.volume < 0.5) volumeIcon.textContent = 'volume_down';
-  else volumeIcon.textContent = 'volume_up';
+function updateVolumeIcon(){
+  if(video.volume===0) volumeIcon.textContent='volume_off';
+  else if(video.volume<0.5) volumeIcon.textContent='volume_down';
+  else volumeIcon.textContent='volume_up';
 }
-
-// ---------------------
-// Settings menu
-// ---------------------
-settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
-settingsMenu.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    video.playbackRate = parseFloat(btn.dataset.speed);
-    settingsMenu.style.display = 'none';
-  });
-});
-
-// ---------------------
-// Source menu
-// ---------------------
-sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
-sourceMenu.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    video.src = btn.dataset.src;
-    video.play();
-    sourceMenu.style.display = 'none';
-  });
-});
-
-// ---------------------
-// Subtitles menu
-// ---------------------
-subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
-subtitleMenu.addEventListener('click', e => {
-  if(e.target.tagName === 'BUTTON'){
-    const subUrl = e.target.dataset.sub;
-    video.querySelectorAll('track').forEach(t => t.remove());
-    if(subUrl){
-      const track = document.createElement('track');
-      track.src = subUrl;
-      track.kind = 'subtitles';
-      track.default = true;
-      video.appendChild(track);
-    }
-    subtitleMenu.style.display = 'none';
-  }
-});
 
 // ---------------------
 // Fullscreen
 // ---------------------
-document.getElementById('fullscreen').addEventListener('click', () => {
+document.getElementById('fullscreen').addEventListener('click', ()=>{
   if(!document.fullscreenElement) videoContainer.requestFullscreen();
   else document.exitFullscreen();
 });
@@ -818,17 +739,49 @@ document.getElementById('fullscreen').addEventListener('click', () => {
 // ---------------------
 // Backward / Forward
 // ---------------------
-document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
-document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
+document.getElementById('backward').addEventListener('click', ()=>{ video.currentTime-=10; });
+document.getElementById('forward').addEventListener('click', ()=>{ video.currentTime+=10; });
 
 // ---------------------
-// Toggle menu helper
+// Settings / Source / Subtitles
 // ---------------------
 function toggleMenu(menu){
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
-  menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(m=>{ if(m!==menu) m.style.display='none'; });
+  menu.style.display = menu.style.display==='flex' ? 'none' : 'flex';
 }
 
+settingsBtn.addEventListener('click', ()=>toggleMenu(settingsMenu));
+settingsMenu.querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    video.playbackRate = parseFloat(btn.dataset.speed);
+    settingsMenu.style.display='none';
+  });
+});
+
+sourceBtn.addEventListener('click', ()=>toggleMenu(sourceMenu));
+sourceMenu.querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    video.src = btn.dataset.src;
+    video.play();
+    sourceMenu.style.display='none';
+  });
+});
+
+subtitleBtn.addEventListener('click', ()=>toggleMenu(subtitleMenu));
+subtitleMenu.addEventListener('click', e=>{
+  if(e.target.tagName==='BUTTON'){
+    const subUrl = e.target.dataset.sub;
+    video.querySelectorAll('track').forEach(t=>t.remove());
+    if(subUrl){
+      const track = document.createElement('track');
+      track.src = subUrl;
+      track.kind = 'subtitles';
+      track.default = true;
+      video.appendChild(track);
+    }
+    subtitleMenu.style.display='none';
+  }
+});
 </script>
 <script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
