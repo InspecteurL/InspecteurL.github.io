@@ -504,16 +504,18 @@ video {
 </div>
 
   
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 <script>
+// --- Supabase ---
 const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+// --- DOM Elements ---
 const loadBtn = document.getElementById("loadMovie");
 const downloadBox = document.getElementById("downloadBox");
 const downloadBar = document.getElementById("downloadBar");
 const downloadInfo = document.getElementById("downloadInfo");
+
 const video = document.getElementById("video");
 const videoContainer = document.getElementById("videoContainer");
 const navbar = document.getElementById("navbar");
@@ -521,8 +523,9 @@ const backButton = document.getElementById("backButton");
 
 let controller;
 
+// --- Bouton Charger le film ---
 loadBtn.addEventListener("click", async () => {
-  const tempUrl = "https://weathered-frost-60b0.zxcprime361.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D63384be01406d4ab644cdde0f63fdc95%26t%3D1772981739"; // Remplace par ton lien valide
+  const tempUrl = "https://weathered-frost-60b0.zxcprime361.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D63384be01406d4ab644cdde0f63fdc95%26t%3D1772981739"; // 🔹 lien valide
   const fileName = "the-mask.mp4";
 
   downloadBox.style.display = "block";
@@ -532,7 +535,7 @@ loadBtn.addEventListener("click", async () => {
   controller = new AbortController();
 
   try {
-    const response = await fetch(tempUrl, {signal: controller.signal});
+    const response = await fetch(tempUrl, { signal: controller.signal });
     const total = +response.headers.get("Content-Length");
     const reader = response.body.getReader();
     let received = 0;
@@ -572,11 +575,7 @@ loadBtn.addEventListener("click", async () => {
       .from('films')
       .getPublicUrl(fileName);
 
-    const resp2 = await fetch(publicUrl);
-    const blob2 = await resp2.blob();
-    const videoURL = URL.createObjectURL(blob2);
-
-    video.src = videoURL;
+    video.src = publicUrl;
     videoContainer.style.display = "flex";
     navbar.style.display = "none";
     video.play();
@@ -589,7 +588,7 @@ loadBtn.addEventListener("click", async () => {
   }
 });
 
-// Retour
+// --- Bouton Retour ---
 backButton.addEventListener("click", () => {
   video.pause();
   video.currentTime = 0;
