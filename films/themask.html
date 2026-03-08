@@ -439,11 +439,20 @@ video {
   <span class="material-symbols-outlined">play_arrow</span>
   Lire le film
 </button>
-<div id="downloadBox" style="display:none; margin-top:15px;">
-  <div style="background:#444;height:10px;border-radius:5px;overflow:hidden;">
-    <div id="downloadBar" style="width:0%;height:100%;background:#ff416c;"></div>
-  </div>
-  <div id="downloadInfo" style="font-size:14px;margin-top:5px;">0%</div>
+<button class="btn-watch" id="loadMovie">
+<span class="material-symbols-outlined">download</span>
+Charger le film
+</button>
+      <div id="downloadBox" style="display:none;margin-top:10px;max-width:400px;">
+  
+<div style="background:#444;height:10px;border-radius:5px;overflow:hidden;">
+<div id="downloadBar" style="width:0%;height:100%;background:#ff416c;"></div>
+</div>
+
+<div id="downloadInfo" style="font-size:13px;margin-top:5px;">
+Préparation...
+</div>
+
 </div>
     </div>
   </div>
@@ -498,8 +507,7 @@ video {
 
   
 <script>
- const loadBtn = document.getElementById("loadMovie");
-const video = document.getElementById("video");
+const loadBtn = document.getElementById("loadMovie");
 
 const downloadBox = document.getElementById("downloadBox");
 const downloadBar = document.getElementById("downloadBar");
@@ -512,12 +520,10 @@ loadBtn.addEventListener("click", async () => {
 const url = "https://orange-paper-a80d.j61202287.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2Fdba6d34f388704ccb839660d5875899d.mp4%3Fsign%3D6d76b51cf13b1d32785b6f260a732c36%26t%3D1772965849";
 
 downloadBox.style.display = "block";
-downloadBar.style.width = "0%";
-downloadInfo.textContent = "Préparation du téléchargement...";
 
 controller = new AbortController();
 
-try {
+try{
 
 const response = await fetch(url,{signal:controller.signal});
 
@@ -538,18 +544,15 @@ if(done) break;
 chunks.push(value);
 received += value.length;
 
-let percent = (received / total) * 100;
+let percent = (received/total)*100;
 downloadBar.style.width = percent + "%";
 
 let seconds = (Date.now()-start)/1000;
 let speed = (received/1024/1024)/seconds;
 
-let remaining = (total-received)/(received/seconds);
-
 downloadInfo.textContent =
 Math.floor(percent) + "% • " +
-speed.toFixed(2) + " MB/s • " +
-Math.floor(remaining) + "s restantes";
+speed.toFixed(2) + " MB/s";
 
 }
 
@@ -565,7 +568,7 @@ video.play();
 
 downloadInfo.textContent = "Film prêt";
 
-} catch(err){
+}catch(err){
 
 downloadInfo.textContent = "Téléchargement annulé";
 
@@ -654,7 +657,7 @@ video.addEventListener('click', showControls);
 
 showControls();
 
-backButton.addEventListener('click', () => {
+backButton.addEventListener("click", () => {
 
 video.pause();
 video.currentTime = 0;
