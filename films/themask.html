@@ -439,10 +439,12 @@ video {
   <span class="material-symbols-outlined">play_arrow</span>
   Lire le film
 </button>
-<button class="btn-watch" id="loadMovie">
-<span class="material-symbols-outlined">download</span>
-Charger le film
-</button>
+<div id="downloadBox" style="display:none; margin-top:15px;">
+  <div style="background:#444;height:10px;border-radius:5px;overflow:hidden;">
+    <div id="downloadBar" style="width:0%;height:100%;background:#ff416c;"></div>
+  </div>
+  <div id="downloadInfo" style="font-size:14px;margin-top:5px;">0%</div>
+</div>
     </div>
   </div>
 </div>
@@ -496,32 +498,76 @@ Charger le film
 
   
 <script>
-  const loadBtn = document.getElementById("loadMovie");
+ const loadBtn = document.getElementById("loadMovie");
 const video = document.getElementById("video");
+
+const downloadBox = document.getElementById("downloadBox");
+const downloadBar = document.getElementById("downloadBar");
+const downloadInfo = document.getElementById("downloadInfo");
+
+let controller;
 
 loadBtn.addEventListener("click", async () => {
 
 const url = "https://orange-paper-a80d.j61202287.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2Fdba6d34f388704ccb839660d5875899d.mp4%3Fsign%3D6d76b51cf13b1d32785b6f260a732c36%26t%3D1772965849";
 
-loadBtn.textContent = "Chargement...";
+downloadBox.style.display = "block";
+downloadBar.style.width = "0%";
+downloadInfo.textContent = "Préparation du téléchargement...";
+
+controller = new AbortController();
 
 try {
 
-const response = await fetch(url);
-const blob = await response.blob();
+const response = await fetch(url,{signal:controller.signal});
 
+const total = +response.headers.get("Content-Length");
+
+const reader = response.body.getReader();
+
+let received = 0;
+let chunks = [];
+let start = Date.now();
+
+while(true){
+
+const {done,value} = await reader.read();
+
+if(done) break;
+
+chunks.push(value);
+received += value.length;
+
+let percent = (received / total) * 100;
+downloadBar.style.width = percent + "%";
+
+let seconds = (Date.now()-start)/1000;
+let speed = (received/1024/1024)/seconds;
+
+let remaining = (total-received)/(received/seconds);
+
+downloadInfo.textContent =
+Math.floor(percent) + "% • " +
+speed.toFixed(2) + " MB/s • " +
+Math.floor(remaining) + "s restantes";
+
+}
+
+const blob = new Blob(chunks,{type:"video/mp4"});
 const videoURL = URL.createObjectURL(blob);
 
 video.src = videoURL;
 
 videoContainer.style.display = "flex";
+navbar.style.display = "none";
+
 video.play();
 
-loadBtn.textContent = "Film chargé";
+downloadInfo.textContent = "Film prêt";
 
-} catch (error) {
+} catch(err){
 
-loadBtn.textContent = "Erreur de chargement";
+downloadInfo.textContent = "Téléchargement annulé";
 
 }
 
@@ -608,16 +654,18 @@ video.addEventListener('click', showControls);
 
 showControls();
 
-// --- Cacher le lecteur et retourner à la fiche quand on clique sur le bouton ---
 backButton.addEventListener('click', () => {
-  video.pause();
-  video.currentTime = 0;
-  videoContainer.style.display = 'none';
 
-  // Si on est en fullscreen, quitter
-  if (document.fullscreenElement) {
-    document.exitFullscreen();
-  }
+video.pause();
+video.currentTime = 0;
+
+videoContainer.style.display = "none";
+navbar.style.display = "block";
+
+if(controller){
+controller.abort();
+}
+
 });
 
 
