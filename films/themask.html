@@ -640,18 +640,31 @@ let hideTimeout;
 
 function showControls(){
   document.getElementById("controls").classList.remove("hide");
+  progressWrapper.classList.remove("hide");
+  centerPlay.classList.remove("hide");
+  backButton.classList.remove("hide");
   video.style.cursor="default";
+
+  // Masquer le bouton central si la vidéo joue
+  if(!video.paused) centerPlay.classList.add("hide");
+
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(hideControls,3000);
 }
 
 function hideControls(){
+  if(!video.paused) centerPlay.classList.add("hide");
   document.getElementById("controls").classList.add("hide");
+  progressWrapper.classList.add("hide");
+  backButton.classList.add("hide");
   video.style.cursor="none";
 }
 
 function hideControlsImmediate(){
   document.getElementById("controls").classList.add("hide");
+  progressWrapper.classList.add("hide");
+  backButton.classList.add("hide");
+  centerPlay.classList.add("hide");
   video.style.cursor="default";
 }
 
@@ -666,12 +679,22 @@ function togglePlay(){
 }
 playBtn.addEventListener("click", togglePlay);
 centerPlay.addEventListener("click", togglePlay);
-video.addEventListener("play", ()=>{playBtn.textContent='pause'; centerPlay.textContent='pause'; showControls();});
-video.addEventListener("pause", ()=>{playBtn.textContent='play_arrow'; centerPlay.textContent='play_arrow'; showControls();});
+video.addEventListener("play", ()=>{
+  playBtn.textContent='pause';
+  centerPlay.textContent='pause';
+  centerPlay.classList.add("hide");
+  showControls();
+});
+video.addEventListener("pause", ()=>{
+  playBtn.textContent='play_arrow';
+  centerPlay.textContent='play_arrow';
+  centerPlay.classList.remove("hide");
+  showControls();
+});
 
 // Volume
 volumeSlider.addEventListener("input",()=>{video.volume=volumeSlider.value; updateVolumeIcon();});
-volumeIcon.addEventListener("click",()=>{if(video.volume>0){video.volume=0; volumeSlider.value=0;}else{video.volume=1;volumeSlider.value=1;}updateVolumeIcon();});
+volumeIcon.addEventListener("click",()=>{if(video.volume>0){video.volume=0;volumeSlider.value=0;}else{video.volume=1;volumeSlider.value=1;}updateVolumeIcon();});
 function updateVolumeIcon(){volumeIcon.textContent=video.volume===0?'volume_off':(video.volume<0.5?'volume_down':'volume_up');}
 
 // Forward/Backward
