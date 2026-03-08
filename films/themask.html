@@ -504,15 +504,13 @@ video {
 </div>
 
   
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 <script>
-  // ⚡ Supabase
-import { createClient } from '@supabase/supabase-js'
-
 const supabaseUrl = 'https://wuagahavmbugmnuzsouf.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-const supabase = createClient(supabaseUrl, supabaseKey)
-const loadBtn = document.getElementById("loadMovie");
+const supabase = supabase.createClient(supabaseUrl, supabaseKey)
 
+const loadBtn = document.getElementById("loadMovie");
 const downloadBox = document.getElementById("downloadBox");
 const downloadBar = document.getElementById("downloadBar");
 const downloadInfo = document.getElementById("downloadInfo");
@@ -521,17 +519,16 @@ let controller;
 
 loadBtn.addEventListener("click", async () => {
 
-  const tempUrl = "https://weathered-frost-60b0.zxcprime361.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D63384be01406d4ab644cdde0f63fdc95%26t%3D1772981739"; // lien qui expire vite
-  const fileName = "the-mask.mp4"; // nom du fichier dans Supabase
+  const tempUrl = "https://weathered-frost-60b0.zxcprime361.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D63384be01406d4ab644cdde0f63fdc95%26t%3D1772981739";
+  const fileName = "the-mask.mp4";
 
   downloadBox.style.display = "block";
   downloadBar.style.width = "0%";
   downloadInfo.textContent = "Préparation..."
 
-  controller = new AbortController()
+  controller = new AbortController();
 
-  try{
-    // 1️⃣ Télécharger depuis le lien temporaire
+  try {
     const response = await fetch(tempUrl,{signal:controller.signal});
     const total = +response.headers.get("Content-Length");
     const reader = response.body.getReader();
@@ -557,7 +554,6 @@ loadBtn.addEventListener("click", async () => {
 
     const blob = new Blob(chunks,{type:"video/mp4"});
 
-    // 2️⃣ Stocker dans Supabase Storage
     const { data, error } = await supabase.storage
       .from('films')
       .upload(fileName, blob, { upsert: true });
@@ -568,15 +564,17 @@ loadBtn.addEventListener("click", async () => {
       return;
     }
 
-    // 3️⃣ Récupérer le lien permanent
     const { publicUrl } = supabase.storage
       .from('films')
       .getPublicUrl(fileName);
 
-    // 4️⃣ Charger la vidéo dans le lecteur
-    const resp2 = await fetch(publicUrl)
-    const blob2 = await resp2.blob()
-    const videoURL = URL.createObjectURL(blob2)
+    const resp2 = await fetch(publicUrl);
+    const blob2 = await resp2.blob();
+    const videoURL = URL.createObjectURL(blob2);
+
+    const video = document.getElementById("video");
+    const videoContainer = document.getElementById("videoContainer");
+    const navbar = document.getElementById("navbar");
 
     video.src = videoURL;
     videoContainer.style.display = "flex";
@@ -585,13 +583,28 @@ loadBtn.addEventListener("click", async () => {
 
     downloadInfo.textContent = "Film prêt !";
 
-  }catch(err){
-    console.error(err)
+  } catch(err) {
+    console.error(err);
     downloadInfo.textContent = "Téléchargement annulé ou erreur";
   }
+});
 
+// Bouton retour
+const backButton = document.getElementById("backButton");
+backButton.addEventListener("click", () => {
+  const video = document.getElementById("video");
+  const videoContainer = document.getElementById("videoContainer");
+  const navbar = document.getElementById("navbar");
+
+  video.pause();
+  video.currentTime = 0;
+  videoContainer.style.display = "none";
+  navbar.style.display = "block";
+
+  if(controller) controller.abort();
 });
 </script>
+  
 <script>
 const video = document.getElementById('video');
 const videoContainer = document.getElementById('videoContainer');
