@@ -506,67 +506,67 @@ Préparation...
 </div>
 
   
-<script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+// ---------------------
+// CONFIGURATION SUPABASE
+// ---------------------
+const supabase = createClient(
+  'https://wuagahavmbugmnuzsouf.supabase.co', 
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+);
+
+// ---------------------
+// ÉLÉMENTS DU DOM
+// ---------------------
 const loadBtn = document.getElementById("loadMovie");
 const btnWatch = document.getElementById("btnWatch");
-
-const downloadBox = document.getElementById("downloadBox");
-const downloadBar = document.getElementById("downloadBar");
-const downloadInfo = document.getElementById("downloadInfo");
-
 const video = document.getElementById("video");
 const videoContainer = document.getElementById("videoContainer");
 const navbar = document.getElementById("navbar");
 const backButton = document.getElementById("backButton");
-
-// Contrôles
-const playBtn = document.getElementById("play");
-const centerPlay = document.getElementById("centerPlay");
-const volumeSlider = document.getElementById("volume-slider");
-const volumeIcon = document.getElementById("volume-icon");
-const forwardBtn = document.getElementById("forward");
-const backwardBtn = document.getElementById("backward");
-const fullscreenBtn = document.getElementById("fullscreen");
+const controls = document.getElementById("controls");
 const progressWrapper = document.getElementById("progressWrapper");
 const progressBar = document.getElementById("progress-bar");
 const currentTimeEl = document.getElementById("currentTime");
 const totalTimeEl = document.getElementById("totalTime");
+const playBtn = document.getElementById("play");
+const centerPlay = document.getElementById("centerPlay");
+const volumeSlider = document.getElementById("volume-slider");
+const volumeIcon = document.getElementById("volume-icon");
+const fullscreenBtn = document.getElementById("fullscreen");
 
 // ---------------------
-// IndexedDB Setup
+// BOUTON "CHARGER LE FILM"
 // ---------------------
-let db;
-let storedBlob = null;
+loadBtn.addEventListener("click", async () => {
+  // Ouvre le sélecteur de fichier
+  const [file] = await new Promise(resolve => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'video/mp4';
+    input.onchange = e => resolve(e.target.files);
+    input.click();
+  });
+  if (!file) return;
 
-const request = indexedDB.open("VideoDB", 1);
-request.onupgradeneeded = e => {
-  db = e.target.result;
-  if (!db.objectStoreNames.contains("videos")) {
-    db.createObjectStore("videos");
-  }
-};
-request.onsuccess = e => {
-  db = e.target.result;
-  const store = db.transaction("videos","readonly").objectStore("videos");
-  const getRequest = store.get("theMaskVideo");
-  getRequest.onsuccess = () => {
-    if(getRequest.result){
-      storedBlob = getRequest.result;
-      downloadInfo.textContent = "Film prêt à être lu depuis IndexedDB";
-      btnWatch.disabled = false;
-    }
-  }
-};
-request.onerror = e => console.error(e);
+  // Upload dans Supabase Storage → bucket 'films'
+  const { data, error } = await supabase
+    .storage
+    .from('films')
+    .upload(file.name, file, { upsert: true });
+  if (error) return alert("Erreur upload : " + error.message);
 
-// ---------------------
-// Bouton "Lire le film"
-// ---------------------
-btnWatch.addEventListener("click", () => {
-  if(storedBlob){
-    const videoURL = URL.createObjectURL(storedBlob);
-    video.src = videoURL;
-  }
+  // Récupérer l'URL publique du fichier
+  const { publicURL, error: urlError } = supabase
+    .storage
+    .from('films')
+    .getPublicUrl(file.name);
+  if (urlError) return alert("Erreur URL : " + urlError.message);
+
+  // Lire le film directement
+  video.src = publicURL;
   videoContainer.style.display = "flex";
   navbar.style.display = "none";
   video.play();
@@ -574,7 +574,17 @@ btnWatch.addEventListener("click", () => {
 });
 
 // ---------------------
-// Bouton "Retour"
+// BOUTON "Lire le film"
+// ---------------------
+btnWatch.addEventListener("click", () => {
+  videoContainer.style.display = "flex";
+  navbar.style.display = "none";
+  video.play();
+  showControls();
+});
+
+// ---------------------
+// BOUTON "Retour"
 // ---------------------
 backButton.addEventListener("click", () => {
   video.pause();
@@ -582,90 +592,35 @@ backButton.addEventListener("click", () => {
   videoContainer.style.display = "none";
   navbar.style.display = "block";
   hideControlsImmediate();
-
-  if(document.fullscreenElement){
-    document.exitFullscreen();
-  }
+  if (document.fullscreenElement) document.exitFullscreen();
 });
 
 // ---------------------
-// Bouton "Télécharger"
-// ---------------------
-let controller;
-loadBtn.addEventListener("click", async () => {
-  const url = "https://long-frog-ec4e.coupdegrace21799.workers.dev/?url=https%3A%2F%2Fbcdnxw.hakunaymatata.com%2Fresource%2F524ecd33bdd1f8c33104a5af23611ee9.mp4%3Fsign%3D96c4f5ce7f7e0ef5f2a1ccb18ec14521%26t%3D1772987057";
-
-  downloadBox.style.display = "block";
-  downloadBar.style.width = "0%";
-  downloadInfo.textContent = "Préparation...";
-
-  controller = new AbortController();
-
-  try {
-    const response = await fetch(url, {signal:controller.signal});
-    const total = +response.headers.get("Content-Length");
-    const reader = response.body.getReader();
-    let received = 0;
-    let chunks = [];
-    const start = Date.now();
-
-    while(true){
-      const {done,value} = await reader.read();
-      if(done) break;
-      chunks.push(value);
-      received += value.length;
-      const percent = (received/total)*100;
-      downloadBar.style.width = percent + "%";
-      const seconds = (Date.now()-start)/1000;
-      const speed = (received/1024/1024)/seconds;
-      downloadInfo.textContent = `${Math.floor(percent)}% • ${speed.toFixed(2)} MB/s`;
-    }
-
-    const blob = new Blob(chunks,{type:"video/mp4"});
-    storedBlob = blob;
-    btnWatch.disabled = false;
-
-    // Stocker dans IndexedDB
-    const tx = db.transaction("videos","readwrite");
-    tx.objectStore("videos").put(blob,"theMaskVideo");
-    downloadInfo.textContent = "Film prêt et sauvegardé !";
-
-  } catch(err){
-    console.error(err);
-    downloadInfo.textContent = "Téléchargement annulé ou erreur";
-  }
-});
-
-// ---------------------
-// Contrôles du lecteur
+// CONTROLES VIDÉO
 // ---------------------
 video.controls = false;
 let hideTimeout;
 
-function showControls(){
-  document.getElementById("controls").classList.remove("hide");
+function showControls() {
+  controls.classList.remove("hide");
   progressWrapper.classList.remove("hide");
   backButton.classList.remove("hide");
-  video.style.cursor="default";
-
-  // Bouton central visible uniquement si la vidéo est en pause
-  if(video.paused) centerPlay.classList.remove("hide");
-  else centerPlay.classList.add("hide");
-
+  video.style.cursor = "default";
+  centerPlay.classList.toggle("hide", !video.paused);
   clearTimeout(hideTimeout);
-  hideTimeout = setTimeout(hideControls,3000);
+  hideTimeout = setTimeout(hideControls, 3000);
 }
 
-function hideControls(){
+function hideControls() {
   if(!video.paused) centerPlay.classList.add("hide");
-  document.getElementById("controls").classList.add("hide");
+  controls.classList.add("hide");
   progressWrapper.classList.add("hide");
   backButton.classList.add("hide");
   video.style.cursor="none";
 }
 
 function hideControlsImmediate(){
-  document.getElementById("controls").classList.add("hide");
+  controls.classList.add("hide");
   progressWrapper.classList.add("hide");
   backButton.classList.add("hide");
   centerPlay.classList.add("hide");
@@ -676,13 +631,16 @@ document.addEventListener("mousemove", showControls);
 document.addEventListener("keydown", showControls);
 video.addEventListener("click", showControls);
 
-// Play/Pause
+// ---------------------
+// Play / Pause
+// ---------------------
 function togglePlay(){
   if(video.paused) video.play();
   else video.pause();
 }
 playBtn.addEventListener("click", togglePlay);
 centerPlay.addEventListener("click", togglePlay);
+
 video.addEventListener("play", ()=>{
   playBtn.textContent='pause';
   centerPlay.textContent='pause';
@@ -696,35 +654,45 @@ video.addEventListener("pause", ()=>{
   showControls();
 });
 
+// ---------------------
 // Volume
+// ---------------------
 volumeSlider.addEventListener("input",()=>{video.volume=volumeSlider.value; updateVolumeIcon();});
 volumeIcon.addEventListener("click",()=>{if(video.volume>0){video.volume=0;volumeSlider.value=0;}else{video.volume=1;volumeSlider.value=1;}updateVolumeIcon();});
 function updateVolumeIcon(){volumeIcon.textContent=video.volume===0?'volume_off':(video.volume<0.5?'volume_down':'volume_up');}
 
-// Forward/Backward
-forwardBtn.addEventListener("click",()=>{video.currentTime+=10;});
-backwardBtn.addEventListener("click",()=>{video.currentTime-=10;});
+// ---------------------
+// Forward / Backward
+// ---------------------
+document.getElementById("forward").addEventListener("click",()=>{video.currentTime+=10;});
+document.getElementById("backward").addEventListener("click",()=>{video.currentTime-=10;});
 
+// ---------------------
 // Fullscreen
-fullscreenBtn.addEventListener("click",()=>{
+// ---------------------
+fullscreenBtn.addEventListener("click", ()=>{
   if(!document.fullscreenElement) videoContainer.requestFullscreen();
   else document.exitFullscreen();
 });
 
+// ---------------------
 // Progress bar
+// ---------------------
 video.addEventListener("timeupdate",()=>{
   const percent = (video.currentTime/video.duration)*100;
   progressBar.style.width = percent+'%';
   currentTimeEl.textContent = formatTime(video.currentTime);
   totalTimeEl.textContent = formatTime(video.duration);
 });
-
 progressWrapper.addEventListener("click",(e)=>{
   const rect = progressWrapper.getBoundingClientRect();
   const pos = (e.clientX-rect.left)/rect.width;
   video.currentTime = pos*video.duration;
 });
 
+// ---------------------
+// Format time
+// ---------------------
 function formatTime(sec){
   const m = Math.floor(sec/60);
   const s = Math.floor(sec%60);
