@@ -7,13 +7,17 @@ const supabaseClient = window.supabase.createClient(
 // ID unique joueur
 const playerId = Math.random().toString(36).substr(2, 9);
 
+// Points de vie initiaux
+let playerHP = 100;
+
 // Créer joueur en DB
 async function createPlayer() {
   await supabaseClient.from("players").insert({
     id: playerId,
     x: 0,
     y: 1,
-    z: 0
+    z: 0,
+    hp: playerHP
   });
 }
 
@@ -34,7 +38,7 @@ camera.attachControl(canvas, true);
 new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 
 // Sol
-const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
+BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
 
 // Joueur local
 const player = BABYLON.MeshBuilder.CreateBox("player", { size: 1 }, scene);
@@ -43,26 +47,49 @@ player.position.y = 1;
 // Autres joueurs
 const otherPlayers = {};
 
-// 🔁 Envoyer position
-function updatePosition() {
+// 🔁 Envoyer position et HP
+function updatePlayer() {
   supabaseClient.from("players")
     .update({
       x: player.position.x,
       y: player.position.y,
-      z: player.position.z
+      z: player.position.z,
+      hp: playerHP
     })
     .eq("id", playerId);
 }
 
-// 🎮 Contrôles
+// 🎮 Contrôles + attaque
 window.addEventListener("keydown", (e) => {
-  if (e.key === "z") player.position.z += 0.2;
-  if (e.key === "s") player.position.z -= 0.2;
-  if (e.key === "q") player.position.x -= 0.2;
-  if (e.key === "d") player.position.x += 0.2;
+  let moved = false;
 
-  updatePosition();
+  if (e.key === "z") { player.position.z += 0.2; moved = true; }
+  if (e.key === "s") { player.position.z -= 0.2; moved = true; }
+  if (e.key === "q") { player.position.x -= 0.2; moved = true; }
+  if (e.key === "d") { player.position.x += 0.2; moved = true; }
+
+  // Attaque
+  if (e.key === " ") { attack(); }
+
+  if (moved) updatePlayer();
 });
+
+// ⚔️ Fonction attaque simple
+function attack() {
+  for (let id in otherPlayers) {
+    const enemy = otherPlayers[id];
+    const dist = BABYLON.Vector3.Distance(player.position, enemy.mesh.position);
+
+    if (dist < 2) { // si proche
+      enemy.hp -= 10;
+      console.log(`Tu as frappé ${id}, HP restant: ${enemy.hp}`);
+      // met à jour la DB
+      supabaseClient.from("players")
+        .update({ hp: enemy.hp })
+        .eq("id", id);
+    }
+  }
+}
 
 // 📡 Écouter autres joueurs
 supabaseClient
@@ -72,7 +99,6 @@ supabaseClient
     schema: "public",
     table: "players"
   }, payload => {
-
     const data = payload.new;
 
     if (data.id === playerId) return;
@@ -80,12 +106,20 @@ supabaseClient
     if (!otherPlayers[data.id]) {
       const mesh = BABYLON.MeshBuilder.CreateBox("enemy", { size: 1 }, scene);
       mesh.position.y = 1;
-      otherPlayers[data.id] = mesh;
+      otherPlayers[data.id] = { mesh: mesh, hp: data.hp || 100 };
     }
 
-    otherPlayers[data.id].position.x = data.x;
-    otherPlayers[data.id].position.y = data.y;
-    otherPlayers[data.id].position.z = data.z;
+    // Mise à jour position et HP
+    otherPlayers[data.id].mesh.position.x = data.x;
+    otherPlayers[data.id].mesh.position.y = data.y;
+    otherPlayers[data.id].mesh.position.z = data.z;
+    otherPlayers[data.id].hp = data.hp;
+
+    // Si HP <= 0, enlever le joueur
+    if (otherPlayers[data.id].hp <= 0) {
+      scene.removeMesh(otherPlayers[data.id].mesh);
+      delete otherPlayers[data.id];
+    }
   })
   .subscribe();
 
