@@ -51,7 +51,7 @@ const player = { mesh: null, skeleton: null, hp: playerHP };
 BABYLON.SceneLoader.ImportMesh(
   "",
   "https://inspecteurl.github.io/jeu/models/",
-  "anime_character.glb",
+  "character.gltf",
   scene,
   function (meshes, particleSystems, skeletons) {
     const mesh = meshes[0];
