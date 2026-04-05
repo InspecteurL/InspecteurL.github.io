@@ -1,4 +1,5 @@
-const supabase = window.supabase.createClient(
+// Créer le client Supabase
+const supabaseClient = window.supabase.createClient(
   "https://wuagahavmbugmnuzsouf.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
 );
@@ -6,10 +7,9 @@ const supabase = window.supabase.createClient(
 // ID unique joueur
 const playerId = Math.random().toString(36).substr(2, 9);
 
-
 // Créer joueur en DB
 async function createPlayer() {
-  await supabase.from("players").insert({
+  await supabaseClient.from("players").insert({
     id: playerId,
     x: 0,
     y: 1,
@@ -25,27 +25,27 @@ const engine = new BABYLON.Engine(canvas, true);
 
 const scene = new BABYLON.Scene(engine);
 
-// caméra
+// Caméra
 const camera = new BABYLON.UniversalCamera("cam", new BABYLON.Vector3(0, 5, -10), scene);
 camera.setTarget(BABYLON.Vector3.Zero());
 camera.attachControl(canvas, true);
 
-// lumière
+// Lumière
 new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 
-// sol
+// Sol
 const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
 
-// joueur local
+// Joueur local
 const player = BABYLON.MeshBuilder.CreateBox("player", { size: 1 }, scene);
 player.position.y = 1;
 
-// autres joueurs
+// Autres joueurs
 const otherPlayers = {};
 
-// 🔁 envoyer position
+// 🔁 Envoyer position
 function updatePosition() {
-  supabase.from("players")
+  supabaseClient.from("players")
     .update({
       x: player.position.x,
       y: player.position.y,
@@ -54,7 +54,7 @@ function updatePosition() {
     .eq("id", playerId);
 }
 
-// 🎮 contrôles
+// 🎮 Contrôles
 window.addEventListener("keydown", (e) => {
   if (e.key === "z") player.position.z += 0.2;
   if (e.key === "s") player.position.z -= 0.2;
@@ -64,8 +64,8 @@ window.addEventListener("keydown", (e) => {
   updatePosition();
 });
 
-// 📡 écouter autres joueurs
-supabase
+// 📡 Écouter autres joueurs
+supabaseClient
   .channel("game")
   .on("postgres_changes", {
     event: "*",
@@ -89,7 +89,7 @@ supabase
   })
   .subscribe();
 
-// boucle rendu
+// Boucle de rendu
 engine.runRenderLoop(() => {
   scene.render();
 });
