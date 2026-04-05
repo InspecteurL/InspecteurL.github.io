@@ -47,7 +47,6 @@ BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
 // =======================
 const player = { mesh: null, skeleton: null, hp: playerHP };
 
-// Charger modèle anime
 BABYLON.SceneLoader.ImportMesh(
   "",
   "https://inspecteurl.github.io/jeu/models/",
@@ -56,11 +55,15 @@ BABYLON.SceneLoader.ImportMesh(
   function (meshes, particleSystems, skeletons) {
     const mesh = meshes[0];
     mesh.position = new BABYLON.Vector3(0, 0, 0);
-    mesh.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5); // Ajuster taille
+    mesh.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
     const skel = skeletons[0];
     if (skel) scene.beginAnimation(skel, 0, 100, true, 1.0);
     player.mesh = mesh;
     player.skeleton = skel;
+  },
+  null,
+  function (scene, message, exception) {
+    console.error("Erreur chargement GLTF:", message, exception);
   }
 );
 
