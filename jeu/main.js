@@ -1,6 +1,6 @@
 const supabase = window.supabase.createClient(
-  "YOUR_URL",
-  "YOUR_KEY"
+  "https://wuagahavmbugmnuzsouf.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
 );
 
 // ID unique joueur
