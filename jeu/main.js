@@ -6,6 +6,7 @@ const supabase = window.supabase.createClient(
 // ID unique joueur
 const playerId = Math.random().toString(36).substr(2, 9);
 
+
 // Créer joueur en DB
 async function createPlayer() {
   await supabase.from("players").insert({
