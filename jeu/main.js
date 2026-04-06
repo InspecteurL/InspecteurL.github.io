@@ -9,17 +9,16 @@ const supabaseClient = window.supabase.createClient(
 const playerId = Math.random().toString(36).substr(2, 9);
 let playerHP = 100;
 
-// Créer joueur dans Supabase
 async function createPlayer() {
-  const { data, error } = await supabaseClient.from("players").insert({
+  const { error } = await supabaseClient.from("players").insert({
     id: playerId,
     x: 0,
     y: 0,
     z: 0,
     hp: playerHP
   });
-  if (error) console.error("Erreur Supabase insert:", error);
-  else console.log("Player créé:", data);
+
+  if (error) console.error("Erreur Supabase:", error);
 }
 createPlayer();
 
@@ -30,10 +29,10 @@ const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
 const scene = new BABYLON.Scene(engine);
 
-// Caméra
+// Caméra (CORRIGÉ)
 const camera = new BABYLON.UniversalCamera("cam", new BABYLON.Vector3(0, 5, -10), scene);
 camera.setTarget(BABYLON.Vector3.Zero());
-camera.attachControl(canvas, true);
+camera.attachControl(canvas, false); // ⚠️ important
 
 // Lumière
 new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
@@ -42,38 +41,44 @@ new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
 
 // =======================
-// 3️⃣ Joueur local (cube placeholder si pas de GLB)
+// 3️⃣ Joueur local
 // =======================
 const player = { mesh: null, skeleton: null, hp: playerHP };
 
-// Placeholder cube
+// cube temporaire
 const placeholder = BABYLON.MeshBuilder.CreateBox("player", { size: 1 }, scene);
 placeholder.position.y = 0.5;
 player.mesh = placeholder;
 
-// Charger GLB si dispo
+// charger modèle GLTF
 BABYLON.SceneLoader.ImportMesh(
   "",
-  "https://inspecteurl.github.io/jeu/models/", // ton dossier models
-  "character.gltf", // remplace par ton GLB
+  "https://inspecteurl.github.io/jeu/models/",
+  "character.gltf",
   scene,
-  function(meshes, particleSystems, skeletons) {
-    // Créer un root pour déplacer tout le personnage
+  function (meshes, particleSystems, skeletons) {
+
     const root = new BABYLON.TransformNode("playerRoot", scene);
-    meshes.forEach(m => m.parent = root);
+
+    meshes.forEach(m => {
+      m.parent = root;
+    });
+
     root.position = new BABYLON.Vector3(0, 0, 0);
     root.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
+
     player.mesh = root;
 
-    // Animation idle
     if (skeletons[0]) {
       player.skeleton = skeletons[0];
-      scene.beginAnimation(player.skeleton, 0, 30, true, 1.0); // idle frames
+      scene.beginAnimation(player.skeleton, 0, 30, true, 1.0); // idle
     }
+
+    console.log("✅ Modèle chargé !");
   },
   null,
-  function(scene, message, exception){
-    console.warn("GLB non chargé, cube utilisé à la place.", message);
+  function (scene, message) {
+    console.warn("❌ GLTF non chargé → cube utilisé", message);
   }
 );
 
@@ -82,9 +87,9 @@ BABYLON.SceneLoader.ImportMesh(
 // =======================
 const otherPlayers = {};
 
-// Envoyer position + HP
 function updatePlayer() {
   if (!player.mesh) return;
+
   supabaseClient.from("players")
     .update({
       x: player.mesh.position.x,
@@ -96,54 +101,65 @@ function updatePlayer() {
 }
 
 // =======================
-// 5️⃣ Contrôles + animation marche
+// 5️⃣ Contrôles
 // =======================
 const step = 0.2;
-let moving = false;
 
 window.addEventListener("keydown", (e) => {
   if (!player.mesh) return;
-  moving = false;
 
-  if (e.key === "z") { player.mesh.position.z += step; moving = true; }
-  if (e.key === "s") { player.mesh.position.z -= step; moving = true; }
-  if (e.key === "q") { player.mesh.position.x -= step; moving = true; }
-  if (e.key === "d") { player.mesh.position.x += step; moving = true; }
+  let moved = false;
 
-  if (moving) {
+  if (e.key === "z") { player.mesh.position.z += step; moved = true; }
+  if (e.key === "s") { player.mesh.position.z -= step; moved = true; }
+  if (e.key === "q") { player.mesh.position.x -= step; moved = true; }
+  if (e.key === "d") { player.mesh.position.x += step; moved = true; }
+
+  if (e.key === " ") attack();
+
+  if (moved) {
     updatePlayer();
-    // lancer animation marche
-    if (player.skeleton) scene.beginAnimation(player.skeleton, 31, 60, true, 1.0); // marche frames
+
+    // marche
+    if (player.skeleton) {
+      scene.beginAnimation(player.skeleton, 31, 60, true, 1.0);
+    }
   } else {
     // idle
-    if (player.skeleton) scene.beginAnimation(player.skeleton, 0, 30, true, 1.0);
+    if (player.skeleton) {
+      scene.beginAnimation(player.skeleton, 0, 30, true, 1.0);
+    }
   }
 });
 
 // =======================
-// 6️⃣ Attaque simple
+// 6️⃣ Attaque
 // =======================
 function attack() {
   for (let id in otherPlayers) {
     const enemy = otherPlayers[id];
-    if (!enemy.mesh) continue;
-    const dist = BABYLON.Vector3.Distance(player.mesh.position, enemy.mesh.position);
+
+    const dist = BABYLON.Vector3.Distance(
+      player.mesh.position,
+      enemy.mesh.position
+    );
+
     if (dist < 2) {
       enemy.hp -= 10;
+
       supabaseClient.from("players")
         .update({ hp: enemy.hp })
         .eq("id", id);
-      if (player.skeleton) scene.beginAnimation(player.skeleton, 101, 150, false, 1.5); // attaque frames
+
+      if (player.skeleton) {
+        scene.beginAnimation(player.skeleton, 61, 100, false, 1.5);
+      }
     }
   }
 }
 
-window.addEventListener("keydown", (e) => {
-  if (e.key === " ") attack();
-});
-
 // =======================
-// 7️⃣ Écouter Supabase
+// 7️⃣ Sync joueurs
 // =======================
 supabaseClient
   .channel("game")
@@ -152,20 +168,25 @@ supabaseClient
     schema: "public",
     table: "players"
   }, payload => {
+
     const data = payload.new;
     if (data.id === playerId) return;
 
     if (!otherPlayers[data.id]) {
-      // placeholder cube pour les autres
       const mesh = BABYLON.MeshBuilder.CreateBox("enemy", { size: 1 }, scene);
       mesh.position = new BABYLON.Vector3(data.x, data.y, data.z);
-      otherPlayers[data.id] = { mesh: mesh, hp: data.hp || 100 };
+
+      otherPlayers[data.id] = {
+        mesh: mesh,
+        hp: data.hp || 100
+      };
+
     } else {
       const enemy = otherPlayers[data.id];
-      enemy.mesh.position.x = data.x;
-      enemy.mesh.position.y = data.y;
-      enemy.mesh.position.z = data.z;
+
+      enemy.mesh.position.set(data.x, data.y, data.z);
       enemy.hp = data.hp;
+
       if (enemy.hp <= 0) {
         scene.removeMesh(enemy.mesh);
         delete otherPlayers[data.id];
@@ -175,7 +196,7 @@ supabaseClient
   .subscribe();
 
 // =======================
-// 8️⃣ Boucle rendu
+// 8️⃣ Render loop
 // =======================
 engine.runRenderLoop(() => {
   scene.render();
