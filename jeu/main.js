@@ -55,7 +55,7 @@ player.mesh = placeholder;
 BABYLON.SceneLoader.ImportMesh(
   "",
   "https://inspecteurl.github.io/jeu/models/", // ton dossier models
-  "character.glb", // remplace par ton GLB
+  "character.gltf", // remplace par ton GLB
   scene,
   function(meshes, particleSystems, skeletons) {
     // Créer un root pour déplacer tout le personnage
