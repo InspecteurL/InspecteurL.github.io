@@ -28,80 +28,92 @@ const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
 const scene = new BABYLON.Scene(engine);
 
-// Caméra
 const camera = new BABYLON.UniversalCamera("cam", new BABYLON.Vector3(0, 5, -10), scene);
 camera.setTarget(BABYLON.Vector3.Zero());
 camera.attachControl(canvas, false);
 
-// Lumière
 new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 
-// Sol
 BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
 
 // =======================
 // 3️⃣ Joueur local + animations séparées
 // =======================
-const player = { mesh: null, hp: playerHP };
+const player = { mesh: null, skeleton: null, hp: playerHP };
 const animations = {};
 let currentAnim = "";
 
-// placeholder cube
+// cube placeholder
 const placeholder = BABYLON.MeshBuilder.CreateBox("player", { size: 1 }, scene);
 placeholder.position.y = 0.5;
 player.mesh = placeholder;
 
-// 🎬 fonction pour jouer une animation
+// fonction jouer animation
 function playAnimation(name, loop = true) {
   if (currentAnim === name) return;
-  for (let key in animations) {
-    animations[key].stop();
-  }
+
+  for (let key in animations) animations[key].stop();
+
   if (animations[name]) {
     animations[name].start(loop);
     currentAnim = name;
   }
 }
 
-// fonction pour charger un GLB d’animation
-function loadAnimation(name, url) {
-  BABYLON.SceneLoader.ImportMesh(
-    "",
-    url,
-    name + ".glb",
-    scene,
-    (meshes, ps, skeletons, animGroups) => {
-      if (!player.mesh) {
-        // Créer un root si ce n'est pas encore fait
-        const root = new BABYLON.TransformNode("playerRoot", scene);
-        meshes.forEach(m => m.parent = root);
-        root.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
-        root.position = new BABYLON.Vector3(0, 0, 0);
-        player.mesh = root;
-      } else {
-        meshes.forEach(m => m.parent = player.mesh);
-      }
+// charger personnage principal
+BABYLON.SceneLoader.ImportMesh(
+  "",
+  "https://inspecteurl.github.io/jeu/models/",
+  "character.gltf",
+  scene,
+  (meshes, ps, skeletons) => {
 
-      // Stocker l’animation
-      if (animGroups && animGroups.length > 0) {
-        animations[name.toLowerCase()] = animGroups[0];
-        console.log(`Anim chargée : ${name}`);
-      }
+    const root = new BABYLON.TransformNode("playerRoot", scene);
+    meshes.forEach(m => m.parent = root);
 
-      // Si idle, lancer par défaut
-      if (name.toLowerCase() === "Idle") playAnimation("Idle");
-    },
-    null,
-    (scene, message) => {
-      console.warn(`❌ GLB ${name} non chargé :`, message);
+    root.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
+    root.position = new BABYLON.Vector3(0, 0, 0);
+    player.mesh = root;
+
+    // utiliser le skeleton du personnage
+    if (skeletons && skeletons.length > 0) {
+      player.skeleton = skeletons[0];
+      console.log("✅ Personnage chargé avec skeleton");
+      loadAnimations(); // charger animations séparées
     }
-  );
-}
+  },
+  null,
+  (scene, message) => {
+    console.warn("❌ GLTF non chargé → cube utilisé", message);
+  }
+);
 
-// Charger toutes les animations séparément
-loadAnimation("Idle", "https://inspecteurl.github.io/jeu/models/");
-loadAnimation("Walk", "https://inspecteurl.github.io/jeu/models/");
-loadAnimation("Attack", "https://inspecteurl.github.io/jeu/models/");
+// fonction charger animations séparées
+function loadAnimations() {
+  const animFiles = ["Idle.glb", "Walk.glb", "Attack.glb"];
+  animFiles.forEach(file => {
+    BABYLON.SceneLoader.ImportMesh(
+      "",
+      "https://inspecteurl.github.io/jeu/models/",
+      file,
+      scene,
+      (meshes, ps, skeletons, animationGroups) => {
+        if (animationGroups.length > 0) {
+          // attacher animation au skeleton du perso
+          animationGroups.forEach(anim => {
+            anim.targetedAnimations.forEach(ta => ta.target = player.skeleton.bones[0]);
+            animations[file.split(".")[0].toLowerCase()] = anim;
+            console.log("✅ Animation chargée:", file);
+          });
+        }
+      },
+      null,
+      (scene, message) => {
+        console.warn(`❌ GLB ${file} non chargé:`, message);
+      }
+    );
+  });
+}
 
 // =======================
 // 4️⃣ Autres joueurs
@@ -128,7 +140,7 @@ const speed = 0.1;
 
 window.addEventListener("keydown", e => {
   keys[e.key] = true;
-  if (e.key === " ") Attack();
+  if (e.key === " ") attack();
 });
 
 window.addEventListener("keyup", e => keys[e.key] = false);
@@ -136,10 +148,12 @@ window.addEventListener("keyup", e => keys[e.key] = false);
 // =======================
 // 6️⃣ Attaque
 // =======================
-function Attack() {
-  playAnimation("Attack", false);
+function attack() {
+  playAnimation("attack", false);
+
   for (let id in otherPlayers) {
     const enemy = otherPlayers[id];
+    if (!enemy.mesh) continue;
     const dist = BABYLON.Vector3.Distance(player.mesh.position, enemy.mesh.position);
     if (dist < 2) {
       enemy.hp -= 10;
@@ -163,7 +177,7 @@ supabaseClient.channel("game")
     if (!otherPlayers[data.id]) {
       const mesh = BABYLON.MeshBuilder.CreateBox("enemy", { size: 1 }, scene);
       mesh.position = new BABYLON.Vector3(data.x, data.y, data.z);
-      otherPlayers[data.id] = { mesh, hp: data.hp || 100 };
+      otherPlayers[data.id] = { mesh: mesh, hp: data.hp || 100 };
     } else {
       const enemy = otherPlayers[data.id];
       enemy.mesh.position.set(data.x, data.y, data.z);
@@ -182,14 +196,16 @@ supabaseClient.channel("game")
 engine.runRenderLoop(() => {
   if (player.mesh) {
     let moving = false;
-
     if (keys["z"]) { player.mesh.position.z += speed; moving = true; }
     if (keys["s"]) { player.mesh.position.z -= speed; moving = true; }
     if (keys["q"]) { player.mesh.position.x -= speed; moving = true; }
     if (keys["d"]) { player.mesh.position.x += speed; moving = true; }
 
-    // animations
-    if (moving) playAnimation("Walk"); else playAnimation("Idle");
+    // jouer animations
+    if (player.skeleton) {
+      if (moving) playAnimation("walk");
+      else playAnimation("idle");
+    }
 
     if (moving) updatePlayer();
 
