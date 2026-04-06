@@ -29,10 +29,10 @@ const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
 const scene = new BABYLON.Scene(engine);
 
-// Caméra (CORRIGÉ)
+// Caméra
 const camera = new BABYLON.UniversalCamera("cam", new BABYLON.Vector3(0, 5, -10), scene);
 camera.setTarget(BABYLON.Vector3.Zero());
-camera.attachControl(canvas, false); // ⚠️ important
+camera.attachControl(canvas, false);
 
 // Lumière
 new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
@@ -45,7 +45,7 @@ BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
 // =======================
 const player = { mesh: null, skeleton: null, hp: playerHP };
 
-// cube temporaire
+// placeholder cube
 const placeholder = BABYLON.MeshBuilder.CreateBox("player", { size: 1 }, scene);
 placeholder.position.y = 0.5;
 player.mesh = placeholder;
@@ -60,18 +60,18 @@ BABYLON.SceneLoader.ImportMesh(
 
     const root = new BABYLON.TransformNode("playerRoot", scene);
 
-    meshes.forEach(m => {
-      m.parent = root;
-    });
+    meshes.forEach(m => m.parent = root);
 
     root.position = new BABYLON.Vector3(0, 0, 0);
-    root.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
+
+    // ✅ TAILLE CORRIGÉE
+    root.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
 
     player.mesh = root;
 
     if (skeletons[0]) {
       player.skeleton = skeletons[0];
-      scene.beginAnimation(player.skeleton, 0, 30, true, 1.0); // idle
+      scene.beginAnimation(player.skeleton, 0, 30, true, 1.0);
     }
 
     console.log("✅ Modèle chargé !");
@@ -101,35 +101,19 @@ function updatePlayer() {
 }
 
 // =======================
-// 5️⃣ Contrôles
+// 5️⃣ Input fluide
 // =======================
-const step = 0.2;
+const keys = {};
+const speed = 0.1;
 
 window.addEventListener("keydown", (e) => {
-  if (!player.mesh) return;
-
-  let moved = false;
-
-  if (e.key === "z") { player.mesh.position.z += step; moved = true; }
-  if (e.key === "s") { player.mesh.position.z -= step; moved = true; }
-  if (e.key === "q") { player.mesh.position.x -= step; moved = true; }
-  if (e.key === "d") { player.mesh.position.x += step; moved = true; }
+  keys[e.key] = true;
 
   if (e.key === " ") attack();
+});
 
-  if (moved) {
-    updatePlayer();
-
-    // marche
-    if (player.skeleton) {
-      scene.beginAnimation(player.skeleton, 31, 60, true, 1.0);
-    }
-  } else {
-    // idle
-    if (player.skeleton) {
-      scene.beginAnimation(player.skeleton, 0, 30, true, 1.0);
-    }
-  }
+window.addEventListener("keyup", (e) => {
+  keys[e.key] = false;
 });
 
 // =======================
@@ -196,8 +180,37 @@ supabaseClient
   .subscribe();
 
 // =======================
-// 8️⃣ Render loop
+// 8️⃣ Render loop (déplacement + caméra)
 // =======================
 engine.runRenderLoop(() => {
+
+  if (player.mesh) {
+
+    let moving = false;
+
+    if (keys["z"]) { player.mesh.position.z += speed; moving = true; }
+    if (keys["s"]) { player.mesh.position.z -= speed; moving = true; }
+    if (keys["q"]) { player.mesh.position.x -= speed; moving = true; }
+    if (keys["d"]) { player.mesh.position.x += speed; moving = true; }
+
+    // animation
+    if (player.skeleton) {
+      if (moving) {
+        scene.beginAnimation(player.skeleton, 31, 60, true, 1.0);
+      } else {
+        scene.beginAnimation(player.skeleton, 0, 30, true, 1.0);
+      }
+    }
+
+    if (moving) updatePlayer();
+
+    // 🎥 caméra qui suit
+    camera.position.x = player.mesh.position.x;
+    camera.position.z = player.mesh.position.z - 10;
+    camera.position.y = player.mesh.position.y + 5;
+
+    camera.setTarget(player.mesh.position);
+  }
+
   scene.render();
 });
