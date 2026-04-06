@@ -89,7 +89,7 @@ function loadAnimation(name, url) {
       }
 
       // Si idle, lancer par défaut
-      if (name.toLowerCase() === "idle") playAnimation("idle");
+      if (name.toLowerCase() === "Idle") playAnimation("Idle");
     },
     null,
     (scene, message) => {
@@ -99,9 +99,9 @@ function loadAnimation(name, url) {
 }
 
 // Charger toutes les animations séparément
-loadAnimation("idle", "https://inspecteurl.github.io/jeu/models/");
-loadAnimation("walk", "https://inspecteurl.github.io/jeu/models/");
-loadAnimation("attack", "https://inspecteurl.github.io/jeu/models/");
+loadAnimation("Idle", "https://inspecteurl.github.io/jeu/models/");
+loadAnimation("Walk", "https://inspecteurl.github.io/jeu/models/");
+loadAnimation("Attack", "https://inspecteurl.github.io/jeu/models/");
 
 // =======================
 // 4️⃣ Autres joueurs
@@ -128,7 +128,7 @@ const speed = 0.1;
 
 window.addEventListener("keydown", e => {
   keys[e.key] = true;
-  if (e.key === " ") attack();
+  if (e.key === " ") Attack();
 });
 
 window.addEventListener("keyup", e => keys[e.key] = false);
@@ -136,8 +136,8 @@ window.addEventListener("keyup", e => keys[e.key] = false);
 // =======================
 // 6️⃣ Attaque
 // =======================
-function attack() {
-  playAnimation("attack", false);
+function Attack() {
+  playAnimation("Attack", false);
   for (let id in otherPlayers) {
     const enemy = otherPlayers[id];
     const dist = BABYLON.Vector3.Distance(player.mesh.position, enemy.mesh.position);
@@ -189,7 +189,7 @@ engine.runRenderLoop(() => {
     if (keys["d"]) { player.mesh.position.x += speed; moving = true; }
 
     // animations
-    if (moving) playAnimation("walk"); else playAnimation("idle");
+    if (moving) playAnimation("Walk"); else playAnimation("Idle");
 
     if (moving) updatePlayer();
 
