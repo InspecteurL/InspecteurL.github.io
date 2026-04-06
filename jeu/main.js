@@ -43,7 +43,8 @@ BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
 // =======================
 // 3️⃣ Joueur local + animations
 // =======================
-const player = { mesh: null, hp: playerHP };
+const player = { mesh: null, skeleton: null, hp: playerHP };
+
 let animations = {};
 let currentAnim = "";
 
@@ -52,7 +53,7 @@ const placeholder = BABYLON.MeshBuilder.CreateBox("player", { size: 1 }, scene);
 placeholder.position.y = 0.5;
 player.mesh = placeholder;
 
-// 🎬 fonction animation
+// 🎬 jouer animation (AnimationGroups)
 function playAnimation(name, loop = true) {
   if (currentAnim === name) return;
 
@@ -72,7 +73,10 @@ BABYLON.SceneLoader.ImportMesh(
   "https://inspecteurl.github.io/jeu/models/",
   "character.gltf",
   scene,
-  function (meshes, ps, sk, animationGroups) {
+  function (meshes, ps, skeletons, animationGroups) {
+
+    console.log("Animations:", animationGroups);
+    console.log("Skeletons:", skeletons);
 
     const root = new BABYLON.TransformNode("playerRoot", scene);
     meshes.forEach(m => m.parent = root);
@@ -82,15 +86,32 @@ BABYLON.SceneLoader.ImportMesh(
 
     player.mesh = root;
 
-    // récupérer animations
-    animationGroups.forEach(anim => {
-      animations[anim.name.toLowerCase()] = anim;
-      console.log("Anim:", anim.name);
-    });
+    // 🔥 CAS 1 : AnimationGroups
+    if (animationGroups && animationGroups.length > 0) {
 
-    playAnimation("idle"); // animation par défaut
+      animationGroups.forEach(anim => {
+        animations[anim.name.toLowerCase()] = anim;
+        console.log("Anim trouvée:", anim.name);
+      });
 
-    console.log("✅ Modèle + animations chargés !");
+      // joue la première animation trouvée
+      const firstAnim = Object.keys(animations)[0];
+      if (firstAnim) playAnimation(firstAnim);
+
+    }
+
+    // 🔥 CAS 2 : Skeleton (Mixamo classique)
+    else if (skeletons && skeletons.length > 0) {
+
+      console.log("⚠️ Mode skeleton activé");
+
+      player.skeleton = skeletons[0];
+
+      // animation par défaut
+      scene.beginAnimation(player.skeleton, 0, 100, true, 1.0);
+    }
+
+    console.log("✅ Modèle chargé !");
   }
 );
 
@@ -132,6 +153,8 @@ window.addEventListener("keyup", (e) => {
 // 6️⃣ Attaque
 // =======================
 function attack() {
+
+  // animation attack si dispo
   playAnimation("attack", false);
 
   for (let id in otherPlayers) {
@@ -204,10 +227,20 @@ engine.runRenderLoop(() => {
     if (keys["d"]) { player.mesh.position.x += speed; moving = true; }
 
     // 🎬 animations
-    if (moving) {
-      playAnimation("walk"); // ⚠️ adapte si besoin (walking/run)
+    if (player.skeleton) {
+      // mode skeleton
+      if (moving) {
+        scene.beginAnimation(player.skeleton, 30, 60, true, 1.0);
+      } else {
+        scene.beginAnimation(player.skeleton, 0, 30, true, 1.0);
+      }
     } else {
-      playAnimation("idle");
+      // mode AnimationGroups
+      if (moving) {
+        playAnimation("walk"); // adapte selon console
+      } else {
+        playAnimation("idle");
+      }
     }
 
     if (moving) updatePlayer();
