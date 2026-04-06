@@ -41,44 +41,56 @@ new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
 
 // =======================
-// 3️⃣ Joueur local
+// 3️⃣ Joueur local + animations
 // =======================
-const player = { mesh: null, skeleton: null, hp: playerHP };
+const player = { mesh: null, hp: playerHP };
+let animations = {};
+let currentAnim = "";
 
-// placeholder cube
+// cube temporaire
 const placeholder = BABYLON.MeshBuilder.CreateBox("player", { size: 1 }, scene);
 placeholder.position.y = 0.5;
 player.mesh = placeholder;
 
-// charger modèle GLTF
+// 🎬 fonction animation
+function playAnimation(name, loop = true) {
+  if (currentAnim === name) return;
+
+  for (let key in animations) {
+    animations[key].stop();
+  }
+
+  if (animations[name]) {
+    animations[name].start(loop);
+    currentAnim = name;
+  }
+}
+
+// charger modèle
 BABYLON.SceneLoader.ImportMesh(
   "",
   "https://inspecteurl.github.io/jeu/models/",
   "character.gltf",
   scene,
-  function (meshes, particleSystems, skeletons) {
+  function (meshes, ps, sk, animationGroups) {
 
     const root = new BABYLON.TransformNode("playerRoot", scene);
-
     meshes.forEach(m => m.parent = root);
 
-    root.position = new BABYLON.Vector3(0, 0, 0);
-
-    // ✅ TAILLE CORRIGÉE
     root.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
+    root.position = new BABYLON.Vector3(0, 0, 0);
 
     player.mesh = root;
 
-    if (skeletons[0]) {
-      player.skeleton = skeletons[0];
-      scene.beginAnimation(player.skeleton, 0, 30, true, 1.0);
-    }
+    // récupérer animations
+    animationGroups.forEach(anim => {
+      animations[anim.name.toLowerCase()] = anim;
+      console.log("Anim:", anim.name);
+    });
 
-    console.log("✅ Modèle chargé !");
-  },
-  null,
-  function (scene, message) {
-    console.warn("❌ GLTF non chargé → cube utilisé", message);
+    playAnimation("idle"); // animation par défaut
+
+    console.log("✅ Modèle + animations chargés !");
   }
 );
 
@@ -120,6 +132,8 @@ window.addEventListener("keyup", (e) => {
 // 6️⃣ Attaque
 // =======================
 function attack() {
+  playAnimation("attack", false);
+
   for (let id in otherPlayers) {
     const enemy = otherPlayers[id];
 
@@ -134,10 +148,6 @@ function attack() {
       supabaseClient.from("players")
         .update({ hp: enemy.hp })
         .eq("id", id);
-
-      if (player.skeleton) {
-        scene.beginAnimation(player.skeleton, 61, 100, false, 1.5);
-      }
     }
   }
 }
@@ -180,7 +190,7 @@ supabaseClient
   .subscribe();
 
 // =======================
-// 8️⃣ Render loop (déplacement + caméra)
+// 8️⃣ Render loop
 // =======================
 engine.runRenderLoop(() => {
 
@@ -193,18 +203,16 @@ engine.runRenderLoop(() => {
     if (keys["q"]) { player.mesh.position.x -= speed; moving = true; }
     if (keys["d"]) { player.mesh.position.x += speed; moving = true; }
 
-    // animation
-    if (player.skeleton) {
-      if (moving) {
-        scene.beginAnimation(player.skeleton, 31, 60, true, 1.0);
-      } else {
-        scene.beginAnimation(player.skeleton, 0, 30, true, 1.0);
-      }
+    // 🎬 animations
+    if (moving) {
+      playAnimation("walk"); // ⚠️ adapte si besoin (walking/run)
+    } else {
+      playAnimation("idle");
     }
 
     if (moving) updatePlayer();
 
-    // 🎥 caméra qui suit
+    // 🎥 caméra follow
     camera.position.x = player.mesh.position.x;
     camera.position.z = player.mesh.position.z - 10;
     camera.position.y = player.mesh.position.y + 5;
