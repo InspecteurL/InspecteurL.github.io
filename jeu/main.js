@@ -1,3 +1,4 @@
+window.onerror = console.error;
 const SUPABASE_URL = "https://wuagahavmbugmnuzsouf.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
 
@@ -37,6 +38,7 @@ async function createRoom() {
   currentPlayer = player;
 
   enterLobby();
+  alert("Room créée !");
 }
 
 // JOIN ROOM
@@ -67,6 +69,7 @@ async function joinRoom() {
   currentPlayer = player;
 
   enterLobby();
+  alert("Rejoint !");
 }
 
 // LOBBY
@@ -77,6 +80,7 @@ function enterLobby() {
   document.getElementById("roomCode").innerText = currentRoom.code;
 
   listenPlayers();
+  listenRoom();
 }
 
 // REALTIME
@@ -191,14 +195,58 @@ async function sendTurn() {
   document.getElementById("messageInput").value = "";
 }
 
-// WORDS
 function getRandomWords() {
-  const pairs = [
-    { word1: "chien", word2: "loup" },
-    { word1: "pizza", word2: "burger" },
-    { word1: "soleil", word2: "lune" },
-    { word1: "voiture", word2: "moto" }
-  ];
+  const themes = {
+    animaux: [
+      ["chien", "loup"],
+      ["chat", "tigre"],
+      ["lion", "panthère"]
+    ],
+    objets: [
+      ["chaise", "tabouret"],
+      ["stylo", "crayon"],
+      ["lampe", "ampoule"]
+    ],
+    nourriture: [
+      ["pizza", "burger"],
+      ["pomme", "poire"],
+      ["riz", "pâtes"]
+    ]
+  };
 
-  return pairs[Math.floor(Math.random() * pairs.length)];
+  const themeKeys = Object.keys(themes);
+  const randomTheme = themeKeys[Math.floor(Math.random() * themeKeys.length)];
+
+  const pairList = themes[randomTheme];
+  const pair = pairList[Math.floor(Math.random() * pairList.length)];
+
+  return {
+    theme: randomTheme,
+    word1: pair[0],
+    word2: pair[1]
+  };
 }
+
+function listenRoom() {
+  client
+    .channel("room-" + currentRoom.id)
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "rooms",
+        filter: `id=eq.${currentRoom.id}`
+      },
+      payload => {
+        if (payload.new.status === "playing") {
+          enterGame();
+        }
+      }
+    )
+    .subscribe();
+}
+
+
+console.log("Creating room...");
+console.log("Response:", room, error);
