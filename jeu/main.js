@@ -1,4 +1,5 @@
 window.onerror = console.error;
+
 const SUPABASE_URL = "https://wuagahavmbugmnuzsouf.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
 
@@ -9,6 +10,7 @@ let currentRoom = null;
 let currentPlayer = null;
 let channel = null;
 
+// ---------------- CREATE ROOM ----------------
 async function createRoom() {
   console.log("Creating room...");
 
@@ -23,8 +25,7 @@ async function createRoom() {
     .select()
     .single();
 
-  console.log("ROOM:", room);
-  console.log("ROOM ERROR:", roomError);
+  console.log("ROOM:", room, roomError);
 
   if (roomError || !room) {
     alert("Erreur création room");
@@ -41,8 +42,7 @@ async function createRoom() {
     .select()
     .single();
 
-  console.log("PLAYER:", player);
-  console.log("PLAYER ERROR:", playerError);
+  console.log("PLAYER:", player, playerError);
 
   if (playerError || !player) {
     alert("Erreur création joueur");
@@ -55,22 +55,46 @@ async function createRoom() {
   enterLobby();
 }
 
-// JOIN ROOM
+// ---------------- JOIN ROOM ----------------
 async function joinRoom() {
   const name = document.getElementById("nameInput").value;
   const code = document.getElementById("roomCodeInput").value;
 
   if (!name || !code) return alert("Remplis tout");
 
-  const { data: room } = await client
+  const { data: room, error: roomError } = await client
     .from("rooms")
     .select("*")
     .eq("code", code)
     .single();
 
-  if (!room) return alert("Room introuvable");
+  if (roomError || !room) {
+    alert("Room introuvable");
+    return;
+  }
 
-  const { data: player } = await client
+  // 🔥 CHECK NOMBRE DE JOUEURS (FIX BUG SALLE PLEINE)
+  const { data: players, error: playersError } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", room.id);
+
+  console.log("PLAYERS:", players);
+
+  const MAX_PLAYERS = 8;
+
+  if (playersError) {
+    console.error(playersError);
+    alert("Erreur récupération joueurs");
+    return;
+  }
+
+  if (players.length >= MAX_PLAYERS) {
+    alert("Salle pleine");
+    return;
+  }
+
+  const { data: player, error: playerError } = await client
     .from("players")
     .insert({
       name,
@@ -79,6 +103,12 @@ async function joinRoom() {
     .select()
     .single();
 
+  if (playerError || !player) {
+    console.error(playerError);
+    alert("Erreur join");
+    return;
+  }
+
   currentRoom = room;
   currentPlayer = player;
 
@@ -86,7 +116,7 @@ async function joinRoom() {
   alert("Rejoint !");
 }
 
-// LOBBY
+// ---------------- LOBBY ----------------
 function enterLobby() {
   document.getElementById("home").classList.add("hidden");
   document.getElementById("lobby").classList.remove("hidden");
@@ -97,7 +127,7 @@ function enterLobby() {
   listenRoom();
 }
 
-// REALTIME
+// ---------------- REALTIME PLAYERS ----------------
 function listenPlayers() {
   if (channel) {
     client.removeChannel(channel);
@@ -120,13 +150,18 @@ function listenPlayers() {
   fetchPlayers();
 }
 
-// FETCH PLAYERS
+// ---------------- FETCH PLAYERS ----------------
 async function fetchPlayers() {
-  const { data: players } = await client
+  const { data: players, error } = await client
     .from("players")
     .select("*")
     .eq("room_id", currentRoom.id)
     .order("created_at");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
 
   const list = document.getElementById("playersList");
   list.innerHTML = "";
@@ -138,7 +173,7 @@ async function fetchPlayers() {
   });
 }
 
-// START GAME
+// ---------------- START GAME ----------------
 async function startGame() {
   const mode = document.getElementById("modeSelect").value;
 
@@ -151,7 +186,7 @@ async function startGame() {
   enterGame();
 }
 
-// ROLES
+// ---------------- ROLES ----------------
 async function assignRoles() {
   const { data: players } = await client
     .from("players")
@@ -160,6 +195,8 @@ async function assignRoles() {
 
   const shuffled = [...players].sort(() => Math.random() - 0.5);
   const words = getRandomWords();
+
+  console.log("THEME:", words.theme);
 
   for (let i = 0; i < shuffled.length; i++) {
     let role = "civilian";
@@ -181,7 +218,7 @@ async function assignRoles() {
   }
 }
 
-// GAME
+// ---------------- GAME ----------------
 async function enterGame() {
   document.getElementById("lobby").classList.add("hidden");
   document.getElementById("game").classList.remove("hidden");
@@ -196,9 +233,11 @@ async function enterGame() {
     "Ton mot: " + (player.word || "???");
 }
 
-// TURN
+// ---------------- TURN ----------------
 async function sendTurn() {
   const message = document.getElementById("messageInput").value;
+
+  if (!message) return;
 
   await client.from("turns").insert({
     room_id: currentRoom.id,
@@ -209,6 +248,7 @@ async function sendTurn() {
   document.getElementById("messageInput").value = "";
 }
 
+// ---------------- WORDS ----------------
 function getRandomWords() {
   const themes = {
     animaux: [
@@ -241,6 +281,7 @@ function getRandomWords() {
   };
 }
 
+// ---------------- ROOM REALTIME ----------------
 function listenRoom() {
   client
     .channel("room-" + currentRoom.id)
@@ -260,7 +301,3 @@ function listenRoom() {
     )
     .subscribe();
 }
-
-
-console.log("Creating room...");
-console.log("Response:", room, error);
