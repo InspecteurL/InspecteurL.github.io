@@ -1,24 +1,29 @@
 const SUPABASE_URL = "https://wuagahavmbugmnuzsouf.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const { createClient } = supabase;
+const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentRoom = null;
 let currentPlayer = null;
+let channel = null;
 
-// ---------------- CREATE ROOM ----------------
+// CREATE ROOM
 async function createRoom() {
   const name = document.getElementById("nameInput").value;
+  if (!name) return alert("Entre un pseudo");
 
   const code = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-  const { data: room } = await supabase
+  const { data: room, error } = await client
     .from("rooms")
     .insert({ code })
     .select()
     .single();
 
-  const { data: player } = await supabase
+  if (error) return console.error(error);
+
+  const { data: player } = await client
     .from("players")
     .insert({
       name,
@@ -34,18 +39,22 @@ async function createRoom() {
   enterLobby();
 }
 
-// ---------------- JOIN ROOM ----------------
+// JOIN ROOM
 async function joinRoom() {
   const name = document.getElementById("nameInput").value;
   const code = document.getElementById("roomCodeInput").value;
 
-  const { data: room } = await supabase
+  if (!name || !code) return alert("Remplis tout");
+
+  const { data: room } = await client
     .from("rooms")
     .select("*")
     .eq("code", code)
     .single();
 
-  const { data: player } = await supabase
+  if (!room) return alert("Room introuvable");
+
+  const { data: player } = await client
     .from("players")
     .insert({
       name,
@@ -60,7 +69,7 @@ async function joinRoom() {
   enterLobby();
 }
 
-// ---------------- LOBBY ----------------
+// LOBBY
 function enterLobby() {
   document.getElementById("home").classList.add("hidden");
   document.getElementById("lobby").classList.remove("hidden");
@@ -70,10 +79,14 @@ function enterLobby() {
   listenPlayers();
 }
 
-// realtime players
+// REALTIME
 function listenPlayers() {
-  supabase
-    .channel("players")
+  if (channel) {
+    client.removeChannel(channel);
+  }
+
+  channel = client
+    .channel("players-" + currentRoom.id)
     .on(
       "postgres_changes",
       {
@@ -82,16 +95,16 @@ function listenPlayers() {
         table: "players",
         filter: `room_id=eq.${currentRoom.id}`
       },
-      fetchPlayers
+      () => fetchPlayers()
     )
     .subscribe();
 
   fetchPlayers();
 }
 
-// fetch players
+// FETCH PLAYERS
 async function fetchPlayers() {
-  const { data: players } = await supabase
+  const { data: players } = await client
     .from("players")
     .select("*")
     .eq("room_id", currentRoom.id)
@@ -107,32 +120,27 @@ async function fetchPlayers() {
   });
 }
 
-// ---------------- START GAME ----------------
+// START GAME
 async function startGame() {
   const mode = document.getElementById("modeSelect").value;
 
-  await supabase
+  await client
     .from("rooms")
-    .update({
-      status: "playing",
-      mode
-    })
+    .update({ status: "playing", mode })
     .eq("id", currentRoom.id);
 
   await assignRoles();
-
   enterGame();
 }
 
-// ---------------- ROLES ----------------
+// ROLES
 async function assignRoles() {
-  const { data: players } = await supabase
+  const { data: players } = await client
     .from("players")
     .select("*")
     .eq("room_id", currentRoom.id);
 
-  const shuffled = players.sort(() => Math.random() - 0.5);
-
+  const shuffled = [...players].sort(() => Math.random() - 0.5);
   const words = getRandomWords();
 
   for (let i = 0; i < shuffled.length; i++) {
@@ -144,7 +152,7 @@ async function assignRoles() {
       word = words.word2;
     }
 
-    await supabase
+    await client
       .from("players")
       .update({
         role,
@@ -155,12 +163,12 @@ async function assignRoles() {
   }
 }
 
-// ---------------- GAME ----------------
+// GAME
 async function enterGame() {
   document.getElementById("lobby").classList.add("hidden");
   document.getElementById("game").classList.remove("hidden");
 
-  const { data: player } = await supabase
+  const { data: player } = await client
     .from("players")
     .select("*")
     .eq("id", currentPlayer.id)
@@ -170,11 +178,11 @@ async function enterGame() {
     "Ton mot: " + (player.word || "???");
 }
 
-// ---------------- SEND TURN ----------------
+// TURN
 async function sendTurn() {
   const message = document.getElementById("messageInput").value;
 
-  await supabase.from("turns").insert({
+  await client.from("turns").insert({
     room_id: currentRoom.id,
     player_id: currentPlayer.id,
     message
@@ -183,7 +191,7 @@ async function sendTurn() {
   document.getElementById("messageInput").value = "";
 }
 
-// ---------------- WORDS ----------------
+// WORDS
 function getRandomWords() {
   const pairs = [
     { word1: "chien", word2: "loup" },
