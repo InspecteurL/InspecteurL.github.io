@@ -1,12 +1,32 @@
-html, body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
+body {
+  font-family: Arial, sans-serif;
+  background: #121212;
+  color: white;
+  text-align: center;
 }
 
+.hidden {
+  display: none;
+}
 
-#renderCanvas {
-  width: 100%;
-  height: 100%;
+input, button, select {
+  margin: 5px;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  background: #6c5ce7;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #5a4bd1;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
 }
