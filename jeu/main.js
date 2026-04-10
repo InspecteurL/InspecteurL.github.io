@@ -9,22 +9,29 @@ let currentRoom = null;
 let currentPlayer = null;
 let channel = null;
 
-// CREATE ROOM
 async function createRoom() {
+  console.log("Creating room...");
+
   const name = document.getElementById("nameInput").value;
   if (!name) return alert("Entre un pseudo");
 
   const code = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-  const { data: room, error } = await client
+  const { data: room, error: roomError } = await client
     .from("rooms")
     .insert({ code })
     .select()
     .single();
 
-  if (error) return console.error(error);
+  console.log("ROOM:", room);
+  console.log("ROOM ERROR:", roomError);
 
-  const { data: player } = await client
+  if (roomError || !room) {
+    alert("Erreur création room");
+    return;
+  }
+
+  const { data: player, error: playerError } = await client
     .from("players")
     .insert({
       name,
@@ -34,11 +41,18 @@ async function createRoom() {
     .select()
     .single();
 
+  console.log("PLAYER:", player);
+  console.log("PLAYER ERROR:", playerError);
+
+  if (playerError || !player) {
+    alert("Erreur création joueur");
+    return;
+  }
+
   currentRoom = room;
   currentPlayer = player;
 
   enterLobby();
-  alert("Room créée !");
 }
 
 // JOIN ROOM
