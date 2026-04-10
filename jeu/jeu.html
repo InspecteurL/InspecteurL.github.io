@@ -1,15 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Jeu 3D Multi</title>
-<script src="https://cdn.babylonjs.com/babylon.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.js"></script>
-  <link rel="stylesheet" href="https://inspecteurL.github.io/jeu/style.css">
+  <title>Undercover Game</title>
+  <link rel="stylesheet" href="https://inspecteurl.github.io/jeu/style.css">
+  <script href="https://inspecteurl.github.io/jeu/main.js"></script>
 </head>
 <body>
-  <canvas id="renderCanvas"></canvas>
-  <script src="https://inspecteurL.github.io/jeu/main.js"></script>
+
+<div id="app">
+
+  <!-- HOME -->
+  <div id="home">
+    <h1>🎭 Undercover</h1>
+
+    <input id="nameInput" placeholder="Ton pseudo" />
+
+    <button onclick="createRoom()">Créer une partie</button>
+
+    <input id="roomCodeInput" placeholder="Code de room" />
+    <button onclick="joinRoom()">Rejoindre</button>
+  </div>
+
+  <!-- LOBBY -->
+  <div id="lobby" class="hidden">
+    <h2>Room: <span id="roomCode"></span></h2>
+
+    <select id="modeSelect">
+      <option value="vocal">Mode vocal</option>
+      <option value="text">Mode écrit</option>
+    </select>
+
+    <h3>Joueurs</h3>
+    <ul id="playersList"></ul>
+
+    <button id="startBtn" onclick="startGame()">Lancer la partie</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="game" class="hidden">
+    <h2>Partie en cours</h2>
+    <p id="yourWord"></p>
+    <p id="turnInfo"></p>
+    <input id="messageInput" placeholder="Ton mot..." />
+    <button onclick="sendTurn()">Envoyer</button>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="app.js"></script>
+
 </body>
 </html>
