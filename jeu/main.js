@@ -417,6 +417,23 @@ function getRandomWords() {
   return { word1: pair[0], word2: pair[1] };
 }
 
+function listenTurns() {
+  client
+    .channel("turns-" + currentRoom.id)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "turns",
+        filter: `room_id=eq.${currentRoom.id}`
+      },
+      () => fetchTurns()
+    )
+    .subscribe();
+
+  fetchTurns();
+}
 // ---------------- ROOM REALTIME ----------------
 function listenRoom() {
   client
