@@ -1,3 +1,4 @@
+
 window.onerror = console.error;
 
 const SUPABASE_URL = "https://wuagahavmbugmnuzsouf.supabase.co";
@@ -28,8 +29,7 @@ async function createRoom() {
     .insert({
       name,
       room_id: room.id,
-      is_host: true,
-      votes: 0
+      is_host: true
     })
     .select()
     .single();
@@ -66,8 +66,7 @@ async function joinRoom() {
     .from("players")
     .insert({
       name,
-      room_id: room.id,
-      votes: 0
+      room_id: room.id
     })
     .select()
     .single();
@@ -162,11 +161,19 @@ async function assignRoles() {
   const words = getRandomWords();
 
   for (let i = 0; i < shuffled.length; i++) {
+    let role = "civilian";
+    let word = words.word1;
+
+    if (i === 0) {
+      role = "undercover";
+      word = words.word2;
+    }
+
     await client
       .from("players")
       .update({
-        role: i === 0 ? "undercover" : "civilian",
-        word: i === 0 ? words.word2 : words.word1,
+        role,
+        word,
         turn_order: i,
         votes: 0
       })
@@ -174,7 +181,7 @@ async function assignRoles() {
   }
 }
 
-// ---------------- ENTER GAME ----------------
+// ---------------- GAME ----------------
 async function enterGame() {
   document.getElementById("lobby").classList.add("hidden");
   document.getElementById("game").classList.remove("hidden");
@@ -210,14 +217,14 @@ async function sendTurn() {
   const message = document.getElementById("messageInput").value;
   if (!message) return;
 
+  const myTurn = await isMyTurn();
+  if (!myTurn) return alert("Pas ton tour");
+
   const { data: room } = await client
     .from("rooms")
     .select("*")
     .eq("id", currentRoom.id)
     .single();
-
-  if (room.phase !== "playing") return;
-  if (!(await isMyTurn())) return alert("Pas ton tour");
 
   await client.from("turns").insert({
     room_id: currentRoom.id,
@@ -266,7 +273,7 @@ async function nextTurnLogic(room) {
     .eq("id", currentRoom.id);
 }
 
-// ---------------- TURN DISPLAY ----------------
+// ---------------- TURN DISPLAY FIX ----------------
 async function fetchTurns() {
   const { data: turns } = await client
     .from("turns")
@@ -294,7 +301,7 @@ async function fetchTurns() {
 
     list.appendChild(li);
   });
-});
+}
 
 // ---------------- TURN UI ----------------
 async function updateTurnUI() {
@@ -311,22 +318,22 @@ async function updateTurnUI() {
 
   const current = players.find(p => p.turn_order === room.current_turn);
 
-  const myTurn = currentPlayer.turn_order === room.current_turn;
+  const isMyTurnNow = currentPlayer.turn_order === room.current_turn;
 
   document.getElementById("turnInfo").innerText =
     room.phase === "voting"
-      ? "🗳️ Vote"
-      : myTurn
-      ? "🔥 À toi"
+      ? "🗳️ Phase de vote"
+      : isMyTurnNow
+      ? "🔥 À toi de jouer !"
       : "Tour de : " + current.name;
 
   document.getElementById("messageInput").disabled =
-    !myTurn || room.phase !== "playing";
+    !isMyTurnNow || room.phase !== "playing";
 
   if (room.phase === "voting") showVoting();
 }
 
-// ---------------- VOTING (FIXED) ----------------
+// ---------------- VOTING ----------------
 async function showVoting() {
   const { data: players } = await client
     .from("players")
@@ -339,34 +346,33 @@ async function showVoting() {
   players.forEach(p => {
     const btn = document.createElement("button");
     btn.innerText = p.name;
-
-    btn.onclick = async () => {
-      const { data } = await client
-        .from("players")
-        .select("votes")
-        .eq("id", p.id)
-        .single();
-
-      await client
-        .from("players")
-        .update({ votes: (data.votes || 0) + 1 })
-        .eq("id", p.id);
-
-      await checkEndVoting();
-    };
-
+    btn.onclick = () => vote(p.id);
     voteArea.appendChild(btn);
   });
 }
 
-// ---------------- END GAME ----------------
+// ---------------- VOTE ----------------
+async function vote(playerId) {
+  await client.rpc("increment_vote", {
+    player_id_input: playerId
+  });
+
+  await checkEndVoting();
+}
+
+// ---------------- END VOTE ----------------
 async function checkEndVoting() {
   const { data: players } = await client
     .from("players")
     .select("*")
     .eq("room_id", currentRoom.id);
 
-  const totalVotes = players.reduce((a, p) => a + (p.votes || 0), 0);
+  const { data: votes } = await client
+    .from("players")
+    .select("votes")
+    .eq("room_id", currentRoom.id);
+
+  const totalVotes = votes.reduce((a, p) => a + (p.votes || 0), 0);
 
   if (totalVotes >= players.length) {
     await revealResult();
@@ -382,16 +388,19 @@ async function revealResult() {
 
   const undercover = players.find(p => p.role === "undercover");
 
-  const eliminated = [...players].sort(
-    (a, b) => (b.votes || 0) - (a.votes || 0)
-  )[0];
+  const sorted = [...players].sort((a, b) => (b.votes || 0) - (a.votes || 0));
 
-  alert(
-    `${eliminated.id === undercover.id ? "🎉 Civils gagnent" : "💀 Undercover gagne"}
+  const eliminated = sorted[0];
+
+  let result =
+    eliminated.id === undercover.id
+      ? "🎉 Civils gagnent !"
+      : "💀 Undercover gagne !";
+
+  alert(`${result}
 
 Undercover : ${undercover.name}
-Éliminé : ${eliminated.name}`
-  );
+Éliminé : ${eliminated.name}`);
 }
 
 // ---------------- WORDS ----------------
@@ -409,28 +418,8 @@ function getRandomWords() {
   return { word1: pair[0], word2: pair[1] };
 }
 
-// ---------------- ROOM REALTIME ----------------
-function listenRoom() {
-  client
-    .channel("room-" + currentRoom.id)
-    .on(
-      "postgres_changes",
-      {
-        event: "UPDATE",
-        schema: "public",
-        table: "rooms",
-        filter: `id=eq.${currentRoom.id}`
-      },
-      payload => {
-        if (payload.new.status === "playing") enterGame();
-        updateTurnUI();
-      }
-    )
-    .subscribe();
-}
-
-// ---------------- LISTEN TURNS ----------------
 function listenTurns() {
+  // 🔥 éviter duplication
   if (window.turnChannel) {
     client.removeChannel(window.turnChannel);
   }
@@ -445,9 +434,31 @@ function listenTurns() {
         table: "turns",
         filter: `room_id=eq.${currentRoom.id}`
       },
-      fetchTurns
+      () => {
+        fetchTurns();
+      }
     )
     .subscribe();
 
   fetchTurns();
+}
+// ---------------- ROOM REALTIME ----------------
+function listenRoom() {
+  client
+    .channel("room-" + currentRoom.id)
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "rooms",
+        filter: `id=eq.${currentRoom.id}`
+      },
+      payload => {
+        if (payload.new.status === "playing") enterGame();
+
+        updateTurnUI();
+      }
+    )
+    .subscribe();
 }
