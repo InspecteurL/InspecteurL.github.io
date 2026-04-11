@@ -237,7 +237,7 @@ async function sendTurn() {
   await nextTurnLogic(room);
 }
 
-// ---------------- NEXT TURN LOGIC ----------------
+// ---------------- NEXT TURN ----------------
 async function nextTurnLogic(room) {
   const { data: players } = await client
     .from("players")
@@ -272,31 +272,13 @@ async function nextTurnLogic(room) {
     .eq("id", currentRoom.id);
 }
 
-// ---------------- TURNS REALTIME ----------------
-function listenTurns() {
-  client
-    .channel("turns-" + currentRoom.id)
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "turns",
-        filter: `room_id=eq.${currentRoom.id}`
-      },
-      fetchTurns
-    )
-    .subscribe();
-
-  fetchTurns();
-}
-
-// ---------------- DISPLAY TURNS ----------------
+// ---------------- TURN DISPLAY FIX ----------------
 async function fetchTurns() {
   const { data: turns } = await client
     .from("turns")
     .select("*")
-    .eq("room_id", currentRoom.id);
+    .eq("room_id", currentRoom.id)
+    .order("created_at", { ascending: true });
 
   const { data: players } = await client
     .from("players")
@@ -306,12 +288,15 @@ async function fetchTurns() {
   const list = document.getElementById("playersList");
   list.innerHTML = "";
 
-  players.forEach(p => {
-    const playerTurns = turns.filter(t => t.player_id === p.id);
+  players.forEach(player => {
+    const playerTurns = turns.filter(t => t.player_id === player.id);
 
     const li = document.createElement("li");
-    li.innerText =
-      p.name + " → " + playerTurns.map(t => t.message).join(", ");
+
+    li.innerHTML = `
+      <strong>${player.name}${player.is_host ? " 👑" : ""}</strong><br/>
+      ${playerTurns.map(t => "🗣️ " + t.message).join("<br/>")}
+    `;
 
     list.appendChild(li);
   });
@@ -330,9 +315,7 @@ async function updateTurnUI() {
     .select("*")
     .eq("room_id", currentRoom.id);
 
-  const current = players.find(
-    p => p.turn_order === room.current_turn
-  );
+  const current = players.find(p => p.turn_order === room.current_turn);
 
   const isMyTurnNow = currentPlayer.turn_order === room.current_turn;
 
@@ -346,9 +329,7 @@ async function updateTurnUI() {
   document.getElementById("messageInput").disabled =
     !isMyTurnNow || room.phase !== "playing";
 
-  if (room.phase === "voting") {
-    showVoting();
-  }
+  if (room.phase === "voting") showVoting();
 }
 
 // ---------------- VOTING ----------------
@@ -369,12 +350,56 @@ async function showVoting() {
   });
 }
 
+// ---------------- VOTE ----------------
 async function vote(playerId) {
   await client.rpc("increment_vote", {
     player_id_input: playerId
   });
 
-  alert("Vote envoyé !");
+  await checkEndVoting();
+}
+
+// ---------------- END VOTE ----------------
+async function checkEndVoting() {
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", currentRoom.id);
+
+  const { data: votes } = await client
+    .from("players")
+    .select("votes")
+    .eq("room_id", currentRoom.id);
+
+  const totalVotes = votes.reduce((a, p) => a + (p.votes || 0), 0);
+
+  if (totalVotes >= players.length) {
+    await revealResult();
+  }
+}
+
+// ---------------- RESULT ----------------
+async function revealResult() {
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", currentRoom.id);
+
+  const undercover = players.find(p => p.role === "undercover");
+
+  const sorted = [...players].sort((a, b) => (b.votes || 0) - (a.votes || 0));
+
+  const eliminated = sorted[0];
+
+  let result =
+    eliminated.id === undercover.id
+      ? "🎉 Civils gagnent !"
+      : "💀 Undercover gagne !";
+
+  alert(`${result}
+
+Undercover : ${undercover.name}
+Éliminé : ${eliminated.name}`);
 }
 
 // ---------------- WORDS ----------------
@@ -385,13 +410,11 @@ function getRandomWords() {
     nourriture: [["pizza", "burger"], ["pomme", "poire"]]
   };
 
-  const theme = Object.keys(themes)[Math.floor(Math.random() * 3)];
+  const keys = Object.keys(themes);
+  const theme = keys[Math.floor(Math.random() * keys.length)];
   const pair = themes[theme][Math.floor(Math.random() * 2)];
 
-  return {
-    word1: pair[0],
-    word2: pair[1]
-  };
+  return { word1: pair[0], word2: pair[1] };
 }
 
 // ---------------- ROOM REALTIME ----------------
@@ -407,9 +430,7 @@ function listenRoom() {
         filter: `id=eq.${currentRoom.id}`
       },
       payload => {
-        if (payload.new.status === "playing") {
-          enterGame();
-        }
+        if (payload.new.status === "playing") enterGame();
 
         updateTurnUI();
       }
