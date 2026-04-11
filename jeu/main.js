@@ -12,8 +12,6 @@ let channel = null;
 
 // ---------------- CREATE ROOM ----------------
 async function createRoom() {
-  console.log("Creating room...");
-
   const name = document.getElementById("nameInput").value;
   if (!name) return alert("Entre un pseudo");
 
@@ -25,14 +23,9 @@ async function createRoom() {
     .select()
     .single();
 
-  console.log("ROOM:", room, roomError);
+  if (roomError) return alert("Erreur room");
 
-  if (roomError || !room) {
-    alert("Erreur création room");
-    return;
-  }
-
-  const { data: player, error: playerError } = await client
+  const { data: player } = await client
     .from("players")
     .insert({
       name,
@@ -41,13 +34,6 @@ async function createRoom() {
     })
     .select()
     .single();
-
-  console.log("PLAYER:", player, playerError);
-
-  if (playerError || !player) {
-    alert("Erreur création joueur");
-    return;
-  }
 
   currentRoom = room;
   currentPlayer = player;
@@ -62,39 +48,22 @@ async function joinRoom() {
 
   if (!name || !code) return alert("Remplis tout");
 
-  const { data: room, error: roomError } = await client
+  const { data: room } = await client
     .from("rooms")
     .select("*")
     .eq("code", code)
     .single();
 
-  if (roomError || !room) {
-    alert("Room introuvable");
-    return;
-  }
+  if (!room) return alert("Room introuvable");
 
-  // 🔥 CHECK NOMBRE DE JOUEURS (FIX BUG SALLE PLEINE)
-  const { data: players, error: playersError } = await client
+  const { data: players } = await client
     .from("players")
     .select("*")
     .eq("room_id", room.id);
 
-  console.log("PLAYERS:", players);
+  if (players.length >= 8) return alert("Salle pleine");
 
-  const MAX_PLAYERS = 8;
-
-  if (playersError) {
-    console.error(playersError);
-    alert("Erreur récupération joueurs");
-    return;
-  }
-
-  if (players.length >= MAX_PLAYERS) {
-    alert("Salle pleine");
-    return;
-  }
-
-  const { data: player, error: playerError } = await client
+  const { data: player } = await client
     .from("players")
     .insert({
       name,
@@ -103,17 +72,10 @@ async function joinRoom() {
     .select()
     .single();
 
-  if (playerError || !player) {
-    console.error(playerError);
-    alert("Erreur join");
-    return;
-  }
-
   currentRoom = room;
   currentPlayer = player;
 
   enterLobby();
-  alert("Rejoint !");
 }
 
 // ---------------- LOBBY ----------------
@@ -123,15 +85,18 @@ function enterLobby() {
 
   document.getElementById("roomCode").innerText = currentRoom.code;
 
+  // 🔥 seul le host voit le bouton
+  if (!currentPlayer.is_host) {
+    document.getElementById("startBtn").style.display = "none";
+  }
+
   listenPlayers();
   listenRoom();
 }
 
-// ---------------- REALTIME PLAYERS ----------------
+// ---------------- PLAYERS REALTIME ----------------
 function listenPlayers() {
-  if (channel) {
-    client.removeChannel(channel);
-  }
+  if (channel) client.removeChannel(channel);
 
   channel = client
     .channel("players-" + currentRoom.id)
@@ -143,7 +108,7 @@ function listenPlayers() {
         table: "players",
         filter: `room_id=eq.${currentRoom.id}`
       },
-      () => fetchPlayers()
+      fetchPlayers
     )
     .subscribe();
 
@@ -152,38 +117,44 @@ function listenPlayers() {
 
 // ---------------- FETCH PLAYERS ----------------
 async function fetchPlayers() {
-  const { data: players, error } = await client
+  const { data: players } = await client
     .from("players")
     .select("*")
     .eq("room_id", currentRoom.id)
-    .order("created_at");
-
-  if (error) {
-    console.error(error);
-    return;
-  }
+    .order("turn_order", { ascending: true });
 
   const list = document.getElementById("playersList");
   list.innerHTML = "";
 
   players.forEach(p => {
     const li = document.createElement("li");
-    li.innerText = p.name + (p.is_host ? " 👑" : "");
+    li.innerText =
+      p.name +
+      (p.is_host ? " 👑" : "") +
+      (p.turn_order === 0 ? " 🎯" : "");
     list.appendChild(li);
   });
 }
 
 // ---------------- START GAME ----------------
 async function startGame() {
+  if (!currentPlayer.is_host) {
+    alert("Seul l'hôte peut lancer");
+    return;
+  }
+
   const mode = document.getElementById("modeSelect").value;
+
+  await assignRoles();
 
   await client
     .from("rooms")
-    .update({ status: "playing", mode })
+    .update({
+      status: "playing",
+      mode,
+      current_turn: 0
+    })
     .eq("id", currentRoom.id);
-
-  await assignRoles();
-  enterGame();
 }
 
 // ---------------- ROLES ----------------
@@ -195,8 +166,6 @@ async function assignRoles() {
 
   const shuffled = [...players].sort(() => Math.random() - 0.5);
   const words = getRandomWords();
-
-  console.log("THEME:", words.theme);
 
   for (let i = 0; i < shuffled.length; i++) {
     let role = "civilian";
@@ -229,15 +198,36 @@ async function enterGame() {
     .eq("id", currentPlayer.id)
     .single();
 
+  currentPlayer = player;
+
   document.getElementById("yourWord").innerText =
     "Ton mot: " + (player.word || "???");
+
+  updateTurnUI();
 }
 
-// ---------------- TURN ----------------
+// ---------------- CHECK TURN ----------------
+async function isMyTurn() {
+  const { data: room } = await client
+    .from("rooms")
+    .select("current_turn")
+    .eq("id", currentRoom.id)
+    .single();
+
+  return currentPlayer.turn_order === room.current_turn;
+}
+
+// ---------------- SEND TURN ----------------
 async function sendTurn() {
   const message = document.getElementById("messageInput").value;
-
   if (!message) return;
+
+  const myTurn = await isMyTurn();
+
+  if (!myTurn) {
+    alert("Ce n'est pas ton tour !");
+    return;
+  }
 
   await client.from("turns").insert({
     room_id: currentRoom.id,
@@ -245,7 +235,59 @@ async function sendTurn() {
     message
   });
 
+  await nextTurn();
+
   document.getElementById("messageInput").value = "";
+}
+
+// ---------------- NEXT TURN ----------------
+async function nextTurn() {
+  const { data: players } = await client
+    .from("players")
+    .select("turn_order")
+    .eq("room_id", currentRoom.id);
+
+  const { data: room } = await client
+    .from("rooms")
+    .select("current_turn")
+    .eq("id", currentRoom.id)
+    .single();
+
+  let next = room.current_turn + 1;
+
+  if (next >= players.length) next = 0;
+
+  await client
+    .from("rooms")
+    .update({ current_turn: next })
+    .eq("id", currentRoom.id);
+}
+
+// ---------------- TURN UI ----------------
+async function updateTurnUI() {
+  const { data: room } = await client
+    .from("rooms")
+    .select("current_turn")
+    .eq("id", currentRoom.id)
+    .single();
+
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", currentRoom.id);
+
+  const current = players.find(
+    p => p.turn_order === room.current_turn
+  );
+
+  const isMyTurnNow = currentPlayer.turn_order === room.current_turn;
+
+  document.getElementById("turnInfo").innerText =
+    isMyTurnNow
+      ? "🔥 À toi de jouer !"
+      : "Tour de : " + current.name;
+
+  document.getElementById("messageInput").disabled = !isMyTurnNow;
 }
 
 // ---------------- WORDS ----------------
@@ -269,10 +311,12 @@ function getRandomWords() {
   };
 
   const themeKeys = Object.keys(themes);
-  const randomTheme = themeKeys[Math.floor(Math.random() * themeKeys.length)];
+  const randomTheme =
+    themeKeys[Math.floor(Math.random() * themeKeys.length)];
 
   const pairList = themes[randomTheme];
-  const pair = pairList[Math.floor(Math.random() * pairList.length)];
+  const pair =
+    pairList[Math.floor(Math.random() * pairList.length)];
 
   return {
     theme: randomTheme,
@@ -297,6 +341,8 @@ function listenRoom() {
         if (payload.new.status === "playing") {
           enterGame();
         }
+
+        updateTurnUI();
       }
     )
     .subscribe();
