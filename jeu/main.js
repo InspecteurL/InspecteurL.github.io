@@ -418,17 +418,24 @@ function getRandomWords() {
 }
 
 function listenTurns() {
-  client
+  // 🔥 éviter duplication
+  if (window.turnChannel) {
+    client.removeChannel(window.turnChannel);
+  }
+
+  window.turnChannel = client
     .channel("turns-" + currentRoom.id)
     .on(
       "postgres_changes",
       {
-        event: "INSERT",
+        event: "*",
         schema: "public",
         table: "turns",
         filter: `room_id=eq.${currentRoom.id}`
       },
-      () => fetchTurns()
+      () => {
+        fetchTurns();
+      }
     )
     .subscribe();
 
