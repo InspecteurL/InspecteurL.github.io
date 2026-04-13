@@ -8,6 +8,7 @@ const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentRoom = null;
 let currentPlayer = null;
+let gameStarted = false;
 
 // ---------------- CREATE ROOM ----------------
 async function createRoom() {
@@ -16,21 +17,13 @@ async function createRoom() {
 
   const code = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-  const { data: room } = await client
-    .from("rooms")
-    .insert({ code })
-    .select()
-    .single();
+  const { data: room } = await client.from("rooms").insert({ code }).select().single();
 
-  const { data: player } = await client
-    .from("players")
-    .insert({
-      name,
-      room_id: room.id,
-      is_host: true
-    })
-    .select()
-    .single();
+  const { data: player } = await client.from("players").insert({
+    name,
+    room_id: room.id,
+    is_host: true
+  }).select().single();
 
   currentRoom = room;
   currentPlayer = player;
@@ -45,26 +38,13 @@ async function joinRoom() {
 
   if (!name || !code) return alert("Remplis tout");
 
-  const { data: room } = await client
-    .from("rooms")
-    .select("*")
-    .eq("code", code)
-    .single();
-
+  const { data: room } = await client.from("rooms").select("*").eq("code", code).single();
   if (!room) return alert("Room introuvable");
 
-  const { data: players } = await client
-    .from("players")
-    .select("*")
-    .eq("room_id", room.id);
-
+  const { data: players } = await client.from("players").select("*").eq("room_id", room.id);
   if (players.length >= 8) return alert("Salle pleine");
 
-  const { data: player } = await client
-    .from("players")
-    .insert({ name, room_id: room.id })
-    .select()
-    .single();
+  const { data: player } = await client.from("players").insert({ name, room_id: room.id }).select().single();
 
   currentRoom = room;
   currentPlayer = player;
@@ -93,29 +73,22 @@ function listenPlayers() {
 
   window.playersChannel = client
     .channel("players-" + currentRoom.id)
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "players",
-        filter: `room_id=eq.${currentRoom.id}`
-      },
-      () => {
-        fetchPlayers();
-        fetchTurns();
-      }
-    )
+    .on("postgres_changes", {
+      event: "*",
+      schema: "public",
+      table: "players",
+      filter: `room_id=eq.${currentRoom.id}`
+    }, () => {
+      fetchPlayers();
+      fetchTurns();
+    })
     .subscribe();
 
   fetchPlayers();
 }
 
 async function fetchPlayers() {
-  const { data: players } = await client
-    .from("players")
-    .select("*")
-    .eq("room_id", currentRoom.id);
+  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
 
   const list = document.getElementById("playersList");
   list.innerHTML = "";
@@ -133,68 +106,51 @@ async function startGame() {
 
   await assignRoles();
 
-  // 🔥 attendre synchro Supabase
   await new Promise(res => setTimeout(res, 500));
 
-  await client
-    .from("rooms")
-    .update({
-      status: "playing",
-      phase: "playing",
-      round: 1,
-      current_turn: 0
-    })
-    .eq("id", currentRoom.id);
+  await client.from("rooms").update({
+    status: "playing",
+    phase: "playing",
+    round: 1,
+    current_turn: 0
+  }).eq("id", currentRoom.id);
 }
 
 // ---------------- ROLES ----------------
 async function assignRoles() {
-  const { data: players } = await client
-    .from("players")
-    .select("*")
-    .eq("room_id", currentRoom.id);
+  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
 
   const shuffled = [...players].sort(() => Math.random() - 0.5);
   const words = getRandomWords();
 
   for (let i = 0; i < shuffled.length; i++) {
-    let role = "civilian";
-    let word = words.word1;
-
-    if (i === 0) {
-      role = "undercover";
-      word = words.word2;
-    }
-
-    await client
-      .from("players")
-      .update({
-        role,
-        word,
-        turn_order: i,
-        votes: 0,
-        has_voted: false
-      })
-      .eq("id", shuffled[i].id);
+    await client.from("players").update({
+      role: i === 0 ? "undercover" : "civilian",
+      word: i === 0 ? words.word2 : words.word1,
+      turn_order: i,
+      votes: 0,
+      has_voted: false
+    }).eq("id", shuffled[i].id);
   }
 }
 
 // ---------------- GAME ----------------
 async function enterGame() {
+  if (!currentPlayer || !currentPlayer.id) return;
+
   document.getElementById("lobby").classList.add("hidden");
   document.getElementById("game").classList.remove("hidden");
 
-  // 🔥 attendre que les données soient prêtes
   let player;
 
   while (true) {
-    const { data } = await client
+    const { data, error } = await client
       .from("players")
       .select("*")
       .eq("id", currentPlayer.id)
       .single();
 
-    if (data && data.word && data.turn_order !== null) {
+    if (!error && data && data.word && data.turn_order !== null) {
       player = data;
       break;
     }
@@ -204,8 +160,7 @@ async function enterGame() {
 
   currentPlayer = player;
 
-  document.getElementById("yourWord").innerText =
-    "Ton mot: " + player.word;
+  document.getElementById("yourWord").innerText = "Ton mot: " + player.word;
 
   listenTurns();
   updateTurnUI();
@@ -213,13 +168,9 @@ async function enterGame() {
 
 // ---------------- TURN ----------------
 async function isMyTurn() {
-  const { data: room } = await client
-    .from("rooms")
-    .select("current_turn")
-    .eq("id", currentRoom.id)
-    .single();
+  if (!currentPlayer || currentPlayer.turn_order === null) return false;
 
-  if (currentPlayer.turn_order === null) return false;
+  const { data: room } = await client.from("rooms").select("current_turn").eq("id", currentRoom.id).single();
 
   return currentPlayer.turn_order === room.current_turn;
 }
@@ -230,11 +181,7 @@ async function sendTurn() {
 
   if (!(await isMyTurn())) return alert("Pas ton tour");
 
-  const { data: room } = await client
-    .from("rooms")
-    .select("*")
-    .eq("id", currentRoom.id)
-    .single();
+  const { data: room } = await client.from("rooms").select("*").eq("id", currentRoom.id).single();
 
   await client.from("turns").insert({
     room_id: currentRoom.id,
@@ -251,10 +198,7 @@ async function sendTurn() {
 
 // ---------------- NEXT TURN ----------------
 async function nextTurnLogic(room) {
-  const { data: players } = await client
-    .from("players")
-    .select("*")
-    .eq("room_id", currentRoom.id);
+  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
 
   let next = room.current_turn + 1;
 
@@ -262,46 +206,29 @@ async function nextTurnLogic(room) {
     next = 0;
 
     if (room.round === 1) {
-      await client.from("rooms").update({
-        round: 2,
-        current_turn: 0
-      }).eq("id", currentRoom.id);
+      await client.from("rooms").update({ round: 2, current_turn: 0 }).eq("id", currentRoom.id);
       return;
     }
 
     if (room.round === 2) {
-      await client.from("rooms").update({
-        phase: "voting"
-      }).eq("id", currentRoom.id);
+      await client.from("rooms").update({ phase: "voting" }).eq("id", currentRoom.id);
       return;
     }
   }
 
-  await client
-    .from("rooms")
-    .update({ current_turn: next })
-    .eq("id", currentRoom.id);
+  await client.from("rooms").update({ current_turn: next }).eq("id", currentRoom.id);
 }
 
-// ---------------- DISPLAY TURNS ----------------
+// ---------------- DISPLAY ----------------
 async function fetchTurns() {
-  const { data: turns } = await client
-    .from("turns")
-    .select("*")
-    .eq("room_id", currentRoom.id);
-
-  const { data: players } = await client
-    .from("players")
-    .select("*")
-    .eq("room_id", currentRoom.id);
+  const { data: turns } = await client.from("turns").select("*").eq("room_id", currentRoom.id);
+  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
 
   const list = document.getElementById("playersList");
   list.innerHTML = "";
 
   players.forEach(player => {
-    const lastTurn = turns
-      .filter(t => t.player_id === player.id)
-      .slice(-1)[0];
+    const lastTurn = turns.filter(t => t.player_id === player.id).slice(-1)[0];
 
     const li = document.createElement("li");
 
@@ -314,18 +241,10 @@ async function fetchTurns() {
   });
 }
 
-// ---------------- TURN UI ----------------
+// ---------------- UI ----------------
 async function updateTurnUI() {
-  const { data: room } = await client
-    .from("rooms")
-    .select("*")
-    .eq("id", currentRoom.id)
-    .single();
-
-  const { data: players } = await client
-    .from("players")
-    .select("*")
-    .eq("room_id", currentRoom.id);
+  const { data: room } = await client.from("rooms").select("*").eq("id", currentRoom.id).single();
+  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
 
   if (!room || !players) return;
 
@@ -336,9 +255,7 @@ async function updateTurnUI() {
     return;
   }
 
-  const isMyTurnNow =
-    currentPlayer &&
-    currentPlayer.turn_order === room.current_turn;
+  const isMyTurnNow = currentPlayer && currentPlayer.turn_order === room.current_turn;
 
   document.getElementById("turnInfo").innerText =
     room.phase === "voting"
@@ -355,10 +272,7 @@ async function updateTurnUI() {
 
 // ---------------- VOTING ----------------
 async function showVoting() {
-  const { data: players } = await client
-    .from("players")
-    .select("*")
-    .eq("room_id", currentRoom.id);
+  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
 
   const voteArea = document.getElementById("turnInfo");
   voteArea.innerHTML = "<h3>Vote :</h3>";
@@ -371,64 +285,39 @@ async function showVoting() {
   });
 }
 
-// ---------------- VOTE ----------------
 async function vote(playerId) {
-  const { data: me } = await client
-    .from("players")
-    .select("has_voted")
-    .eq("id", currentPlayer.id)
-    .single();
+  if (!currentPlayer || !currentPlayer.id) return;
 
+  const { data: me } = await client.from("players").select("has_voted").eq("id", currentPlayer.id).single();
   if (me.has_voted) return alert("Déjà voté");
 
-  await client
-    .from("players")
-    .update({ has_voted: true })
-    .eq("id", currentPlayer.id);
+  await client.from("players").update({ has_voted: true }).eq("id", currentPlayer.id);
 
-  const { data: target } = await client
-    .from("players")
-    .select("votes")
-    .eq("id", playerId)
-    .single();
+  const { data: target } = await client.from("players").select("votes").eq("id", playerId).single();
 
-  await client
-    .from("players")
-    .update({ votes: (target.votes || 0) + 1 })
-    .eq("id", playerId);
+  await client.from("players").update({
+    votes: (target.votes || 0) + 1
+  }).eq("id", playerId);
 
   checkEndVoting();
 }
 
-// ---------------- END VOTE ----------------
+// ---------------- END ----------------
 async function checkEndVoting() {
-  const { data: players } = await client
-    .from("players")
-    .select("*")
-    .eq("room_id", currentRoom.id);
+  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
 
   const totalVotes = players.reduce((a, p) => a + (p.votes || 0), 0);
 
-  if (totalVotes >= players.length) {
-    revealResult();
-  }
+  if (totalVotes >= players.length) revealResult();
 }
 
-// ---------------- RESULT ----------------
 async function revealResult() {
-  const { data: players } = await client
-    .from("players")
-    .select("*")
-    .eq("room_id", currentRoom.id);
+  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
 
   const undercover = players.find(p => p.role === "undercover");
   const eliminated = [...players].sort((a, b) => (b.votes || 0) - (a.votes || 0))[0];
 
-  alert(
-    eliminated.id === undercover.id
-      ? "🎉 Civils gagnent !"
-      : "💀 Undercover gagne !"
-  );
+  alert(eliminated.id === undercover.id ? "🎉 Civils gagnent !" : "💀 Undercover gagne !");
 }
 
 // ---------------- REALTIME ----------------
@@ -437,16 +326,12 @@ function listenTurns() {
 
   window.turnChannel = client
     .channel("turns-" + currentRoom.id)
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "turns",
-        filter: `room_id=eq.${currentRoom.id}`
-      },
-      fetchTurns
-    )
+    .on("postgres_changes", {
+      event: "*",
+      schema: "public",
+      table: "turns",
+      filter: `room_id=eq.${currentRoom.id}`
+    }, fetchTurns)
     .subscribe();
 
   fetchTurns();
@@ -457,19 +342,19 @@ function listenRoom() {
 
   window.roomChannel = client
     .channel("room-" + currentRoom.id)
-    .on(
-      "postgres_changes",
-      {
-        event: "UPDATE",
-        schema: "public",
-        table: "rooms",
-        filter: `id=eq.${currentRoom.id}`
-      },
-      payload => {
-        updateTurnUI();
-        if (payload.new.status === "playing") enterGame();
+    .on("postgres_changes", {
+      event: "UPDATE",
+      schema: "public",
+      table: "rooms",
+      filter: `id=eq.${currentRoom.id}`
+    }, payload => {
+      updateTurnUI();
+
+      if (payload.new.status === "playing" && !gameStarted) {
+        gameStarted = true;
+        enterGame();
       }
-    )
+    })
     .subscribe();
 }
 
