@@ -133,6 +133,9 @@ async function startGame() {
 
   await assignRoles();
 
+  // 🔥 attendre synchro Supabase
+  await new Promise(res => setTimeout(res, 500));
+
   await client
     .from("rooms")
     .update({
@@ -181,11 +184,23 @@ async function enterGame() {
   document.getElementById("lobby").classList.add("hidden");
   document.getElementById("game").classList.remove("hidden");
 
-  const { data: player } = await client
-    .from("players")
-    .select("*")
-    .eq("id", currentPlayer.id)
-    .single();
+  // 🔥 attendre que les données soient prêtes
+  let player;
+
+  while (true) {
+    const { data } = await client
+      .from("players")
+      .select("*")
+      .eq("id", currentPlayer.id)
+      .single();
+
+    if (data && data.word && data.turn_order !== null) {
+      player = data;
+      break;
+    }
+
+    await new Promise(res => setTimeout(res, 200));
+  }
 
   currentPlayer = player;
 
@@ -203,6 +218,8 @@ async function isMyTurn() {
     .select("current_turn")
     .eq("id", currentRoom.id)
     .single();
+
+  if (currentPlayer.turn_order === null) return false;
 
   return currentPlayer.turn_order === room.current_turn;
 }
@@ -310,8 +327,18 @@ async function updateTurnUI() {
     .select("*")
     .eq("room_id", currentRoom.id);
 
+  if (!room || !players) return;
+
   const current = players.find(p => p.turn_order === room.current_turn);
-  const isMyTurnNow = currentPlayer.turn_order === room.current_turn;
+
+  if (!current) {
+    document.getElementById("turnInfo").innerText = "⏳ Synchronisation...";
+    return;
+  }
+
+  const isMyTurnNow =
+    currentPlayer &&
+    currentPlayer.turn_order === room.current_turn;
 
   document.getElementById("turnInfo").innerText =
     room.phase === "voting"
@@ -455,8 +482,10 @@ function getRandomWords() {
     ["pomme", "poire"]
   ];
 
+  const pair = words[Math.floor(Math.random() * words.length)];
+
   return {
-    word1: words[Math.floor(Math.random() * words.length)][0],
-    word2: words[Math.floor(Math.random() * words.length)][1]
+    word1: pair[0],
+    word2: pair[1]
   };
 }
