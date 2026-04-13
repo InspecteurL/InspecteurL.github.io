@@ -1,4 +1,3 @@
-
 window.onerror = console.error;
 
 const SUPABASE_URL = "https://wuagahavmbugmnuzsouf.supabase.co";
@@ -9,7 +8,6 @@ const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentRoom = null;
 let currentPlayer = null;
-let channel = null;
 
 // ---------------- CREATE ROOM ----------------
 async function createRoom() {
@@ -64,10 +62,7 @@ async function joinRoom() {
 
   const { data: player } = await client
     .from("players")
-    .insert({
-      name,
-      room_id: room.id
-    })
+    .insert({ name, room_id: room.id })
     .select()
     .single();
 
@@ -86,7 +81,6 @@ function enterLobby() {
 
   if (!currentPlayer.is_host) {
     document.getElementById("startBtn").style.display = "none";
-    document.getElementById("modeSelect").disabled = true;
   }
 
   listenPlayers();
@@ -95,9 +89,9 @@ function enterLobby() {
 
 // ---------------- PLAYERS ----------------
 function listenPlayers() {
-  if (channel) client.removeChannel(channel);
+  if (window.playersChannel) client.removeChannel(window.playersChannel);
 
-  channel = client
+  window.playersChannel = client
     .channel("players-" + currentRoom.id)
     .on(
       "postgres_changes",
@@ -107,7 +101,10 @@ function listenPlayers() {
         table: "players",
         filter: `room_id=eq.${currentRoom.id}`
       },
-      fetchPlayers
+      () => {
+        fetchPlayers();
+        fetchTurns();
+      }
     )
     .subscribe();
 
@@ -134,15 +131,12 @@ async function fetchPlayers() {
 async function startGame() {
   if (!currentPlayer.is_host) return alert("Seul le host");
 
-  const mode = document.getElementById("modeSelect").value;
-
   await assignRoles();
 
   await client
     .from("rooms")
     .update({
       status: "playing",
-      mode,
       phase: "playing",
       round: 1,
       current_turn: 0
@@ -175,7 +169,8 @@ async function assignRoles() {
         role,
         word,
         turn_order: i,
-        votes: 0
+        votes: 0,
+        has_voted: false
       })
       .eq("id", shuffled[i].id);
   }
@@ -201,7 +196,7 @@ async function enterGame() {
   updateTurnUI();
 }
 
-// ---------------- TURN CHECK ----------------
+// ---------------- TURN ----------------
 async function isMyTurn() {
   const { data: room } = await client
     .from("rooms")
@@ -212,13 +207,11 @@ async function isMyTurn() {
   return currentPlayer.turn_order === room.current_turn;
 }
 
-// ---------------- SEND TURN ----------------
 async function sendTurn() {
   const message = document.getElementById("messageInput").value;
   if (!message) return;
 
-  const myTurn = await isMyTurn();
-  if (!myTurn) return alert("Pas ton tour");
+  if (!(await isMyTurn())) return alert("Pas ton tour");
 
   const { data: room } = await client
     .from("rooms")
@@ -236,6 +229,7 @@ async function sendTurn() {
   document.getElementById("messageInput").value = "";
 
   await nextTurnLogic(room);
+  updateTurnUI();
 }
 
 // ---------------- NEXT TURN ----------------
@@ -251,18 +245,17 @@ async function nextTurnLogic(room) {
     next = 0;
 
     if (room.round === 1) {
-      await client
-        .from("rooms")
-        .update({ round: 2, current_turn: 0 })
-        .eq("id", currentRoom.id);
+      await client.from("rooms").update({
+        round: 2,
+        current_turn: 0
+      }).eq("id", currentRoom.id);
       return;
     }
 
     if (room.round === 2) {
-      await client
-        .from("rooms")
-        .update({ phase: "voting" })
-        .eq("id", currentRoom.id);
+      await client.from("rooms").update({
+        phase: "voting"
+      }).eq("id", currentRoom.id);
       return;
     }
   }
@@ -273,13 +266,12 @@ async function nextTurnLogic(room) {
     .eq("id", currentRoom.id);
 }
 
-// ---------------- TURN DISPLAY FIX ----------------
+// ---------------- DISPLAY TURNS ----------------
 async function fetchTurns() {
   const { data: turns } = await client
     .from("turns")
     .select("*")
-    .eq("room_id", currentRoom.id)
-    .order("created_at", { ascending: true });
+    .eq("room_id", currentRoom.id);
 
   const { data: players } = await client
     .from("players")
@@ -290,13 +282,15 @@ async function fetchTurns() {
   list.innerHTML = "";
 
   players.forEach(player => {
-    const playerTurns = turns.filter(t => t.player_id === player.id);
+    const lastTurn = turns
+      .filter(t => t.player_id === player.id)
+      .slice(-1)[0];
 
     const li = document.createElement("li");
 
     li.innerHTML = `
-      <strong>${player.name}${player.is_host ? " 👑" : ""}</strong><br/>
-      ${playerTurns.map(t => "🗣️ " + t.message).join("<br/>")}
+      <strong>${player.name}${player.is_host ? " 👑" : ""}</strong>
+      ${lastTurn ? `<span class="bubble">🗣️ ${lastTurn.message}</span>` : ""}
     `;
 
     list.appendChild(li);
@@ -317,14 +311,13 @@ async function updateTurnUI() {
     .eq("room_id", currentRoom.id);
 
   const current = players.find(p => p.turn_order === room.current_turn);
-
   const isMyTurnNow = currentPlayer.turn_order === room.current_turn;
 
   document.getElementById("turnInfo").innerText =
     room.phase === "voting"
       ? "🗳️ Phase de vote"
       : isMyTurnNow
-      ? "🔥 À toi de jouer !"
+      ? "🔥 À toi !"
       : "Tour de : " + current.name;
 
   document.getElementById("messageInput").disabled =
@@ -353,11 +346,31 @@ async function showVoting() {
 
 // ---------------- VOTE ----------------
 async function vote(playerId) {
-  await client.rpc("increment_vote", {
-    player_id_input: playerId
-  });
+  const { data: me } = await client
+    .from("players")
+    .select("has_voted")
+    .eq("id", currentPlayer.id)
+    .single();
 
-  await checkEndVoting();
+  if (me.has_voted) return alert("Déjà voté");
+
+  await client
+    .from("players")
+    .update({ has_voted: true })
+    .eq("id", currentPlayer.id);
+
+  const { data: target } = await client
+    .from("players")
+    .select("votes")
+    .eq("id", playerId)
+    .single();
+
+  await client
+    .from("players")
+    .update({ votes: (target.votes || 0) + 1 })
+    .eq("id", playerId);
+
+  checkEndVoting();
 }
 
 // ---------------- END VOTE ----------------
@@ -367,15 +380,10 @@ async function checkEndVoting() {
     .select("*")
     .eq("room_id", currentRoom.id);
 
-  const { data: votes } = await client
-    .from("players")
-    .select("votes")
-    .eq("room_id", currentRoom.id);
-
-  const totalVotes = votes.reduce((a, p) => a + (p.votes || 0), 0);
+  const totalVotes = players.reduce((a, p) => a + (p.votes || 0), 0);
 
   if (totalVotes >= players.length) {
-    await revealResult();
+    revealResult();
   }
 }
 
@@ -387,42 +395,18 @@ async function revealResult() {
     .eq("room_id", currentRoom.id);
 
   const undercover = players.find(p => p.role === "undercover");
+  const eliminated = [...players].sort((a, b) => (b.votes || 0) - (a.votes || 0))[0];
 
-  const sorted = [...players].sort((a, b) => (b.votes || 0) - (a.votes || 0));
-
-  const eliminated = sorted[0];
-
-  let result =
+  alert(
     eliminated.id === undercover.id
       ? "🎉 Civils gagnent !"
-      : "💀 Undercover gagne !";
-
-  alert(`${result}
-
-Undercover : ${undercover.name}
-Éliminé : ${eliminated.name}`);
+      : "💀 Undercover gagne !"
+  );
 }
 
-// ---------------- WORDS ----------------
-function getRandomWords() {
-  const themes = {
-    animaux: [["chien", "loup"], ["chat", "tigre"]],
-    objets: [["chaise", "tabouret"], ["stylo", "crayon"]],
-    nourriture: [["pizza", "burger"], ["pomme", "poire"]]
-  };
-
-  const keys = Object.keys(themes);
-  const theme = keys[Math.floor(Math.random() * keys.length)];
-  const pair = themes[theme][Math.floor(Math.random() * 2)];
-
-  return { word1: pair[0], word2: pair[1] };
-}
-
+// ---------------- REALTIME ----------------
 function listenTurns() {
-  // 🔥 éviter duplication
-  if (window.turnChannel) {
-    client.removeChannel(window.turnChannel);
-  }
+  if (window.turnChannel) client.removeChannel(window.turnChannel);
 
   window.turnChannel = client
     .channel("turns-" + currentRoom.id)
@@ -434,17 +418,17 @@ function listenTurns() {
         table: "turns",
         filter: `room_id=eq.${currentRoom.id}`
       },
-      () => {
-        fetchTurns();
-      }
+      fetchTurns
     )
     .subscribe();
 
   fetchTurns();
 }
-// ---------------- ROOM REALTIME ----------------
+
 function listenRoom() {
-  client
+  if (window.roomChannel) client.removeChannel(window.roomChannel);
+
+  window.roomChannel = client
     .channel("room-" + currentRoom.id)
     .on(
       "postgres_changes",
@@ -455,10 +439,24 @@ function listenRoom() {
         filter: `id=eq.${currentRoom.id}`
       },
       payload => {
-        if (payload.new.status === "playing") enterGame();
-
         updateTurnUI();
+        if (payload.new.status === "playing") enterGame();
       }
     )
     .subscribe();
+}
+
+// ---------------- WORDS ----------------
+function getRandomWords() {
+  const words = [
+    ["chien", "loup"],
+    ["chat", "tigre"],
+    ["pizza", "burger"],
+    ["pomme", "poire"]
+  ];
+
+  return {
+    word1: words[Math.floor(Math.random() * words.length)][0],
+    word2: words[Math.floor(Math.random() * words.length)][1]
+  };
 }
