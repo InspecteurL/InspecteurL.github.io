@@ -17,13 +17,21 @@ async function createRoom() {
 
   const code = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-  const { data: room } = await client.from("rooms").insert({ code }).select().single();
+  const { data: room } = await client
+    .from("rooms")
+    .insert({ code })
+    .select()
+    .maybeSingle();
 
-  const { data: player } = await client.from("players").insert({
-    name,
-    room_id: room.id,
-    is_host: true
-  }).select().single();
+  const { data: player } = await client
+    .from("players")
+    .insert({
+      name,
+      room_id: room.id,
+      is_host: true
+    })
+    .select()
+    .maybeSingle();
 
   currentRoom = room;
   currentPlayer = player;
@@ -38,13 +46,26 @@ async function joinRoom() {
 
   if (!name || !code) return alert("Remplis tout");
 
-  const { data: room } = await client.from("rooms").select("*").eq("code", code).single();
+  const { data: room } = await client
+    .from("rooms")
+    .select("*")
+    .eq("code", code)
+    .maybeSingle();
+
   if (!room) return alert("Room introuvable");
 
-  const { data: players } = await client.from("players").select("*").eq("room_id", room.id);
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", room.id);
+
   if (players.length >= 8) return alert("Salle pleine");
 
-  const { data: player } = await client.from("players").insert({ name, room_id: room.id }).select().single();
+  const { data: player } = await client
+    .from("players")
+    .insert({ name, room_id: room.id })
+    .select()
+    .maybeSingle();
 
   currentRoom = room;
   currentPlayer = player;
@@ -59,7 +80,7 @@ function enterLobby() {
 
   document.getElementById("roomCode").innerText = currentRoom.code;
 
-  if (!currentPlayer.is_host) {
+  if (!currentPlayer?.is_host) {
     document.getElementById("startBtn").style.display = "none";
   }
 
@@ -88,7 +109,10 @@ function listenPlayers() {
 }
 
 async function fetchPlayers() {
-  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", currentRoom.id);
 
   const list = document.getElementById("playersList");
   list.innerHTML = "";
@@ -102,41 +126,50 @@ async function fetchPlayers() {
 
 // ---------------- START GAME ----------------
 async function startGame() {
-  if (!currentPlayer.is_host) return alert("Seul le host");
+  if (!currentPlayer?.is_host) return alert("Seul le host");
 
   await assignRoles();
 
-  await new Promise(res => setTimeout(res, 500));
+  await new Promise(r => setTimeout(r, 500));
 
-  await client.from("rooms").update({
-    status: "playing",
-    phase: "playing",
-    round: 1,
-    current_turn: 0
-  }).eq("id", currentRoom.id);
+  await client
+    .from("rooms")
+    .update({
+      status: "playing",
+      phase: "playing",
+      round: 1,
+      current_turn: 0
+    })
+    .eq("id", currentRoom.id);
 }
 
 // ---------------- ROLES ----------------
 async function assignRoles() {
-  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", currentRoom.id);
 
   const shuffled = [...players].sort(() => Math.random() - 0.5);
   const words = getRandomWords();
 
   for (let i = 0; i < shuffled.length; i++) {
-    await client.from("players").update({
-      role: i === 0 ? "undercover" : "civilian",
-      word: i === 0 ? words.word2 : words.word1,
-      turn_order: i,
-      votes: 0,
-      has_voted: false
-    }).eq("id", shuffled[i].id);
+    await client
+      .from("players")
+      .update({
+        role: i === 0 ? "undercover" : "civilian",
+        word: i === 0 ? words.word2 : words.word1,
+        turn_order: i,
+        votes: 0,
+        has_voted: false
+      })
+      .eq("id", shuffled[i].id);
   }
 }
 
-// ---------------- GAME ----------------
+// ---------------- ENTER GAME ----------------
 async function enterGame() {
-  if (!currentPlayer || !currentPlayer.id) return;
+  if (!currentPlayer?.id) return;
 
   document.getElementById("lobby").classList.add("hidden");
   document.getElementById("game").classList.remove("hidden");
@@ -144,18 +177,18 @@ async function enterGame() {
   let player;
 
   while (true) {
-    const { data, error } = await client
+    const { data } = await client
       .from("players")
       .select("*")
       .eq("id", currentPlayer.id)
-      .single();
+      .maybeSingle();
 
-    if (!error && data && data.word && data.turn_order !== null) {
+    if (data?.word && data.turn_order !== null) {
       player = data;
       break;
     }
 
-    await new Promise(res => setTimeout(res, 200));
+    await new Promise(r => setTimeout(r, 200));
   }
 
   currentPlayer = player;
@@ -168,9 +201,13 @@ async function enterGame() {
 
 // ---------------- TURN ----------------
 async function isMyTurn() {
-  if (!currentPlayer || currentPlayer.turn_order === null) return false;
+  if (!currentPlayer?.turn_order && currentPlayer?.turn_order !== 0) return false;
 
-  const { data: room } = await client.from("rooms").select("current_turn").eq("id", currentRoom.id).single();
+  const { data: room } = await client
+    .from("rooms")
+    .select("current_turn")
+    .eq("id", currentRoom.id)
+    .maybeSingle();
 
   return currentPlayer.turn_order === room.current_turn;
 }
@@ -181,7 +218,11 @@ async function sendTurn() {
 
   if (!(await isMyTurn())) return alert("Pas ton tour");
 
-  const { data: room } = await client.from("rooms").select("*").eq("id", currentRoom.id).single();
+  const { data: room } = await client
+    .from("rooms")
+    .select("*")
+    .eq("id", currentRoom.id)
+    .maybeSingle();
 
   await client.from("turns").insert({
     room_id: currentRoom.id,
@@ -198,7 +239,10 @@ async function sendTurn() {
 
 // ---------------- NEXT TURN ----------------
 async function nextTurnLogic(room) {
-  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", currentRoom.id);
 
   let next = room.current_turn + 1;
 
@@ -206,29 +250,43 @@ async function nextTurnLogic(room) {
     next = 0;
 
     if (room.round === 1) {
-      await client.from("rooms").update({ round: 2, current_turn: 0 }).eq("id", currentRoom.id);
+      await client.from("rooms")
+        .update({ round: 2, current_turn: 0 })
+        .eq("id", currentRoom.id);
       return;
     }
 
     if (room.round === 2) {
-      await client.from("rooms").update({ phase: "voting" }).eq("id", currentRoom.id);
+      await client.from("rooms")
+        .update({ phase: "voting" })
+        .eq("id", currentRoom.id);
       return;
     }
   }
 
-  await client.from("rooms").update({ current_turn: next }).eq("id", currentRoom.id);
+  await client
+    .from("rooms")
+    .update({ current_turn: next })
+    .eq("id", currentRoom.id);
 }
 
 // ---------------- DISPLAY ----------------
 async function fetchTurns() {
-  const { data: turns } = await client.from("turns").select("*").eq("room_id", currentRoom.id);
-  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
+  const { data: turns } = await client
+    .from("turns")
+    .select("*")
+    .eq("room_id", currentRoom.id);
+
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", currentRoom.id);
 
   const list = document.getElementById("playersList");
   list.innerHTML = "";
 
   players.forEach(player => {
-    const lastTurn = turns.filter(t => t.player_id === player.id).slice(-1)[0];
+    const lastTurn = turns?.filter(t => t.player_id === player.id).slice(-1)[0];
 
     const li = document.createElement("li");
 
@@ -243,25 +301,35 @@ async function fetchTurns() {
 
 // ---------------- UI ----------------
 async function updateTurnUI() {
-  const { data: room } = await client.from("rooms").select("*").eq("id", currentRoom.id).single();
-  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
+  const { data: room } = await client
+    .from("rooms")
+    .select("*")
+    .eq("id", currentRoom.id)
+    .maybeSingle();
+
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", currentRoom.id);
 
   if (!room || !players) return;
 
   const current = players.find(p => p.turn_order === room.current_turn);
 
   if (!current) {
-    document.getElementById("turnInfo").innerText = "⏳ Synchronisation...";
+    document.getElementById("turnInfo").innerText = "⏳ Sync...";
     return;
   }
 
-  const isMyTurnNow = currentPlayer && currentPlayer.turn_order === room.current_turn;
+  const isMyTurnNow =
+    currentPlayer &&
+    currentPlayer.turn_order === room.current_turn;
 
   document.getElementById("turnInfo").innerText =
     room.phase === "voting"
-      ? "🗳️ Phase de vote"
+      ? "🗳️ Vote"
       : isMyTurnNow
-      ? "🔥 À toi !"
+      ? "🔥 À toi"
       : "Tour de : " + current.name;
 
   document.getElementById("messageInput").disabled =
@@ -272,39 +340,59 @@ async function updateTurnUI() {
 
 // ---------------- VOTING ----------------
 async function showVoting() {
-  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", currentRoom.id);
 
-  const voteArea = document.getElementById("turnInfo");
-  voteArea.innerHTML = "<h3>Vote :</h3>";
+  const area = document.getElementById("turnInfo");
+  area.innerHTML = "<h3>Vote :</h3>";
 
   players.forEach(p => {
     const btn = document.createElement("button");
     btn.innerText = p.name;
     btn.onclick = () => vote(p.id);
-    voteArea.appendChild(btn);
+    area.appendChild(btn);
   });
 }
 
+// ---------------- VOTE ----------------
 async function vote(playerId) {
-  if (!currentPlayer || !currentPlayer.id) return;
+  if (!currentPlayer?.id) return;
 
-  const { data: me } = await client.from("players").select("has_voted").eq("id", currentPlayer.id).single();
-  if (me.has_voted) return alert("Déjà voté");
+  const { data: me } = await client
+    .from("players")
+    .select("has_voted")
+    .eq("id", currentPlayer.id)
+    .maybeSingle();
 
-  await client.from("players").update({ has_voted: true }).eq("id", currentPlayer.id);
+  if (me?.has_voted) return alert("Déjà voté");
 
-  const { data: target } = await client.from("players").select("votes").eq("id", playerId).single();
+  await client
+    .from("players")
+    .update({ has_voted: true })
+    .eq("id", currentPlayer.id);
 
-  await client.from("players").update({
-    votes: (target.votes || 0) + 1
-  }).eq("id", playerId);
+  const { data: target } = await client
+    .from("players")
+    .select("votes")
+    .eq("id", playerId)
+    .maybeSingle();
+
+  await client
+    .from("players")
+    .update({ votes: (target?.votes || 0) + 1 })
+    .eq("id", playerId);
 
   checkEndVoting();
 }
 
 // ---------------- END ----------------
 async function checkEndVoting() {
-  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", currentRoom.id);
 
   const totalVotes = players.reduce((a, p) => a + (p.votes || 0), 0);
 
@@ -312,12 +400,19 @@ async function checkEndVoting() {
 }
 
 async function revealResult() {
-  const { data: players } = await client.from("players").select("*").eq("room_id", currentRoom.id);
+  const { data: players } = await client
+    .from("players")
+    .select("*")
+    .eq("room_id", currentRoom.id);
 
   const undercover = players.find(p => p.role === "undercover");
   const eliminated = [...players].sort((a, b) => (b.votes || 0) - (a.votes || 0))[0];
 
-  alert(eliminated.id === undercover.id ? "🎉 Civils gagnent !" : "💀 Undercover gagne !");
+  alert(
+    eliminated.id === undercover.id
+      ? "🎉 Civils gagnent !"
+      : "💀 Undercover gagne !"
+  );
 }
 
 // ---------------- REALTIME ----------------
@@ -352,7 +447,7 @@ function listenRoom() {
 
       if (payload.new.status === "playing" && !gameStarted) {
         gameStarted = true;
-        enterGame();
+        setTimeout(() => enterGame(), 300);
       }
     })
     .subscribe();
@@ -369,8 +464,5 @@ function getRandomWords() {
 
   const pair = words[Math.floor(Math.random() * words.length)];
 
-  return {
-    word1: pair[0],
-    word2: pair[1]
-  };
+  return { word1: pair[0], word2: pair[1] };
 }
