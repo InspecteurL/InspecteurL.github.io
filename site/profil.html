@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profil – HorizonCiné</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg:#0a0a0f;--surface:#12121a;--card:#1a1a26;
+      --border:#2a2a3d;--accent:#e8b84b;--accent2:#c0392b;
+      --text:#e8e8f0;--muted:#7a7a9a;--radius:12px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+    nav{background:rgba(10,10,15,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:2rem;position:sticky;top:0;z-index:100;height:60px;}
+    .nav-logo{font-family:'Bebas Neue',cursive;font-size:1.5rem;color:var(--accent);letter-spacing:2px;text-decoration:none;}
+    nav a{color:var(--muted);text-decoration:none;font-size:0.875rem;font-weight:600;transition:color .2s;}
+    nav a:hover{color:var(--text);}
+    nav a.active{color:var(--accent);}
+
+    .profile-banner{height:220px;background:linear-gradient(135deg,#1a0a2e,#0d1a2e,#1a0d0d);position:relative;overflow:hidden;cursor:pointer;}
+    .profile-banner::before{content:'';position:absolute;inset:0;background:url('https://media.themoviedb.org/t/p/w1280/AmR3JfFAi8N3WD0UjBxFxeZFBZz.jpg') center/cover;opacity:.15;filter:blur(2px);}
+    #bannerImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.6;display:none;z-index:1;}
+    .banner-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.65);color:var(--accent);padding:.5rem 1.2rem;border-radius:8px;font-size:.8rem;font-weight:600;opacity:0;transition:opacity .2s;z-index:3;pointer-events:none;white-space:nowrap;}
+    .profile-banner:hover .banner-hint{opacity:1;}
+    .banner-overlay{position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(to top,var(--bg),transparent);z-index:2;}
+
+    .wrapper{max-width:900px;margin:0 auto;padding:0 1.5rem;}
+
+    .profile-header{display:flex;align-items:flex-end;gap:1.5rem;margin-top:-50px;position:relative;z-index:2;padding-bottom:1.5rem;border-bottom:1px solid var(--border);}
+
+    .avatar-wrap{position:relative;flex-shrink:0;cursor:pointer;}
+    .avatar{width:100px;height:100px;border-radius:50%;border:3px solid var(--accent);background:linear-gradient(135deg,#e8b84b,#c0392b);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-size:2.5rem;color:#0a0a0f;box-shadow:0 0 30px rgba(232,184,75,.3);overflow:hidden;}
+    .avatar img{width:100%;height:100%;object-fit:cover;display:none;}
+    .avatar.has-photo .av-letter{display:none;}
+    .avatar.has-photo img{display:block;}
+    .av-hint{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--accent);letter-spacing:.5px;opacity:0;transition:opacity .2s;z-index:2;}
+    .avatar-wrap:hover .av-hint{opacity:1;}
+    .online-dot{position:absolute;bottom:4px;right:4px;width:14px;height:14px;background:#2ecc71;border-radius:50%;border:2px solid var(--bg);}
+
+    .profile-info{flex:1;padding-bottom:.5rem;}
+    .profile-name{font-family:'Bebas Neue',cursive;font-size:2rem;letter-spacing:2px;line-height:1;}
+    .profile-handle{color:var(--accent);font-size:.875rem;margin:.25rem 0 .4rem;}
+    .profile-bio{color:var(--muted);font-size:.875rem;font-style:italic;max-width:420px;line-height:1.5;}
+    .profile-watching{margin-top:.4rem;font-size:.8rem;color:var(--muted);display:none;align-items:center;gap:.4rem;}
+    .profile-watching b{color:var(--text);}
+
+    .profile-stats{display:flex;gap:2rem;padding-bottom:.5rem;}
+    .stat{text-align:center;}
+    .stat-num{font-family:'Bebas Neue',cursive;font-size:1.6rem;color:var(--accent);line-height:1;}
+    .stat-label{font-size:.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+
+    .btn-edit{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.4rem 1rem;border-radius:6px;font-size:.8rem;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;transition:all .2s;align-self:flex-end;margin-bottom:.5rem;}
+    .btn-edit:hover{border-color:var(--text);color:var(--text);}
+
+    .tabs{display:flex;margin:1.5rem 0 0;border-bottom:1px solid var(--border);}
+    .tab-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;padding:.75rem 1.25rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase;letter-spacing:.5px;}
+    .tab-btn:hover{color:var(--text);}
+    .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+    .tab-pane{display:none;padding:1.5rem 0;}
+    .tab-pane.active{display:block;}
+    .sec-title{font-family:'Bebas Neue',cursive;font-size:1.2rem;letter-spacing:2px;color:var(--muted);margin-bottom:1rem;text-transform:uppercase;}
+
+    /* EN COURS */
+    .watching-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;display:flex;gap:1rem;align-items:center;}
+    .watching-thumb{width:60px;height:90px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--surface);}
+    .wt-title{font-weight:600;font-size:1rem;margin-bottom:.3rem;}
+    .wt-ep{color:var(--muted);font-size:.8rem;}
+    .wt-date{color:var(--accent);font-size:.75rem;margin-top:.2rem;}
+
+    /* ACTIVITÉ */
+    .activity-feed{display:flex;flex-direction:column;gap:.75rem;}
+    .activity-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;display:flex;gap:.75rem;align-items:flex-start;}
+    .act-icon{width:34px;height:34px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;color:var(--accent);font-weight:700;border:1px solid var(--border);}
+    .act-text{font-size:.875rem;line-height:1.5;}
+    .act-text strong{color:var(--accent);}
+    .act-time{color:var(--muted);font-size:.75rem;margin-top:.2rem;}
+
+    /* EMPTY */
+    .empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.9rem;}
+
+    /* MODAL */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:90%;max-width:460px;}
+    .modal h3{font-family:'Bebas Neue',cursive;font-size:1.4rem;letter-spacing:2px;margin-bottom:1.25rem;}
+    .fg{margin-bottom:1rem;}
+    .fg label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:.4rem;}
+    .fg input,.fg textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.875rem;outline:none;transition:border-color .2s;}
+    .fg input:focus,.fg textarea:focus{border-color:var(--accent);}
+    .fg textarea{resize:vertical;min-height:90px;}
+    .modal-btns{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.25rem;}
+    .btn-cancel{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.5rem 1.2rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;}
+    .btn-save{background:var(--accent);border:none;color:#0a0a0f;padding:.5rem 1.2rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;}
+    .btn-save:disabled{opacity:.5;cursor:not-allowed;}
+
+    .not-logged{text-align:center;padding:4rem 1rem;color:var(--muted);}
+    .not-logged a{color:var(--accent);font-weight:600;}
+
+    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);font-weight:700;font-size:.875rem;padding:.65rem 1.5rem;border-radius:30px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:300;}
+    .toast.success{background:#2ecc71;color:#0a0a0f;}
+    .toast.error{background:var(--accent2);color:#fff;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    @media(max-width:600px){.profile-header{flex-wrap:wrap;}.profile-stats{gap:1rem;}}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="accueil.html" class="nav-logo">HorizonCiné</a>
+  <a href="accueil.html">Accueil</a>
+  <a href="amis.html">Trouver</a>
+  <a href="mes-amis.html">Amis</a>
+  <a href="forum.html">Forum</a>
+  <a href="profil.html" class="active">Profil</a>
+</nav>
+
+<div class="profile-banner" id="bannerZone">
+  <img id="bannerImg" alt="Bannière"/>
+  <div class="banner-hint">[ Changer la bannière ]</div>
+  <div class="banner-overlay"></div>
+</div>
+<input type="file" id="inputBanner" accept="image/*" style="display:none"/>
+<input type="file" id="inputAvatar" accept="image/*" style="display:none"/>
+
+<div class="wrapper">
+
+  <div class="not-logged" id="notLogged" style="display:none">
+    <p style="font-size:1.1rem;margin-bottom:.75rem">Acces restreint</p>
+    <p>Tu dois etre connecte pour voir ton profil. <a href="index.html">Se connecter</a></p>
+  </div>
+
+  <div id="loggedIn" style="display:none">
+    <div class="profile-header">
+      <div class="avatar-wrap" id="avatarWrap">
+        <div class="avatar" id="avatarEl">
+          <span class="av-letter" id="avatarInitial">?</span>
+          <img id="avatarImg" alt="Avatar"/>
+        </div>
+        <div class="av-hint">[ photo ]</div>
+        <div class="online-dot"></div>
+      </div>
+
+      <div class="profile-info">
+        <div class="profile-name" id="displayName">Chargement...</div>
+        <div class="profile-handle" id="displayHandle"></div>
+        <div class="profile-bio" id="displayBio"></div>
+        <div class="profile-watching" id="watchingInfo">
+          ► En ce moment : <b id="watchingTitle"></b>
+          <span id="watchingEp" style="color:var(--muted);font-size:.75rem"></span>
+        </div>
+      </div>
+
+      <div class="profile-stats">
+        <div class="stat"><div class="stat-num" id="statFollowers">0</div><div class="stat-label">Abonnés</div></div>
+        <div class="stat"><div class="stat-num" id="statFollowing">0</div><div class="stat-label">Abonnements</div></div>
+        <div class="stat"><div class="stat-num" id="statThreads">0</div><div class="stat-label">Fils</div></div>
+      </div>
+      <button class="btn-edit" onclick="openModal()">[ Modifier ]</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('encours',this)">En cours</button>
+      <button class="tab-btn" onclick="switchTab('activite',this)">Activité</button>
+    </div>
+
+    <div class="tab-pane active" id="tab-encours">
+      <div class="sec-title">En cours de visionnage</div>
+      <div id="watchingCard"><div class="empty">Aucun contenu en cours.</div></div>
+    </div>
+
+    <div class="tab-pane" id="tab-activite">
+      <div class="sec-title">Activité récente</div>
+      <div class="activity-feed" id="activityFeed">
+        <div class="empty">Aucune activité récente.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="editModal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h3>Modifier le profil</h3>
+    <div class="fg">
+      <label>Pseudo</label>
+      <input type="text" id="editUsername" placeholder="Ton pseudo..."/>
+    </div>
+    <div class="fg">
+      <label>Bio</label>
+      <textarea id="editBio" placeholder="Parle de toi..."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" id="btnSave" onclick="saveProfile()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL  = 'https://wuagahavmbugmnuzsouf.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  let currentUser = null;
+  let currentProfile = null;
+
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { document.getElementById('notLogged').style.display = 'block'; return; }
+    currentUser = session.user;
+    document.getElementById('loggedIn').style.display = 'block';
+    await loadProfile();
+    await loadStats();
+    await loadActivity();
+    setupUploads();
+  }
+
+  async function loadProfile() {
+    const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    if (!data) {
+      const fallback = { id: currentUser.id, username: currentUser.email?.split('@')[0] || 'user', bio: '', avatar_url: null, banner_url: null };
+      await sb.from('profiles').insert(fallback);
+      currentProfile = fallback;
+    } else {
+      currentProfile = data;
+    }
+    renderProfile(currentProfile);
+  }
+
+  async function loadStats() {
+    // Nombre de fils créés
+    const { count: threads } = await sb.from('forum_threads').select('*', { count: 'exact', head: true }).eq('author_id', currentUser.id);
+    document.getElementById('statThreads').textContent = threads || 0;
+    // Abonnés / abonnements : colonnes à adapter si tu as une table follows
+    // Pour l'instant on met 0 réel
+    document.getElementById('statFollowers').textContent = 0;
+    document.getElementById('statFollowing').textContent = 0;
+  }
+
+  async function loadActivity() {
+    const { data: threads } = await sb
+      .from('forum_threads')
+      .select('id, title, created_at')
+      .eq('author_id', currentUser.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    const { data: comments } = await sb
+      .from('forum_comments')
+      .select('id, content, created_at, thread_id, forum_threads(title)')
+      .eq('author_id', currentUser.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    const items = [];
+    (threads || []).forEach(t => items.push({ type: 'thread', title: t.title, date: t.created_at }));
+    (comments || []).forEach(c => items.push({ type: 'comment', thread: c.forum_threads?.title, content: c.content, date: c.created_at }));
+    items.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const feed = document.getElementById('activityFeed');
+    if (!items.length) { feed.innerHTML = '<div class="empty">Aucune activite recente.</div>'; return; }
+
+    feed.innerHTML = items.slice(0, 8).map(item => {
+      const ago = timeAgo(item.date);
+      if (item.type === 'thread') return `
+        <div class="activity-item">
+          <div class="act-icon">+</div>
+          <div><div class="act-text">Tu as créé le fil <strong>${item.title}</strong></div><div class="act-time">${ago}</div></div>
+        </div>`;
+      return `
+        <div class="activity-item">
+          <div class="act-icon">&gt;</div>
+          <div><div class="act-text">Tu as commenté dans <strong>${item.thread || 'un fil'}</strong></div><div class="act-time">${ago}</div></div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderProfile(p) {
+    const pseudo = p.username || 'Utilisateur';
+    document.getElementById('displayName').textContent = pseudo;
+    document.getElementById('displayHandle').textContent = '@' + pseudo.toLowerCase().replace(/\s+/g, '_');
+    document.getElementById('displayBio').textContent = p.bio || '';
+    document.getElementById('avatarInitial').textContent = pseudo[0].toUpperCase();
+    document.getElementById('editUsername').value = p.username || '';
+    document.getElementById('editBio').value = p.bio || '';
+
+    if (p.avatar_url) setAvatarImage(p.avatar_url);
+    if (p.banner_url) setBannerImage(p.banner_url);
+
+    if (p.currently_watching) {
+      document.getElementById('watchingInfo').style.display = 'flex';
+      document.getElementById('watchingTitle').textContent = p.currently_watching;
+      let ep = '';
+      if (p.current_season) ep += 'S' + p.current_season;
+      if (p.episode_number) ep += ' E' + p.episode_number;
+      document.getElementById('watchingEp').textContent = ep;
+      document.getElementById('watchingCard').innerHTML = `
+        <div class="watching-card">
+          ${p.episode_image ? `<img class="watching-thumb" src="${p.episode_image}" alt=""/>` : '<div class="watching-thumb"></div>'}
+          <div>
+            <div class="wt-title">${p.currently_watching}</div>
+            ${ep ? `<div class="wt-ep">${ep}</div>` : ''}
+            ${p.last_seen_at ? `<div class="wt-date">Vu le ${new Date(p.last_seen_at).toLocaleDateString('fr-FR')}</div>` : ''}
+          </div>
+        </div>`;
+    }
+  }
+
+  async function saveProfile() {
+    const btn = document.getElementById('btnSave');
+    btn.disabled = true; btn.textContent = 'Sauvegarde...';
+
+    const username = document.getElementById('editUsername').value.trim();
+    const bio = document.getElementById('editBio').value.trim();
+
+    if (!username) {
+      showToast('Le pseudo ne peut pas être vide.', 'error');
+      btn.disabled = false; btn.textContent = 'Sauvegarder'; return;
+    }
+
+    const { error } = await sb.from('profiles')
+      .update({ username, bio, last_seen: new Date().toISOString() })
+      .eq('id', currentUser.id);
+
+    if (error) {
+      showToast('Erreur : ' + error.message, 'error');
+    } else {
+      currentProfile = { ...currentProfile, username, bio };
+      renderProfile(currentProfile);
+      closeModal();
+      showToast('Profil mis a jour.', 'success');
+    }
+    btn.disabled = false; btn.textContent = 'Sauvegarder';
+  }
+
+  async function uploadFile(file, bucket, path, column) {
+    showToast('Upload en cours...', 'success');
+    const { error } = await sb.storage.from(bucket).upload(path, file, { upsert: true });
+    let url;
+    if (error) {
+      // Fallback base64
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        url = e.target.result;
+        if (column === 'avatar_url') setAvatarImage(url);
+        else setBannerImage(url);
+        await sb.from('profiles').update({ [column]: url }).eq('id', currentUser.id);
+        showToast('Mise a jour effectuee.', 'success');
+      };
+      reader.readAsDataURL(file); return;
+    }
+    const { data } = sb.storage.from(bucket).getPublicUrl(path);
+    url = data.publicUrl + '?t=' + Date.now();
+    if (column === 'avatar_url') setAvatarImage(url);
+    else setBannerImage(url);
+    await sb.from('profiles').update({ [column]: url }).eq('id', currentUser.id);
+    showToast('Mise a jour effectuee.', 'success');
+  }
+
+  function setupUploads() {
+    document.getElementById('avatarWrap').onclick = () => document.getElementById('inputAvatar').click();
+    document.getElementById('bannerZone').onclick  = () => document.getElementById('inputBanner').click();
+    document.getElementById('inputAvatar').onchange = (e) => { if (e.target.files[0]) uploadFile(e.target.files[0], 'profiles', `avatars/${currentUser.id}.${e.target.files[0].name.split('.').pop()}`, 'avatar_url'); };
+    document.getElementById('inputBanner').onchange = (e) => { if (e.target.files[0]) uploadFile(e.target.files[0], 'profiles', `banners/${currentUser.id}.${e.target.files[0].name.split('.').pop()}`, 'banner_url'); };
+  }
+
+  function setAvatarImage(src) {
+    document.getElementById('avatarImg').src = src;
+    document.getElementById('avatarImg').style.display = 'block';
+    document.getElementById('avatarEl').classList.add('has-photo');
+  }
+  function setBannerImage(src) {
+    const img = document.getElementById('bannerImg');
+    img.src = src; img.style.display = 'block';
+  }
+
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+  function openModal() { document.getElementById('editModal').classList.add('open'); }
+  function closeModal() { document.getElementById('editModal').classList.remove('open'); }
+  function closeModalOutside(e) { if (e.target.id === 'editModal') closeModal(); }
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+  function timeAgo(dateStr) {
+    const diff = (Date.now() - new Date(dateStr)) / 1000;
+    if (diff < 60) return 'A l instant';
+    if (diff < 3600) return `Il y a ${Math.floor(diff/60)} min`;
+    if (diff < 86400) return `Il y a ${Math.floor(diff/3600)} h`;
+    return `Il y a ${Math.floor(diff/86400)} j`;
+  }
+
+  init();
+</script>
+</body>
+</html>

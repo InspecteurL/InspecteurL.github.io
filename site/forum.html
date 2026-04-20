@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Forum – HorizonCiné</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--bg:#0a0a0f;--surface:#12121a;--card:#1a1a26;--border:#2a2a3d;--accent:#e8b84b;--accent2:#c0392b;--text:#e8e8f0;--muted:#7a7a9a;--radius:12px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+    nav{background:rgba(10,10,15,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:2rem;position:sticky;top:0;z-index:100;height:60px;}
+    .nav-logo{font-family:'Bebas Neue',cursive;font-size:1.5rem;color:var(--accent);letter-spacing:2px;text-decoration:none;}
+    nav a{color:var(--muted);text-decoration:none;font-size:.875rem;font-weight:600;transition:color .2s;}
+    nav a:hover{color:var(--text);}
+    nav a.active{color:var(--accent);}
+
+    .layout{max-width:960px;margin:0 auto;padding:2rem 1.5rem;display:grid;grid-template-columns:1fr 260px;gap:1.5rem;}
+    @media(max-width:700px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+
+    .forum-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+    .forum-title{font-family:'Bebas Neue',cursive;font-size:2rem;letter-spacing:3px;}
+    .forum-title span{color:var(--accent);}
+
+    .categories{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+    .cat-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:.35rem .9rem;border-radius:20px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+    .cat-btn:hover,.cat-btn.active{background:var(--accent);color:#0a0a0f;border-color:var(--accent);}
+
+    .new-thread-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem;display:flex;gap:.75rem;align-items:center;}
+    .mini-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#e8b84b,#c0392b);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-size:1rem;color:#0a0a0f;flex-shrink:0;overflow:hidden;}
+    .mini-av img{width:100%;height:100%;object-fit:cover;display:none;}
+    .mini-av.has-photo img{display:block;}
+    .mini-av.has-photo span{display:none;}
+    .new-thread-btn{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.875rem;cursor:pointer;text-align:left;transition:border-color .2s;}
+    .new-thread-btn:hover{border-color:var(--accent);color:var(--text);}
+
+    .thread-list{display:flex;flex-direction:column;gap:.75rem;}
+    .thread-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;display:flex;gap:1rem;cursor:pointer;transition:border-color .2s,transform .15s;}
+    .thread-card:hover{border-color:var(--accent);transform:translateX(3px);}
+
+    .vote-col{display:flex;flex-direction:column;align-items:center;gap:.25rem;min-width:32px;}
+    .vote-btn{background:none;border:none;color:var(--muted);font-size:.9rem;cursor:pointer;padding:0;transition:color .15s;}
+    .vote-btn:hover,.vote-btn.active{color:var(--accent);}
+    .vote-count{font-family:'Bebas Neue',cursive;font-size:.95rem;}
+
+    .thread-body{flex:1;min-width:0;}
+    .thread-meta{display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;flex-wrap:wrap;}
+    .thread-tag{background:rgba(232,184,75,.15);color:var(--accent);font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px;}
+    .thread-author{font-size:.75rem;color:var(--muted);}
+    .thread-time{font-size:.75rem;color:var(--muted);}
+    .thread-title{font-weight:600;font-size:.95rem;margin-bottom:.3rem;line-height:1.3;}
+    .thread-preview{font-size:.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .thread-footer{display:flex;gap:1rem;margin-top:.6rem;}
+    .thread-stat{font-size:.75rem;color:var(--muted);}
+
+    /* SIDEBAR */
+    .sidebar{display:flex;flex-direction:column;gap:1rem;}
+    .sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;}
+    .sidebar-title{font-family:'Bebas Neue',cursive;font-size:1rem;letter-spacing:2px;color:var(--muted);margin-bottom:1rem;}
+    .trending-item{display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem;}
+    .trending-num{font-family:'Bebas Neue',cursive;font-size:1.2rem;color:var(--border);min-width:20px;}
+    .trending-title{font-size:.8rem;font-weight:600;}
+    .trending-count{font-size:.7rem;color:var(--muted);}
+    .rules-list{list-style:none;display:flex;flex-direction:column;gap:.6rem;}
+    .rules-list li{font-size:.8rem;color:var(--muted);display:flex;gap:.5rem;}
+    .rules-list li::before{content:'--';color:var(--accent);flex-shrink:0;}
+
+    /* DETAIL */
+    .detail-view{display:none;}
+    .detail-view.open{display:block;}
+    .back-btn{background:none;border:none;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;cursor:pointer;margin-bottom:1rem;padding:0;display:flex;align-items:center;gap:.4rem;}
+    .back-btn:hover{color:var(--text);}
+    .detail-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;}
+    .detail-title{font-family:'Bebas Neue',cursive;font-size:1.6rem;letter-spacing:1px;margin:.75rem 0;}
+    .detail-body{font-size:.9rem;line-height:1.7;color:#c0c0d8;}
+    .detail-votes{display:flex;align-items:center;gap:.5rem;margin-top:1rem;}
+    .detail-vote-count{font-family:'Bebas Neue',cursive;font-size:1.1rem;color:var(--accent);}
+
+    .comments-section{margin-top:1.25rem;}
+    .comments-title{font-family:'Bebas Neue',cursive;font-size:1.2rem;letter-spacing:2px;color:var(--muted);margin-bottom:1rem;}
+    .comment-input-wrap{display:flex;gap:.75rem;margin-bottom:1.25rem;}
+    .comment-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.875rem;outline:none;transition:border-color .2s;}
+    .comment-input:focus{border-color:var(--accent);}
+    .btn-comment{background:var(--accent);border:none;color:#0a0a0f;padding:.5rem 1rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;}
+    .btn-comment:disabled{opacity:.5;cursor:not-allowed;}
+    .comment-list{display:flex;flex-direction:column;gap:.75rem;}
+    .comment-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;}
+    .comment-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem;}
+    .comment-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-size:.8rem;color:#0a0a0f;overflow:hidden;flex-shrink:0;}
+    .comment-av img{width:100%;height:100%;object-fit:cover;}
+    .comment-user{font-size:.8rem;font-weight:600;}
+    .comment-time{font-size:.72rem;color:var(--muted);margin-left:auto;}
+    .comment-text{font-size:.85rem;color:#c0c0d8;line-height:1.5;}
+
+    /* MODAL */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:100%;max-width:580px;margin:auto;}
+    .modal h3{font-family:'Bebas Neue',cursive;font-size:1.4rem;letter-spacing:2px;margin-bottom:1.25rem;}
+    .fg{margin-bottom:1rem;}
+    .fg label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:.4rem;}
+    .fg input,.fg textarea,.fg select{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.875rem;outline:none;transition:border-color .2s;}
+    .fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--accent);}
+    .fg textarea{resize:vertical;min-height:120px;}
+    .fg select option{background:var(--card);}
+    .modal-btns{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.25rem;}
+    .btn-cancel{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.5rem 1.2rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;}
+    .btn-post{background:var(--accent);border:none;color:#0a0a0f;padding:.5rem 1.5rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;}
+    .btn-post:disabled{opacity:.5;cursor:not-allowed;}
+
+    .btn-new-thread{background:var(--accent);border:none;color:#0a0a0f;padding:.5rem 1.2rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.875rem;cursor:pointer;}
+
+    .empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.9rem;}
+    .not-logged-banner{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:.875rem;color:var(--muted);}
+    .not-logged-banner a{color:var(--accent);font-weight:600;}
+
+    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);font-weight:700;font-size:.875rem;padding:.65rem 1.5rem;border-radius:30px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:300;}
+    .toast.success{background:#2ecc71;color:#0a0a0f;}
+    .toast.error{background:var(--accent2);color:#fff;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    .loading{text-align:center;padding:2rem;color:var(--muted);font-size:.875rem;}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="accueil.html" class="nav-logo">HorizonCiné</a>
+  <a href="accueil.html">Accueil</a>
+  <a href="amis.html">Trouver</a>
+  <a href="mes-amis.html">Amis</a>
+  <a href="forum.html" class="active">Forum</a>
+  <a href="profil.html">Profil</a>
+</nav>
+
+<div class="layout">
+  <main>
+    <!-- LISTE -->
+    <div id="viewList">
+      <div class="forum-header">
+        <div class="forum-title">Forum <span>Ciné</span></div>
+        <button class="btn-new-thread" id="btnNewThread" onclick="openNewThread()">+ Nouveau fil</button>
+      </div>
+
+      <div id="notLoggedBanner" style="display:none" class="not-logged-banner">
+        Tu dois etre <a href="index.html">connecte</a> pour poster un fil ou un commentaire.
+      </div>
+
+      <div class="categories">
+        <button class="cat-btn active" onclick="filterCat('tous',this)">Tous</button>
+        <button class="cat-btn" onclick="filterCat('Films',this)">Films</button>
+        <button class="cat-btn" onclick="filterCat('Series',this)">Series</button>
+        <button class="cat-btn" onclick="filterCat('Animes',this)">Animes</button>
+        <button class="cat-btn" onclick="filterCat('Debat',this)">Debat</button>
+      </div>
+
+      <div class="new-thread-box" id="newThreadBox" style="display:none">
+        <div class="mini-av" id="miniAv"><span id="miniAvLetter">?</span><img id="miniAvImg" alt=""/></div>
+        <button class="new-thread-btn" onclick="openNewThread()">Demarrer un fil de discussion...</button>
+      </div>
+
+      <div id="threadList"><div class="loading">Chargement des fils...</div></div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="detail-view" id="viewDetail">
+      <button class="back-btn" onclick="goBack()">&#8592; Retour au forum</button>
+      <div class="detail-card" id="detailContent"></div>
+      <div class="comments-section">
+        <div class="comments-title">Commentaires</div>
+        <div class="comment-input-wrap" id="commentInputWrap" style="display:none">
+          <div class="mini-av" id="miniAv2"><span id="miniAvLetter2">?</span><img id="miniAvImg2" alt=""/></div>
+          <input class="comment-input" id="commentInput" placeholder="Ajouter un commentaire..." onkeydown="handleCommentKey(event)"/>
+          <button class="btn-comment" id="btnComment" onclick="addComment()">Envoyer</button>
+        </div>
+        <div class="comment-list" id="commentList"><div class="loading">Chargement...</div></div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-title">Tendances</div>
+      <div id="trendingList"><div style="color:var(--muted);font-size:.8rem">Chargement...</div></div>
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">Regles</div>
+      <ul class="rules-list">
+        <li>Respecte les spoilers</li>
+        <li>Pas d'insultes</li>
+        <li>Sources si possible</li>
+        <li>Reste dans le sujet</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<!-- MODAL NOUVEAU FIL -->
+<div class="modal-overlay" id="newThreadModal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h3>Nouveau fil</h3>
+    <div class="fg">
+      <label>Categorie</label>
+      <select id="newCat">
+        <option value="Films">Films</option>
+        <option value="Series">Series</option>
+        <option value="Animes">Animes</option>
+        <option value="Debat">Debat</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Titre</label>
+      <input type="text" id="newTitle" placeholder="Titre du fil..."/>
+    </div>
+    <div class="fg">
+      <label>Contenu</label>
+      <textarea id="newBody" placeholder="Developpe ta question ou ton avis..."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-post" id="btnPost" onclick="postThread()">Publier</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL  = 'https://wuagahavmbugmnuzsouf.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  let currentUser = null;
+  let currentProfile = null;
+  let activeThread = null;
+  let currentFilter = 'tous';
+  let allThreads = [];
+
+  const AVATAR_COLORS = ['#e8b84b','#3498db','#e74c3c','#2ecc71','#9b59b6','#1abc9c','#e67e22'];
+  function avatarColor(str) {
+    let h = 0;
+    for (let i = 0; i < (str||'').length; i++) h = (h * 31 + str.charCodeAt(i)) % AVATAR_COLORS.length;
+    return AVATAR_COLORS[Math.abs(h)];
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      currentUser = session.user;
+      const { data } = await sb.from('profiles').select('username, avatar_url').eq('id', currentUser.id).single();
+      currentProfile = data;
+      // Afficher la boite de nouveau fil
+      document.getElementById('newThreadBox').style.display = 'flex';
+      document.getElementById('commentInputWrap').style.display = 'flex';
+      setMiniAvatar();
+    } else {
+      document.getElementById('notLoggedBanner').style.display = 'block';
+      document.getElementById('btnNewThread').style.display = 'none';
+    }
+    await loadThreads();
+  }
+
+  function setMiniAvatar() {
+    if (!currentProfile) return;
+    const letter = (currentProfile.username || '?')[0].toUpperCase();
+    document.getElementById('miniAvLetter').textContent = letter;
+    document.getElementById('miniAvLetter2').textContent = letter;
+    if (currentProfile.avatar_url) {
+      ['miniAvImg','miniAvImg2'].forEach(id => { document.getElementById(id).src = currentProfile.avatar_url; document.getElementById(id).style.display = 'block'; });
+      ['miniAv','miniAv2'].forEach(id => document.getElementById(id).classList.add('has-photo'));
+    }
+  }
+
+  // ── CHARGER LES FILS ──────────────────────────────────────────────
+  async function loadThreads() {
+    document.getElementById('threadList').innerHTML = '<div class="loading">Chargement...</div>';
+    const { data, error } = await sb
+      .from('forum_threads')
+      .select('*, profiles(username, avatar_url)')
+      .order('created_at', { ascending: false });
+
+    if (error) { document.getElementById('threadList').innerHTML = '<div class="empty">Erreur de chargement.</div>'; return; }
+    allThreads = data || [];
+    renderThreads();
+    renderTrending();
+  }
+
+  function renderThreads() {
+    const list = document.getElementById('threadList');
+    const filtered = currentFilter === 'tous' ? allThreads : allThreads.filter(t => t.category === currentFilter);
+    if (!filtered.length) { list.innerHTML = '<div class="empty">Aucun fil dans cette categorie. Soyez le premier !</div>'; return; }
+
+    list.innerHTML = filtered.map(t => {
+      const pseudo = t.profiles?.username || 'Utilisateur';
+      const color = avatarColor(pseudo);
+      const preview = (t.body || '').substring(0, 120);
+      return `
+        <div class="thread-card" onclick="openThread('${t.id}')">
+          <div class="vote-col">
+            <button class="vote-btn" onclick="vote(event,'${t.id}',1)">&#9650;</button>
+            <div class="vote-count" id="votes-${t.id}">${t.votes || 0}</div>
+            <button class="vote-btn" onclick="vote(event,'${t.id}',-1)">&#9660;</button>
+          </div>
+          <div class="thread-body">
+            <div class="thread-meta">
+              <span class="thread-tag">${t.category || ''}</span>
+              <span class="thread-author">par ${pseudo}</span>
+              <span class="thread-time">· ${timeAgo(t.created_at)}</span>
+            </div>
+            <div class="thread-title">${t.title}</div>
+            <div class="thread-preview">${preview}</div>
+            <div class="thread-footer">
+              <span class="thread-stat">Commentaires</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderTrending() {
+    const sorted = [...allThreads].sort((a, b) => (b.votes || 0) - (a.votes || 0)).slice(0, 4);
+    document.getElementById('trendingList').innerHTML = sorted.length
+      ? sorted.map((t, i) => `
+        <div class="trending-item">
+          <div class="trending-num">${i + 1}</div>
+          <div>
+            <div class="trending-title">${(t.title || '').substring(0, 38)}${t.title?.length > 38 ? '...' : ''}</div>
+            <div class="trending-count">${t.votes || 0} votes</div>
+          </div>
+        </div>`).join('')
+      : '<div style="color:var(--muted);font-size:.8rem">Aucun fil pour l instant.</div>';
+  }
+
+  async function vote(e, id, dir) {
+    e.stopPropagation();
+    const t = allThreads.find(t => t.id === id);
+    if (!t) return;
+    const newVotes = (t.votes || 0) + dir;
+    await sb.from('forum_threads').update({ votes: newVotes }).eq('id', id);
+    t.votes = newVotes;
+    const el = document.getElementById('votes-' + id);
+    if (el) el.textContent = newVotes;
+    if (activeThread?.id === id) document.getElementById('detailVoteCount').textContent = newVotes;
+    renderTrending();
+  }
+
+  function filterCat(cat, btn) {
+    currentFilter = cat;
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderThreads();
+  }
+
+  // ── DETAIL D'UN FIL ───────────────────────────────────────────────
+  async function openThread(id) {
+    activeThread = allThreads.find(t => t.id === id);
+    if (!activeThread) return;
+    document.getElementById('viewList').style.display = 'none';
+    document.getElementById('viewDetail').classList.add('open');
+    renderDetail();
+    await loadComments(id);
+  }
+
+  function renderDetail() {
+    const t = activeThread;
+    const pseudo = t.profiles?.username || 'Utilisateur';
+    document.getElementById('detailContent').innerHTML = `
+      <div class="thread-meta" style="margin-bottom:.5rem">
+        <span class="thread-tag">${t.category || ''}</span>
+        <span class="thread-author">par ${pseudo}</span>
+        <span class="thread-time">· ${timeAgo(t.created_at)}</span>
+      </div>
+      <div class="detail-title">${t.title}</div>
+      <div class="detail-body">${t.body || ''}</div>
+      <div class="detail-votes">
+        <button class="vote-btn" onclick="vote2(1)">&#9650;</button>
+        <span class="detail-vote-count" id="detailVoteCount">${t.votes || 0}</span>
+        <button class="vote-btn" onclick="vote2(-1)">&#9660;</button>
+      </div>`;
+  }
+
+  async function vote2(dir) {
+    if (!activeThread) return;
+    const newVotes = (activeThread.votes || 0) + dir;
+    await sb.from('forum_threads').update({ votes: newVotes }).eq('id', activeThread.id);
+    activeThread.votes = newVotes;
+    document.getElementById('detailVoteCount').textContent = newVotes;
+    const el = document.getElementById('votes-' + activeThread.id);
+    if (el) el.textContent = newVotes;
+    renderTrending();
+  }
+
+  // ── COMMENTAIRES ──────────────────────────────────────────────────
+  async function loadComments(threadId) {
+    document.getElementById('commentList').innerHTML = '<div class="loading">Chargement...</div>';
+    const { data } = await sb
+      .from('forum_comments')
+      .select('*, profiles(username, avatar_url)')
+      .eq('thread_id', threadId)
+      .order('created_at', { ascending: true });
+
+    renderComments(data || []);
+  }
+
+  function renderComments(comments) {
+    const list = document.getElementById('commentList');
+    if (!comments.length) { list.innerHTML = '<div class="empty">Aucun commentaire. Soyez le premier !</div>'; return; }
+    list.innerHTML = comments.map(c => {
+      const pseudo = c.profiles?.username || 'Utilisateur';
+      const color = avatarColor(pseudo);
+      const hasPhoto = c.profiles?.avatar_url;
+      return `
+        <div class="comment-item">
+          <div class="comment-header">
+            <div class="comment-av" style="background:${hasPhoto ? 'none' : color}">
+              ${hasPhoto ? `<img src="${c.profiles.avatar_url}" alt=""/>` : pseudo[0].toUpperCase()}
+            </div>
+            <div class="comment-user">${pseudo}</div>
+            <div class="comment-time">${timeAgo(c.created_at)}</div>
+          </div>
+          <div class="comment-text">${c.content}</div>
+        </div>`;
+    }).join('');
+  }
+
+  async function addComment() {
+    if (!currentUser || !activeThread) return;
+    const input = document.getElementById('commentInput');
+    const content = input.value.trim();
+    if (!content) return;
+
+    const btn = document.getElementById('btnComment');
+    btn.disabled = true;
+
+    const { error } = await sb.from('forum_comments').insert({
+      thread_id: activeThread.id,
+      author_id: currentUser.id,
+      content
+    });
+
+    if (error) { showToast('Erreur : ' + error.message, 'error'); }
+    else {
+      input.value = '';
+      await loadComments(activeThread.id);
+    }
+    btn.disabled = false;
+  }
+  function handleCommentKey(e) { if (e.key === 'Enter') addComment(); }
+
+  function goBack() {
+    document.getElementById('viewList').style.display = '';
+    document.getElementById('viewDetail').classList.remove('open');
+    activeThread = null;
+    loadThreads();
+  }
+
+  // ── NOUVEAU FIL ───────────────────────────────────────────────────
+  function openNewThread() {
+    if (!currentUser) { showToast('Tu dois etre connecte.', 'error'); return; }
+    document.getElementById('newThreadModal').classList.add('open');
+  }
+  function closeModal() { document.getElementById('newThreadModal').classList.remove('open'); }
+  function closeModalOutside(e) { if (e.target.id === 'newThreadModal') closeModal(); }
+
+  async function postThread() {
+    if (!currentUser) return;
+    const title = document.getElementById('newTitle').value.trim();
+    const body = document.getElementById('newBody').value.trim();
+    const category = document.getElementById('newCat').value;
+    if (!title) { showToast('Le titre est obligatoire.', 'error'); return; }
+
+    const btn = document.getElementById('btnPost');
+    btn.disabled = true; btn.textContent = 'Publication...';
+
+    const { error } = await sb.from('forum_threads').insert({
+      author_id: currentUser.id,
+      category,
+      title,
+      body,
+      votes: 0
+    });
+
+    if (error) { showToast('Erreur : ' + error.message, 'error'); }
+    else {
+      document.getElementById('newTitle').value = '';
+      document.getElementById('newBody').value = '';
+      closeModal();
+      showToast('Fil publie !', 'success');
+      await loadThreads();
+    }
+    btn.disabled = false; btn.textContent = 'Publier';
+  }
+
+  // ── UTILS ─────────────────────────────────────────────────────────
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    const diff = (Date.now() - new Date(dateStr)) / 1000;
+    if (diff < 60) return 'A l instant';
+    if (diff < 3600) return `Il y a ${Math.floor(diff/60)} min`;
+    if (diff < 86400) return `Il y a ${Math.floor(diff/3600)} h`;
+    if (diff < 86400*7) return `Il y a ${Math.floor(diff/86400)} j`;
+    return new Date(dateStr).toLocaleDateString('fr-FR');
+  }
+
+  init();
+</script>
+</body>
+</html>
