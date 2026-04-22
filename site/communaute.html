@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Communauté – HorizonCiné</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--bg:#0a0a0f;--surface:#12121a;--card:#1a1a26;--border:#2a2a3d;--accent:#e8b84b;--accent2:#c0392b;--text:#e8e8f0;--muted:#7a7a9a;--radius:12px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+    nav{background:rgba(10,10,15,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:2rem;position:sticky;top:0;z-index:100;height:60px;}
+    .nav-logo{font-family:'Bebas Neue',cursive;font-size:1.5rem;color:var(--accent);letter-spacing:2px;text-decoration:none;}
+    nav a{color:var(--muted);text-decoration:none;font-size:.875rem;font-weight:600;transition:color .2s;}
+    nav a:hover{color:var(--text);}
+    nav a.active{color:var(--accent);}
+    .wrapper{max-width:900px;margin:0 auto;padding:2rem 1.5rem;}
+    .page-title{font-family:'Bebas Neue',cursive;font-size:2rem;letter-spacing:3px;margin-bottom:.25rem;}
+    .page-title span{color:var(--accent);}
+    .page-sub{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem;}
+    .search-wrap{position:relative;margin-bottom:1.25rem;}
+    .search-icon{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;font-weight:700;}
+    .search-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem .75rem 2.5rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;}
+    .search-input:focus{border-color:var(--accent);}
+    .search-input::placeholder{color:var(--muted);}
+    .tabs{display:flex;margin-bottom:1.5rem;border-bottom:1px solid var(--border);}
+    .tab-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;padding:.75rem 1.25rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase;letter-spacing:.5px;}
+    .tab-btn:hover{color:var(--text);}
+    .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+    .tab-pane{display:none;}
+    .tab-pane.active{display:block;}
+    .user-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;}
+    .user-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;display:flex;flex-direction:column;gap:.75rem;transition:border-color .2s,transform .15s;}
+    .user-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+    .user-card-header{display:flex;align-items:center;gap:.85rem;}
+    .user-avatar{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-size:1.3rem;color:#0a0a0f;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;}
+    .user-avatar img{width:100%;height:100%;object-fit:cover;}
+    .user-online{position:absolute;bottom:1px;right:1px;width:11px;height:11px;background:#2ecc71;border-radius:50%;border:2px solid var(--card);}
+    .user-name-link{font-weight:600;font-size:.95rem;color:var(--text);text-decoration:none;cursor:pointer;}
+    .user-name-link:hover{color:var(--accent);}
+    .user-handle{color:var(--accent);font-size:.75rem;}
+    .user-bio{font-size:.8rem;color:var(--muted);font-style:italic;line-height:1.4;min-height:2.4em;}
+    .user-watching{font-size:.75rem;color:var(--muted);}
+    .user-watching b{color:var(--text);}
+    .user-stats{display:flex;gap:1.5rem;}
+    .ustat{text-align:center;}
+    .ustat-num{font-family:'Bebas Neue',cursive;font-size:1.2rem;color:var(--text);line-height:1;}
+    .ustat-label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+    .btn-follow{border:none;padding:.45rem 1rem;border-radius:7px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;width:100%;transition:all .2s;}
+    .btn-follow.follow{background:var(--accent);color:#0a0a0f;}
+    .btn-follow.follow:hover{background:#f0c85a;}
+    .btn-follow.following{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+    .btn-follow.following:hover{background:rgba(232,184,75,.1);}
+    .btn-follow.self{background:transparent;color:var(--muted);border:1px solid var(--border);cursor:default;}
+    .empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.9rem;}
+    .loading{text-align:center;padding:2rem;color:var(--muted);font-size:.875rem;}
+    .not-logged{text-align:center;padding:4rem 1rem;color:var(--muted);}
+    .not-logged a{color:var(--accent);font-weight:600;}
+    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);font-weight:700;font-size:.875rem;padding:.65rem 1.5rem;border-radius:30px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:300;}
+    .toast.success{background:#2ecc71;color:#0a0a0f;}
+    .toast.error{background:var(--accent2);color:#fff;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="accueil.html" class="nav-logo">HorizonCiné</a>
+  <a href="accueil.html">Accueil</a>
+  <a href="communaute.html" class="active">Communauté</a>
+  <a href="mes-amis.html">Amis</a>
+  <a href="forum.html">Forum</a>
+  <a href="profil.html">Profil</a>
+</nav>
+
+<div class="wrapper">
+  <div class="not-logged" id="notLogged" style="display:none">
+    <p style="font-size:1.1rem;margin-bottom:.75rem">Acces restreint</p>
+    <p>Tu dois etre connecte pour voir la communaute. <a href="index.html">Se connecter</a></p>
+  </div>
+
+  <div id="mainContent" style="display:none">
+    <div class="page-title">Communaute <span>Ciné</span></div>
+    <div class="page-sub">Retrouve les membres inscrits sur HorizonCiné et abonne-toi.</div>
+
+    <div class="search-wrap">
+      <span class="search-icon">&gt;</span>
+      <input class="search-input" id="searchInput" placeholder="Rechercher un utilisateur..." oninput="filterUsers()"/>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('all',this)">Tous les membres</button>
+      <button class="tab-btn" onclick="switchTab('online',this)">En ligne</button>
+    </div>
+
+    <div class="tab-pane active" id="tab-all">
+      <div class="user-grid" id="gridAll"><div class="loading">Chargement...</div></div>
+    </div>
+    <div class="tab-pane" id="tab-online">
+      <div class="user-grid" id="gridOnline"><div class="loading">Chargement...</div></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const SURL  = 'https://wuagahavmbugmnuzsouf.supabase.co';
+  const SANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+  const sb = supabase.createClient(SURL, SANON);
+
+  const COLORS=['#e8b84b','#3498db','#e74c3c','#2ecc71','#9b59b6','#1abc9c','#e67e22'];
+  function aColor(s){let h=0;for(let i=0;i<(s||'').length;i++)h=(h*31+s.charCodeAt(i))%COLORS.length;return COLORS[Math.abs(h)];}
+
+  let currentUser=null, allUsers=[], myFollowingIds=new Set();
+
+  async function init() {
+    const { data:{session} } = await sb.auth.getSession();
+    if (!session) { document.getElementById('notLogged').style.display='block'; return; }
+    currentUser = session.user;
+
+    await sb.from('profiles').update({is_online:true, last_seen:new Date().toISOString()}).eq('id',currentUser.id);
+    document.getElementById('mainContent').style.display = 'block';
+
+    await Promise.all([loadUsers(), loadMyFollows()]);
+    renderAll(allUsers);
+    renderOnline(allUsers.filter(u=>u.is_online));
+
+    window.addEventListener('beforeunload', () => {
+      sb.from('profiles').update({is_online:false,last_seen:new Date().toISOString()}).eq('id',currentUser.id);
+    });
+  }
+
+  async function loadUsers() {
+    const { data } = await sb.from('profiles').select('id,username,avatar_url,bio,is_online,currently_watching,last_seen').order('username',{ascending:true});
+    allUsers = data||[];
+  }
+
+  async function loadMyFollows() {
+    if (!currentUser) return;
+    const { data } = await sb.from('follows').select('following_id').eq('follower_id',currentUser.id);
+    myFollowingIds = new Set((data||[]).map(f=>f.following_id));
+  }
+
+  function userCardHTML(u) {
+    const pseudo = u.username||'Utilisateur';
+    const color = aColor(pseudo);
+    const isSelf = u.id===currentUser?.id;
+    const isFollowing = myFollowingIds.has(u.id);
+    return `
+      <div class="user-card">
+        <div class="user-card-header">
+          <div class="user-avatar" style="background:${u.avatar_url?'#000':color}" onclick="window.location.href='profil.html?id=${u.id}'">
+            ${u.avatar_url?`<img src="${u.avatar_url}" alt=""/>`:`${pseudo[0].toUpperCase()}`}
+            ${u.is_online?'<div class="user-online"></div>':''}
+          </div>
+          <div>
+            <a class="user-name-link" href="profil.html?id=${u.id}">${pseudo}</a>
+            <div class="user-handle">@${pseudo.toLowerCase().replace(/\s+/g,'_')}</div>
+          </div>
+        </div>
+        <div class="user-bio">${u.bio||'Aucune bio.'}</div>
+        ${u.currently_watching?`<div class="user-watching">Regarde : <b>${u.currently_watching}</b></div>`:''}
+        ${isSelf
+          ? `<button class="btn-follow self" disabled>Mon profil</button>`
+          : `<button class="btn-follow ${isFollowing?'following':'follow'}" id="follow-btn-${u.id}" onclick="toggleFollow('${u.id}')">
+               ${isFollowing?'- Se desabonner':'+ Suivre'}
+             </button>`
+        }
+      </div>`;
+  }
+
+  async function toggleFollow(targetId) {
+    if (!currentUser) return;
+    const isFollowing = myFollowingIds.has(targetId);
+    if (isFollowing) {
+      await sb.from('follows').delete().eq('follower_id',currentUser.id).eq('following_id',targetId);
+      myFollowingIds.delete(targetId);
+      showToast('Desabonne.','success');
+    } else {
+      await sb.from('follows').insert({follower_id:currentUser.id,following_id:targetId});
+      myFollowingIds.add(targetId);
+      showToast('Abonnement effectue !','success');
+    }
+    // Mettre à jour le bouton sans re-render toute la grille
+    const btn = document.getElementById('follow-btn-'+targetId);
+    if (btn) {
+      const nowFollowing = myFollowingIds.has(targetId);
+      btn.className = `btn-follow ${nowFollowing?'following':'follow'}`;
+      btn.textContent = nowFollowing ? '- Se desabonner' : '+ Suivre';
+    }
+  }
+
+  function renderAll(users) {
+    const grid = document.getElementById('gridAll');
+    if (!users.length) { grid.innerHTML='<div class="empty">Aucun membre trouve.</div>'; return; }
+    grid.innerHTML = users.map(userCardHTML).join('');
+  }
+
+  function renderOnline(users) {
+    const grid = document.getElementById('gridOnline');
+    if (!users.length) { grid.innerHTML='<div class="empty">Aucun membre en ligne.</div>'; return; }
+    grid.innerHTML = users.map(userCardHTML).join('');
+  }
+
+  function filterUsers() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = allUsers.filter(u=>(u.username||'').toLowerCase().includes(q));
+    renderAll(filtered);
+    renderOnline(filtered.filter(u=>u.is_online));
+  }
+
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function showToast(msg, type='success') {
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.className=`toast ${type} show`;
+    setTimeout(()=>t.classList.remove('show'),3000);
+  }
+
+  init();
+</script>
+</body>
+</html>
