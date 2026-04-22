@@ -261,6 +261,8 @@
       document.getElementById('btnNewThread').style.display = 'none';
     }
     await loadThreads();
+    await loadUserVotes();
+    renderThreads();
   }
 
   function setMiniAvatar() {
@@ -297,12 +299,13 @@
       const pseudo = t.profiles?.username || 'Utilisateur';
       const color = avatarColor(pseudo);
       const preview = (t.body || '').substring(0, 120);
+      const uv = userVotesMap[t.id] || 0;
       return `
         <div class="thread-card" onclick="openThread('${t.id}')">
           <div class="vote-col">
-            <button class="vote-btn" onclick="vote(event,'${t.id}',1)">&#9650;</button>
+            <button class="vote-btn ${uv===1?'active':''}" onclick="vote(event,'${t.id}',1)">&#9650;</button>
             <div class="vote-count" id="votes-${t.id}">${t.votes || 0}</div>
-            <button class="vote-btn" onclick="vote(event,'${t.id}',-1)">&#9660;</button>
+            <button class="vote-btn ${uv===-1?'active':''}" onclick="vote(event,'${t.id}',-1)">&#9660;</button>
           </div>
           <div class="thread-body">
             <div class="thread-meta">
@@ -334,17 +337,77 @@
       : '<div style="color:var(--muted);font-size:.8rem">Aucun fil pour l instant.</div>';
   }
 
+  // ── VOTES (table forum_votes) ─────────────────────────────────────
+  let userVotesMap = {}; // { threadId: 1 | -1 }
+
+  async function loadUserVotes() {
+    if (!currentUser) return;
+    const { data } = await sb
+      .from('forum_votes')
+      .select('thread_id, value')
+      .eq('user_id', currentUser.id);
+    userVotesMap = {};
+    (data || []).forEach(v => { userVotesMap[v.thread_id] = v.value; });
+  }
+
   async function vote(e, id, dir) {
     e.stopPropagation();
+    if (!currentUser) { showToast('Tu dois etre connecte pour voter.', 'error'); return; }
     const t = allThreads.find(t => t.id === id);
     if (!t) return;
-    const newVotes = (t.votes || 0) + dir;
+
+    const prev = userVotesMap[id] || 0;
+    let delta = 0;
+
+    if (prev === dir) {
+      // Annuler le vote
+      delta = -dir;
+      delete userVotesMap[id];
+      await sb.from('forum_votes').delete().eq('user_id', currentUser.id).eq('thread_id', id);
+    } else if (prev === 0) {
+      // Nouveau vote
+      delta = dir;
+      userVotesMap[id] = dir;
+      await sb.from('forum_votes').insert({ user_id: currentUser.id, thread_id: id, value: dir });
+    } else {
+      // Changer de vote (upsert)
+      delta = dir - prev;
+      userVotesMap[id] = dir;
+      await sb.from('forum_votes').update({ value: dir }).eq('user_id', currentUser.id).eq('thread_id', id);
+    }
+
+    const newVotes = (t.votes || 0) + delta;
     await sb.from('forum_threads').update({ votes: newVotes }).eq('id', id);
     t.votes = newVotes;
+
     const el = document.getElementById('votes-' + id);
     if (el) el.textContent = newVotes;
-    if (activeThread?.id === id) document.getElementById('detailVoteCount').textContent = newVotes;
+    if (activeThread?.id === id) {
+      document.getElementById('detailVoteCount').textContent = newVotes;
+      updateDetailVoteBtns(userVotesMap[id] || 0);
+    }
+    updateVoteBtns(id, userVotesMap[id] || 0);
     renderTrending();
+  }
+
+  async function vote2(dir) {
+    if (!activeThread) return;
+    await vote({ stopPropagation: () => {} }, activeThread.id, dir);
+  }
+
+  function updateVoteBtns(id, userVote) {
+    const card = document.querySelector(`[onclick="openThread('${id}')"]`);
+    if (card) {
+      const btns = card.querySelectorAll('.vote-btn');
+      if (btns[0]) btns[0].classList.toggle('active', userVote === 1);
+      if (btns[1]) btns[1].classList.toggle('active', userVote === -1);
+    }
+  }
+
+  function updateDetailVoteBtns(userVote) {
+    const btns = document.querySelectorAll('#detailContent .vote-btn');
+    if (btns[0]) btns[0].classList.toggle('active', userVote === 1);
+    if (btns[1]) btns[1].classList.toggle('active', userVote === -1);
   }
 
   function filterCat(cat, btn) {
@@ -367,6 +430,7 @@
   function renderDetail() {
     const t = activeThread;
     const pseudo = t.profiles?.username || 'Utilisateur';
+    const uv = userVotesMap[t.id] || 0;
     document.getElementById('detailContent').innerHTML = `
       <div class="thread-meta" style="margin-bottom:.5rem">
         <span class="thread-tag">${t.category || ''}</span>
@@ -376,21 +440,10 @@
       <div class="detail-title">${t.title}</div>
       <div class="detail-body">${t.body || ''}</div>
       <div class="detail-votes">
-        <button class="vote-btn" onclick="vote2(1)">&#9650;</button>
+        <button class="vote-btn ${uv===1?'active':''}" onclick="vote2(1)">&#9650;</button>
         <span class="detail-vote-count" id="detailVoteCount">${t.votes || 0}</span>
-        <button class="vote-btn" onclick="vote2(-1)">&#9660;</button>
+        <button class="vote-btn ${uv===-1?'active':''}" onclick="vote2(-1)">&#9660;</button>
       </div>`;
-  }
-
-  async function vote2(dir) {
-    if (!activeThread) return;
-    const newVotes = (activeThread.votes || 0) + dir;
-    await sb.from('forum_threads').update({ votes: newVotes }).eq('id', activeThread.id);
-    activeThread.votes = newVotes;
-    document.getElementById('detailVoteCount').textContent = newVotes;
-    const el = document.getElementById('votes-' + activeThread.id);
-    if (el) el.textContent = newVotes;
-    renderTrending();
   }
 
   // ── COMMENTAIRES ──────────────────────────────────────────────────
