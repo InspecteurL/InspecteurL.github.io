@@ -792,42 +792,57 @@ document.addEventListener("DOMContentLoaded", () => {
     const style = document.createElement("style");
     style.id = "navbar-css";
     style.textContent = `
-      nav {
-        display: flex;
-        align-items: center;
-        gap: 25px;
-        padding: 15px 30px;
-        background: rgba(15,15,15,0.7);
-        backdrop-filter: blur(10px);
-        position: sticky;
-        top: 0;
-        z-index: 999;
-      }
+  nav {
+    display: flex;
+    justify-content: center; /* 🔥 centre tout */
+    align-items: center;
+    gap: 40px; /* + d’espace */
+    padding: 20px 40px; /* + grand */
+    background: rgba(15,15,15,0.75);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+  }
 
-      nav a {
-        color: #ccc;
-        text-decoration: none;
-        font-weight: 500;
-        transition: 0.2s;
-      }
+  nav a {
+    color: #bbb;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px; /* 🔥 plus lisible */
+    transition: all 0.25s ease;
+    position: relative;
+  }
 
-      nav a:hover {
-        color: white;
-      }
+  nav a:hover {
+    color: white;
+  }
 
-      .nav-logo {
-        font-weight: bold;
-        font-size: 20px;
-        color: white;
-        margin-right: auto;
-      }
+  /* LOGO */
+  .nav-logo {
+    position: absolute;
+    left: 40px; /* 🔥 reste à gauche */
+    font-weight: bold;
+    font-size: 22px; /* 🔥 plus gros */
+    color: white;
+  }
 
-      nav a.active {
-        color: white;
-        border-bottom: 2px solid #e50914;
-        padding-bottom: 4px;
-      }
-    `;
+  /* ACTIVE */
+  nav a.active {
+    color: white;
+  }
+
+  nav a.active::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #e50914;
+    border-radius: 2px;
+  }
+`;
     document.head.appendChild(style);
   }
 
@@ -837,15 +852,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const nav = document.createElement("nav");
 
   const NAV_ITEMS = [
-    { name: "Accueil", href: "accueil.html" },
-    { name: "Catalogue", href: "catalogue.html" },
-    { name: "Communauté", href: "communaute.html" },
-    { name: "Forum", href: "forum.html" },
-    { name: "Profil", href: "profil.html" }
+    { name: "Accueil", href: "https://inspecteurl.github.io/site/accueil.html" },
+    { name: "Catalogue", href: "https://inspecteurl.github.io/site/catalogue.html" },
+    { name: "Communauté", href: "https://inspecteurl.github.io/site/communaute.html" },
+    { name: "Forum", href: "https://inspecteurl.github.io/site/forum.html" },
+    { name: "Profil", href: "https://inspecteurl.github.io/site/profil.html" }
   ];
 
   nav.innerHTML = `
-    <a href="accueil.html" class="nav-logo">HorizonCiné</a>
+    <a href="https://inspecteurl.github.io/site/accueil.html" class="nav-logo">HorizonCiné</a>
     ${NAV_ITEMS.map(item => `
       <a href="${item.href}">${item.name}</a>
     `).join("")}
