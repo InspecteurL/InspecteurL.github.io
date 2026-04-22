@@ -781,6 +781,92 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'ArrowLeft') video.currentTime -= 10;
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+  const oldNavbar = document.getElementById("navbar");
+  if (!oldNavbar) return;
+
+  // ---------------------
+  // INJECTION CSS (1 seule fois)
+  // ---------------------
+  if (!document.getElementById("navbar-css")) {
+    const style = document.createElement("style");
+    style.id = "navbar-css";
+    style.textContent = `
+      nav {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        padding: 15px 30px;
+        background: rgba(15,15,15,0.7);
+        backdrop-filter: blur(10px);
+        position: sticky;
+        top: 0;
+        z-index: 999;
+      }
+
+      nav a {
+        color: #ccc;
+        text-decoration: none;
+        font-weight: 500;
+        transition: 0.2s;
+      }
+
+      nav a:hover {
+        color: white;
+      }
+
+      .nav-logo {
+        font-weight: bold;
+        font-size: 20px;
+        color: white;
+        margin-right: auto;
+      }
+
+      nav a.active {
+        color: white;
+        border-bottom: 2px solid #e50914;
+        padding-bottom: 4px;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ---------------------
+  // NAVBAR
+  // ---------------------
+  const nav = document.createElement("nav");
+
+  const NAV_ITEMS = [
+    { name: "Accueil", href: "accueil.html" },
+    { name: "Catalogue", href: "catalogue.html" },
+    { name: "Communauté", href: "communaute.html" },
+    { name: "Forum", href: "forum.html" },
+    { name: "Profil", href: "profil.html" }
+  ];
+
+  nav.innerHTML = `
+    <a href="accueil.html" class="nav-logo">HorizonCiné</a>
+    ${NAV_ITEMS.map(item => `
+      <a href="${item.href}">${item.name}</a>
+    `).join("")}
+  `;
+
+  // Remplacement
+  oldNavbar.replaceWith(nav);
+
+  // ---------------------
+  // ACTIVE AUTO
+  // ---------------------
+  const current = location.pathname.split("/").pop();
+
+  nav.querySelectorAll("a").forEach(link => {
+    const href = link.getAttribute("href");
+
+    if (href === current) {
+      link.classList.add("active");
+    }
+  });
+});
 
 // ---------------------
 // Sécuriser playMovie()
