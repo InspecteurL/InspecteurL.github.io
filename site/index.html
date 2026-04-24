@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HorizonCiné – Connexion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--bg:#0a0a0f;--surface:#12121a;--card:#1a1a26;--border:#2a2a3d;--accent:#e8b84b;--accent2:#c0392b;--text:#e8e8f0;--muted:#7a7a9a;--radius:12px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+
+    /* NAV */
+    nav{background:rgba(10,10,15,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:2rem;height:60px;}
+    .nav-logo{font-family:'Bebas Neue',cursive;font-size:1.5rem;color:var(--accent);letter-spacing:2px;text-decoration:none;}
+    nav a{color:var(--muted);text-decoration:none;font-size:.875rem;font-weight:600;transition:color .2s;}
+    nav a:hover{color:var(--text);}
+
+    /* HERO */
+    .hero{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;position:relative;overflow:hidden;}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%, rgba(232,184,75,.06) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(192,57,43,.06) 0%, transparent 60%);}
+
+    .hero-inner{display:grid;grid-template-columns:1fr 420px;gap:4rem;align-items:center;max-width:960px;width:100%;position:relative;z-index:1;}
+    @media(max-width:768px){.hero-inner{grid-template-columns:1fr;gap:2rem;}.hero-text{text-align:center;}}
+
+    .hero-text .tagline{font-family:'Bebas Neue',cursive;font-size:3.5rem;letter-spacing:3px;line-height:1;margin-bottom:1rem;}
+    .hero-text .tagline span{color:var(--accent);}
+    .hero-text .sub{color:var(--muted);font-size:1rem;line-height:1.6;max-width:380px;}
+
+    /* CARD AUTH */
+    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:100%;}
+
+    .auth-tabs{display:flex;margin-bottom:1.75rem;border-bottom:1px solid var(--border);}
+    .auth-tab{flex:1;background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;padding:.75rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase;letter-spacing:.5px;}
+    .auth-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+    .auth-pane{display:none;}
+    .auth-pane.active{display:block;}
+
+    .fg{margin-bottom:1rem;}
+    .fg label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:.4rem;}
+    .fg input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.7rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;}
+    .fg input:focus{border-color:var(--accent);}
+    .fg input::placeholder{color:var(--muted);}
+
+    .btn-auth{width:100%;background:var(--accent);border:none;color:#0a0a0f;padding:.75rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .2s;margin-top:.5rem;}
+    .btn-auth:hover{background:#f0c85a;}
+    .btn-auth:disabled{opacity:.5;cursor:not-allowed;}
+
+    /* MESSAGES */
+    .msg{padding:.75rem 1rem;border-radius:8px;font-size:.85rem;font-weight:600;margin-bottom:1rem;display:none;}
+    .msg.error{background:rgba(192,57,43,.15);border:1px solid var(--accent2);color:#e74c3c;}
+    .msg.success{background:rgba(46,204,113,.15);border:1px solid #2ecc71;color:#2ecc71;}
+    .msg.show{display:block;}
+
+    /* SÉPARATEUR */
+    .divider{text-align:center;color:var(--muted);font-size:.8rem;margin:1.25rem 0;position:relative;}
+    .divider::before,.divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border);}
+    .divider::before{left:0;}
+    .divider::after{right:0;}
+
+    /* ENTRÉE SANS COMPTE */
+    .btn-guest{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);padding:.65rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .2s;}
+    .btn-guest:hover{border-color:var(--text);color:var(--text);}
+
+    /* PASSWORD TOGGLE */
+    .pw-wrap{position:relative;}
+    .pw-wrap input{padding-right:3rem;}
+    .pw-toggle{position:absolute;right:.85rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;font-weight:600;font-family:'DM Sans',sans-serif;}
+    .pw-toggle:hover{color:var(--text);}
+
+    /* SPINNER */
+    .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(10,10,15,.3);border-top-color:#0a0a0f;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:.4rem;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">HorizonCiné</a>
+  <a href="accueil.html">Accueil</a>
+  <a href="catalogue.html">Catalogue</a>
+  <a href="forum.html">Forum</a>
+  <a href="communaute.html">Communauté</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+
+    <div class="hero-text">
+      <div class="tagline">Bienvenue sur<br/><span>HorizonCiné</span></div>
+      <p class="sub">Retrouve tes films, séries et animes préférés. Partage tes avis, suis tes amis et rejoins la communauté.</p>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login', this)">Se connecter</button>
+        <button class="auth-tab" onclick="switchTab('signup', this)">S'inscrire</button>
+      </div>
+
+      <!-- CONNEXION -->
+      <div class="auth-pane active" id="pane-login">
+        <div class="msg error" id="login-error"></div>
+        <div class="msg success" id="login-success"></div>
+        <div class="fg">
+          <label>Adresse email</label>
+          <input type="email" id="login-email" placeholder="ton@email.com" onkeydown="handleKey(event,'login')"/>
+        </div>
+        <div class="fg">
+          <label>Mot de passe</label>
+          <div class="pw-wrap">
+            <input type="password" id="login-password" placeholder="••••••••" onkeydown="handleKey(event,'login')"/>
+            <button class="pw-toggle" onclick="togglePw('login-password', this)">voir</button>
+          </div>
+        </div>
+        <button class="btn-auth" id="btn-login" onclick="login()">Se connecter</button>
+        <div class="divider">ou</div>
+        <button class="btn-guest" onclick="window.location.href='accueil.html'">Continuer sans compte</button>
+      </div>
+
+      <!-- INSCRIPTION -->
+      <div class="auth-pane" id="pane-signup">
+        <div class="msg error" id="signup-error"></div>
+        <div class="msg success" id="signup-success"></div>
+        <div class="fg">
+          <label>Pseudo</label>
+          <input type="text" id="signup-username" placeholder="Ton pseudo..." onkeydown="handleKey(event,'signup')"/>
+        </div>
+        <div class="fg">
+          <label>Adresse email</label>
+          <input type="email" id="signup-email" placeholder="ton@email.com" onkeydown="handleKey(event,'signup')"/>
+        </div>
+        <div class="fg">
+          <label>Mot de passe</label>
+          <div class="pw-wrap">
+            <input type="password" id="signup-password" placeholder="8 caractères minimum" onkeydown="handleKey(event,'signup')"/>
+            <button class="pw-toggle" onclick="togglePw('signup-password', this)">voir</button>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Confirmer le mot de passe</label>
+          <div class="pw-wrap">
+            <input type="password" id="signup-confirm" placeholder="••••••••" onkeydown="handleKey(event,'signup')"/>
+            <button class="pw-toggle" onclick="togglePw('signup-confirm', this)">voir</button>
+          </div>
+        </div>
+        <button class="btn-auth" id="btn-signup" onclick="signup()">Créer mon compte</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const SURL  = 'https://wuagahavmbugmnuzsouf.supabase.co';
+  const SANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+  const sb = supabase.createClient(SURL, SANON);
+
+  // Rediriger si déjà connecté
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = 'accueil.html';
+  });
+
+  function switchTab(name, btn) {
+    document.querySelectorAll('.auth-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('pane-' + name).classList.add('active');
+    btn.classList.add('active');
+    clearMessages();
+  }
+
+  function clearMessages() {
+    document.querySelectorAll('.msg').forEach(m => { m.classList.remove('show'); m.textContent = ''; });
+  }
+
+  function showMsg(id, text, type = 'error') {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = `msg ${type} show`;
+  }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.innerHTML = loading ? '<span class="spinner"></span>Chargement...' : btn.dataset.label;
+  }
+
+  function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') { input.type = 'text'; btn.textContent = 'cacher'; }
+    else { input.type = 'password'; btn.textContent = 'voir'; }
+  }
+
+  function handleKey(e, action) {
+    if (e.key === 'Enter') { if (action === 'login') login(); else signup(); }
+  }
+
+  // Traduire les erreurs Supabase en français
+  function translateError(msg) {
+    if (!msg) return 'Une erreur est survenue.';
+    const m = msg.toLowerCase();
+    if (m.includes('invalid login credentials') || m.includes('invalid credentials')) return 'Email ou mot de passe incorrect.';
+    if (m.includes('email not confirmed')) return 'Confirme ton adresse email avant de te connecter.';
+    if (m.includes('user already registered') || m.includes('already registered')) return 'Un compte existe déjà avec cet email.';
+    if (m.includes('password should be at least')) return 'Le mot de passe doit contenir au moins 6 caractères.';
+    if (m.includes('unable to validate email')) return 'Adresse email invalide.';
+    if (m.includes('email rate limit')) return 'Trop de tentatives. Réessaie dans quelques minutes.';
+    if (m.includes('network') || m.includes('fetch')) return 'Problème de connexion. Vérifie ta connexion internet.';
+    return msg;
+  }
+
+  // ── CONNEXION ─────────────────────────────────────────────────────
+  document.getElementById('btn-login').dataset.label = 'Se connecter';
+
+  async function login() {
+    clearMessages();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if (!email) { showMsg('login-error', 'Saisis ton adresse email.'); return; }
+    if (!password) { showMsg('login-error', 'Saisis ton mot de passe.'); return; }
+
+    setLoading('btn-login', true);
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      showMsg('login-error', translateError(error.message));
+      setLoading('btn-login', false);
+      return;
+    }
+
+    showMsg('login-success', 'Connexion réussie ! Redirection...', 'success');
+    setTimeout(() => window.location.href = 'accueil.html', 800);
+  }
+
+  // ── INSCRIPTION ───────────────────────────────────────────────────
+  document.getElementById('btn-signup').dataset.label = 'Créer mon compte';
+
+  async function signup() {
+    clearMessages();
+    const username = document.getElementById('signup-username').value.trim();
+    const email    = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const confirm  = document.getElementById('signup-confirm').value;
+
+    if (!username) { showMsg('signup-error', 'Choisis un pseudo.'); return; }
+    if (username.length < 2) { showMsg('signup-error', 'Le pseudo doit faire au moins 2 caractères.'); return; }
+    if (!email) { showMsg('signup-error', 'Saisis ton adresse email.'); return; }
+    if (!password) { showMsg('signup-error', 'Choisis un mot de passe.'); return; }
+    if (password.length < 6) { showMsg('signup-error', 'Le mot de passe doit contenir au moins 6 caractères.'); return; }
+    if (password !== confirm) { showMsg('signup-error', 'Les mots de passe ne correspondent pas.'); return; }
+
+    setLoading('btn-signup', true);
+
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { data: { username } }
+    });
+
+    if (error) {
+      showMsg('signup-error', translateError(error.message));
+      setLoading('btn-signup', false);
+      return;
+    }
+
+    // Fallback : créer le profil manuellement si le trigger a échoué
+    if (data.user) {
+      const { error: profileError } = await sb.from('profiles')
+        .upsert({ id: data.user.id, username, last_seen_at: new Date().toISOString() }, { onConflict: 'id' });
+      if (profileError) console.warn('Profil fallback:', profileError.message);
+    }
+
+    // Vérifier si confirmation email requise
+    if (data.user && !data.session) {
+      showMsg('signup-success', 'Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse.', 'success');
+      setLoading('btn-signup', false);
+      return;
+    }
+
+    showMsg('signup-success', 'Compte créé avec succès ! Redirection...', 'success');
+    setTimeout(() => window.location.href = 'accueil.html', 800);
+  }
+</script>
+</body>
+</html>
