@@ -531,10 +531,13 @@
 
   // ── LOBBY ─────────────────────────────────────────────────────────
   async function loadLives() {
-    const { data: lives } = await sb.from('lives')
-      .select('*, profiles(username, avatar_url)')
-      .eq('is_live', true)
-      .order('started_at', { ascending: false });
+  const { data, error } = await sb
+    .from('lives')
+    .select('*');
+
+  console.log("LIVES:", data);
+  console.log("ERROR:", error);
+}
 
     const grid = document.getElementById('livesGrid');
     if (!lives || !lives.length) {
