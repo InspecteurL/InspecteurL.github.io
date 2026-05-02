@@ -371,7 +371,7 @@
 <body>
 
 <header>
-  <a href="accueil.html" class="back-btn" title="Retour">←</a>
+  <a id="backBtn" href="profil.html" class="back-btn" title="Retour">←</a>
   <div class="header-avatar-wrap">
     <img class="header-avatar" id="headerAvatar" src="" alt=""/>
     <div class="online-indicator" id="onlineIndicator" style="display:none"></div>
@@ -599,6 +599,8 @@
 
     await loadMessages();
   });
+
+  document.getElementById('backBtn').href = 'profil.html?id=' + receiverId;
 
   // ── REALTIME ──────────────────────────────────────────────────────
   setInterval(loadMessages, 5000);
