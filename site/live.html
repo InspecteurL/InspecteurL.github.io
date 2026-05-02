@@ -482,171 +482,389 @@
 </div>
 
 <div class="toast" id="toast"></div>
-  <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  <script src="script.js" defer></script>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const sb = createClient(
-  'https://wuagahavmbugmnuzsouf.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-);
+  const sb = createClient(
+    'https://wuagahavmbugmnuzsouf.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  );
 
-    await sb.from('lives').insert({
-  streamer_id: currentUser.id,
-  title: "Live test",
-  is_live: true,
-  viewer_count: 0
-});
-// ── AUTH ─────────────────────────────────────────
-const { data: { session } } = await sb.auth.getSession();
-let currentUser = session?.user || null;
-let currentProfile = null;
+  // ── AUTH ──────────────────────────────────────────────────────────
+  const { data: { session } } = await sb.auth.getSession();
+  let currentUser = session?.user || null;
+  let currentProfile = null;
 
-if (currentUser) {
-  const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
-  currentProfile = data;
-}
-
-// ── STATE ────────────────────────────────────────
-let localStream = null;
-let peerConnections = {};
-let currentLiveId = null;
-let isStreamer = false;
-let liveChannel = null;
-let chatChannel = null;
-
-const ICE_SERVERS = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-  ]
-};
-
-// ── UTILS ────────────────────────────────────────
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  if (!t) return;
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-function avatarColor(s) {
-  const c = ['#e8b84b','#3498db','#e74c3c','#2ecc71','#9b59b6','#1abc9c'];
-  let h = 0;
-  for (let i = 0; i < (s || '').length; i++) {
-    h = (h * 31 + s.charCodeAt(i)) % c.length;
+  if (currentUser) {
+    const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    currentProfile = data;
   }
-  return c[Math.abs(h)];
-}
 
-// ── LIVES ────────────────────────────────────────
-async function loadLives() {
-  const { data: lives, error } = await sb
+  // ── STATE ─────────────────────────────────────────────────────────
+  let localStream = null;
+  let peerConnections = {}; // viewerId -> RTCPeerConnection
+  let currentLiveId = null;
+  let isStreamer = false;
+  let liveChannel = null;
+  let chatChannel = null;
+
+  const ICE_SERVERS = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+    ]
+  };
+
+  // ── UTILS ─────────────────────────────────────────────────────────
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  function avatarColor(s) {
+    const c = ['#e8b84b','#3498db','#e74c3c','#2ecc71','#9b59b6','#1abc9c'];
+    let h = 0; for (let i=0;i<(s||'').length;i++) h=(h*31+s.charCodeAt(i))%c.length;
+    return c[Math.abs(h)];
+  }
+
+  // ── LOBBY ─────────────────────────────────────────────────────────
+  async function loadLives() {
+  const { data, error } = await sb
     .from('lives')
-    .select('*, profiles(username, avatar_url)')
-    .eq('is_live', true)
-    .order('started_at', { ascending: false });
+    .select('*');
 
-  console.log("LIVES:", lives);
+  console.log("LIVES:", data);
   console.log("ERROR:", error);
-
-  const grid = document.getElementById('livesGrid');
-  if (!grid) return;
-
-  if (!lives || lives.length === 0) {
-    grid.innerHTML = `<p>Aucun live en cours</p>`;
-    return;
-  }
-
-  grid.innerHTML = lives.map(l => {
-    const pseudo = l.profiles?.username || 'Anonyme';
-    const av = l.profiles?.avatar_url;
-    const avatarHTML = av
-      ? `<img src="${av}" style="width:100%;height:100%;object-fit:cover;"/>`
-      : pseudo[0].toUpperCase();
-
-    return `
-      <div class="live-card" onclick="joinLive('${l.id}')">
-        <div>${l.title || 'Live'}</div>
-        <div>${pseudo}</div>
-        <div>👁 ${l.viewer_count || 0}</div>
-      </div>
-    `;
-  }).join('');
 }
 
-await loadLives();
-setInterval(loadLives, 10000);
+    const grid = document.getElementById('livesGrid');
+    if (!lives || !lives.length) {
+      grid.innerHTML = `
+        <div class="empty-lives">
+          <div class="big">📡</div>
+          <p>Aucun live en cours pour l'instant.<br>Sois le premier à te lancer !</p>
+        </div>`;
+      return;
+    }
 
-// ── MODAL ────────────────────────────────────────
-window.openStartModal = () => {
-  if (!currentUser) {
-    showToast('Connecte-toi', 'error');
-    return;
+    grid.innerHTML = lives.map(l => {
+      const pseudo = l.profiles?.username || 'Anonyme';
+      const av = l.profiles?.avatar_url;
+      const avatarHTML = av
+        ? `<img src="${av}" style="width:100%;height:100%;object-fit:cover;"/>`
+        : pseudo[0].toUpperCase();
+      const avColor = avatarColor(pseudo);
+      const cat = { film:'🎬', serie:'📺', anime:'⛩️', discussion:'💬', autre:'🎲' }[l.category] || '🎬';
+      return `
+        <div class="live-card" onclick="joinLive('${l.id}')">
+          <div class="live-thumb">
+            <div class="thumb-placeholder">${cat}</div>
+            <div class="live-badge"><div class="dot"></div> LIVE</div>
+            <div class="viewer-count">👁 ${l.viewer_count || 0}</div>
+          </div>
+          <div class="live-card-body">
+            <div class="live-card-title">${l.title || 'Live sans titre'}</div>
+            <div class="live-card-meta">
+              <div class="streamer-av" style="background:${av ? '#000' : avColor}">${avatarHTML}</div>
+              <span class="streamer-name">${pseudo}</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
   }
-  document.getElementById('startModal')?.classList.add('open');
-};
 
-window.closeModalOutside = (e) => {
-  if (e.target.id === 'startModal') {
+  // Rafraîchir la liste toutes les 10s
+  await loadLives();
+  setInterval(loadLives, 10000);
+
+  // ── MODAL LIVE ────────────────────────────────────────────────────
+  window.openStartModal = function () {
+  console.log("Modal ouvert");
+};
+  window.openStartModal = () => {
+    if (!currentUser) { showToast('Connecte-toi pour lancer un live.', 'error'); return; }
+    document.getElementById('startModal').classList.add('open');
+  };
+  window.closeStartModal = () => {
     document.getElementById('startModal').classList.remove('open');
-  }
-};
-// ── PREVIEW ──────────────────────────────────────
-window.startPreview = async () => {
-  try {
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    stopPreview();
+  };
+  window.closeModalOutside = (e) => { if (e.target.id === 'startModal') window.closeStartModal(); };
+
+  window.startPreview = async () => {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const prev = document.getElementById('camPreview');
+      prev.srcObject = localStream;
+      prev.classList.add('active');
+      document.getElementById('btnGoLive').disabled = false;
+      showToast('Caméra activée !');
+    } catch (e) {
+      showToast('Impossible d\'accéder à la caméra.', 'error');
+    }
+  };
+
+  function stopPreview() {
+    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
     const prev = document.getElementById('camPreview');
-    if (prev) prev.srcObject = localStream;
-    showToast('Caméra OK');
-  } catch {
-    showToast('Caméra refusée', 'error');
-  }
-};
-
-// ── START LIVE ───────────────────────────────────
-window.startLive = async () => {
-  if (!localStream) return showToast('Active caméra', 'error');
-
-  const { data: live, error } = await sb.from('lives').insert({
-    streamer_id: currentUser.id,
-    title: "Live test",
-    is_live: true,
-    viewer_count: 0
-  }).select().single();
-
-  if (error) {
-    console.error(error);
-    showToast('Erreur live', 'error');
-    return;
+    prev.srcObject = null; prev.classList.remove('active');
+    document.getElementById('btnGoLive').disabled = true;
   }
 
-  showToast('Live lancé 🔴');
-  console.log("LIVE CREATED:", live);
-};
+  // ── LANCER LE LIVE ────────────────────────────────────────────────
+  window.startLive = async () => {
+    if (!localStream) { showToast('Active ta caméra d\'abord !', 'error'); return; }
+    const title = document.getElementById('liveTitle_input').value.trim() || 'Mon live HorizonCiné';
+    const category = document.getElementById('liveCat').value;
 
-// ── JOIN ─────────────────────────────────────────
-window.joinLive = async (id) => {
-  console.log("JOIN:", id);
-};
+    const { data: live, error } = await sb.from('lives').insert({
+      streamer_id: currentUser.id,
+      title,
+      category,
+      is_live: true,
+      viewer_count: 0,
+      started_at: new Date().toISOString(),
+    }).select().single();
 
-// ── CHAT ─────────────────────────────────────────
-window.sendChatMsg = async () => {
-  const input = document.getElementById('liveChat');
-  if (!input) return;
+    if (error) { showToast('Erreur lors du démarrage.', 'error'); console.error(error); return; }
 
-  const content = input.value.trim();
-  if (!content) return;
+    currentLiveId = live.id;
+    isStreamer = true;
 
-  input.value = '';
+    window.closeStartModal();
+    enterLiveRoom(live, true);
+    setupSignalingStreamer(live.id);
+    setupChat(live.id);
+    showToast('Tu es en live ! 🔴');
+  };
 
-  await sb.from('live_messages').insert({
-    live_id: currentLiveId,
-    user_id: currentUser.id,
-    username: currentProfile?.username || 'Anonyme',
-    content
-  });
-};
+  // ── REJOINDRE UN LIVE ─────────────────────────────────────────────
+  window.joinLive = async (liveId) => {
+    if (!currentUser) { showToast('Connecte-toi pour rejoindre un live.', 'error'); return; }
+
+    const { data: live } = await sb.from('lives').select('*, profiles(username,avatar_url)').eq('id', liveId).single();
+    if (!live || !live.is_live) { showToast('Ce live est terminé.', 'error'); await loadLives(); return; }
+
+    // Ne pas rejoindre son propre live en tant que viewer
+    if (live.streamer_id === currentUser.id) {
+      showToast('C\'est ton propre live !');
+      currentLiveId = liveId; isStreamer = true;
+      enterLiveRoom(live, true);
+      // Reconstruire le stream local si besoin
+      if (!localStream) showToast('Ta caméra n\'est pas active.', 'error');
+      setupSignalingStreamer(liveId);
+      setupChat(liveId);
+      return;
+    }
+
+    currentLiveId = liveId;
+    isStreamer = false;
+    enterLiveRoom(live, false);
+    await setupSignalingViewer(liveId);
+    setupChat(liveId);
+
+    // Incrémenter viewers
+    await sb.from('lives').update({ viewer_count: (live.viewer_count || 0) + 1 }).eq('id', liveId);
+  };
+
+  // ── INTERFACE SALLE ───────────────────────────────────────────────
+  function enterLiveRoom(live, streamer) {
+    document.getElementById('lobby').style.display = 'none';
+    document.getElementById('liveRoom').style.display = 'block';
+    document.getElementById('liveTitle').textContent = live.title || 'Live';
+    document.getElementById('liveStreamer').textContent = '@ ' + (live.profiles?.username || 'Streamer');
+
+    if (streamer) {
+      const video = document.getElementById('mainVideo');
+      video.srcObject = localStream;
+      video.muted = true;
+      document.getElementById('connectingOverlay').classList.add('hidden');
+    }
+
+    updateViewerCount(live.viewer_count || 0);
+
+    // Realtime viewer count
+    sb.channel(`live-meta-${live.id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'lives', filter: `id=eq.${live.id}` },
+        (payload) => updateViewerCount(payload.new.viewer_count || 0))
+      .subscribe();
+  }
+
+  function updateViewerCount(n) {
+    document.getElementById('viewerCount').textContent = n;
+    document.getElementById('viewersBadge').textContent = `${n} viewer${n !== 1 ? 's' : ''}`;
+  }
+
+  // ── SIGNALING STREAMER ────────────────────────────────────────────
+  function setupSignalingStreamer(liveId) {
+    // Écouter les viewers qui arrivent (offers)
+    liveChannel = sb.channel(`signaling-${liveId}`)
+      .on('broadcast', { event: 'viewer-join' }, async ({ payload }) => {
+        const viewerId = payload.viewer_id;
+        if (peerConnections[viewerId]) return;
+
+        const pc = new RTCPeerConnection(ICE_SERVERS);
+        peerConnections[viewerId] = pc;
+
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+        pc.onicecandidate = ({ candidate }) => {
+          if (candidate) {
+            liveChannel.send({ type: 'broadcast', event: 'ice-streamer', payload: { target: viewerId, candidate } });
+          }
+        };
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        liveChannel.send({ type: 'broadcast', event: 'offer', payload: { target: viewerId, sdp: offer } });
+      })
+      .on('broadcast', { event: 'answer' }, async ({ payload }) => {
+        const pc = peerConnections[payload.from];
+        if (pc && payload.target === 'streamer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        }
+      })
+      .on('broadcast', { event: 'ice-viewer' }, async ({ payload }) => {
+        const pc = peerConnections[payload.from];
+        if (pc && payload.target === 'streamer') {
+          await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+        }
+      })
+      .subscribe();
+  }
+
+  // ── SIGNALING VIEWER ──────────────────────────────────────────────
+  async function setupSignalingViewer(liveId) {
+    const viewerId = currentUser.id;
+
+    liveChannel = sb.channel(`signaling-${liveId}`)
+      .on('broadcast', { event: 'offer' }, async ({ payload }) => {
+        if (payload.target !== viewerId) return;
+
+        const pc = new RTCPeerConnection(ICE_SERVERS);
+        peerConnections['streamer'] = pc;
+
+        pc.ontrack = ({ streams }) => {
+          const video = document.getElementById('mainVideo');
+          video.srcObject = streams[0];
+          video.muted = false;
+          document.getElementById('connectingOverlay').classList.add('hidden');
+        };
+
+        pc.onicecandidate = ({ candidate }) => {
+          if (candidate) {
+            liveChannel.send({ type: 'broadcast', event: 'ice-viewer', payload: { from: viewerId, target: 'streamer', candidate } });
+          }
+        };
+
+        await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        liveChannel.send({ type: 'broadcast', event: 'answer', payload: { from: viewerId, target: 'streamer', sdp: answer } });
+      })
+      .on('broadcast', { event: 'ice-streamer' }, async ({ payload }) => {
+        if (payload.target !== viewerId) return;
+        const pc = peerConnections['streamer'];
+        if (pc) await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+      })
+      .on('broadcast', { event: 'live-ended' }, () => {
+        showToast('Le live est terminé.', 'error');
+        setTimeout(() => leaveOrStop(), 2000);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          // Signaler au streamer qu'on arrive
+          liveChannel.send({ type: 'broadcast', event: 'viewer-join', payload: { viewer_id: viewerId } });
+        }
+      });
+  }
+
+  // ── CHAT EN LIVE ──────────────────────────────────────────────────
+  function setupChat(liveId) {
+    chatChannel = sb.channel(`live-chat-${liveId}`)
+      .on('broadcast', { event: 'chat-msg' }, ({ payload }) => {
+        appendChatMsg(payload.username, payload.content, payload.is_streamer);
+      })
+      .subscribe();
+
+    // Charger messages existants
+    sb.from('live_messages').select('*').eq('live_id', liveId).order('created_at').then(({ data }) => {
+      (data || []).forEach(m => appendChatMsg(m.username, m.content, m.is_streamer, false));
+      const chat = document.getElementById('chatMessages');
+      chat.scrollTop = chat.scrollHeight;
+    });
+  }
+
+  function appendChatMsg(username, content, isStreamer = false, animate = true) {
+    const chat = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg' + (!animate ? ' no-anim' : '');
+    div.innerHTML = `<span class="chat-user${isStreamer ? ' streamer-tag' : ''}">${username}${isStreamer ? ' 🔴' : ''}</span>${content}`;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  window.sendChatMsg = async () => {
+    const input = document.getElementById('liveChat');
+    const content = input.value.trim();
+    if (!content || !currentLiveId) return;
+    input.value = '';
+
+    const username = currentProfile?.username || 'Anonyme';
+    const isStr = isStreamer;
+
+    // Broadcast temps réel
+    chatChannel?.send({ type: 'broadcast', event: 'chat-msg', payload: { username, content, is_streamer: isStr } });
+
+    // Sauvegarder en base
+    await sb.from('live_messages').insert({ live_id: currentLiveId, user_id: currentUser.id, username, content, is_streamer: isStr });
+  };
+
+  // ── CONTRÔLES ─────────────────────────────────────────────────────
+  let muted = false;
+  window.toggleMute = () => {
+    const video = document.getElementById('mainVideo');
+    muted = !muted;
+    video.muted = muted;
+    document.getElementById('btnMute').textContent = muted ? '🔇' : '🔊';
+  };
+
+  window.toggleFullscreen = () => {
+    const zone = document.querySelector('.video-zone');
+    if (!document.fullscreenElement) zone.requestFullscreen();
+    else document.exitFullscreen();
+  };
+
+  window.leaveOrStop = async () => {
+    if (isStreamer) {
+      // Terminer le live
+      await sb.from('lives').update({ is_live: false, ended_at: new Date().toISOString() }).eq('id', currentLiveId);
+      liveChannel?.send({ type: 'broadcast', event: 'live-ended', payload: {} });
+      showToast('Live terminé.');
+    } else {
+      // Décrémenter viewers
+      const { data: live } = await sb.from('lives').select('viewer_count').eq('id', currentLiveId).single();
+      if (live) await sb.from('lives').update({ viewer_count: Math.max(0, (live.viewer_count || 1) - 1) }).eq('id', currentLiveId);
+      showToast('Tu as quitté le live.');
+    }
+
+    // Nettoyer
+    Object.values(peerConnections).forEach(pc => pc.close());
+    peerConnections = {};
+    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+    liveChannel?.unsubscribe();
+    chatChannel?.unsubscribe();
+    currentLiveId = null; isStreamer = false;
+
+    document.getElementById('liveRoom').style.display = 'none';
+    document.getElementById('lobby').style.display = 'block';
+    document.getElementById('connectingOverlay').classList.remove('hidden');
+    document.getElementById('mainVideo').srcObject = null;
+    document.getElementById('chatMessages').innerHTML = '';
+    await loadLives();
+  };
 </script>
 </body>
 </html>
