@@ -482,7 +482,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
-
+  <script src="script.js" defer></script>
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -577,6 +577,9 @@
   setInterval(loadLives, 10000);
 
   // ── MODAL LIVE ────────────────────────────────────────────────────
+  window.openStartModal = function () {
+  console.log("Modal ouvert");
+};
   window.openStartModal = () => {
     if (!currentUser) { showToast('Connecte-toi pour lancer un live.', 'error'); return; }
     document.getElementById('startModal').classList.add('open');
