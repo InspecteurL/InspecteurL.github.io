@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live – HorizonCiné</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --card: #1a1a26;
+      --border: #2a2a3d;
+      --accent: #e8b84b;
+      --red: #e50914;
+      --green: #2ecc71;
+      --text: #e8e8f0;
+      --muted: #7a7a9a;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Noise + ambient */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: rgba(10,10,15,.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { font-family: 'Bebas Neue', cursive; font-size: 1.5rem; color: var(--accent); letter-spacing: 2px; text-decoration: none; }
+    nav a { color: var(--muted); text-decoration: none; font-size: .875rem; font-weight: 600; transition: color .2s; }
+    nav a:hover { color: var(--text); }
+    nav a.active { color: var(--accent); }
+
+    /* ── LOBBY ── */
+    #lobby {
+      position: relative; z-index: 1;
+      max-width: 1100px; margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .lobby-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .lobby-title { font-family: 'Bebas Neue', cursive; font-size: 2.2rem; letter-spacing: 3px; }
+    .lobby-title span { color: var(--accent); }
+
+    /* Bouton lancer live */
+    .btn-start-live {
+      display: flex; align-items: center; gap: .6rem;
+      background: var(--red); color: #fff;
+      border: none; border-radius: 8px;
+      padding: .65rem 1.4rem;
+      font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+      box-shadow: 0 4px 20px rgba(229,9,20,.35);
+    }
+    .btn-start-live:hover { background: #ff2030; transform: translateY(-1px); box-shadow: 0 8px 28px rgba(229,9,20,.5); }
+    .btn-start-live .dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; animation: blink 1.2s ease infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* Grille des lives */
+    .lives-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .live-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all .25s;
+      position: relative;
+    }
+    .live-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(232,184,75,.1); }
+
+    .live-thumb {
+      width: 100%; aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #1a0a2e, #0d1a2e);
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .live-thumb video { width: 100%; height: 100%; object-fit: cover; }
+    .live-thumb .thumb-placeholder {
+      font-size: 3rem; opacity: .2;
+    }
+
+    .live-badge {
+      position: absolute; top: .6rem; left: .6rem;
+      background: var(--red); color: #fff;
+      font-size: .7rem; font-weight: 700; letter-spacing: 1px;
+      padding: .2rem .6rem; border-radius: 4px;
+      display: flex; align-items: center; gap: .3rem;
+    }
+    .live-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: blink 1s infinite; }
+
+    .viewer-count {
+      position: absolute; top: .6rem; right: .6rem;
+      background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+      color: var(--text); font-size: .75rem; font-weight: 600;
+      padding: .2rem .6rem; border-radius: 4px;
+      display: flex; align-items: center; gap: .3rem;
+    }
+
+    .live-card-body { padding: .9rem; }
+    .live-card-title { font-weight: 700; font-size: .95rem; margin-bottom: .3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .live-card-meta { display: flex; align-items: center; gap: .6rem; }
+    .streamer-av {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', cursive; font-size: .7rem; color: #0a0a0f; flex-shrink: 0;
+      overflow: hidden;
+    }
+    .streamer-av img { width: 100%; height: 100%; object-fit: cover; }
+    .streamer-name { font-size: .8rem; color: var(--muted); }
+
+    .empty-lives {
+      grid-column: 1/-1;
+      text-align: center; padding: 4rem 1rem; color: var(--muted);
+    }
+    .empty-lives .big { font-size: 3rem; margin-bottom: 1rem; opacity: .3; }
+    .empty-lives p { font-size: .9rem; line-height: 1.7; }
+
+    /* ── MODAL LANCER LIVE ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.8); backdrop-filter: blur(8px);
+      z-index: 200; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2rem; width: 90%; max-width: 480px;
+      position: relative;
+    }
+    .modal-title { font-family: 'Bebas Neue', cursive; font-size: 1.6rem; letter-spacing: 2px; margin-bottom: 1.5rem; }
+    .modal-title span { color: var(--red); }
+    .fg { margin-bottom: 1rem; }
+    .fg label { display: block; font-size: .75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: .4rem; }
+    .fg input, .fg select {
+      width: 100%; background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: .65rem .9rem; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: .875rem; outline: none;
+      transition: border-color .2s;
+    }
+    .fg input:focus, .fg select:focus { border-color: var(--accent); }
+    .fg select option { background: var(--card); }
+
+    /* Preview caméra */
+    .cam-preview-wrap {
+      width: 100%; aspect-ratio: 16/9;
+      background: #000; border-radius: 10px; overflow: hidden;
+      margin-bottom: 1rem; position: relative;
+      border: 1px solid var(--border);
+    }
+    #camPreview { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cam-hint {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: .5rem; color: var(--muted); font-size: .85rem;
+    }
+    .cam-hint .icon { font-size: 2rem; }
+    #camPreview.active ~ .cam-hint { display: none; }
+
+    .btn-cam {
+      width: 100%; padding: .6rem; border-radius: 8px; border: 1px dashed var(--border);
+      background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif;
+      font-size: .85rem; cursor: pointer; transition: all .2s; margin-bottom: 1rem;
+    }
+    .btn-cam:hover { border-color: var(--accent); color: var(--accent); }
+
+    .modal-btns { display: flex; gap: .75rem; justify-content: flex-end; margin-top: .5rem; }
+    .btn-cancel {
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+      padding: .55rem 1.2rem; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+      font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .btn-cancel:hover { border-color: var(--text); color: var(--text); }
+    .btn-golive {
+      background: var(--red); border: none; color: #fff;
+      padding: .55rem 1.4rem; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-weight: 700; cursor: pointer;
+      transition: all .2s; display: flex; align-items: center; gap: .5rem;
+    }
+    .btn-golive:hover { background: #ff2030; }
+    .btn-golive:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── VIEWER / STREAMER ── */
+    #liveRoom { display: none; position: relative; z-index: 1; }
+
+    .live-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      grid-template-rows: calc(100vh - 60px);
+      max-width: 100%;
+    }
+    @media(max-width:900px) {
+      .live-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; }
+    }
+
+    /* Zone vidéo */
+    .video-zone {
+      background: #000; position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #mainVideo {
+      width: 100%; height: 100%; object-fit: contain;
+      display: block;
+    }
+
+    /* Overlay info live */
+    .video-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,.85) 0%, transparent 100%);
+      padding: 1.5rem 1.5rem 1rem;
+      display: flex; align-items: flex-end; justify-content: space-between;
+    }
+    .video-meta {}
+    .live-tag {
+      display: inline-flex; align-items: center; gap: .35rem;
+      background: var(--red); color: #fff;
+      font-size: .75rem; font-weight: 700; letter-spacing: 1px;
+      padding: .25rem .65rem; border-radius: 4px; margin-bottom: .5rem;
+    }
+    .live-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: blink 1s infinite; }
+    .video-title { font-family: 'Bebas Neue', cursive; font-size: 1.6rem; letter-spacing: 1px; line-height: 1; }
+    .video-streamer { color: var(--accent); font-size: .85rem; margin-top: .3rem; font-weight: 600; }
+
+    .video-controls { display: flex; gap: .5rem; }
+    .ctrl-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.12); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,.15); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1rem; transition: all .2s;
+    }
+    .ctrl-btn:hover { background: rgba(255,255,255,.25); }
+    .ctrl-btn.danger { background: rgba(229,9,20,.3); border-color: rgba(229,9,20,.5); }
+    .ctrl-btn.danger:hover { background: var(--red); }
+
+    /* Viewers count overlay */
+    .viewers-pill {
+      position: absolute; top: 1rem; right: 1rem;
+      background: rgba(0,0,0,.6); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,.1);
+      color: #fff; font-size: .8rem; font-weight: 700;
+      padding: .3rem .8rem; border-radius: 20px;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .viewers-pill .eye { font-size: .9rem; }
+
+    /* Connecting overlay */
+    .connecting-overlay {
+      position: absolute; inset: 0;
+      background: rgba(10,10,15,.9);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1rem;
+    }
+    .connecting-overlay.hidden { display: none; }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .connecting-text { color: var(--muted); font-size: .9rem; }
+
+    /* ── CHAT SIDEBAR ── */
+    .chat-sidebar {
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .sidebar-title { font-family: 'Bebas Neue', cursive; font-size: 1.1rem; letter-spacing: 2px; color: var(--muted); }
+    .viewers-badge {
+      font-size: .75rem; color: var(--accent);
+      background: rgba(232,184,75,.1); border: 1px solid rgba(232,184,75,.2);
+      padding: .15rem .6rem; border-radius: 20px; font-weight: 700;
+    }
+
+    #chatMessages {
+      flex: 1; overflow-y: auto;
+      padding: .75rem 1rem;
+      display: flex; flex-direction: column; gap: .5rem;
+    }
+    #chatMessages::-webkit-scrollbar { width: 3px; }
+    #chatMessages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .chat-msg {
+      font-size: .82rem; line-height: 1.5;
+      animation: fadeUp .2s ease;
+    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+    .chat-msg .chat-user { font-weight: 700; color: var(--accent); margin-right: .3rem; }
+    .chat-msg .chat-user.streamer-tag { color: var(--red); }
+    .chat-msg.system { color: var(--muted); font-style: italic; font-size: .78rem; }
+
+    .chat-input-wrap {
+      padding: .75rem 1rem;
+      border-top: 1px solid var(--border);
+      display: flex; gap: .5rem; flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1; background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: .55rem .8rem; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: .82rem; outline: none;
+      transition: border-color .2s;
+    }
+    .chat-input:focus { border-color: var(--accent); }
+    .chat-input::placeholder { color: var(--muted); }
+    .chat-send {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--accent); border: none; color: #0a0a0f;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: .9rem; transition: all .2s; flex-shrink: 0;
+    }
+    .chat-send:hover { background: #f0c85a; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 2rem; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      font-weight: 700; font-size: .875rem; padding: .65rem 1.5rem;
+      border-radius: 30px; opacity: 0; pointer-events: none;
+      transition: opacity .3s, transform .3s; z-index: 400;
+    }
+    .toast.success { background: var(--green); color: #0a0a0f; }
+    .toast.error { background: var(--red); color: #fff; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="accueil.html" class="nav-logo">HorizonCiné</a>
+  <a href="accueil.html">Accueil</a>
+  <a href="catalogue.html">Catalogue</a>
+  <a href="communaute.html">Communauté</a>
+  <a href="forum.html">Forum</a>
+  <a href="live.html" class="active">Live</a>
+</nav>
+
+<!-- ── LOBBY ── -->
+<div id="lobby">
+  <div class="lobby-header">
+    <div>
+      <div class="lobby-title">LIVES EN <span>COURS</span></div>
+      <div style="color:var(--muted);font-size:.85rem;margin-top:.25rem">Rejoins un live ou lance le tien</div>
+    </div>
+    <button class="btn-start-live" id="btnOpenModal" onclick="openStartModal()">
+      <div class="dot"></div>
+      Lancer un live
+    </button>
+  </div>
+
+  <div class="lives-grid" id="livesGrid">
+    <div class="empty-lives">
+      <div class="big">📡</div>
+      <p>Aucun live en cours pour l'instant.<br>Sois le premier à te lancer !</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── SALLE LIVE ── -->
+<div id="liveRoom">
+  <div class="live-layout">
+    <div class="video-zone">
+      <video id="mainVideo" autoplay playsinline muted></video>
+
+      <!-- Overlay connexion -->
+      <div class="connecting-overlay" id="connectingOverlay">
+        <div class="spinner"></div>
+        <div class="connecting-text" id="connectingText">Connexion au live…</div>
+      </div>
+
+      <div class="viewers-pill">
+        <span class="eye">👁</span>
+        <span id="viewerCount">0</span> spectateurs
+      </div>
+
+      <div class="video-overlay">
+        <div class="video-meta">
+          <div class="live-tag"><div class="dot"></div> LIVE</div>
+          <div class="video-title" id="liveTitle">—</div>
+          <div class="video-streamer" id="liveStreamer">—</div>
+        </div>
+        <div class="video-controls">
+          <button class="ctrl-btn" id="btnMute" onclick="toggleMute()" title="Muet">🔊</button>
+          <button class="ctrl-btn" id="btnFullscreen" onclick="toggleFullscreen()" title="Plein écran">⛶</button>
+          <button class="ctrl-btn danger" id="btnLeave" onclick="leaveOrStop()" title="Quitter">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">Chat Live</div>
+        <div class="viewers-badge" id="viewersBadge">0 viewers</div>
+      </div>
+      <div id="chatMessages"></div>
+      <div class="chat-input-wrap">
+        <input class="chat-input" id="liveChat" placeholder="Écrire dans le chat…" maxlength="200" onkeydown="if(event.key==='Enter')sendChatMsg()"/>
+        <button class="chat-send" onclick="sendChatMsg()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL DÉMARRER LIVE ── -->
+<div class="modal-overlay" id="startModal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title">🔴 LANCER UN <span>LIVE</span></div>
+
+    <div class="cam-preview-wrap">
+      <video id="camPreview" autoplay muted playsinline></video>
+      <div class="cam-hint">
+        <div class="icon">📷</div>
+        <span>Clique pour activer ta caméra</span>
+      </div>
+    </div>
+
+    <button class="btn-cam" onclick="startPreview()">📷 Activer caméra / micro</button>
+
+    <div class="fg">
+      <label>Titre du live</label>
+      <input type="text" id="liveTitle_input" placeholder="Ex : On regarde Interstellar ensemble !" maxlength="80"/>
+    </div>
+    <div class="fg">
+      <label>Catégorie</label>
+      <select id="liveCat">
+        <option value="film">🎬 Film</option>
+        <option value="serie">📺 Série</option>
+        <option value="anime">⛩️ Anime</option>
+        <option value="discussion">💬 Discussion</option>
+        <option value="autre">🎲 Autre</option>
+      </select>
+    </div>
+
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeStartModal()">Annuler</button>
+      <button class="btn-golive" id="btnGoLive" onclick="startLive()" disabled>
+        <div class="dot" style="width:7px;height:7px;border-radius:50%;background:#fff;animation:blink 1s infinite"></div>
+        Go Live
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const sb = createClient(
+    'https://wuagahavmbugmnuzsouf.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  );
+
+  // ── AUTH ──────────────────────────────────────────────────────────
+  const { data: { session } } = await sb.auth.getSession();
+  let currentUser = session?.user || null;
+  let currentProfile = null;
+
+  if (currentUser) {
+    const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    currentProfile = data;
+  }
+
+  // ── STATE ─────────────────────────────────────────────────────────
+  let localStream = null;
+  let peerConnections = {}; // viewerId -> RTCPeerConnection
+  let currentLiveId = null;
+  let isStreamer = false;
+  let liveChannel = null;
+  let chatChannel = null;
+
+  const ICE_SERVERS = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+    ]
+  };
+
+  // ── UTILS ─────────────────────────────────────────────────────────
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  function avatarColor(s) {
+    const c = ['#e8b84b','#3498db','#e74c3c','#2ecc71','#9b59b6','#1abc9c'];
+    let h = 0; for (let i=0;i<(s||'').length;i++) h=(h*31+s.charCodeAt(i))%c.length;
+    return c[Math.abs(h)];
+  }
+
+  // ── LOBBY ─────────────────────────────────────────────────────────
+  async function loadLives() {
+    const { data: lives } = await sb.from('lives')
+      .select('*, profiles(username, avatar_url)')
+      .eq('is_live', true)
+      .order('started_at', { ascending: false });
+
+    const grid = document.getElementById('livesGrid');
+    if (!lives || !lives.length) {
+      grid.innerHTML = `
+        <div class="empty-lives">
+          <div class="big">📡</div>
+          <p>Aucun live en cours pour l'instant.<br>Sois le premier à te lancer !</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = lives.map(l => {
+      const pseudo = l.profiles?.username || 'Anonyme';
+      const av = l.profiles?.avatar_url;
+      const avatarHTML = av
+        ? `<img src="${av}" style="width:100%;height:100%;object-fit:cover;"/>`
+        : pseudo[0].toUpperCase();
+      const avColor = avatarColor(pseudo);
+      const cat = { film:'🎬', serie:'📺', anime:'⛩️', discussion:'💬', autre:'🎲' }[l.category] || '🎬';
+      return `
+        <div class="live-card" onclick="joinLive('${l.id}')">
+          <div class="live-thumb">
+            <div class="thumb-placeholder">${cat}</div>
+            <div class="live-badge"><div class="dot"></div> LIVE</div>
+            <div class="viewer-count">👁 ${l.viewer_count || 0}</div>
+          </div>
+          <div class="live-card-body">
+            <div class="live-card-title">${l.title || 'Live sans titre'}</div>
+            <div class="live-card-meta">
+              <div class="streamer-av" style="background:${av ? '#000' : avColor}">${avatarHTML}</div>
+              <span class="streamer-name">${pseudo}</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Rafraîchir la liste toutes les 10s
+  await loadLives();
+  setInterval(loadLives, 10000);
+
+  // ── MODAL LIVE ────────────────────────────────────────────────────
+  window.openStartModal = () => {
+    if (!currentUser) { showToast('Connecte-toi pour lancer un live.', 'error'); return; }
+    document.getElementById('startModal').classList.add('open');
+  };
+  window.closeStartModal = () => {
+    document.getElementById('startModal').classList.remove('open');
+    stopPreview();
+  };
+  window.closeModalOutside = (e) => { if (e.target.id === 'startModal') window.closeStartModal(); };
+
+  window.startPreview = async () => {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const prev = document.getElementById('camPreview');
+      prev.srcObject = localStream;
+      prev.classList.add('active');
+      document.getElementById('btnGoLive').disabled = false;
+      showToast('Caméra activée !');
+    } catch (e) {
+      showToast('Impossible d\'accéder à la caméra.', 'error');
+    }
+  };
+
+  function stopPreview() {
+    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+    const prev = document.getElementById('camPreview');
+    prev.srcObject = null; prev.classList.remove('active');
+    document.getElementById('btnGoLive').disabled = true;
+  }
+
+  // ── LANCER LE LIVE ────────────────────────────────────────────────
+  window.startLive = async () => {
+    if (!localStream) { showToast('Active ta caméra d\'abord !', 'error'); return; }
+    const title = document.getElementById('liveTitle_input').value.trim() || 'Mon live HorizonCiné';
+    const category = document.getElementById('liveCat').value;
+
+    const { data: live, error } = await sb.from('lives').insert({
+      streamer_id: currentUser.id,
+      title,
+      category,
+      is_live: true,
+      viewer_count: 0,
+      started_at: new Date().toISOString(),
+    }).select().single();
+
+    if (error) { showToast('Erreur lors du démarrage.', 'error'); console.error(error); return; }
+
+    currentLiveId = live.id;
+    isStreamer = true;
+
+    window.closeStartModal();
+    enterLiveRoom(live, true);
+    setupSignalingStreamer(live.id);
+    setupChat(live.id);
+    showToast('Tu es en live ! 🔴');
+  };
+
+  // ── REJOINDRE UN LIVE ─────────────────────────────────────────────
+  window.joinLive = async (liveId) => {
+    if (!currentUser) { showToast('Connecte-toi pour rejoindre un live.', 'error'); return; }
+
+    const { data: live } = await sb.from('lives').select('*, profiles(username,avatar_url)').eq('id', liveId).single();
+    if (!live || !live.is_live) { showToast('Ce live est terminé.', 'error'); await loadLives(); return; }
+
+    // Ne pas rejoindre son propre live en tant que viewer
+    if (live.streamer_id === currentUser.id) {
+      showToast('C\'est ton propre live !');
+      currentLiveId = liveId; isStreamer = true;
+      enterLiveRoom(live, true);
+      // Reconstruire le stream local si besoin
+      if (!localStream) showToast('Ta caméra n\'est pas active.', 'error');
+      setupSignalingStreamer(liveId);
+      setupChat(liveId);
+      return;
+    }
+
+    currentLiveId = liveId;
+    isStreamer = false;
+    enterLiveRoom(live, false);
+    await setupSignalingViewer(liveId);
+    setupChat(liveId);
+
+    // Incrémenter viewers
+    await sb.from('lives').update({ viewer_count: (live.viewer_count || 0) + 1 }).eq('id', liveId);
+  };
+
+  // ── INTERFACE SALLE ───────────────────────────────────────────────
+  function enterLiveRoom(live, streamer) {
+    document.getElementById('lobby').style.display = 'none';
+    document.getElementById('liveRoom').style.display = 'block';
+    document.getElementById('liveTitle').textContent = live.title || 'Live';
+    document.getElementById('liveStreamer').textContent = '@ ' + (live.profiles?.username || 'Streamer');
+
+    if (streamer) {
+      const video = document.getElementById('mainVideo');
+      video.srcObject = localStream;
+      video.muted = true;
+      document.getElementById('connectingOverlay').classList.add('hidden');
+    }
+
+    updateViewerCount(live.viewer_count || 0);
+
+    // Realtime viewer count
+    sb.channel(`live-meta-${live.id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'lives', filter: `id=eq.${live.id}` },
+        (payload) => updateViewerCount(payload.new.viewer_count || 0))
+      .subscribe();
+  }
+
+  function updateViewerCount(n) {
+    document.getElementById('viewerCount').textContent = n;
+    document.getElementById('viewersBadge').textContent = `${n} viewer${n !== 1 ? 's' : ''}`;
+  }
+
+  // ── SIGNALING STREAMER ────────────────────────────────────────────
+  function setupSignalingStreamer(liveId) {
+    // Écouter les viewers qui arrivent (offers)
+    liveChannel = sb.channel(`signaling-${liveId}`)
+      .on('broadcast', { event: 'viewer-join' }, async ({ payload }) => {
+        const viewerId = payload.viewer_id;
+        if (peerConnections[viewerId]) return;
+
+        const pc = new RTCPeerConnection(ICE_SERVERS);
+        peerConnections[viewerId] = pc;
+
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+        pc.onicecandidate = ({ candidate }) => {
+          if (candidate) {
+            liveChannel.send({ type: 'broadcast', event: 'ice-streamer', payload: { target: viewerId, candidate } });
+          }
+        };
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        liveChannel.send({ type: 'broadcast', event: 'offer', payload: { target: viewerId, sdp: offer } });
+      })
+      .on('broadcast', { event: 'answer' }, async ({ payload }) => {
+        const pc = peerConnections[payload.from];
+        if (pc && payload.target === 'streamer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        }
+      })
+      .on('broadcast', { event: 'ice-viewer' }, async ({ payload }) => {
+        const pc = peerConnections[payload.from];
+        if (pc && payload.target === 'streamer') {
+          await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+        }
+      })
+      .subscribe();
+  }
+
+  // ── SIGNALING VIEWER ──────────────────────────────────────────────
+  async function setupSignalingViewer(liveId) {
+    const viewerId = currentUser.id;
+
+    liveChannel = sb.channel(`signaling-${liveId}`)
+      .on('broadcast', { event: 'offer' }, async ({ payload }) => {
+        if (payload.target !== viewerId) return;
+
+        const pc = new RTCPeerConnection(ICE_SERVERS);
+        peerConnections['streamer'] = pc;
+
+        pc.ontrack = ({ streams }) => {
+          const video = document.getElementById('mainVideo');
+          video.srcObject = streams[0];
+          video.muted = false;
+          document.getElementById('connectingOverlay').classList.add('hidden');
+        };
+
+        pc.onicecandidate = ({ candidate }) => {
+          if (candidate) {
+            liveChannel.send({ type: 'broadcast', event: 'ice-viewer', payload: { from: viewerId, target: 'streamer', candidate } });
+          }
+        };
+
+        await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        liveChannel.send({ type: 'broadcast', event: 'answer', payload: { from: viewerId, target: 'streamer', sdp: answer } });
+      })
+      .on('broadcast', { event: 'ice-streamer' }, async ({ payload }) => {
+        if (payload.target !== viewerId) return;
+        const pc = peerConnections['streamer'];
+        if (pc) await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+      })
+      .on('broadcast', { event: 'live-ended' }, () => {
+        showToast('Le live est terminé.', 'error');
+        setTimeout(() => leaveOrStop(), 2000);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          // Signaler au streamer qu'on arrive
+          liveChannel.send({ type: 'broadcast', event: 'viewer-join', payload: { viewer_id: viewerId } });
+        }
+      });
+  }
+
+  // ── CHAT EN LIVE ──────────────────────────────────────────────────
+  function setupChat(liveId) {
+    chatChannel = sb.channel(`live-chat-${liveId}`)
+      .on('broadcast', { event: 'chat-msg' }, ({ payload }) => {
+        appendChatMsg(payload.username, payload.content, payload.is_streamer);
+      })
+      .subscribe();
+
+    // Charger messages existants
+    sb.from('live_messages').select('*').eq('live_id', liveId).order('created_at').then(({ data }) => {
+      (data || []).forEach(m => appendChatMsg(m.username, m.content, m.is_streamer, false));
+      const chat = document.getElementById('chatMessages');
+      chat.scrollTop = chat.scrollHeight;
+    });
+  }
+
+  function appendChatMsg(username, content, isStreamer = false, animate = true) {
+    const chat = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg' + (!animate ? ' no-anim' : '');
+    div.innerHTML = `<span class="chat-user${isStreamer ? ' streamer-tag' : ''}">${username}${isStreamer ? ' 🔴' : ''}</span>${content}`;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  window.sendChatMsg = async () => {
+    const input = document.getElementById('liveChat');
+    const content = input.value.trim();
+    if (!content || !currentLiveId) return;
+    input.value = '';
+
+    const username = currentProfile?.username || 'Anonyme';
+    const isStr = isStreamer;
+
+    // Broadcast temps réel
+    chatChannel?.send({ type: 'broadcast', event: 'chat-msg', payload: { username, content, is_streamer: isStr } });
+
+    // Sauvegarder en base
+    await sb.from('live_messages').insert({ live_id: currentLiveId, user_id: currentUser.id, username, content, is_streamer: isStr });
+  };
+
+  // ── CONTRÔLES ─────────────────────────────────────────────────────
+  let muted = false;
+  window.toggleMute = () => {
+    const video = document.getElementById('mainVideo');
+    muted = !muted;
+    video.muted = muted;
+    document.getElementById('btnMute').textContent = muted ? '🔇' : '🔊';
+  };
+
+  window.toggleFullscreen = () => {
+    const zone = document.querySelector('.video-zone');
+    if (!document.fullscreenElement) zone.requestFullscreen();
+    else document.exitFullscreen();
+  };
+
+  window.leaveOrStop = async () => {
+    if (isStreamer) {
+      // Terminer le live
+      await sb.from('lives').update({ is_live: false, ended_at: new Date().toISOString() }).eq('id', currentLiveId);
+      liveChannel?.send({ type: 'broadcast', event: 'live-ended', payload: {} });
+      showToast('Live terminé.');
+    } else {
+      // Décrémenter viewers
+      const { data: live } = await sb.from('lives').select('viewer_count').eq('id', currentLiveId).single();
+      if (live) await sb.from('lives').update({ viewer_count: Math.max(0, (live.viewer_count || 1) - 1) }).eq('id', currentLiveId);
+      showToast('Tu as quitté le live.');
+    }
+
+    // Nettoyer
+    Object.values(peerConnections).forEach(pc => pc.close());
+    peerConnections = {};
+    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+    liveChannel?.unsubscribe();
+    chatChannel?.unsubscribe();
+    currentLiveId = null; isStreamer = false;
+
+    document.getElementById('liveRoom').style.display = 'none';
+    document.getElementById('lobby').style.display = 'block';
+    document.getElementById('connectingOverlay').classList.remove('hidden');
+    document.getElementById('mainVideo').srcObject = null;
+    document.getElementById('chatMessages').innerHTML = '';
+    await loadLives();
+  };
+</script>
+</body>
+</html>
