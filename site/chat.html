@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Messagerie – HorizonCiné</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --card: #1a1a26;
+      --border: #2a2a3d;
+      --accent: #e8b84b;
+      --accent2: #c0392b;
+      --text: #e8e8f0;
+      --muted: #7a7a9a;
+      --radius: 16px;
+      --sent-bg: linear-gradient(135deg, #e8b84b22, #e8b84b11);
+      --sent-border: rgba(232,184,75,.3);
+      --recv-bg: rgba(255,255,255,.04);
+      --recv-border: rgba(255,255,255,.07);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── AMBIENT GLOW ── */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(232,184,75,.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative;
+      z-index: 10;
+      background: rgba(10,10,15,.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 1rem;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
+    .back-btn:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(192,57,43,.1); }
+
+    .header-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .header-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      display: block;
+      background: var(--card);
+    }
+    .online-indicator {
+      position: absolute;
+      bottom: 1px;
+      right: 1px;
+      width: 10px;
+      height: 10px;
+      background: #2ecc71;
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+    }
+
+    .header-info { flex: 1; min-width: 0; }
+    .header-name {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.2rem;
+      letter-spacing: 1.5px;
+      color: var(--text);
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .header-sub {
+      font-size: .72rem;
+      color: var(--accent);
+      letter-spacing: .5px;
+      margin-top: 2px;
+    }
+
+    .header-logo {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.3rem;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-decoration: none;
+      opacity: .5;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .header-logo:hover { opacity: 1; }
+
+    /* ── MESSAGES AREA ── */
+    #messages-wrap {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    #messages-wrap::-webkit-scrollbar { width: 4px; }
+    #messages-wrap::-webkit-scrollbar-track { background: transparent; }
+    #messages-wrap::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    /* Date separator */
+    .date-sep {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin: .5rem 0;
+    }
+    .date-sep::before, .date-sep::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .date-sep span {
+      font-size: .7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    /* Message row */
+    .msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: .6rem;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: fadeUp .3s ease forwards;
+    }
+    .msg-row.sent { flex-direction: row-reverse; }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+    }
+
+    .msg-bubble-wrap { display: flex; flex-direction: column; max-width: min(70%, 520px); }
+    .sent .msg-bubble-wrap { align-items: flex-end; }
+
+    .msg-meta {
+      font-size: .7rem;
+      color: var(--muted);
+      margin-bottom: .25rem;
+      padding: 0 .25rem;
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+    }
+    .msg-meta .name { color: var(--accent); font-weight: 600; }
+
+    .msg-bubble {
+      padding: .75rem 1rem;
+      border-radius: var(--radius);
+      font-size: .9rem;
+      line-height: 1.55;
+      word-break: break-word;
+      position: relative;
+      transition: transform .15s;
+    }
+    .msg-bubble:hover { transform: scale(1.01); }
+
+    .msg-row:not(.sent) .msg-bubble {
+      background: var(--recv-bg);
+      border: 1px solid var(--recv-border);
+      border-bottom-left-radius: 4px;
+      backdrop-filter: blur(6px);
+    }
+    .msg-row.sent .msg-bubble {
+      background: var(--sent-bg);
+      border: 1px solid var(--sent-border);
+      border-bottom-right-radius: 4px;
+      backdrop-filter: blur(6px);
+    }
+
+    /* Tail */
+    .msg-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      width: 8px;
+      height: 8px;
+    }
+    .msg-row:not(.sent) .msg-bubble::after {
+      left: -4px;
+      border-right: 8px solid rgba(255,255,255,.04);
+      border-bottom: 8px solid transparent;
+    }
+    .msg-row.sent .msg-bubble::after {
+      right: -4px;
+      border-left: 8px solid rgba(232,184,75,.11);
+      border-bottom: 8px solid transparent;
+    }
+
+    /* ── STATIC PLACEHOLDER MESSAGES ── */
+    #static-demo { display: flex; flex-direction: column; gap: .75rem; }
+
+    /* ── INPUT ZONE ── */
+    .input-zone {
+      position: relative;
+      z-index: 10;
+      background: rgba(10,10,15,.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .input-inner {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: .5rem .5rem .5rem 1.25rem;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .input-inner:focus-within {
+      border-color: rgba(232,184,75,.4);
+      box-shadow: 0 0 0 3px rgba(232,184,75,.06);
+    }
+
+    #message {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      padding: .35rem 0;
+    }
+    #message::placeholder { color: var(--muted); }
+
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all .2s;
+      color: #0a0a0f;
+    }
+    .send-btn:hover { background: #f0c85a; transform: scale(1.08); }
+    .send-btn:active { transform: scale(.95); }
+    .send-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: .75rem;
+      color: var(--muted);
+      padding: 2rem;
+      text-align: center;
+    }
+    .empty-state .icon {
+      font-size: 2.5rem;
+      opacity: .4;
+      filter: grayscale(1);
+    }
+    .empty-state p { font-size: .9rem; line-height: 1.6; max-width: 280px; }
+
+    /* ── ERROR / LOCKED STATE ── */
+    .state-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 2rem;
+      text-align: center;
+    }
+    .state-screen .icon { font-size: 3rem; }
+    .state-screen h2 { font-family: 'Bebas Neue', cursive; font-size: 1.8rem; letter-spacing: 2px; color: var(--accent); }
+    .state-screen p { color: var(--muted); font-size: .9rem; }
+    .state-screen a { color: var(--accent); font-weight: 600; text-decoration: none; }
+
+    @media (max-width: 600px) {
+      header { padding: 0 1rem; }
+      #messages-wrap { padding: 1rem; }
+      .input-zone { padding: .75rem 1rem; }
+      .msg-bubble-wrap { max-width: 85%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="accueil.html" class="back-btn" title="Retour">←</a>
+  <div class="header-avatar-wrap">
+    <img class="header-avatar" id="headerAvatar" src="" alt=""/>
+    <div class="online-indicator" id="onlineIndicator" style="display:none"></div>
+  </div>
+  <div class="header-info">
+    <div class="header-name" id="headerName">—</div>
+    <div class="header-sub" id="headerSub">Conversation privée</div>
+  </div>
+  <a href="accueil.html" class="header-logo">HorizonCiné</a>
+</header>
+
+<div id="messages-wrap">
+  <!-- rempli dynamiquement -->
+</div>
+
+<div class="input-zone">
+  <form id="chat-form">
+    <div class="input-inner">
+      <input type="text" id="message" placeholder="Écrire un message…" autocomplete="off"/>
+      <button type="submit" class="send-btn" title="Envoyer">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const supabase = createClient(
+    'https://wuagahavmbugmnuzsouf.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  );
+
+  const wrap = document.getElementById('messages-wrap');
+
+  // ── AUTH ──────────────────────────────────────────────────────────
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData.session;
+
+  if (!session) {
+    wrap.innerHTML = `
+      <div class="state-screen">
+        <div class="icon">🔒</div>
+        <h2>Accès restreint</h2>
+        <p>Tu dois être connecté pour accéder à la messagerie.</p>
+        <p><a href="index.html">Se connecter →</a></p>
+      </div>`;
+    document.getElementById('chat-form').style.display = 'none';
+    throw new Error('Non connecté');
+  }
+
+  const currentUserId = session.user.id;
+  const params = new URLSearchParams(window.location.search);
+  const receiverId = params.get('user');
+
+  if (!receiverId) {
+    wrap.innerHTML = `
+      <div class="state-screen">
+        <div class="icon">💬</div>
+        <h2>Aucun destinataire</h2>
+        <p>Rends-toi sur le profil d'un utilisateur et clique sur <strong style="color:var(--accent)">Discuter</strong>.</p>
+        <p style="margin-top:.5rem"><a href="communaute.html">Voir la communauté →</a></p>
+      </div>`;
+    document.getElementById('chat-form').style.display = 'none';
+    throw new Error('Receiver manquant');
+  }
+
+  // ── INFOS UTILISATEURS ────────────────────────────────────────────
+  let currentUsername = 'Moi', currentAvatar = null;
+  let receiverUsername = 'Utilisateur', receiverAvatar = null;
+
+  async function loadUsers() {
+    const [{ data: me }, { data: them }] = await Promise.all([
+      supabase.from('profiles').select('username,avatar_url').eq('id', currentUserId).single(),
+      supabase.from('profiles').select('username,avatar_url').eq('id', receiverId).single(),
+    ]);
+    if (me) { currentUsername = me.username || 'Moi'; currentAvatar = me.avatar_url; }
+    if (them) {
+      receiverUsername = them.username || 'Utilisateur';
+      receiverAvatar = them.avatar_url;
+      document.getElementById('headerName').textContent = receiverUsername;
+      document.getElementById('headerSub').textContent = '@' + receiverUsername.toLowerCase().replace(/\s+/g,'_');
+      const avatarEl = document.getElementById('headerAvatar');
+      if (them.avatar_url) {
+        avatarEl.src = them.avatar_url;
+      } else {
+        // Initiale colorée
+        avatarEl.style.display = 'none';
+        const initDiv = document.createElement('div');
+        initDiv.style.cssText = `width:40px;height:40px;border-radius:50%;background:#e8b84b;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-size:1.2rem;color:#0a0a0f;border:2px solid var(--accent);flex-shrink:0;`;
+        initDiv.textContent = receiverUsername[0].toUpperCase();
+        avatarEl.parentNode.appendChild(initDiv);
+      }
+    }
+  }
+
+  // ── RENDU MESSAGES ────────────────────────────────────────────────
+  function avatarEl(src, name, side) {
+    const img = document.createElement('img');
+    img.className = 'msg-avatar';
+    img.alt = name;
+    if (src) {
+      img.src = src;
+    } else {
+      img.style.display = 'none';
+      const d = document.createElement('div');
+      d.style.cssText = `width:30px;height:30px;border-radius:50%;background:#e8b84b;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-size:.85rem;color:#0a0a0f;flex-shrink:0;border:1.5px solid var(--border);`;
+      d.textContent = name[0].toUpperCase();
+      return d;
+    }
+    return img;
+  }
+
+  function formatTime(iso) {
+    const d = new Date(iso);
+    return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    const today = new Date();
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return "Aujourd'hui";
+    if (d.toDateString() === yesterday.toDateString()) return 'Hier';
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  let lastDate = null;
+
+  function renderMessage(msg, animate = false) {
+    const isSent = msg.sender === currentUserId;
+    const name = isSent ? currentUsername : receiverUsername;
+    const avatar = isSent ? currentAvatar : receiverAvatar;
+    const msgDate = formatDate(msg.created_at);
+
+    // Séparateur de date
+    if (msgDate !== lastDate) {
+      lastDate = msgDate;
+      const sep = document.createElement('div');
+      sep.className = 'date-sep';
+      sep.innerHTML = `<span>${msgDate}</span>`;
+      wrap.appendChild(sep);
+    }
+
+    const row = document.createElement('div');
+    row.className = 'msg-row' + (isSent ? ' sent' : '');
+    if (animate) row.style.animationDelay = '0ms';
+
+    const av = avatarEl(avatar, name, isSent ? 'sent' : 'recv');
+
+    const bubbleWrap = document.createElement('div');
+    bubbleWrap.className = 'msg-bubble-wrap';
+
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    meta.innerHTML = `<span class="name">${name}</span><span>${formatTime(msg.created_at)}</span>`;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.textContent = msg.content;
+
+    bubbleWrap.appendChild(meta);
+    bubbleWrap.appendChild(bubble);
+
+    if (isSent) {
+      row.appendChild(bubbleWrap);
+      row.appendChild(av);
+    } else {
+      row.appendChild(av);
+      row.appendChild(bubbleWrap);
+    }
+
+    wrap.appendChild(row);
+  }
+
+  async function loadMessages() {
+    const { data: messages, error } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`sender.eq.${currentUserId},receiver.eq.${currentUserId}`)
+      .order('created_at');
+
+    if (error || !messages) return;
+
+    const filtered = messages.filter(m =>
+      (m.sender === currentUserId && m.receiver === receiverId) ||
+      (m.sender === receiverId && m.receiver === currentUserId)
+    );
+
+    wrap.innerHTML = '';
+    lastDate = null;
+
+    if (!filtered.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.innerHTML = `
+        <div class="icon">✉️</div>
+        <p>Aucun message pour l'instant.<br>Sois le premier à dire bonjour !</p>`;
+      wrap.appendChild(empty);
+    } else {
+      filtered.forEach(m => renderMessage(m));
+    }
+
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────
+  await loadUsers();
+  await loadMessages();
+
+  // ── ENVOI ─────────────────────────────────────────────────────────
+  document.getElementById('chat-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('message');
+    const content = input.value.trim();
+    if (!content) return;
+    input.value = '';
+
+    await supabase.from('messages').insert({
+      sender: currentUserId,
+      receiver: receiverId,
+      content,
+    });
+
+    await loadMessages();
+  });
+
+  // ── REALTIME ──────────────────────────────────────────────────────
+  setInterval(loadMessages, 5000);
+
+  supabase
+    .channel('chat-live')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: `receiver=eq.${currentUserId}`
+    }, async () => {
+      await loadMessages();
+    })
+    .subscribe();
+</script>
+</body>
+</html>
