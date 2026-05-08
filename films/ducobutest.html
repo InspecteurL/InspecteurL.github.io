@@ -249,6 +249,10 @@ function dbPut(db, key, value) {
 // =============================================
 // FETCH AVEC RETRY
 // =============================================
+  console.log(MediaSource.isTypeSupported('video/mp4; codecs="avc1.640028"'));
+console.log(MediaSource.isTypeSupported('video/mp4; codecs="avc1.640032"'));
+console.log(MediaSource.isTypeSupported('video/mp4; codecs="avc1.4D401F"'));
+  
 async function fetchBytes(url, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
@@ -600,11 +604,7 @@ document.addEventListener('keydown', e => {
   if (e.code === 'KeyF')       { if (!document.fullscreenElement) videoContainer.requestFullscreen(); else document.exitFullscreen(); }
 });
 
-  console.log(
-   "append",
-   sb === videoSB ? "VIDEO" : "AUDIO",
-   data.byteLength
-);
+
 </script>
 </body>
 </html>
