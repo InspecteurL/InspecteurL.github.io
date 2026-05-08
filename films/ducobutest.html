@@ -578,6 +578,12 @@ document.addEventListener('keydown', e => {
   if (e.code === 'ArrowDown')  { video.volume = Math.max(0, video.volume - 0.1); volumeSlider.value = video.volume; updateVolumeIcon(); }
   if (e.code === 'KeyF')       { if (!document.fullscreenElement) videoContainer.requestFullscreen(); else document.exitFullscreen(); }
 });
+
+  console.log(
+   "append",
+   sb === videoSB ? "VIDEO" : "AUDIO",
+   data.byteLength
+);
 </script>
 </body>
 </html>
