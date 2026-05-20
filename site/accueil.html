@@ -4,1027 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Horizoncine</title>
-
-<!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-
-<!-- Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-<!-- CSS -->
-<link rel="stylesheet" href="custom.css">
-</head>
-<body>
-
-<header class="header">
-    <div class="container header-container">
-        <div class="logo">
-            <a href="#"><img src="https://inspecteurl.github.io/site/HORZONCINE.png" alt="HotFlix Logo"></a>
-        </div>
-        <nav class="nav">
-            <ul>
-                <li><a href="https://inspecteurl.github.io/site/accueil.html">Home</a></li>
-                <li><a href="https://inspecteurl.github.io/site/communaute.html">Communauté</a></li>
-                <li><a href="https://inspecteurl.github.io/site/profil.html">Profil</a></li>
-                <li><a href="https://inspecteurl.github.io/site/forum.html">Forum</a></li>
-                <li><a href="https://inspecteurl.github.io/site/catalogue.html">Catalogue</a></li>
-                <li><a href="https://inspecteurl.github.io/site/suggestion.html">Suggestion</a></li>
-            </ul>
-        </nav>
-        <div class="search search-premium">
-  <i class="fas fa-search search-icon"></i>
-
-  <input
-    type="text"
-    id="searchInput"
-    placeholder="Rechercher un film, une série, un animé…"
-    autocomplete="off"
-  >
-
-  <button id="searchBtn" aria-label="Search"></button>
-
-  <div id="searchSuggestions" class="search-suggestions"></div>
-</div>
-
-
-            <div class="profile">
-                <a href="https://inspecteurl.github.io/site/compte.html"<img src="https://i.pravatar.cc/40" alt="Profile"></a>
-            </div>
-        </div>
-    </div>
-</header>
-
-<!-- HERO SLIDER -->
-<section class="hero">
-    <div class="slides">
-        <div class="hero-slide active" style="background-image:url('https://media.themoviedb.org/t/p/w1000_and_h563_face/1KYpyYtQFNLr7jvJ5wf0LfHIeti.jpg');">
-            <div class="hero-content">
-                <h1>La Flamme <span class="rating">7.2</span></h1>
-                <p>La vie lui a tout donné… sauf une co-pilote. Pendant neuf semaines dans une sublime villa, treize femmes vont s’affronter pour séduire Marc, pilote de ligne, et tenter d’allumer en lui… La Flamme ! Alors, armez les toboggans, vérifiez la porte opposée… Marc va emmener ses prétendantes au septième ciel !</p>
-                <a href="https://inspecteurl.github.io/s%C3%A9ries/flame.html" class="btn">Regarder Maintenant</a>
-            </div>
-        </div>
-        <div class="hero-slide" style="background-image:url('https://media.themoviedb.org/t/p/w1000_and_h563_face/8oouyeJMRBwErWae7e0vgVECC8u.jpg');">
-            <div class="hero-content">
-                <h1>Avatar <span class="rating">7.9</span></h1>
-                <p>Un marine paraplégique envoyé sur la lune Pandora pour une mission unique est tiraillé entre suivre ses ordres et protéger le monde qu'il considère le sien.</p>
-                <a href="https://inspecteurl.github.io/films/avatarun.html" class="btn">Regarder Maintenant</a>
-            </div>
-        </div>
-        <div class="hero-slide" style="background-image:url('https://media.themoviedb.org/t/p/w1000_and_h563_face/2H2YYbn8wDzYXtak83Md6PAwMdp.jpg');">
-            <div class="hero-content">
-                <h1>Retour vers le futur <span class="rating">8.5</span></h1>
-                <p>Marty McFly, un lycéen de 17 ans, est accidentellement envoyé trente ans plus tôt avec une voiture DeLorean qui voyage dans le temps, inventé par son ami le scientifique non-conformiste Doc Brown.</p>
-                <a href="https://inspecteurl.github.io/films/retourverslefuturun.html" class="btn">Regarder Maintenant</a>
-            </div>
-        </div>
-    </div>
-    <button class="prev"><i class="fas fa-chevron-left"></i></button>
-    <button class="next"><i class="fas fa-chevron-right"></i></button>
-</section>
-<section class="catalog">
-    <h2>Nouveautés/Prochainement</h2>
-
-    <div class="carousel">
-        <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
-        <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
-
-        <div class="carousel-inner">
-            <div class="movie-card coming-soon"
-     data-release="2026-01-05T16:00:00"
-     data-link="https://inspecteurl.github.io/s%C3%A9ries/adolescence.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/jWXGn9yUA9KRN5PQ2b7i7sKSw44.jpg" alt="adolescence">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.1</span>
-    </div>
-
-    <h3>Adolescence</h3>
-    <p>Drame et Crime</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-01-05T16:00:00"
-     data-link="https://inspecteurl.github.io/s%C3%A9ries/flame.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/ESAOd6C9EL3fUnv8urrqXH0Qls.jpg" alt="flame">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">7.2</span>
-    </div>
-
-    <h3>La Flamme</h3>
-    <p>Comédie</p>
-</div>
-
-             <div class="movie-card coming-soon"
-     data-release="2026-01-05T16:00:00"
-     data-link="https://inspecteurl.github.io/animes/pluto.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/agf5sETjlO35s3EDA7wwGliZ5UW.jpg" alt="pluto">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.44</span>
-    </div>
-
-    <h3>Pluto</h3>
-    <p>Animation, Science-Fiction & Fantastique, Mystère et Crime</p>
-</div>
-
-            <div class="movie-card coming-soon"
-     data-release="2026-01-05T16:00:00"
-     data-link="https://inspecteurl.github.io/films/demonslayerforteresse.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/fWVSwgjpT2D78VUh6X8UBd2rorW.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.70</span>
-    </div>
-
-    <h3>Demon Slayer : Kimetsu no Yaiba - Le film : La Forteresse infinie</h3>
-    <p>Animation, Action et Fantastique</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-01-10T16:00:00"
-     data-link="https://inspecteurl.github.io/films/meninblackun.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/uLOmOF5IzWoyrgIF5MfUnh5pa1X.jpg" alt="Avatar 3">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">7.3</span>
-    </div>
-
-    <h3>Men in Black</h3>
-    <p>Action, Aventure, Comédie et Science-Fiction</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-01-15T16:00:00"
-     data-link="https://inspecteurl.github.io/films/meninblackdeux.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/enA22EPyzc2WQ1VVyY7zxresQQr.jpg" alt="Avatar 3">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">6.2</span>
-    </div>
-
-    <h3>Men in Black II</h3>
-    <p>Action, Aventure, Comédie et Science-Fiction</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-01-20T16:00:00"
-     data-link="https://inspecteurl.github.io/films/meninblacktrois.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/9eeYJcqSkXQUhTsfe5QxS1ODo3G.jpg" alt="Avatar 3">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">6.8</span>
-    </div>
-
-    <h3>Men in Black III</h3>
-    <p>Action, Aventure, Comédie et Science-Fiction</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-01-25T16:00:00"
-     data-link="https://inspecteurl.github.io/films/monstrescie.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/fvLCuDCzWSk8rxH9BgCDgLxhX03.jpg" alt="Avatar 3">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.1</span>
-    </div>
-
-    <h3>Monstres & Cie</h3>
-    <p>Animation, Comédie et Familial</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-01-30T16:00:00"
-     data-link="https://inspecteurl.github.io/films/kungfupandaun.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/xCn3VOST64XpOA8x0gaQkQiZtZY.jpg" alt="Avatar 3">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">7.6</span>
-    </div>
-
-    <h3>Kung Fu Panda</h3>
-    <p>Animation, Familial, Comédie, Action et Aventure</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-02-05T16:00:00"
-     data-link="https://inspecteurl.github.io/films/kungfupandadeux.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/mtqqD00vB4PGRt20gWtGqFhrkd0.jpg" alt="Avatar 3">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">7.3</span>
-    </div>
-
-    <h3>Kung Fu Panda 2</h3>
-    <p>Animation, Familial, Comédie, Action et Aventure</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-02-10T16:00:00"
-     data-link="https://inspecteurl.github.io/films/kungfupandatrois.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/gr3ylQUQGHpN21l7Y40vLbGMixD.jpg" alt="Avatar 3">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">7.1</span>
-    </div>
-
-    <h3>Kung Fu Panda 3</h3>
-    <p>Animation, Familial, Comédie, Action et Aventure</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-02-15T16:00:00"
-     data-link="https://inspecteurl.github.io/films/soupeauchoux.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/3Eym65PSArfU89O15Cct0JiaPHl.jpg" alt="Avatar 3">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">6.5</span>
-    </div>
-
-    <h3>La Soupe aux choux</h3>
-    <p>Comédie et Science-Fiction</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-02-20T16:00:00"
-     data-link="https://inspecteurl.github.io/films/babysitingun.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/lY5u3bvWXRk3KMrSoP0Sd3Ro5gW.jpg" alt="Avatar 3">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">6.8</span>
-    </div>
-
-    <h3>Babysitting</h3>
-    <p>Comédie</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-02-25T16:00:00"
-     data-link="https://inspecteurl.github.io/films/babysitingdeux.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/in1plkdtRy5SC2GJvOiEGloP7UE.jpg" alt="Avatar 3">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">6.4</span>
-    </div>
-
-    <h3>Babysitting 2</h3>
-    <p>Comédie</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-03-02T16:00:00"
-     data-link="https://inspecteurl.github.io/animes/gto.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/XuzGgy1FoCKFw2USYYrGhv00np.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.68</span>
-    </div>
-
-    <h3>Great Teacher Onizuka</h3>
-    <p>Animation, Comédie et Drame</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-03-07T16:00:00"
-     data-link="https://inspecteurl.github.io/films/quatrefantastiquesun.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/da1lFWES2yqt85uSUe9QVNzetYA.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">5.7</span>
-    </div>
-
-    <h3>Les 4 Fantastiques</h3>
-    <p>Action, Fantastique et Science-Fiction</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-03-12T16:00:00"
-     data-link="https://inspecteurl.github.io/films/quatrefantastiquesdeux.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/5EtCyHOYohWzBcNtfIo3CBDdqo9.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">5.6</span>
-    </div>
-
-    <h3>Les 4 Fantastiques et le Surfer d'argent</h3>
-    <p>Science-Fiction, Aventure et Action</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-03-17T16:00:00"
-     data-link="https://inspecteurl.github.io/films/justiceleague.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/q1B3DSoxROu8qd63A0jdFhv21mU.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">6.0</span>
-    </div>
-
-    <h3>Justice League</h3>
-    <p>Action, Aventure et Science-Fiction</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-03-22T16:00:00"
-     data-link="https://inspecteurl.github.io/films/batmanvsuperman.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/krEWtXK2K7dg5RyMlx9f5WnI1xd.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">6.4</span>
-    </div>
-
-    <h3>Batman v Superman : L'Aube de la Justice</h3>
-    <p>Action, Aventure et Fantastique</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-04-02T16:00:00"
-     data-link="https://inspecteurl.github.io/films/doubtfire.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/60qcTr0iIZvcYfWrLDUbWxO7nPS.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">7.1</span>
-    </div>
-
-    <h3>Madame Doubtfire</h3>
-    <p>Comédie, Drame et Familial</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-04-07T16:00:00"
-     data-link="https://inspecteurl.github.io/films/agentspresquesecrets.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/9H16qIZllwWjUjgza8Auj2PgYi0.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">6.3</span>
-    </div>
-
-    <h3>Agents presque secrets</h3>
-    <p>Action et Comédie</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-04-12T16:00:00"
-     data-link="https://inspecteurl.github.io/films/mamanrateavionun.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7hvfmQ5zgwoxZZOHQ9uGMdIk43t.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">7.8</span>
-    </div>
-
-    <h3>Maman, j'ai raté l'avion !</h3>
-    <p>Comédie et Familial</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-04-17T16:00:00"
-     data-link="https://inspecteurl.github.io/films/enfantsdutemps.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/k0tHYSbzOEkxOYoVLLstLg4Gdkd.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.27</span>
-    </div>
-
-    <h3>Les Enfants du temps</h3>
-    <p>Animation, Drame, Fantastique et Romance</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-04-22T16:00:00"
-     data-link="https://inspecteurl.github.io/films/chtis.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/dfht1lGq2ALbrRkMj35dUrj5kHG.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">7.1</span>
-    </div>
-
-    <h3>Bienvenue chez les Ch'tis</h3>
-    <p>Comédie, Drame et Romance</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-04-27T16:00:00"
-     data-link="https://inspecteurl.github.io/films/seulsurmars.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/51CqiKVStZ2YPx64iPs3LDDiQnt.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.0</span>
-    </div>
-
-    <h3>Seul sur Mars</h3>
-    <p>Drame, Aventure et Science-Fiction</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-05-01T16:00:00"
-     data-link="https://inspecteurl.github.io/films/gladiatorun.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/3fDI4D5rWefyUs7kLcvyafwBEmZ.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.5</span>
-    </div>
-
-    <h3>Gladiator</h3>
-    <p>Action, Drame et Aventure</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-05-06T16:00:00"
-     data-link="https://inspecteurl.github.io/films/gladiatordeux.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7R1EXkBAKunoG0UhZToFrnlStcp.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">6.5</span>
-    </div>
-
-    <h3>Gladiator II</h3>
-    <p>Action, Drame et Aventure</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-05-11T16:00:00"
-     data-link="https://inspecteurl.github.io/films/moonfall.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/bjTU4fmmGjAOOiOlE6WYDagoSsP.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">5.2</span>
-    </div>
-
-    <h3>Moonfall</h3>
-    <p>Science-Fiction, Aventure et Action</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-05-16T16:00:00"
-     data-link="https://inspecteurl.github.io/films/needforspeed.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/mBYqnB1jBVbXuXeaeRZXQrRzeEs.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">6.4</span>
-    </div>
-
-    <h3>Need for Speed</h3>
-    <p>Action, Crime, Drame et Thriller</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-05-21T16:00:00"
-     data-link="https://inspecteurl.github.io/films/avengersun.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/ntpxTsTg3BsIRkMkNLffNjwftUf.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.0</span>
-    </div>
-
-    <h3>Avengers</h3>
-    <p>Science-Fiction, Action et Aventure</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-05-26T16:00:00"
-     data-link="https://inspecteurl.github.io/films/avengersdeux.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/kisQEGV10MQdRB9IZaPGwnTmF1i.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">7.3</span>
-    </div>
-
-    <h3>Avengers : L'Ère d'Ultron</h3>
-    <p>Action, Aventure et Science-Fiction</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-05-31T16:00:00"
-     data-link="https://inspecteurl.github.io/films/avengerstrois.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/amopQYesMdw4wtMMUhsUtvMUyT6.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.4</span>
-    </div>
-
-    <h3>Avengers : Infinity War</h3>
-    <p>Aventure, Action et Science-Fiction</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-06-05T16:00:00"
-     data-link="https://inspecteurl.github.io/films/avengersquatre.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/wF7jv3x51hXgkl7t5KHePuRjXc8.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.4</span>
-    </div>
-
-    <h3>Avengers : Endgame</h3>
-    <p>Aventure, Science-Fiction et Action</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-06-10T16:00:00"
-     data-link="https://inspecteurl.github.io/films/kraventhehunter.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/iFW8pp6GmF2uiAGnZ8S9allprH0.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">5.5</span>
-    </div>
-
-    <h3>Kraven the Hunter</h3>
-    <p>Action, Aventure et Thriller</p>
-</div>
-             <div class="movie-card coming-soon"
-     data-release="2026-06-15T16:00:00"
-     data-link="https://inspecteurl.github.io/films/dragonsun.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/a2xXAG8QuFZYt4ElbDrUd0IC3Ge.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">8.1</span>
-    </div>
-
-    <h3>Dragons</h3>
-    <p>Fantastique, Aventure, Animation et Familial</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-06-20T16:00:00"
-     data-link="https://inspecteurl.github.io/films/dragonsdeux.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zXhAO62nj0Vr3U4PsAWIiqI8A6G.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">7.8</span>
-    </div>
-
-    <h3>Dragons 2</h3>
-    <p>Fantastique, Action, Aventure, Animation, Comédie et Familial</p>
-</div>
-            <div class="movie-card coming-soon"
-     data-release="2026-06-25T16:00:00"
-     data-link="https://inspecteurl.github.io/films/dragonstrois.html">
-
-    <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/yoXrQ28hIOt1zB22NJ16VfA7Wuv.jpg" alt="demonslayer">
-
-    <div class="overlay coming-overlay">
-        <span class="countdown"></span>
-        <span class="rating">7.4</span>
-    </div>
-
-    <h3>Dragons 3 : Le monde caché</h3>
-    <p>Animation, Familial et Aventure</p>
-</div>
-            
-          
-
-
-            <!-- Tu peux en ajouter autant que tu veux -->
-        </div>
-    </div>
-</section>
-<!-- MOVIE CAROUSEL -->
-<section class="catalog">
-    <h2>Films Populaires</h2>
-    <div class="carousel">
-            <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
-        <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
-        <div class="carousel-inner">
-            <a href="https://inspecteurl.github.io/films/titanic.html">
-                <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/vpsvHLkoeKUjceIMeNSqCp3xEyY.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">7.9</span>
-                </div>
-                <h3>Titanic</h3>
-                <p>Drame et Romance</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/starwarstrois.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/cnhZGY8lkg1fxWecEdTsxw2AWGG.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">7.6</span>
-                </div>
-                <h3>Star Wars, épisode III : La Revanche des Sith</h3>
-                <p>Aventure, Action et Science-Fiction</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/skyfall.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/8BM9mci55Hocy0X8wQBvgQUnNv4.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">7.8</span>
-                </div>
-                <h3>Skyfall</h3>
-                <p>Action, Aventure et Thriller</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/leparrainun.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/wnDNKCeBQzioXYQrXcSyrmRHVxf.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">9.2</span>
-                </div>
-                <h3>Le Parrain</h3>
-                <p>Drame et Crime</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/jurassicparkun.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4RiI4mcAnT6oxluNdS98y1kQLot.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.2</span>
-                </div>
-                <h3>Jurassic Park</h3>
-                <p>Aventure et Science-Fiction</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/loupwallstreet.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/dQIQZbJXn1pflQw3nwvXLJX0dHa.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.2</span>
-                </div>
-                <h3>Le Loup de Wall Street</h3>
-                <p>Crime, Drame et Comédie</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/tenet.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/m2Lb6a38TJbjP9py0Wjml6JtIdm.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">7.3</span>
-                </div>
-                <h3>Tenet</h3>
-                <p>Action, Thriller et Science-Fiction</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/thetruman.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7p5MzMb4h0Y2WUn73r4MHKNeh3X.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.2</span>
-                </div>
-                <h3>The Truman Show</h3>
-                <p>Comédie et Drame</p>
-            </div></a>
-            <!-- Ajouter plus de films ici -->
-        </div>
-    </div>
-
-</section>
-    <!-- MOVIE CAROUSEL -->
-<section class="catalog">
-    <h2>Films à voir au moins une fois dans sa vie.</h2>
-    <div class="carousel">
-            <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
-        <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
-        <div class="carousel-inner">
-            <a href="https://inspecteurl.github.io/films/interstellar.html">
-                <div class="movie-card">
-                <img src="https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.7</span>
-                </div>
-                <h3>Interstellar</h3>
-                <p>Science-fiction, Aventure et Drame</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/themask.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/yd3wjLLeQHJ3oRDy4wwiNNFVyLW.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">7.0</span>
-                </div>
-                <h3>The Mask</h3>
-                <p>Romance, Comédie, Crime et Fantastique</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/ironmanun.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/uZrsDJkn0PPnGc51fQhtCqwPPVM.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">7.9</span>
-                </div>
-                <h3>Iron Man</h3>
-                <p>Action, Science-Fiction et Aventure</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/hungergames.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w600_and_h900_bestv2/wSvsjqyRWk5xku9yEUNZYFwUF87.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">7.2</span>
-                </div>
-                <h3>Hunger Games</h3>
-                <p>Science-fiction, Aventure et Action</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/sherlockholmesun.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/momkKuWburNTqKBF6ez7rvhYVhE.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">7.5</span>
-                </div>
-                <h3>Sherlock Holmes</h3>
-                <p>Action, Aventure, Crime et Mystère</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/scarface.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4NGVX3OV2LvkTZOesryq5z1uxIi.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.3</span>
-                </div>
-                <h3>Scarface</h3>
-                <p>Action, Crime et Drame</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/terminator.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/z9nwlPCvMpgxDwQ9JQ3zRAPpEjd.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.1</span>
-                </div>
-                <h3>Terminator</h3>
-                <p>Action, Thriller et Science-Fiction</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/films/parasite.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7hLSzZX2jROmEXz2aEoh6JKUFy2.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.5</span>
-                </div>
-                <h3>Parasite</h3>
-                <p>Comédie, Thriller, Drame</p>
-            </div></a>
-            <!-- Ajouter plus de films ici -->
-        </div>
-    </div>
-
-</section>
-
-        <!-- MOVIE CAROUSEL -->
-<section class="catalog">
-    <h2>Nos Séries</h2>
-    <div class="carousel">
-            <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
-        <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
-        <div class="carousel-inner">
-            <a href="https://inspecteurl.github.io/s%C3%A9ries/arcane.html">
-                <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/f1Vivcukr0DBlSxppMaEDuwGSjk.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">9.0</span>
-                </div>
-                <h3>Arcane</h3>
-                <p>Animation, Science-Fiction & Fantastique, Drame, Action & Adventure</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/s%C3%A9ries/adolescence.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/jWXGn9yUA9KRN5PQ2b7i7sKSw44.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.1</span>
-                </div>
-                <h3>Adolescence</h3>
-                <p>Drame et Crime</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/s%C3%A9ries/flame.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/ESAOd6C9EL3fUnv8urrqXH0Qls.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">7.2</span>
-                </div>
-                <h3>La Flamme</h3>
-                <p>Comédie</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/s%C3%A9ries/squidgame.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/AtS3eeuorUot1B6o4RPx3MKyD6B.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.0</span>
-                </div>
-                <h3>Squid Game</h3>
-                <p>Action & Adventure, Mystère et Drame</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/s%C3%A9ries/squeezie.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/fdU3qMA1BHq0VTkVDzaCdLjE1ol.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">6.9</span>
-                </div>
-                <h3>Squeezie : Merci Internet</h3>
-                <p>Documentaire</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/s%C3%A9ries/invincible.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/s2cmk5aVFddnUeXHvRJMPhhShtE.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.7</span>
-                </div>
-                <h3>INVINCIBLE</h3>
-                <p>Animation, Science-Fiction & Fantastique, Action & Adventure et Drame</p>
-            </div></a>
-             <a href="https://inspecteurl.github.io/s%C3%A9ries/strangerthings.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/uKYUR8GPkKRCksczYDJb3pwZauo.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.6</span>
-                </div>
-                <h3>Stranger Things</h3>
-                <p>Science-Fiction & Fantastique, Mystère et Action & Adventure</p>
-            </div></a>
-             <a href="https://inspecteurl.github.io/s%C3%A9ries/lupin.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zxogdrMHGHfA9nsbfIcOKNpZkRg.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">7.5</span>
-                </div>
-                <h3>Lupin</h3>
-                <p>Crime, Drame et Mystère</p>
-            </div></a>
-             <a href="https://inspecteurl.github.io/s%C3%A9ries/bref.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/alaRcixeZ1lLVb5NuvmJnAsfbyA.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.4</span>
-                </div>
-                <h3>Bref</h3>
-                <p>Comédie et Drame</p>
-            </div></a>
-             <a href="https://inspecteurl.github.io/s%C3%A9ries/flambeau.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/a89SLEtX9AsooDEHOXKoSvj9BRG.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">6.9</span>
-                </div>
-                <h3>Le Flambeau, les aventuriers de Chupacabra</h3>
-                <p>Comédie</p>
-            </div></a>
-        
-            <!-- Ajouter plus de films ici -->
-        </div>
-    </div>
-
-</section>
-
-    
-
-
-        <!-- MOVIE CAROUSEL -->
-<section class="catalog">
-    <h2>Animes à voir au moins une fois dans sa vie.</h2>
-    <div class="carousel">
-            <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
-        <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
-        <div class="carousel-inner">
-            <a href="https://inspecteurl.github.io/animes/jojo.html">
-                <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/ofb2LmCBiAv1HMIKlsjtKqyOCyI.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.5</span>
-                </div>
-                <h3>JoJo's Bizarre Adventure</h3>
-                <p>Animation, Action & Adventure, Science-Fiction & Fantastique</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/animes/animera.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/mDKN9bHeML6TRNnYkFkKXhM174p.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.30</span>
-                </div>
-                <h3>Erased</h3>
-                <p>Animation, Drame et Mystère</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/animes/pluto.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/agf5sETjlO35s3EDA7wwGliZ5UW.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.44</span>
-                </div>
-                <h3>Pluto</h3>
-                <p>Animation, Science-Fiction & Fantastique, Mystère et Crime</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/animes/steinsgate.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/ogureH3QhG8Ls349Cf5HLJDiQxA.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">9.07</span>
-                </div>
-                <h3>Steins;Gate</h3>
-                <p>Animation, Science-Fiction & Fantastique, Mystère et Comédie</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/animes/dnote.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/94I7cNUitXxgaDyIA3BzwmUhIQo.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.62</span>
-                </div>
-                <h3>Death Note</h3>
-                <p>Animation, Mystère, Science-Fiction & Fantastique</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/animes/deathparade.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/95AUSb2mpdTlfOhYkc7VJU3mINL.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.13</span>
-                </div>
-                <h3>Death Parade</h3>
-                <p>Animation, Drame et Mystère</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/animes/cyber.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/kaAvO04G0Uzg4qKKV7E0ODvMUDT.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">8.62</span>
-                </div>
-                <h3>Cyberpunk : Edgerunners</h3>
-                <p>Animation, Action & Adventure, Drame, Science-Fiction & Fantastique</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/animes/fatestaynight.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/hgPjDxZUVdT6aZ58CCM1LavEUnB.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">7.27</span>
-                </div>
-                <h3>Fate/stay night</h3>
-                <p>Animation, Science-Fiction & Fantastique et Action & Adventure</p>
-            </div></a>
-            <a href="https://inspecteurl.github.io/animes/platinum.html">
-            <div class="movie-card">
-                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/rS17loSa3LM1HxO1MhGf5B3iCDS.jpg" alt="Movie">
-                <div class="overlay">
-                    <button><i class="fas fa-play"></i></button>
-                    <span class="rating">6.02</span>
-                </div>
-                <h3>Platinum End</h3>
-                <p>Animation, Drame et Mystère</p>
-            </div></a>
-         
-            
-            <!-- Ajouter plus de films ici -->
-        </div>
-    </div>
-
-</section>
-
 <style>
 /* =========================================================
    🔧 RESET & BASE
@@ -1042,75 +23,49 @@ body {
     overflow-x: hidden;
 }
 
-
-
 /* =========================================================
    🧭 HEADER / NAVIGATION
    ========================================================= */
-/* HEADER - STYLE NETFLIX */
 .header {
     position: fixed;
     top: 0;
     width: 100%;
     z-index: 1000;
     backdrop-filter: blur(10px);
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.85);
     padding: 10px 50px;
+    transition: padding 0.3s;
 }
-/* Carte prochainement */
-.movie-card.coming-soon {
-    cursor: not-allowed;
-    filter: grayscale(80%);
-}
-
-/* Overlay compte à rebours */
-.coming-overlay {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    background: rgba(0,0,0,0.75);
-    color: white;
-    transition: opacity 0.3s ease;
-}
-
-
-
-
-/* Affiche le compte à rebours au survol */
-.movie-card.coming-soon:hover .coming-overlay {
-    opacity: 1;
-}
-
-/* Carte activée */
-.movie-card.available {
-    cursor: pointer;
-    filter: none;
-}
-
 
 .header-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
+    flex-wrap: nowrap;
 }
 
 .logo img {
     height: 40px;
+    display: block;
 }
 
+/* NAV DESKTOP */
 .nav ul {
     list-style: none;
     display: flex;
-    gap: 30px;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
 .nav ul li a {
     color: #fff;
     text-decoration: none;
     font-weight: 500;
+    font-size: 0.9rem;
     position: relative;
     transition: 0.3s;
+    white-space: nowrap;
 }
 
 .nav ul li a::after {
@@ -1128,177 +83,176 @@ body {
     width: 100%;
 }
 
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.header-right .search {
-    display: flex;
-    align-items: center;
-    background: #222;
-    padding: 5px 10px;
-    border-radius: 5px;
-}
-
-.header-right .search input {
-    background: transparent;
+/* BURGER BUTTON */
+.burger {
+    display: none;
+    background: none;
     border: none;
     color: #fff;
-    outline: none;
-    width: 120px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 1100;
 }
 
-.header-right .search button {
-    background: #e50914;
+/* MOBILE DRAWER */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.97);
+    z-index: 999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.mobile-nav.open {
+    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mobile-nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+}
+
+.mobile-nav a:hover { color: #e50914; }
+
+.mobile-nav .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: none;
     border: none;
     color: #fff;
-    padding: 5px 10px;
-    border-radius: 5px;
+    font-size: 2rem;
     cursor: pointer;
 }
 
-.header-right .profile img {
-    width: 40px;
-    height: 40px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-    /* ===== SEARCH BAR PREMIUM ===== */
+/* SEARCH PREMIUM */
 .search-premium {
-  position: relative;
-  width: 420px;
-  max-width: 90vw;
-  height: 52px;
-
-  display: flex;
-  align-items: center;
-
-  background: rgba(20, 20, 20, 0.75);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-
-  border-radius: 999px;
-  padding: 0 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-
-  transition: border 0.3s, box-shadow 0.3s;
+    position: relative;
+    width: 340px;
+    max-width: 100%;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    background: rgba(20, 20, 20, 0.75);
+    backdrop-filter: blur(14px);
+    border-radius: 999px;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: border 0.3s, box-shadow 0.3s;
+    flex-shrink: 0;
 }
 
 .search-premium:focus-within {
-  border-color: #e50914;
-  box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.25);
+    border-color: #e50914;
+    box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
 }
 
-/* 🔍 icon */
 .search-icon {
-  color: #aaa;
-  font-size: 16px;
-  margin-right: 12px;
+    color: #aaa;
+    font-size: 14px;
+    margin-right: 10px;
+    flex-shrink: 0;
 }
 
-/* ✏️ input */
 .search-premium input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-
-  color: #fff;
-  font-size: 15px;
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
 }
 
-.search-premium input::placeholder {
-  color: #888;
-}
+.search-premium input::placeholder { color: #888; }
+.search-premium button { display: none; }
 
-/* bouton invisible (Enter fonctionne aussi) */
-.search-premium button {
-  display: none;
-}
-
-/* ===== SUGGESTIONS ===== */
 .search-suggestions {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  right: 0;
-
-  background: rgba(15, 15, 15, 0.95);
-  backdrop-filter: blur(20px);
-
-  border-radius: 16px;
-  padding: 6px;
-
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-
-  max-height: 420px;
-  overflow-y: auto;
-
-  display: none;
-  z-index: 9999;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: rgba(15, 15, 15, 0.97);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 6px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+    z-index: 9999;
 }
 
-/* suggestion item */
 .suggestion {
-  display: flex;
-  gap: 14px;
-  padding: 10px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+    display: flex;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    align-items: center;
 }
 
-.suggestion:hover {
-  background: rgba(255, 255, 255, 0.06);
-  transform: scale(1.02);
-}
+.suggestion:hover { background: rgba(255, 255, 255, 0.06); }
 
 .suggestion img {
-  width: 48px;
-  height: 72px;
-  border-radius: 8px;
-  object-fit: cover;
+    width: 40px;
+    height: 60px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
 }
 
-.suggestion h4 {
-  margin: 0;
-  font-size: 15px;
-  color: #fff;
+.suggestion h4 { margin: 0; font-size: 14px; color: #fff; }
+.suggestion span { font-size: 11px; color: #aaa; }
+
+.profile a img {
+    width: 36px;
+    height: 36px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: block;
+    flex-shrink: 0;
 }
-
-.suggestion span {
-  font-size: 12px;
-  color: #aaa;
-}
-
-
-
 
 /* =========================================================
    🎬 HERO SLIDER
    ========================================================= */
 .hero {
-    margin-top: 80px; /* espace pour le header fixed */
+    margin-top: 64px;
     position: relative;
-    height: 500px;
+    height: 70vw;
+    max-height: 520px;
+    min-height: 260px;
     overflow: hidden;
 }
 
-/* Slide */
 .hero-slide {
     position: absolute;
     inset: 0;
-
     background-size: cover;
     background-position: center;
-
     display: flex;
     align-items: flex-end;
-    padding: 50px;
-
+    padding: 40px;
     opacity: 0;
     transform: translateX(100%);
     transition: 0.5s;
@@ -1309,112 +263,121 @@ body {
     transform: translateX(0);
 }
 
-/* Contenu */
-.hero-content h1 {
-    font-size: 2.5rem;
-    margin-bottom: 15px;
-}
-
-.hero-content p {
-    max-width: 500px;
-    margin-bottom: 15px;
-}
-
-.hero-content .rating {
-    background: #e50914;
-    padding: 3px 8px;
-    border-radius: 3px;
-    margin-left: 10px;
-}
-
-.hero-content .btn {
-    background: #e50914;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-}
-
-/* Boutons slider */
-.hero button.prev,
-.hero button.next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-
-    background: rgba(0, 0, 0, 0.5);
-    border: none;
-    color: #fff;
-
-    padding: 10px;
-    cursor: pointer;
-    font-size: 1.5rem;
-    border-radius: 50%;
-}
-
-.hero button.prev { left: 20px; }
-.hero button.next { right: 20px; }
-/* Dégradé noir vers le bas */
 .hero-slide::after {
     content: "";
     position: absolute;
     inset: 0;
     z-index: 1;
     pointer-events: none;
-
     background: linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0) 0%,
-        rgba(0, 0, 0, 0.2) 40%,
-        rgba(0, 0, 0, 0.6) 70%,
-        rgba(0, 0, 0, 0.95) 100%
+        rgba(0,0,0,0) 0%,
+        rgba(0,0,0,0.2) 40%,
+        rgba(0,0,0,0.65) 70%,
+        rgba(0,0,0,0.97) 100%
     );
 }
+
 .hero-content {
     position: relative;
     z-index: 2;
+    max-width: 560px;
 }
 
+.hero-content h1 {
+    font-size: clamp(1.2rem, 3.5vw, 2.4rem);
+    margin-bottom: 10px;
+    line-height: 1.2;
+}
 
+.hero-content p {
+    font-size: clamp(0.75rem, 1.5vw, 0.95rem);
+    margin-bottom: 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: #ccc;
+    line-height: 1.5;
+}
+
+.hero-content .rating {
+    background: #e50914;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-left: 8px;
+    font-size: 0.85rem;
+}
+
+.hero-content .btn {
+    background: #e50914;
+    color: #fff;
+    padding: 9px 18px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-block;
+    transition: background 0.2s;
+}
+
+.hero-content .btn:hover { background: #c0070f; }
+
+.hero button.prev,
+.hero button.next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: #fff;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 1.3rem;
+    border-radius: 50%;
+    z-index: 10;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.hero button.prev:hover,
+.hero button.next:hover { background: rgba(229,9,20,0.7); }
+.hero button.prev { left: 14px; }
+.hero button.next { right: 14px; }
 
 /* =========================================================
    🎞️ CATALOGUE / CAROUSELS
    ========================================================= */
 .catalog {
-    padding: 40px 50px;
+    padding: 30px 50px;
 }
 
 .catalog h2 {
-    font-size: 1.8rem;
-    margin-bottom: 15px;
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+    margin-bottom: 14px;
 }
 
-/* Container carousel */
 .carousel {
     position: relative;
-    overflow: hidden; /* cache la scrollbar */
+    padding: 0 56px;
 }
 
-/* Inner carousel */
 .carousel-inner {
     display: flex;
     gap: 12px;
     overflow-x: auto;
     scroll-behavior: smooth;
-
-    -ms-overflow-style: none;  
-    scrollbar-width: none;     
-}
-.carousel-inner::-webkit-scrollbar {
-    display: none;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    padding-bottom: 4px;
 }
 
-.carousel {
-    position: relative;
-    padding: 0 60px; /* espace pour les flèches */
-}
+.carousel-inner::-webkit-scrollbar { display: none; }
 
-/* Flèches */
 .carousel-arrow {
     position: absolute;
     top: 50%;
@@ -1422,9 +385,9 @@ body {
     background: rgba(0,0,0,0.6);
     border: none;
     color: #fff;
-    font-size: 2rem;
-    width: 50px;
-    height: 50px;
+    font-size: 1.6rem;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     cursor: pointer;
     z-index: 10;
@@ -1433,60 +396,36 @@ body {
     justify-content: center;
     box-shadow: 0 2px 10px rgba(0,0,0,0.5);
     transition: all 0.3s ease;
-    opacity: 0; /* cachée par défaut */
-    pointer-events: none; /* désactive le clic tant qu’elle n’est pas visible */
+    opacity: 0;
+    pointer-events: none;
 }
 
-.carousel-arrow.left {
-    left: 10px;
-}
-
-.carousel-arrow.right {
-    right: 10px;
-}
+.carousel-arrow.left { left: 6px; }
+.carousel-arrow.right { right: 6px; }
 
 .carousel:hover .carousel-arrow {
-    opacity: 1;           /* visible au survol */
-    pointer-events: auto; /* active le clic */
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .carousel-arrow:hover {
-    background: rgba(0,0,0,0.8);
-    transform: translateY(-50%) scale(1.1);
+    background: rgba(229,9,20,0.8);
+    transform: translateY(-50%) scale(1.08);
 }
 
-/* Masquer sur mobile */
-@media (max-width: 768px) {
-    .carousel-arrow {
-        display: none;
-    }
-}
-
-
-
-
-/* Chaque carte */
+/* MOVIE CARD */
 .movie-card {
-    flex: 0 0 auto;             /* obligatoire pour le scroll horizontal */
-    scroll-snap-align: start;
-}
-
-
-
-/* Carte film */
-.movie-card {
+    flex: 0 0 auto;
     position: relative;
-    width: 250px;
+    width: 200px;
     aspect-ratio: 2 / 3;
     cursor: pointer;
     overflow: hidden;
-    border-radius: 6px;
+    border-radius: 8px;
     transition: transform 0.25s ease;
 }
 
-.movie-card:hover {
-    transform: scale(1.03);
-}
+.movie-card:hover { transform: scale(1.04); }
 
 .movie-card img {
     width: 100%;
@@ -1495,137 +434,588 @@ body {
     display: block;
 }
 
-/* Overlay bouton + dégradé pour texte */
 .movie-card .overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%);
-    border-radius: 6px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 55%);
+    border-radius: 8px;
     opacity: 0;
     transition: opacity 0.25s ease;
 }
 
-.movie-card:hover .overlay {
-    opacity: 1;
-}
+.movie-card:hover .overlay { opacity: 1; }
 
-    /* Bouton Play centré */
 .movie-card .overlay button {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-
-    width: 50px;
-    height: 50px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     border: none;
     background: linear-gradient(135deg, #e50914, #ff4b4b);
     color: #fff;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Hover effet */
 .movie-card .overlay button:hover {
     transform: translate(-50%, -50%) scale(1.15);
     box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-    background: linear-gradient(135deg, #ff4b4b, #e50914);
 }
 
 .movie-card h3 {
     position: absolute;
     left: 8px;
     right: 8px;
-    bottom: 20px; /* espace au-dessus du genre */
+    bottom: 20px;
     margin: 0;
     color: #fff;
     z-index: 2;
     text-shadow: 0 2px 5px rgba(0,0,0,0.7);
-    font-size: 1rem;
-
-    display: -webkit-box;        /* ✅ permet de gérer le nombre de lignes */
-    -webkit-line-clamp: 2;       /* affiche max 2 lignes, coupe le reste */
+    font-size: 0.9rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;     /* ajoute "..." si le texte est trop long */
+    text-overflow: ellipsis;
 }
 
 .movie-card p {
     position: absolute;
     left: 8px;
     right: 8px;
-    bottom: 5px; /* légèrement sous le titre */
+    bottom: 5px;
     margin: 0;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #ccc;
     z-index: 2;
     text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-
     display: -webkit-box;
-    -webkit-line-clamp: 1;       /* max 1 ligne pour le genre */
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-
-
-/* Note */
 .movie-card .rating {
     position: absolute;
     top: 6px;
     right: 6px;
     background: #e50914;
     color: white;
-    padding: 3px 6px;
+    padding: 2px 6px;
     border-radius: 4px;
-    font-size: 0.75rem;
-    z-index: 2;
+    font-size: 0.7rem;
+    z-index: 3;
+    font-weight: 600;
 }
 
+/* COMING SOON */
+.movie-card.coming-soon {
+    cursor: not-allowed;
+    filter: grayscale(80%);
+}
+
+.coming-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    gap: 6px;
+    opacity: 1 !important;
+}
+
+.countdown {
+    font-size: 0.65rem;
+    text-align: center;
+    padding: 0 6px;
+    line-height: 1.4;
+}
+
+.movie-card.available {
+    cursor: pointer;
+    filter: none;
+}
 
 /* =========================================================
-   🦶 FOOTER
+   📱 RESPONSIVE BREAKPOINTS
    ========================================================= */
-.footer {
-    background: #111;
-    text-align: center;
-    padding: 30px 50px;
-    margin-top: 50px;
+
+/* ── Tablette large (≤ 1024px) ── */
+@media (max-width: 1024px) {
+    .header { padding: 10px 24px; }
+
+    .catalog { padding: 24px 28px; }
+    .carousel { padding: 0 46px; }
+
+    .nav ul { gap: 14px; }
+    .search-premium { width: 240px; }
+
+    .movie-card { width: 160px; }
 }
 
-.footer-content img {
-    height: 500px;
-    width: 500px;
-    margin-bottom: 10px;
+/* ── Tablette / paysage mobile (≤ 768px) ── */
+@media (max-width: 768px) {
+    /* Header */
+    .header { padding: 10px 16px; }
+
+    /* Cache la nav desktop */
+    .nav { display: none; }
+
+    /* Affiche le burger */
+    .burger { display: flex; }
+
+    /* Reduit search */
+    .search-premium {
+        width: 180px;
+        height: 38px;
+        padding: 0 12px;
+    }
+
+    .search-premium input { font-size: 13px; }
+
+    .catalog { padding: 20px 16px; }
+    .carousel { padding: 0 38px; }
+    .carousel-arrow {
+        opacity: 1;
+        pointer-events: auto;
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+    }
+
+    .hero { margin-top: 60px; }
+    .hero-slide { padding: 20px 16px; }
+
+    .movie-card { width: 140px; }
 }
 
-.footer-nav {
-    margin-top: 10px;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+/* ── Mobile portrait (≤ 480px) ── */
+@media (max-width: 480px) {
+    .header { padding: 8px 12px; }
+
+    .logo img { height: 30px; }
+
+    /* Masque la search en mobile très petit, icône seulement */
+    .search-premium {
+        width: 40px;
+        padding: 0 12px;
+        overflow: hidden;
+        transition: width 0.3s;
+    }
+
+    .search-premium.expanded {
+        width: 200px;
+    }
+
+    .search-premium input {
+        display: none;
+    }
+
+    .search-premium.expanded input {
+        display: block;
+    }
+
+    .search-icon { margin-right: 0; }
+
+    .profile { display: none; }
+
+    .hero { min-height: 220px; height: 80vw; }
+    .hero-slide { padding: 14px 12px; }
+    .hero button.prev, .hero button.next {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+
+    .catalog { padding: 16px 10px; }
+    .catalog h2 { font-size: 1rem; margin-bottom: 10px; }
+
+    .carousel { padding: 0 32px; }
+    .carousel-arrow {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
+    }
+
+    .movie-card { width: 120px; }
+    .movie-card h3 { font-size: 0.78rem; }
+    .movie-card p { font-size: 0.62rem; }
+    .carousel-inner { gap: 8px; }
+
+    .search-suggestions {
+        border-radius: 10px;
+        left: -40px;
+        right: -40px;
+    }
 }
 
-.footer-nav a {
-    color: #888;
-    text-decoration: none;
-    transition: color 0.3s;
+/* ── Très petit mobile (≤ 360px) ── */
+@media (max-width: 360px) {
+    .movie-card { width: 105px; }
+    .hero-content h1 { font-size: 1.1rem; }
+    .hero-content p { -webkit-line-clamp: 2; }
 }
 
-.footer-nav a:hover {
-    color: #fff;
+/* ── Large desktop (≥ 1400px) ── */
+@media (min-width: 1400px) {
+    .header { padding: 12px 80px; }
+    .catalog { padding: 40px 80px; }
+    .carousel { padding: 0 70px; }
+    .search-premium { width: 420px; }
+    .movie-card { width: 220px; }
 }
 
+/* Touch devices — toujours montrer les flèches */
+@media (hover: none) {
+    .carousel-arrow {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .movie-card .overlay { opacity: 1; }
+    .coming-overlay { opacity: 1; }
+}
+
+/* =========================================================
+   📺 APP STANDALONE (PWA / WebView)
+   ========================================================= */
+@media (display-mode: standalone) {
+    .header { padding-top: max(10px, env(safe-area-inset-top)); }
+    body { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* Support notch / Dynamic Island */
+@supports (padding: max(0px)) {
+    .header {
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+    }
+}
 </style>
-<script src="custom.js"></script>
-    <script>
-           // === HERO SLIDER AUTOMATIC ===
-let slides = document.querySelectorAll('.hero-slide');
+</head>
+<body>
+
+<header class="header">
+    <div class="container header-container">
+        <div class="logo">
+            <a href="#"><img src="https://inspecteurl.github.io/site/HORZONCINE.png" alt="Horizoncine Logo"></a>
+        </div>
+
+        <!-- Nav desktop -->
+        <nav class="nav">
+            <ul>
+                <li><a href="https://inspecteurl.github.io/site/accueil.html">Home</a></li>
+                <li><a href="https://inspecteurl.github.io/site/communaute.html">Communauté</a></li>
+                <li><a href="https://inspecteurl.github.io/site/profil.html">Profil</a></li>
+                <li><a href="https://inspecteurl.github.io/site/forum.html">Forum</a></li>
+                <li><a href="https://inspecteurl.github.io/site/catalogue.html">Catalogue</a></li>
+                <li><a href="https://inspecteurl.github.io/site/suggestion.html">Suggestion</a></li>
+            </ul>
+        </nav>
+
+        <!-- Burger -->
+        <button class="burger" id="burgerBtn" aria-label="Menu">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Search -->
+        <div class="search search-premium" id="searchBar">
+            <i class="fas fa-search search-icon" id="searchIconBtn"></i>
+            <input type="text" id="searchInput" placeholder="Rechercher…" autocomplete="off">
+            <button id="searchBtn" aria-label="Search"></button>
+            <div id="searchSuggestions" class="search-suggestions"></div>
+        </div>
+
+        <div class="profile">
+            <a href="https://inspecteurl.github.io/site/compte.html">
+                <img src="https://i.pravatar.cc/40" alt="Profile">
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Menu mobile drawer -->
+<nav class="mobile-nav" id="mobileNav">
+    <button class="close-btn" id="closeNav" aria-label="Fermer">
+        <i class="fas fa-times"></i>
+    </button>
+    <a href="https://inspecteurl.github.io/site/accueil.html">Home</a>
+    <a href="https://inspecteurl.github.io/site/communaute.html">Communauté</a>
+    <a href="https://inspecteurl.github.io/site/profil.html">Profil</a>
+    <a href="https://inspecteurl.github.io/site/forum.html">Forum</a>
+    <a href="https://inspecteurl.github.io/site/catalogue.html">Catalogue</a>
+    <a href="https://inspecteurl.github.io/site/suggestion.html">Suggestion</a>
+</nav>
+
+<!-- HERO SLIDER -->
+<section class="hero">
+    <div class="slides">
+        <div class="hero-slide active" style="background-image:url('https://media.themoviedb.org/t/p/w1000_and_h563_face/1KYpyYtQFNLr7jvJ5wf0LfHIeti.jpg');">
+            <div class="hero-content">
+                <h1>La Flamme <span class="rating">7.2</span></h1>
+                <p>La vie lui a tout donné… sauf une co-pilote. Pendant neuf semaines dans une sublime villa, treize femmes vont s'affronter pour séduire Marc, pilote de ligne, et tenter d'allumer en lui… La Flamme !</p>
+                <a href="https://inspecteurl.github.io/s%C3%A9ries/flame.html" class="btn">Regarder Maintenant</a>
+            </div>
+        </div>
+        <div class="hero-slide" style="background-image:url('https://media.themoviedb.org/t/p/w1000_and_h563_face/8oouyeJMRBwErWae7e0vgVECC8u.jpg');">
+            <div class="hero-content">
+                <h1>Avatar <span class="rating">7.9</span></h1>
+                <p>Un marine paraplégique envoyé sur la lune Pandora pour une mission unique est tiraillé entre suivre ses ordres et protéger le monde qu'il considère le sien.</p>
+                <a href="https://inspecteurl.github.io/films/avatarun.html" class="btn">Regarder Maintenant</a>
+            </div>
+        </div>
+        <div class="hero-slide" style="background-image:url('https://media.themoviedb.org/t/p/w1000_and_h563_face/2H2YYbn8wDzYXtak83Md6PAwMdp.jpg');">
+            <div class="hero-content">
+                <h1>Retour vers le futur <span class="rating">8.5</span></h1>
+                <p>Marty McFly, un lycéen de 17 ans, est accidentellement envoyé trente ans plus tôt avec une voiture DeLorean qui voyage dans le temps, inventé par son ami le Doc Brown.</p>
+                <a href="https://inspecteurl.github.io/films/retourverslefuturun.html" class="btn">Regarder Maintenant</a>
+            </div>
+        </div>
+    </div>
+    <button class="prev"><i class="fas fa-chevron-left"></i></button>
+    <button class="next"><i class="fas fa-chevron-right"></i></button>
+</section>
+
+<!-- Nouveautés -->
+<section class="catalog">
+    <h2>Nouveautés/Prochainement</h2>
+    <div class="carousel">
+        <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
+        <div class="carousel-inner">
+            <div class="movie-card coming-soon" data-release="2026-01-05T16:00:00" data-link="https://inspecteurl.github.io/s%C3%A9ries/adolescence.html">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/jWXGn9yUA9KRN5PQ2b7i7sKSw44.jpg" alt="adolescence">
+                <div class="overlay coming-overlay"><span class="countdown"></span><span class="rating">8.1</span></div>
+                <h3>Adolescence</h3><p>Drame et Crime</p>
+            </div>
+            <div class="movie-card coming-soon" data-release="2026-01-05T16:00:00" data-link="https://inspecteurl.github.io/s%C3%A9ries/flame.html">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/ESAOd6C9EL3fUnv8urrqXH0Qls.jpg" alt="flame">
+                <div class="overlay coming-overlay"><span class="countdown"></span><span class="rating">7.2</span></div>
+                <h3>La Flamme</h3><p>Comédie</p>
+            </div>
+            <div class="movie-card coming-soon" data-release="2026-01-05T16:00:00" data-link="https://inspecteurl.github.io/animes/pluto.html">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/agf5sETjlO35s3EDA7wwGliZ5UW.jpg" alt="pluto">
+                <div class="overlay coming-overlay"><span class="countdown"></span><span class="rating">8.44</span></div>
+                <h3>Pluto</h3><p>Animation, Science-Fiction & Fantastique</p>
+            </div>
+            <div class="movie-card coming-soon" data-release="2026-01-05T16:00:00" data-link="https://inspecteurl.github.io/films/demonslayerforteresse.html">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/fWVSwgjpT2D78VUh6X8UBd2rorW.jpg" alt="demonslayer">
+                <div class="overlay coming-overlay"><span class="countdown"></span><span class="rating">8.70</span></div>
+                <h3>Demon Slayer : La Forteresse infinie</h3><p>Animation, Action et Fantastique</p>
+            </div>
+            <div class="movie-card coming-soon" data-release="2026-01-10T16:00:00" data-link="https://inspecteurl.github.io/films/meninblackun.html">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/uLOmOF5IzWoyrgIF5MfUnh5pa1X.jpg" alt="Men in Black">
+                <div class="overlay coming-overlay"><span class="countdown"></span><span class="rating">7.3</span></div>
+                <h3>Men in Black</h3><p>Action, Aventure, Comédie et Science-Fiction</p>
+            </div>
+            <div class="movie-card coming-soon" data-release="2026-01-15T16:00:00" data-link="https://inspecteurl.github.io/films/meninblackdeux.html">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/enA22EPyzc2WQ1VVyY7zxresQQr.jpg" alt="MIB2">
+                <div class="overlay coming-overlay"><span class="countdown"></span><span class="rating">6.2</span></div>
+                <h3>Men in Black II</h3><p>Action, Aventure, Comédie et Science-Fiction</p>
+            </div>
+            <div class="movie-card coming-soon" data-release="2026-05-21T16:00:00" data-link="https://inspecteurl.github.io/films/avengersun.html">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/ntpxTsTg3BsIRkMkNLffNjwftUf.jpg" alt="Avengers">
+                <div class="overlay coming-overlay"><span class="countdown"></span><span class="rating">8.0</span></div>
+                <h3>Avengers</h3><p>Science-Fiction, Action et Aventure</p>
+            </div>
+            <div class="movie-card coming-soon" data-release="2026-05-31T16:00:00" data-link="https://inspecteurl.github.io/films/avengerstrois.html">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/amopQYesMdw4wtMMUhsUtvMUyT6.jpg" alt="IW">
+                <div class="overlay coming-overlay"><span class="countdown"></span><span class="rating">8.4</span></div>
+                <h3>Avengers : Infinity War</h3><p>Aventure, Action et Science-Fiction</p>
+            </div>
+            <div class="movie-card coming-soon" data-release="2026-06-05T16:00:00" data-link="https://inspecteurl.github.io/films/avengersquatre.html">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/wF7jv3x51hXgkl7t5KHePuRjXc8.jpg" alt="Endgame">
+                <div class="overlay coming-overlay"><span class="countdown"></span><span class="rating">8.4</span></div>
+                <h3>Avengers : Endgame</h3><p>Aventure, Science-Fiction et Action</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Films Populaires -->
+<section class="catalog">
+    <h2>Films Populaires</h2>
+    <div class="carousel">
+        <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
+        <div class="carousel-inner">
+            <a href="https://inspecteurl.github.io/films/titanic.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/vpsvHLkoeKUjceIMeNSqCp3xEyY.jpg" alt="Titanic">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">7.9</span></div>
+                <h3>Titanic</h3><p>Drame et Romance</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/films/leparrainun.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/wnDNKCeBQzioXYQrXcSyrmRHVxf.jpg" alt="Le Parrain">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">9.2</span></div>
+                <h3>Le Parrain</h3><p>Drame et Crime</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/films/jurassicparkun.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4RiI4mcAnT6oxluNdS98y1kQLot.jpg" alt="Jurassic Park">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.2</span></div>
+                <h3>Jurassic Park</h3><p>Aventure et Science-Fiction</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/films/loupwallstreet.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/dQIQZbJXn1pflQw3nwvXLJX0dHa.jpg" alt="Loup">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.2</span></div>
+                <h3>Le Loup de Wall Street</h3><p>Crime, Drame et Comédie</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/films/tenet.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/m2Lb6a38TJbjP9py0Wjml6JtIdm.jpg" alt="Tenet">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">7.3</span></div>
+                <h3>Tenet</h3><p>Action, Thriller et Science-Fiction</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/films/thetruman.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7p5MzMb4h0Y2WUn73r4MHKNeh3X.jpg" alt="Truman">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.2</span></div>
+                <h3>The Truman Show</h3><p>Comédie et Drame</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/films/skyfall.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/8BM9mci55Hocy0X8wQBvgQUnNv4.jpg" alt="Skyfall">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">7.8</span></div>
+                <h3>Skyfall</h3><p>Action, Aventure et Thriller</p>
+            </div></a>
+        </div>
+    </div>
+</section>
+
+<!-- Films à voir -->
+<section class="catalog">
+    <h2>Films à voir au moins une fois dans sa vie.</h2>
+    <div class="carousel">
+        <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
+        <div class="carousel-inner">
+            <a href="https://inspecteurl.github.io/films/interstellar.html"><div class="movie-card">
+                <img src="https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg" alt="Interstellar">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.7</span></div>
+                <h3>Interstellar</h3><p>Science-fiction, Aventure et Drame</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/films/scarface.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/4NGVX3OV2LvkTZOesryq5z1uxIi.jpg" alt="Scarface">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.3</span></div>
+                <h3>Scarface</h3><p>Action, Crime et Drame</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/films/parasite.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/7hLSzZX2jROmEXz2aEoh6JKUFy2.jpg" alt="Parasite">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.5</span></div>
+                <h3>Parasite</h3><p>Comédie, Thriller, Drame</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/films/terminator.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/z9nwlPCvMpgxDwQ9JQ3zRAPpEjd.jpg" alt="Terminator">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.1</span></div>
+                <h3>Terminator</h3><p>Action, Thriller et Science-Fiction</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/films/ironmanun.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/uZrsDJkn0PPnGc51fQhtCqwPPVM.jpg" alt="Iron Man">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">7.9</span></div>
+                <h3>Iron Man</h3><p>Action, Science-Fiction et Aventure</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/films/themask.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/yd3wjLLeQHJ3oRDy4wwiNNFVyLW.jpg" alt="The Mask">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">7.0</span></div>
+                <h3>The Mask</h3><p>Romance, Comédie, Crime et Fantastique</p>
+            </div></a>
+        </div>
+    </div>
+</section>
+
+<!-- Séries -->
+<section class="catalog">
+    <h2>Nos Séries</h2>
+    <div class="carousel">
+        <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
+        <div class="carousel-inner">
+            <a href="https://inspecteurl.github.io/s%C3%A9ries/arcane.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/f1Vivcukr0DBlSxppMaEDuwGSjk.jpg" alt="Arcane">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">9.0</span></div>
+                <h3>Arcane</h3><p>Animation, Science-Fiction & Fantastique</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/s%C3%A9ries/adolescence.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/jWXGn9yUA9KRN5PQ2b7i7sKSw44.jpg" alt="Adolescence">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.1</span></div>
+                <h3>Adolescence</h3><p>Drame et Crime</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/s%C3%A9ries/squidgame.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/AtS3eeuorUot1B6o4RPx3MKyD6B.jpg" alt="Squid Game">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.0</span></div>
+                <h3>Squid Game</h3><p>Action, Mystère et Drame</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/s%C3%A9ries/invincible.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/s2cmk5aVFddnUeXHvRJMPhhShtE.jpg" alt="Invincible">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.7</span></div>
+                <h3>INVINCIBLE</h3><p>Animation, Science-Fiction & Fantastique</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/s%C3%A9ries/strangerthings.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/uKYUR8GPkKRCksczYDJb3pwZauo.jpg" alt="Stranger Things">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.6</span></div>
+                <h3>Stranger Things</h3><p>Science-Fiction & Fantastique, Mystère</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/s%C3%A9ries/lupin.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/zxogdrMHGHfA9nsbfIcOKNpZkRg.jpg" alt="Lupin">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">7.5</span></div>
+                <h3>Lupin</h3><p>Crime, Drame et Mystère</p>
+            </div></a>
+        </div>
+    </div>
+</section>
+
+<!-- Animes -->
+<section class="catalog">
+    <h2>Animes à voir au moins une fois dans sa vie.</h2>
+    <div class="carousel">
+        <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
+        <div class="carousel-inner">
+            <a href="https://inspecteurl.github.io/animes/steinsgate.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/ogureH3QhG8Ls349Cf5HLJDiQxA.jpg" alt="Steins;Gate">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">9.07</span></div>
+                <h3>Steins;Gate</h3><p>Animation, Science-Fiction & Fantastique</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/animes/dnote.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/94I7cNUitXxgaDyIA3BzwmUhIQo.jpg" alt="Death Note">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.62</span></div>
+                <h3>Death Note</h3><p>Animation, Mystère, Science-Fiction & Fantastique</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/animes/cyber.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/kaAvO04G0Uzg4qKKV7E0ODvMUDT.jpg" alt="Cyberpunk">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.62</span></div>
+                <h3>Cyberpunk : Edgerunners</h3><p>Animation, Action & Adventure, Drame</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/animes/jojo.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/ofb2LCmBiAv1HMIKlsjtKqyOCyI.jpg" alt="JoJo">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.5</span></div>
+                <h3>JoJo's Bizarre Adventure</h3><p>Animation, Action & Adventure</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/animes/animera.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/mDKN9bHeML6TRNnYkFkKXhM174p.jpg" alt="Erased">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.30</span></div>
+                <h3>Erased</h3><p>Animation, Drame et Mystère</p>
+            </div></a>
+            <a href="https://inspecteurl.github.io/animes/deathparade.html"><div class="movie-card">
+                <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/95AUSb2mpdTlfOhYkc7VJU3mINL.jpg" alt="Death Parade">
+                <div class="overlay"><button><i class="fas fa-play"></i></button><span class="rating">8.13</span></div>
+                <h3>Death Parade</h3><p>Animation, Drame et Mystère</p>
+            </div></a>
+        </div>
+    </div>
+</section>
+
+<script>
+// ── Hero Slider ──
+const slides = document.querySelectorAll('.hero-slide');
 let current = 0;
+
 const nextSlide = () => {
     slides[current].classList.remove('active');
     current = (current + 1) % slides.length;
@@ -1636,182 +1026,130 @@ const prevSlide = () => {
     current = (current - 1 + slides.length) % slides.length;
     slides[current].classList.add('active');
 };
+
 document.querySelector('.hero .next').addEventListener('click', nextSlide);
 document.querySelector('.hero .prev').addEventListener('click', prevSlide);
-setInterval(nextSlide, 5000); // slide automatique toutes les 5s
+const autoSlide = setInterval(nextSlide, 5000);
 
-    </script>
-    <script>
-        const carousels = document.querySelectorAll('.carousel');
+// Touch swipe sur le hero
+let touchStartX = 0;
+const heroEl = document.querySelector('.hero');
+heroEl.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+heroEl.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 40) diff > 0 ? nextSlide() : prevSlide();
+});
 
-carousels.forEach(carousel => {
+// ── Carousel arrows ──
+document.querySelectorAll('.carousel').forEach(carousel => {
     const inner = carousel.querySelector('.carousel-inner');
-    const btnLeft = carousel.querySelector('.carousel-arrow.left');
-    const btnRight = carousel.querySelector('.carousel-arrow.right');
-
-    btnLeft.addEventListener('click', () => {
-        inner.scrollBy({ left: -inner.offsetWidth / 2, behavior: 'smooth' });
+    carousel.querySelector('.carousel-arrow.left').addEventListener('click', () => {
+        inner.scrollBy({ left: -inner.offsetWidth * 0.6, behavior: 'smooth' });
     });
-    btnRight.addEventListener('click', () => {
-        inner.scrollBy({ left: inner.offsetWidth / 2, behavior: 'smooth' });
+    carousel.querySelector('.carousel-arrow.right').addEventListener('click', () => {
+        inner.scrollBy({ left: inner.offsetWidth * 0.6, behavior: 'smooth' });
     });
 });
 
-    </script>
+// ── Burger menu ──
+const burgerBtn = document.getElementById('burgerBtn');
+const mobileNav = document.getElementById('mobileNav');
+const closeNav  = document.getElementById('closeNav');
 
-   <script>
+burgerBtn.addEventListener('click', () => mobileNav.classList.add('open'));
+closeNav.addEventListener('click',  () => mobileNav.classList.remove('open'));
+mobileNav.addEventListener('click', e => {
+    if (e.target === mobileNav) mobileNav.classList.remove('open');
+});
+
+// ── Search icon tap on very small screens ──
+const searchBar = document.getElementById('searchBar');
+const searchIconBtn = document.getElementById('searchIconBtn');
+const searchInput = document.getElementById('searchInput');
+
+searchIconBtn.addEventListener('click', () => {
+    if (window.innerWidth <= 480) {
+        searchBar.classList.toggle('expanded');
+        if (searchBar.classList.contains('expanded')) searchInput.focus();
+    }
+});
+
+// ── Coming Soon countdown ──
 document.querySelectorAll('.coming-soon').forEach(card => {
     const releaseDate = new Date(card.dataset.release);
     const overlay = card.querySelector('.coming-overlay');
     const countdownEl = overlay.querySelector('.countdown');
 
     function updateCountdown() {
-        const now = new Date();
-        const diff = releaseDate - now;
-
+        const diff = releaseDate - new Date();
         if (diff <= 0) {
-            // Le film devient disponible
-            const link = card.dataset.link;
-
-            // Création du lien cliquable
-            const anchor = document.createElement('a');
-            anchor.href = link;
-
-            // Bouton play identique aux autres cartes
-            overlay.innerHTML = `
-                <button><i class="fas fa-play"></i></button>
-            `;
-
+            overlay.innerHTML = `<button style="width:40px;height:40px;border-radius:50%;border:none;background:linear-gradient(135deg,#e50914,#ff4b4b);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="fas fa-play"></i></button>`;
             card.classList.remove('coming-soon');
             card.classList.add('available');
-
-            // Rend toute la carte cliquable
-            card.addEventListener('click', () => {
-                window.location.href = link;
-            });
-
+            card.addEventListener('click', () => { window.location.href = card.dataset.link; });
             return;
         }
-
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((diff / (1000 * 60)) % 60);
-        const seconds = Math.floor((diff / 1000) % 60);
-
-        countdownEl.textContent =
-            `${days}j ${hours}h ${minutes}m ${seconds}s`;
+        const d = Math.floor(diff / 864e5);
+        const h = Math.floor((diff / 36e5) % 24);
+        const m = Math.floor((diff / 6e4) % 60);
+        const s = Math.floor((diff / 1e3) % 60);
+        countdownEl.textContent = `${d}j ${h}h ${m}m ${s}s`;
     }
 
     updateCountdown();
     setInterval(updateCountdown, 1000);
 });
-</script>
-   
-   
-    <script>
+
+// ── Search suggestions ──
 document.addEventListener("DOMContentLoaded", async () => {
-  const input = document.getElementById("searchInput");
-  const btn = document.getElementById("searchBtn");
-  const box = document.getElementById("searchSuggestions");
+    const input = document.getElementById("searchInput");
+    const btn   = document.getElementById("searchBtn");
+    const box   = document.getElementById("searchSuggestions");
+    if (!input || !btn || !box) return;
 
-  if (!input || !btn || !box) return;
+    const normalize = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    let catalogueItems = [];
 
-  const normalize = text =>
-    text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    try {
+        const res = await fetch("https://inspecteurl.github.io/site/catalogue.html");
+        const html = await res.text();
+        const doc  = new DOMParser().parseFromString(html, "text/html");
+        catalogueItems = [...doc.querySelectorAll(".movieimg")].map(item => ({
+            title:  item.dataset.title || item.querySelector("h2")?.innerText || "",
+            genre:  item.dataset.genre  || "",
+            type:   item.dataset.type   || "",
+            poster: item.querySelector("img")?.src || "",
+            url:    item.querySelector("a")?.href  || "#"
+        }));
+    } catch(e) { console.warn("Catalogue unavailable", e); }
 
-  // 🔥 CHARGEMENT DU CATALOGUE
-  let catalogueItems = [];
-
-  try {
-    const res = await fetch("https://inspecteurl.github.io/site/catalogue.html");
-    const html = await res.text();
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-
-    catalogueItems = [...doc.querySelectorAll(".movieimg")].map(item => ({
-      title: item.dataset.title || item.querySelector("h2")?.innerText || "",
-      genre: item.dataset.genre || "",
-      type: item.dataset.type || "",
-      poster: item.querySelector("img")?.src || "",
-      url: item.querySelector("a")?.href || "#"
-    }));
-  } catch (e) {
-    console.error("Erreur chargement catalogue", e);
-  }
-
-  function showSuggestions() {
-    const query = normalize(input.value.trim());
-    box.innerHTML = "";
-
-    if (!query || !catalogueItems.length) {
-      box.style.display = "none";
-      return;
-    }
-
-    const results = catalogueItems
-      .filter(item =>
-        normalize(item.title + item.genre + item.type).includes(query)
-      )
-      .slice(0, 6);
-
-    if (!results.length) {
-      box.style.display = "none";
-      return;
-    }
-
-    results.forEach(item => {
-      const div = document.createElement("div");
-      div.className = "suggestion";
-      div.innerHTML = `
-        <img src="${item.poster}" alt="${item.title}">
-        <div>
-          <h4>${item.title}</h4>
-          <span>${item.type} • ${item.genre}</span>
-        </div>
-      `;
-
-      div.addEventListener("click", () => {
-        window.location.href = item.url;
-      });
-
-      box.appendChild(div);
+    input.addEventListener("input", () => {
+        const q = normalize(input.value.trim());
+        box.innerHTML = "";
+        if (!q || !catalogueItems.length) { box.style.display = "none"; return; }
+        const results = catalogueItems.filter(i => normalize(i.title + i.genre + i.type).includes(q)).slice(0, 6);
+        if (!results.length) { box.style.display = "none"; return; }
+        results.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "suggestion";
+            div.innerHTML = `<img src="${item.poster}" alt="${item.title}"><div><h4>${item.title}</h4><span>${item.type} • ${item.genre}</span></div>`;
+            div.addEventListener("click", () => { window.location.href = item.url; });
+            box.appendChild(div);
+        });
+        box.style.display = "block";
     });
 
-    box.style.display = "block";
-  }
+    document.addEventListener("click", e => {
+        if (!e.target.closest(".search")) box.style.display = "none";
+    });
 
-  input.addEventListener("input", showSuggestions);
+    btn.addEventListener("click", () => {
+        if (!input.value.trim()) return;
+        window.location.href = `https://inspecteurl.github.io/site/catalogue.html?search=${encodeURIComponent(input.value)}`;
+    });
 
-  document.addEventListener("click", e => {
-    if (!e.target.closest(".search")) box.style.display = "none";
-  });
-
-  btn.addEventListener("click", () => {
-    if (!input.value.trim()) return;
-    window.location.href = `https://inspecteurl.github.io/site/catalogue.html?search=${encodeURIComponent(input.value)}`;
-  });
-
-  input.addEventListener("keydown", e => {
-    if (e.key === "Enter") btn.click();
-  });
+    input.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); });
 });
 </script>
-
-
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
