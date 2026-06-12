@@ -364,11 +364,10 @@ function initHLS() {
       maxMaxBufferLength: 120,
       enableWorker: true,
       xhrSetup: function(xhr, url) {
-        if (url.includes('senpai-stream.club')) {
-         xhrSetup: function(xhr, url) {
   if (url.includes('senpai-stream.club')) {
-    xhr.open('GET', 'https://proxy.cors.sh/' + url, true);
-    xhr.setRequestHeader('x-cors-api-key', 'temp_' + Math.random().toString(36).slice(2));
+    xhr.open('GET', 'https://thingproxy.freeboard.io/fetch/' + url, true);
+  }
+}
   }
 }
         }
