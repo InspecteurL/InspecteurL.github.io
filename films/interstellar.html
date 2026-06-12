@@ -365,7 +365,7 @@ function initHLS() {
       enableWorker: true,
       xhrSetup: function(xhr, url) {
         if (url.includes('senpai-stream.club')) {
-          xhr.open('GET', 'https://corsproxy.io/?url=' + encodeURIComponent(url), true);
+          xhr.open('GET', 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url), true);
         }
       }
     });
