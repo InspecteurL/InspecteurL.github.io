@@ -364,7 +364,7 @@ function initHLS() {
   enableWorker: true,
   xhrSetup: function(xhr, url) {
     if (url.includes('senpai-stream.club')) {
-      xhr.open('GET', 'https://thingproxy.freeboard.io/fetch/' + url, true);
+      xhr.open('GET', 'https://api.codetabs.com/v1/proxy?quest=' + url, true);
     }
   }
 });
