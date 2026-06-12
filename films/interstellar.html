@@ -273,6 +273,7 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
 </div>
 
 <script>
+  
 const M3U8_URL     = 'https://zebi.senpai-stream.club/movie/157336/premium-tdbcnn/master.m3u8';
 const MOVIE_ID     = 'interstellar-2014';
 const SUPABASE_URL = 'https://wuagahavmbugmnuzsouf.supabase.co';
@@ -354,11 +355,20 @@ backButton.addEventListener('click', () => {
   }, 900);
 });
 
-// HLS
+// HLS avec proxy sur chaque requête
 function initHLS() {
   if (hls) { hls.destroy(); hls = null; }
   if (Hls.isSupported()) {
-    hls = new Hls({ maxBufferLength: 60, maxMaxBufferLength: 120, enableWorker: true });
+    hls = new Hls({
+      maxBufferLength: 60,
+      maxMaxBufferLength: 120,
+      enableWorker: true,
+      xhrSetup: function(xhr, url) {
+        if (url.includes('senpai-stream.club')) {
+          xhr.open('GET', 'https://corsproxy.io/?url=' + encodeURIComponent(url), true);
+        }
+      }
+    });
     hls.loadSource(M3U8_URL);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
