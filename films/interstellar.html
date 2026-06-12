@@ -273,8 +273,7 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
 </div>
 
 <script>
-  
-const M3U8_URL     = 'https://zebi.senpai-stream.club/movie/157336/premium-tdbcnn/master.m3u8';
+const M3U8_URL     = 'https://wuagahavmbugmnuzsouf.supabase.co/storage/v1/object/public/interstellar/playlist-interstellar.m3u8';
 const MOVIE_ID     = 'interstellar-2014';
 const SUPABASE_URL = 'https://wuagahavmbugmnuzsouf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
@@ -355,19 +354,11 @@ backButton.addEventListener('click', () => {
   }, 900);
 });
 
+// HLS
 function initHLS() {
   if (hls) { hls.destroy(); hls = null; }
   if (Hls.isSupported()) {
-    hls = new Hls({
-      maxBufferLength: 60,
-      maxMaxBufferLength: 120,
-      enableWorker: true,
-      xhrSetup: function(xhr, url) {
-        xhr.open('GET', url, true);
-        xhr.setRequestHeader('Referer', 'https://purstream.ch');
-        xhr.setRequestHeader('Origin', 'https://purstream.ch');
-      }
-    });
+    hls = new Hls({ maxBufferLength: 60, maxMaxBufferLength: 120, enableWorker: true });
     hls.loadSource(M3U8_URL);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -387,6 +378,7 @@ function initHLS() {
     showStatus('❌ HLS non supporté par ce navigateur.');
   }
 }
+
 // Episode info
 const episodeInfo = document.createElement('div');
 episodeInfo.className = 'episode-info';
