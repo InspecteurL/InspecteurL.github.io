@@ -362,10 +362,11 @@ function initHLS() {
   maxBufferLength: 60,
   maxMaxBufferLength: 120,
   enableWorker: true,
-  xhrSetup: function(xhr, url) {
-    if (url.includes('senpai-stream.club')) {
-      xhr.open('GET', 'https://api.codetabs.com/v1/proxy?quest=' + url, true);
-    }
+ xhrSetup: function(xhr, url) {
+  xhr.open('GET', url, true);
+  xhr.setRequestHeader('Referer', 'https://purstream.ch');
+  xhr.setRequestHeader('Origin', 'https://purstream.ch');
+}
   }
 });
     hls.loadSource(M3U8_URL);
