@@ -359,15 +359,15 @@ function initHLS() {
   if (hls) { hls.destroy(); hls = null; }
   if (Hls.isSupported()) {
     hls = new Hls({
-      maxBufferLength: 60,
-      maxMaxBufferLength: 120,
-      enableWorker: true,
-      xhrSetup: function(xhr, url) {
-        if (url.includes('senpai-stream.club')) {
-          xhr.open('GET', 'https://thingproxy.freeboard.io/fetch/' + url, true);
-        }
-      }
-    });
+  maxBufferLength: 60,
+  maxMaxBufferLength: 120,
+  enableWorker: true,
+  xhrSetup: function(xhr, url) {
+    if (url.includes('senpai-stream.club')) {
+      xhr.open('GET', 'https://thingproxy.freeboard.io/fetch/' + url, true);
+    }
+  }
+});
     hls.loadSource(M3U8_URL);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
