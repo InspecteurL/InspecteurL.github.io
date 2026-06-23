@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trouve la Règle</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --surface2: #1e1e24;
+    --border: #2a2a35;
+    --accent: #7c5cfc;
+    --accent2: #c084fc;
+    --danger: #fc5c5c;
+    --success: #5cfca0;
+    --warning: #fcc45c;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 8px;
+    opacity: 0.7;
+  }
+
+  h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+
+  .screen { width: 100%; max-width: 500px; display: none; flex-direction: column; gap: 16px; animation: fadeIn .3s ease; }
+  .screen.active { display: flex; }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .card-title {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  input, textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .2s;
+    resize: none;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+
+  button {
+    width: 100%;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  button:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); }
+
+  .btn-danger {
+    background: var(--danger);
+    color: white;
+  }
+
+  .btn-success {
+    background: var(--success);
+    color: #0d0d0f;
+  }
+
+  .btn-buzzer {
+    background: linear-gradient(135deg, #fc5c5c, #ff8c42);
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 22px;
+    border-radius: 16px;
+    letter-spacing: 2px;
+    box-shadow: 0 0 30px rgba(252, 92, 92, 0.3);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(252,92,92,0.3); }
+    50% { box-shadow: 0 0 40px rgba(252,92,92,0.6); }
+  }
+
+  .room-code {
+    font-family: 'Space Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 8px;
+    color: var(--accent2);
+    padding: 20px;
+    background: var(--surface2);
+    border-radius: 12px;
+    border: 1px dashed var(--accent);
+  }
+
+  .players-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .player-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    transition: all .2s;
+  }
+
+  .player-item.host { border-color: var(--accent); }
+  .player-item.guesser { border-color: var(--warning); }
+  .player-item.selected-guesser { background: rgba(252,196,92,0.1); border-color: var(--warning); }
+
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .avatar-host { background: rgba(124,92,252,0.2); }
+  .avatar-guesser { background: rgba(252,196,92,0.2); }
+  .avatar-player { background: rgba(92,252,160,0.2); }
+
+  .player-name { font-weight: 500; flex: 1; }
+  .player-badge {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+  .badge-host { background: rgba(124,92,252,0.2); color: var(--accent2); }
+  .badge-guesser { background: rgba(252,196,92,0.2); color: var(--warning); }
+
+  .btn-select-guesser {
+    background: transparent;
+    border: 1px solid var(--warning);
+    color: var(--warning);
+    width: auto;
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+  .btn-select-guesser.selected {
+    background: var(--warning);
+    color: #0d0d0f;
+  }
+
+  .secret-rule-box {
+    background: rgba(124,92,252,0.1);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .secret-rule-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 10px;
+    font-family: 'Space Mono', monospace;
+  }
+  .secret-rule-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .lives-display {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    font-size: 24px;
+  }
+
+  .chat-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 4px;
+  }
+
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-track { background: transparent; }
+  .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .msg {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.4;
+    max-width: 85%;
+  }
+
+  .msg-question {
+    background: rgba(252,196,92,0.15);
+    border: 1px solid rgba(252,196,92,0.3);
+    align-self: flex-start;
+  }
+
+  .msg-answer {
+    background: rgba(92,252,160,0.1);
+    border: 1px solid rgba(92,252,160,0.2);
+    align-self: flex-end;
+  }
+
+  .msg-system {
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 12px;
+    font-style: italic;
+    text-align: center;
+    align-self: center;
+    max-width: 100%;
+  }
+
+  .msg-sender {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 4px;
+    opacity: 0.6;
+  }
+
+  .chat-input-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .chat-input-row input { flex: 1; }
+  .chat-input-row button {
+    width: auto;
+    padding: 14px 18px;
+    flex-shrink: 0;
+  }
+
+  .waiting-screen {
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .waiting-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    animation: spin 3s linear infinite;
+  }
+
+  @keyframes spin {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+
+  .buzz-input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    display: inline-block;
+    margin-right: 6px;
+    animation: blink 2s infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13,13,15,0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+  }
+  .overlay.active { display: flex; }
+
+  .overlay-icon { font-size: 80px; }
+  .overlay-title { font-size: 28px; font-weight: 700; text-align: center; }
+  .overlay-sub { color: var(--muted); text-align: center; font-size: 15px; }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+
+  .hint { font-size: 13px; color: var(--muted); text-align: center; }
+  .count-badge {
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-family: 'Space Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<!-- SCREEN: Accueil -->
+<div class="screen active" id="screen-home">
+  <div style="text-align:center">
+    <div class="logo">HorizonCiné Games</div>
+    <h1>Trouve la Règle</h1>
+  </div>
+  <div class="card">
+    <div class="card-title">Ton pseudo</div>
+    <input type="text" id="input-name" placeholder="Entre ton prénom..." maxlength="20">
+  </div>
+  <button class="btn-primary" onclick="createRoom()">Créer une room 🎯</button>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="divider" style="flex:1"></div>
+    <span style="color:var(--muted);font-size:13px">ou</span>
+    <div class="divider" style="flex:1"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Rejoindre avec un code</div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="input-code" placeholder="XXXX" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-family:'Space Mono',monospace;font-size:18px;text-align:center">
+      <button class="btn-secondary" style="width:auto;padding:14px 18px" onclick="joinRoom()">→</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: Lobby (Hôte) -->
+<div class="screen" id="screen-lobby-host">
+  <div class="status-bar">
+    <span><span class="dot"></span>En attente de joueurs</span>
+    <span class="count-badge" id="player-count">1 joueur</span>
+  </div>
+  <div class="card">
+    <div class="card-title">Code de la room</div>
+    <div class="room-code" id="display-code">----</div>
+    <p class="hint" style="margin-top:10px">Partage ce code avec tes amis</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Joueurs connectés</div>
+    <div class="players-list" id="host-players-list"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Sélectionne le(s) devineur(s)</div>
+    <p class="hint" style="margin-bottom:12px">Choisis 1 ou 2 joueurs qui vont devoir trouver la règle</p>
+    <div class="players-list" id="guesser-select-list"></div>
+  </div>
+  <button class="btn-primary" id="btn-start" onclick="startGame()" disabled>Lancer la partie ▶</button>
+</div>
+
+<!-- SCREEN: Lobby (Joueur) -->
+<div class="screen" id="screen-lobby-player">
+  <div class="card">
+    <div class="card-title">Tu es dans la room</div>
+    <div class="room-code" id="display-code-player">----</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Joueurs connectés</div>
+    <div class="players-list" id="player-players-list"></div>
+  </div>
+  <div class="card" style="text-align:center;padding:30px">
+    <div style="font-size:40px;margin-bottom:12px">⏳</div>
+    <div style="color:var(--muted)">En attente du lancement par l'hôte...</div>
+  </div>
+</div>
+
+<!-- SCREEN: Hôte écrit la règle -->
+<div class="screen" id="screen-set-rule">
+  <div class="card" style="background:rgba(252,196,92,0.05);border-color:rgba(252,196,92,0.3)">
+    <div class="card-title" style="color:var(--warning)">⚠️ Les devineurs sont sortis</div>
+    <p style="font-size:14px;color:var(--muted)">Ils ne voient plus l'écran. Établis la règle secrète avec les autres joueurs.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">La règle secrète</div>
+    <textarea id="input-rule" rows="3" placeholder="Ex: On doit toujours répondre avec un nom de film dans la réponse..."></textarea>
+  </div>
+  <button class="btn-primary" onclick="submitRule()">Valider la règle ✓</button>
+</div>
+
+<!-- SCREEN: Devineur en attente -->
+<div class="screen" id="screen-guesser-wait">
+  <div class="waiting-screen">
+    <div class="waiting-icon">🙈</div>
+    <h2 style="margin-bottom:12px">Ferme les yeux !</h2>
+    <p style="color:var(--muted);line-height:1.6">Les autres joueurs établissent la règle secrète...<br>Tu pourras revenir dès qu'ils sont prêts.</p>
+  </div>
+</div>
+
+<!-- SCREEN: Jeu - Devineur -->
+<div class="screen" id="screen-guesser-play">
+  <div class="card" style="text-align:center">
+    <div class="card-title">Tes vies</div>
+    <div class="lives-display" id="lives-display">❤️ ❤️ ❤️</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Conversation</div>
+    <div class="chat-area" id="guesser-chat"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Pose une question</div>
+    <div class="chat-input-row">
+      <input type="text" id="guesser-question" placeholder="Ta question...">
+      <button class="btn-secondary" style="background:rgba(252,196,92,0.2);border-color:var(--warning);color:var(--warning)" onclick="sendQuestion()">→</button>
+    </div>
+  </div>
+  <div class="buzz-input-row">
+    <button class="btn-buzzer" onclick="showBuzzInput()">🔴 BUZZER</button>
+    <div id="buzz-input-area" style="display:none;flex-direction:column;gap:8px">
+      <input type="text" id="buzz-answer" placeholder="Quelle est la règle selon toi ?">
+      <div style="display:flex;gap:8px">
+        <button class="btn-danger" onclick="submitGuess()">Confirmer ma réponse</button>
+        <button class="btn-secondary" style="width:auto;padding:14px 18px" onclick="hideBuzzInput()">✕</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: Jeu - Joueurs (voient la règle) -->
+<div class="screen" id="screen-players-play">
+  <div class="secret-rule-box">
+    <div class="secret-rule-label">🔒 Règle secrète</div>
+    <div class="secret-rule-text" id="rule-display-players"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Conversation</div>
+    <div class="chat-area" id="players-chat"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Répondre</div>
+    <div class="chat-input-row">
+      <input type="text" id="player-answer" placeholder="Ta réponse (respecte la règle !)">
+      <button class="btn-success" style="width:auto;padding:14px 18px" onclick="sendAnswer()">→</button>
+    </div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div class="card-title">Vies du devineur</div>
+    <div class="lives-display" id="lives-display-players">❤️ ❤️ ❤️</div>
+  </div>
+</div>
+
+<!-- OVERLAY: Résultat -->
+<div class="overlay" id="overlay-result">
+  <div class="overlay-icon" id="overlay-icon"></div>
+  <div class="overlay-title" id="overlay-title"></div>
+  <div class="overlay-sub" id="overlay-sub"></div>
+  <button class="btn-primary" style="max-width:300px" onclick="location.reload()">Nouvelle partie 🔄</button>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://wuagahavmbugmnuzsouf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let myName = '';
+let myId = Math.random().toString(36).substr(2,9);
+let roomCode = '';
+let isHost = false;
+let isGuesser = false;
+let channel = null;
+let players = {};
+let guessers = new Set();
+let lives = 3;
+let gameRule = '';
+
+function genCode() {
+  return Math.random().toString(36).substr(2,4).toUpperCase();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function createRoom() {
+  myName = document.getElementById('input-name').value.trim();
+  if (!myName) { alert('Entre ton prénom !'); return; }
+  isHost = true;
+  roomCode = genCode();
+  document.getElementById('display-code').textContent = roomCode;
+  showScreen('screen-lobby-host');
+  await joinChannel();
+}
+
+async function joinRoom() {
+  myName = document.getElementById('input-name').value.trim();
+  const code = document.getElementById('input-code').value.trim().toUpperCase();
+  if (!myName) { alert('Entre ton prénom !'); return; }
+  if (code.length !== 4) { alert('Code invalide !'); return; }
+  roomCode = code;
+  document.getElementById('display-code-player').textContent = roomCode;
+  showScreen('screen-lobby-player');
+  await joinChannel();
+}
+
+async function joinChannel() {
+  channel = db.channel(`room-${roomCode}`, { config: { broadcast: { self: true } } });
+
+  channel
+    .on('broadcast', { event: 'state' }, ({ payload }) => handleState(payload))
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await broadcastPresence();
+      }
+    });
+}
+
+async function broadcastPresence() {
+  await channel.send({
+    type: 'broadcast',
+    event: 'state',
+    payload: {
+      type: 'join',
+      id: myId,
+      name: myName,
+      isHost: isHost
+    }
+  });
+}
+
+function handleState(payload) {
+  if (payload.type === 'join') {
+    players[payload.id] = { name: payload.name, isHost: payload.isHost };
+    updatePlayerLists();
+    // Re-announce myself to new joiners
+    if (payload.id !== myId) {
+      setTimeout(() => broadcastPresence(), 300);
+    }
+  }
+
+  if (payload.type === 'leave') {
+    delete players[payload.id];
+    updatePlayerLists();
+  }
+
+  if (payload.type === 'start_game') {
+    guessers = new Set(payload.guessers);
+    gameRule = '';
+    isGuesser = guessers.has(myId);
+    if (isHost) {
+      showScreen('screen-set-rule');
+    } else if (isGuesser) {
+      showScreen('screen-guesser-wait');
+    } else {
+      showScreen('screen-players-play');
+    }
+  }
+
+  if (payload.type === 'rule_set') {
+    gameRule = payload.rule;
+    if (!isGuesser) {
+      document.getElementById('rule-display-players').textContent = gameRule;
+    }
+    if (isGuesser) {
+      lives = 3;
+      updateLivesDisplay();
+      clearChats();
+      showScreen('screen-guesser-play');
+    }
+    addMessage('both', { type: 'system', text: '🎮 La partie commence ! Le devineur peut poser ses questions.' });
+  }
+
+  if (payload.type === 'message') {
+    addMessage('both', payload.msg);
+  }
+
+  if (payload.type === 'guess') {
+    const guesserName = players[payload.id]?.name || 'Le devineur';
+    const correct = payload.correct;
+    if (correct) {
+      showResult(true, `${guesserName} a trouvé !`, `La règle était : "${gameRule}"`);
+    } else {
+      lives = payload.lives;
+      updateLivesDisplay();
+      addMessage('both', { type: 'system', text: `❌ Mauvaise réponse ! "${payload.answer}" — ${lives} vie${lives > 1 ? 's' : ''} restante${lives > 1 ? 's' : ''}` });
+      if (lives <= 0) {
+        showResult(false, 'Perdu !', `La règle était : "${gameRule}"`);
+      }
+    }
+  }
+}
+
+function updatePlayerLists() {
+  const count = Object.keys(players).length;
+  const countEl = document.getElementById('player-count');
+  if (countEl) countEl.textContent = `${count} joueur${count > 1 ? 's' : ''}`;
+
+  // Host lobby list
+  const hostList = document.getElementById('host-players-list');
+  const guesserList = document.getElementById('guesser-select-list');
+  const playerList = document.getElementById('player-players-list');
+
+  if (hostList) {
+    hostList.innerHTML = '';
+    Object.entries(players).forEach(([id, p]) => {
+      const div = document.createElement('div');
+      div.className = 'player-item' + (p.isHost ? ' host' : '');
+      div.innerHTML = `
+        <div class="avatar ${p.isHost ? 'avatar-host' : 'avatar-player'}">${p.isHost ? '👑' : '🎮'}</div>
+        <div class="player-name">${p.name}</div>
+        ${p.isHost ? '<span class="player-badge badge-host">Hôte</span>' : ''}
+      `;
+      hostList.appendChild(div);
+    });
+  }
+
+  if (guesserList && isHost) {
+    guesserList.innerHTML = '';
+    Object.entries(players).forEach(([id, p]) => {
+      if (p.isHost) return;
+      const div = document.createElement('div');
+      const selected = guessers.has(id);
+      div.className = 'player-item' + (selected ? ' selected-guesser' : '');
+      div.innerHTML = `
+        <div class="avatar ${selected ? 'avatar-guesser' : 'avatar-player'}">${selected ? '🕵️' : '🎮'}</div>
+        <div class="player-name">${p.name}</div>
+        <button class="btn-select-guesser ${selected ? 'selected' : ''}" onclick="toggleGuesser('${id}')">
+          ${selected ? '✓ Devineur' : 'Désigner'}
+        </button>
+      `;
+      guesserList.appendChild(div);
+    });
+    document.getElementById('btn-start').disabled = guessers.size === 0 || Object.keys(players).length < 2;
+  }
+
+  if (playerList) {
+    playerList.innerHTML = '';
+    Object.entries(players).forEach(([id, p]) => {
+      const div = document.createElement('div');
+      div.className = 'player-item' + (p.isHost ? ' host' : '');
+      div.innerHTML = `
+        <div class="avatar ${p.isHost ? 'avatar-host' : 'avatar-player'}">${p.isHost ? '👑' : '🎮'}</div>
+        <div class="player-name">${p.name}</div>
+        ${p.isHost ? '<span class="player-badge badge-host">Hôte</span>' : ''}
+      `;
+      playerList.appendChild(div);
+    });
+  }
+}
+
+function toggleGuesser(id) {
+  if (guessers.has(id)) {
+    guessers.delete(id);
+  } else if (guessers.size < 2) {
+    guessers.add(id);
+  }
+  updatePlayerLists();
+}
+
+async function startGame() {
+  if (guessers.size === 0) return;
+  await channel.send({
+    type: 'broadcast',
+    event: 'state',
+    payload: {
+      type: 'start_game',
+      guessers: [...guessers]
+    }
+  });
+}
+
+async function submitRule() {
+  const rule = document.getElementById('input-rule').value.trim();
+  if (!rule) { alert('Écris la règle !'); return; }
+  gameRule = rule;
+  await channel.send({
+    type: 'broadcast',
+    event: 'state',
+    payload: { type: 'rule_set', rule }
+  });
+  document.getElementById('rule-display-players').textContent = rule;
+  showScreen('screen-players-play');
+}
+
+function clearChats() {
+  document.getElementById('guesser-chat').innerHTML = '';
+  document.getElementById('players-chat').innerHTML = '';
+}
+
+function addMessage(target, msg) {
+  const containers = [];
+  if (target === 'both' || target === 'guesser') {
+    containers.push(document.getElementById('guesser-chat'));
+  }
+  if (target === 'both' || target === 'players') {
+    containers.push(document.getElementById('players-chat'));
+  }
+
+  containers.forEach(container => {
+    if (!container) return;
+    const div = document.createElement('div');
+    if (msg.type === 'system') {
+      div.className = 'msg msg-system';
+      div.textContent = msg.text;
+    } else if (msg.type === 'question') {
+      div.className = 'msg msg-question';
+      div.innerHTML = `<div class="msg-sender">🕵️ ${msg.sender}</div>${msg.text}`;
+    } else if (msg.type === 'answer') {
+      div.className = 'msg msg-answer';
+      div.innerHTML = `<div class="msg-sender">💬 ${msg.sender}</div>${msg.text}`;
+    }
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  });
+}
+
+async function sendQuestion() {
+  const input = document.getElementById('guesser-question');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  const msg = { type: 'question', sender: myName, text };
+  await channel.send({
+    type: 'broadcast', event: 'state',
+    payload: { type: 'message', msg }
+  });
+}
+
+async function sendAnswer() {
+  const input = document.getElementById('player-answer');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  const msg = { type: 'answer', sender: myName, text };
+  await channel.send({
+    type: 'broadcast', event: 'state',
+    payload: { type: 'message', msg }
+  });
+}
+
+function showBuzzInput() {
+  document.getElementById('buzz-input-area').style.display = 'flex';
+  document.getElementById('buzz-answer').focus();
+}
+
+function hideBuzzInput() {
+  document.getElementById('buzz-input-area').style.display = 'none';
+}
+
+async function submitGuess() {
+  const answer = document.getElementById('buzz-answer').value.trim();
+  if (!answer) return;
+  hideBuzzInput();
+  document.getElementById('buzz-answer').value = '';
+
+  const correct = answer.toLowerCase().includes(gameRule.toLowerCase().substring(0, 10)) ||
+                  gameRule.toLowerCase().includes(answer.toLowerCase());
+
+  // Simple check — host validates via the rule text matching
+  // More robust: host decides, but for simplicity we do basic check
+  lives = correct ? lives : lives - 1;
+
+  await channel.send({
+    type: 'broadcast', event: 'state',
+    payload: { type: 'guess', id: myId, answer, correct, lives }
+  });
+}
+
+function updateLivesDisplay() {
+  const hearts = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
+  const displays = document.querySelectorAll('#lives-display, #lives-display-players');
+  displays.forEach(d => d.textContent = hearts);
+}
+
+function showResult(win, title, sub) {
+  document.getElementById('overlay-icon').textContent = win ? '🎉' : '💀';
+  document.getElementById('overlay-title').textContent = title;
+  document.getElementById('overlay-sub').textContent = sub;
+  document.getElementById('overlay-result').classList.add('active');
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const active = document.querySelector('.screen.active')?.id;
+    if (active === 'screen-guesser-play' && document.activeElement.id === 'guesser-question') sendQuestion();
+    if (active === 'screen-players-play' && document.activeElement.id === 'player-answer') sendAnswer();
+  }
+});
+
+// Init players with self
+players[myId] = { name: '', isHost };
+</script>
+</body>
+</html>
