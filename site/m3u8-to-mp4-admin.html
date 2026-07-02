@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
 <title>HorizonCiné — Admin · m3u8 → mp4</title>
 <style>
-  
   :root{
     --bg: #0b0d10;
     --panel: #14171c;
@@ -181,7 +181,8 @@
 const { createFFmpeg, fetchFile } = FFmpeg;
 const ffmpeg = createFFmpeg({
   log: false,
-  corePath: "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js",
+  corePath: "https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js",
+  mainName: "main",
 });
 
 const urlInput = document.getElementById("m3u8-url");
