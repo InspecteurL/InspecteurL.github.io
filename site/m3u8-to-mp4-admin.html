@@ -176,12 +176,21 @@
 
 </div>
 
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 <script>
+if (typeof FFmpeg === "undefined") {
+  document.addEventListener("DOMContentLoaded", () => {
+    const el = document.getElementById("status");
+    el.classList.add("active");
+    el.innerHTML = '<div class="line err"><span class="tag">›</span><span>Le script ffmpeg.wasm n\'a pas pu se charger (CDN bloqué par un bloqueur de pub/extension, ou connexion réseau). Désactive les extensions de blocage sur cette page et recharge.</span></div>';
+  });
+  throw new Error("FFmpeg global non défini — script CDN non chargé.");
+}
+
 const { createFFmpeg, fetchFile } = FFmpeg;
 const ffmpeg = createFFmpeg({
   log: false,
-  corePath: "https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js",
+  corePath: "https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js",
   mainName: "main",
 });
 
