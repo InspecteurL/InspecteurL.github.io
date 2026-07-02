@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HorizonCiné — Admin · m3u8 → mp4</title>
+<style>
+  :root{
+    --bg: #0b0d10;
+    --panel: #14171c;
+    --panel-2: #1b1f26;
+    --line: #262b33;
+    --text: #e7e9ec;
+    --text-dim: #8b93a1;
+    --accent: #4f7cff;
+    --accent-dim: #2c3e73;
+    --ok: #3fcf8e;
+    --err: #ff5c5c;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:48px 20px;
+  }
+  .wrap{width:100%;max-width:720px;}
+  header{margin-bottom:32px;}
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:var(--accent);
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  h1{font-size:22px;margin:0 0 6px;font-weight:600;}
+  .sub{color:var(--text-dim);font-size:14px;line-height:1.5;margin:0;}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:24px;
+    margin-bottom:16px;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--text-dim);
+    margin-bottom:8px;
+    font-family:var(--mono);
+  }
+  input[type="text"]{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:12px 14px;
+    color:var(--text);
+    font-family:var(--mono);
+    font-size:13px;
+    outline:none;
+  }
+  input[type="text"]:focus{border-color:var(--accent);}
+  input[type="text"]::placeholder{color:#4a5160;}
+
+  .row{display:flex;gap:10px;margin-top:14px;}
+  button{
+    font-family:inherit;
+    font-size:13px;
+    font-weight:600;
+    border-radius:6px;
+    border:1px solid transparent;
+    padding:11px 18px;
+    cursor:pointer;
+    transition:opacity .15s;
+  }
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover:not(:disabled){opacity:.88;}
+  .btn-secondary{background:transparent;border-color:var(--line);color:var(--text-dim);}
+  .btn-secondary:hover:not(:disabled){color:var(--text);border-color:var(--text-dim);}
+
+  .status{
+    margin-top:20px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--text-dim);
+    display:none;
+  }
+  .status.active{display:block;}
+  .status .line{padding:2px 0;display:flex;gap:8px;}
+  .status .line.ok{color:var(--ok);}
+  .status .line.err{color:var(--err);}
+  .status .tag{color:#4a5160;}
+
+  .barwrap{
+    margin-top:14px;
+    height:6px;
+    background:var(--panel-2);
+    border-radius:3px;
+    overflow:hidden;
+    display:none;
+  }
+  .barwrap.active{display:block;}
+  .bar{height:100%;width:0%;background:var(--accent);transition:width .2s;}
+
+  .result{
+    margin-top:20px;
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--panel-2);
+    border:1px solid var(--ok);
+    border-radius:8px;
+    padding:16px 18px;
+  }
+  .result.active{display:flex;}
+  .result-info .name{font-size:13px;font-weight:600;}
+  .result-info .size{font-size:12px;color:var(--text-dim);margin-top:2px;}
+  .dl{
+    background:var(--ok);
+    color:#08130d;
+    text-decoration:none;
+    padding:9px 16px;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:700;
+  }
+
+  footer{font-size:11.5px;color:#4a5160;line-height:1.6;font-family:var(--mono);}
+  footer a{color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">HorizonCiné — Admin</div>
+    <h1>Convertisseur m3u8 → mp4</h1>
+    <p class="sub">Colle un lien de playlist HLS (.m3u8). Tout se passe dans ton navigateur — rien n'est envoyé vers un serveur. Le fichier mp4 généré est à uploader ensuite manuellement vers ton storage.</p>
+  </header>
+
+  <div class="panel">
+    <label for="m3u8-url">Lien m3u8</label>
+    <input type="text" id="m3u8-url" placeholder="https://exemple.com/stream/playlist.m3u8" autocomplete="off">
+
+    <div class="row">
+      <button class="btn-primary" id="start-btn">Convertir</button>
+      <button class="btn-secondary" id="reset-btn">Réinitialiser</button>
+    </div>
+
+    <div class="barwrap" id="barwrap"><div class="bar" id="bar"></div></div>
+
+    <div class="status" id="status"></div>
+
+    <div class="result" id="result">
+      <div class="result-info">
+        <div class="name" id="result-name">film.mp4</div>
+        <div class="size" id="result-size"></div>
+      </div>
+      <a class="dl" id="dl-link" download>Télécharger</a>
+    </div>
+  </div>
+
+  <footer>
+    Nécessite un navigateur récent (Chrome/Edge/Firefox). La playlist et ses segments doivent autoriser l'accès CORS depuis ce domaine, sinon le fetch échoue. Fonctionne en single-thread (ffmpeg.wasm) — la conversion peut prendre plusieurs minutes selon la durée de la vidéo.
+  </footer>
+
+</div>
+
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+<script>
+const { createFFmpeg, fetchFile } = FFmpeg;
+const ffmpeg = createFFmpeg({
+  log: false,
+  corePath: "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js",
+});
+
+const urlInput = document.getElementById("m3u8-url");
+const startBtn = document.getElementById("start-btn");
+const resetBtn = document.getElementById("reset-btn");
+const statusEl = document.getElementById("status");
+const barwrap = document.getElementById("barwrap");
+const bar = document.getElementById("bar");
+const resultEl = document.getElementById("result");
+const resultName = document.getElementById("result-name");
+const resultSize = document.getElementById("result-size");
+const dlLink = document.getElementById("dl-link");
+
+function log(msg, cls) {
+  statusEl.classList.add("active");
+  const line = document.createElement("div");
+  line.className = "line" + (cls ? " " + cls : "");
+  line.innerHTML = `<span class="tag">›</span><span>${msg}</span>`;
+  statusEl.appendChild(line);
+  statusEl.scrollTop = statusEl.scrollHeight;
+}
+
+function setProgress(pct) {
+  barwrap.classList.add("active");
+  bar.style.width = pct + "%";
+}
+
+function resetUI() {
+  statusEl.innerHTML = "";
+  statusEl.classList.remove("active");
+  barwrap.classList.remove("active");
+  bar.style.width = "0%";
+  resultEl.classList.remove("active");
+  urlInput.value = "";
+  startBtn.disabled = false;
+}
+
+resetBtn.addEventListener("click", resetUI);
+
+startBtn.addEventListener("click", async () => {
+  const url = urlInput.value.trim();
+  if (!url) {
+    log("Colle un lien m3u8 avant de lancer la conversion.", "err");
+    return;
+  }
+
+  startBtn.disabled = true;
+  statusEl.innerHTML = "";
+  resultEl.classList.remove("active");
+
+  try {
+    // 1. Charger ffmpeg.wasm (une seule fois)
+    if (!ffmpeg.isLoaded()) {
+      log("Chargement de ffmpeg.wasm…");
+      await ffmpeg.load();
+      log("ffmpeg.wasm chargé.", "ok");
+    }
+
+    // 2. Récupérer la playlist m3u8
+    log("Récupération de la playlist…");
+    const playlistRes = await fetch(url);
+    if (!playlistRes.ok) throw new Error(`Playlist inaccessible (HTTP ${playlistRes.status})`);
+    const playlistText = await playlistRes.text();
+
+    // Gère le cas d'une master playlist (renvoie vers une sous-playlist variante)
+    let finalPlaylistUrl = url;
+    let finalPlaylistText = playlistText;
+    if (playlistText.includes("#EXT-X-STREAM-INF")) {
+      const lines = playlistText.split("\n").map(l => l.trim());
+      const variantLine = lines.find(l => l && !l.startsWith("#"));
+      if (variantLine) {
+        finalPlaylistUrl = new URL(variantLine, url).href;
+        log("Master playlist détectée, sélection de la variante : " + finalPlaylistUrl);
+        const variantRes = await fetch(finalPlaylistUrl);
+        finalPlaylistText = await variantRes.text();
+      }
+    }
+
+    // 3. Extraire les segments
+    const baseUrl = finalPlaylistUrl;
+    const segmentUrls = finalPlaylistText
+      .split("\n")
+      .map(l => l.trim())
+      .filter(l => l && !l.startsWith("#"))
+      .map(l => new URL(l, baseUrl).href);
+
+    if (segmentUrls.length === 0) throw new Error("Aucun segment trouvé dans la playlist.");
+    log(`${segmentUrls.length} segments trouvés.`, "ok");
+
+    // 4. Télécharger tous les segments et les écrire dans le FS virtuel de ffmpeg
+    const concatList = [];
+    for (let i = 0; i < segmentUrls.length; i++) {
+      const segName = `seg${String(i).padStart(5, "0")}.ts`;
+      const data = await fetchFile(segmentUrls[i]);
+      ffmpeg.FS("writeFile", segName, data);
+      concatList.push(`file ${segName}`);
+      setProgress(Math.round(((i + 1) / segmentUrls.length) * 60)); // 0-60% = téléchargement
+      if (i % 10 === 0 || i === segmentUrls.length - 1) {
+        log(`Téléchargé ${i + 1}/${segmentUrls.length} segments…`);
+      }
+    }
+
+    ffmpeg.FS("writeFile", "concat.txt", concatList.join("\n"));
+
+    // 5. Remux en MP4 (copie de flux, pas de ré-encodage → rapide)
+    log("Remux en MP4 (ffmpeg)…");
+    ffmpeg.setProgress(({ ratio }) => {
+      if (ratio >= 0 && ratio <= 1) setProgress(60 + Math.round(ratio * 40)); // 60-100%
+    });
+
+    await ffmpeg.run(
+      "-f", "concat", "-safe", "0", "-i", "concat.txt",
+      "-c", "copy", "-bsf:a", "aac_adtstoasc",
+      "output.mp4"
+    );
+
+    const outputData = ffmpeg.FS("readFile", "output.mp4");
+    const blob = new Blob([outputData.buffer], { type: "video/mp4" });
+    const blobUrl = URL.createObjectURL(blob);
+
+    const sizeMb = (blob.size / (1024 * 1024)).toFixed(1);
+    resultName.textContent = "conversion.mp4";
+    resultSize.textContent = `${sizeMb} Mo`;
+    dlLink.href = blobUrl;
+    dlLink.download = "conversion.mp4";
+    resultEl.classList.add("active");
+
+    log("Conversion terminée.", "ok");
+  } catch (err) {
+    log("Erreur : " + err.message, "err");
+    console.error(err);
+  } finally {
+    startBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
