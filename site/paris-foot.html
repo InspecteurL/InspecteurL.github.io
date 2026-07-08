@@ -202,12 +202,17 @@
 // ==============================
 // CONFIG — colle tes identifiants
 // ==============================
-const SUPABASE_URL = "https://wuagahavmbugmnuzsouf.supabase.co/";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
-const FOOTBALL_API_KEY = "e00ebab9f1mshf31ddb456d99a8ep163f41jsnb4b4cd18334b"; // api-sports.io
+const SUPABASE_URL = "https://wuagahavmbugmnuzsouf.supabase.co";
+const SUPABASE_ANON_KEY = "COLLE_TA_CLE_ANON_SUPABASE_ICI";
+
+// Une seule clé RapidAPI, utilisée pour les deux APIs abonnées sur RapidAPI
+const RAPIDAPI_KEY = "COLLE_TA_CLE_RAPIDAPI_ICI";
+
+// API des cotes / prédictions (Football Prediction API — boggio-analytics)
+const PREDICTIONS_HOST = "football-prediction-api.p.rapidapi.com";
 
 const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
-const ODDS = { home: 1.8, draw: 3.0, away: 2.2, score: 8.0 };
+const FALLBACK_ODDS = { home: 1.8, draw: 3.0, away: 2.2 }; // si l'API de cotes ne répond pas
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -280,38 +285,138 @@ async function loadMatches(){
     setStatus("Matchs à jour (cache).");
   } else {
     try{
-      const fresh = await fetchFromApiFootball();
+      const fresh = await buildMatchesWithOddsAndScores();
       matchesData = fresh;
       await sb
         .from('matches_cache')
         .update({ data: fresh, updated_at: new Date().toISOString() })
         .eq('id', 1);
-      setStatus("Matchs actualisés depuis l'API.");
+      setStatus("Matchs actualisés depuis les APIs.");
     }catch(err){
       matchesData = cache ? cache.data : [];
-      setStatus("Impossible d'actualiser (quota API ?), affichage du cache.", true);
+      setStatus("Impossible d'actualiser (quota API ?), affichage du cache. " + err.message, true);
     }
   }
   await settlePendingBets();
   renderTab();
 }
 
-async function fetchFromApiFootball(){
-  const today = new Date().toISOString().slice(0,10);
-  const [liveRes, todayRes] = await Promise.all([
-    fetch("https://v3.football.api-sports.io/fixtures?live=all", {
-      headers: { "x-apisports-key": FOOTBALL_API_KEY }
-    }),
-    fetch(`https://v3.football.api-sports.io/fixtures?date=${today}`, {
-      headers: { "x-apisports-key": FOOTBALL_API_KEY }
-    })
+// Combine les cotes (Football Prediction API) et les scores (API-FOOTBALL)
+async function buildMatchesWithOddsAndScores(){
+  const [predictions, scores] = await Promise.all([
+    fetchPredictions(),
+    fetchScores()
   ]);
-  if(!liveRes.ok || !todayRes.ok) throw new Error("Erreur API");
-  const live = (await liveRes.json()).response || [];
-  const today_ = (await todayRes.json()).response || [];
-  const map = new Map();
-  [...live, ...today_].forEach(m => map.set(m.fixture.id, m));
-  return Array.from(map.values());
+
+  return predictions.map(p => {
+    const matched = findMatchingScore(p, scores);
+    const classic = p.prediction_per_market && p.prediction_per_market.classic;
+    const oddsRaw = classic && classic.odds ? classic.odds : {};
+    const probs = classic && classic.probabilities ? classic.probabilities : {};
+
+    const odds = {
+      home: oddsRaw['1'] || (probs['1'] ? +(1/probs['1']).toFixed(2) : FALLBACK_ODDS.home),
+      draw: oddsRaw['X'] || (probs['X'] ? +(1/probs['X']).toFixed(2) : FALLBACK_ODDS.draw),
+      away: oddsRaw['2'] || (probs['2'] ? +(1/probs['2']).toFixed(2) : FALLBACK_ODDS.away)
+    };
+
+    return {
+      prediction_id: p.id,
+      home_team: p.home_team,
+      away_team: p.away_team,
+      competition: p.competition_name,
+      start_date: p.start_date,
+      odds,
+      // infos venant du matching avec l'API de scores (peut être null si pas trouvé)
+      score_fixture_id: matched ? matched.id : null,
+      status: matched ? matched.statusShort : 'NS',
+      home_goals: matched ? matched.homeGoals : null,
+      away_goals: matched ? matched.awayGoals : null
+    };
+  });
+}
+
+async function fetchPredictions(){
+  const res = await fetch(
+    "https://football-prediction-api.p.rapidapi.com/api/v2/predictions?market=classic",
+    {
+      headers: {
+        "x-rapidapi-key": RAPIDAPI_KEY,
+        "x-rapidapi-host": PREDICTIONS_HOST
+      }
+    }
+  );
+  if(!res.ok) throw new Error("Erreur API cotes (" + res.status + ")");
+  const json = await res.json();
+  return json.data || [];
+}
+
+async function fetchScores(){
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const dateParam = `${yyyy}${mm}${dd}`; // format attendu : YYYYMMDD
+
+  const res = await fetch(
+    `https://free-api-live-football-data.p.rapidapi.com/football-get-matches-by-date?date=${dateParam}`,
+    {
+      headers: {
+        "x-rapidapi-key": RAPIDAPI_KEY,
+        "x-rapidapi-host": "free-api-live-football-data.p.rapidapi.com"
+      }
+    }
+  );
+  if(!res.ok) throw new Error("Erreur API scores (" + res.status + ")");
+  const json = await res.json();
+  const rawMatches = (json.response && json.response.matches) || [];
+  return rawMatches.map(normalizeScoreMatch);
+}
+
+// Convertit un match de free-api-live-football-data vers un format interne commun
+function normalizeScoreMatch(m){
+  let statusShort = 'NS';
+  if(m.status.cancelled){
+    statusShort = 'PP';
+  } else if(m.status.finished){
+    statusShort = (m.status.reason && m.status.reason.short || 'FT').toUpperCase();
+  } else if(m.status.started){
+    statusShort = 'LIVE';
+  }
+
+  return {
+    id: m.id,
+    dateISO: new Date(m.timeTS).toISOString(),
+    homeName: m.home.longName || m.home.name,
+    awayName: m.away.longName || m.away.name,
+    homeGoals: m.home.score,
+    awayGoals: m.away.score,
+    statusShort
+  };
+}
+
+// Recoupe une prédiction (nom d'équipes + date) avec un match de l'API de scores
+function normalizeTeam(name){
+  return (name || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // enlève les accents
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function findMatchingScore(prediction, scores){
+  const predHome = normalizeTeam(prediction.home_team);
+  const predAway = normalizeTeam(prediction.away_team);
+  const predDate = (prediction.start_date || "").slice(0,10);
+
+  return scores.find(s => {
+    const sHome = normalizeTeam(s.homeName);
+    const sAway = normalizeTeam(s.awayName);
+    const sDate = s.dateISO.slice(0,10);
+    const nameMatch =
+      (sHome.includes(predHome) || predHome.includes(sHome)) &&
+      (sAway.includes(predAway) || predAway.includes(sAway));
+    return nameMatch && sDate === predDate;
+  }) || null;
 }
 
 // ==============================
@@ -327,83 +432,70 @@ function renderMatches(){
 }
 
 function matchCard(m){
-  const home = m.teams.home, away = m.teams.away;
-  const goals = m.goals;
-  const status = m.fixture.status.short; // NS, 1H, HT, 2H, FT, etc.
-  const isLive = ['1H','2H','ET','P','HT'].includes(status);
+  const status = m.status; // NS, LIVE, FT, AET, PEN, PP
+  const isLive = status === 'LIVE';
   const isFinished = status === 'FT' || status === 'AET' || status === 'PEN';
-  const kickoff = new Date(m.fixture.date).toLocaleString('fr-FR', {weekday:'short', hour:'2-digit', minute:'2-digit'});
+  const kickoff = new Date(m.start_date).toLocaleString('fr-FR', {weekday:'short', hour:'2-digit', minute:'2-digit'});
 
   let scoreBlock;
   if(isLive){
-    scoreBlock = `<div class="score">${goals.home ?? 0} - ${goals.away ?? 0}</div><div class="minute">${m.fixture.status.elapsed ?? '--'}'</div>`;
+    scoreBlock = `<div class="score">${m.home_goals ?? 0} - ${m.away_goals ?? 0}</div><div class="minute">En direct</div>`;
   } else if(isFinished){
-    scoreBlock = `<div class="score">${goals.home ?? 0} - ${goals.away ?? 0}</div><div class="kickoff">Terminé</div>`;
+    scoreBlock = `<div class="score">${m.home_goals ?? 0} - ${m.away_goals ?? 0}</div><div class="kickoff">Terminé</div>`;
   } else {
     scoreBlock = `<div class="score">VS</div><div class="kickoff">${kickoff}</div>`;
   }
 
   const canBet = !isFinished; // on peut parier tant que le match n'est pas fini
-  const fid = m.fixture.id;
+  const pid = m.prediction_id;
 
   return `
     <div class="match">
       <div class="match-top">
-        <div class="team"><img src="${home.logo}" alt="">${home.name}</div>
+        <div class="team">${m.home_team}</div>
         <div class="score-block">${scoreBlock}</div>
-        <div class="team right">${away.name}<img src="${away.logo}" alt=""></div>
+        <div class="team right">${m.away_team}</div>
       </div>
-      <div class="league">${m.league.name} — ${m.league.country}</div>
-      ${canBet ? betForm(fid, home.name, away.name) : `<div class="odds-tag" style="margin-top:10px;">Paris fermés</div>`}
+      <div class="league">${m.competition || ''}</div>
+      ${canBet ? betForm(pid, m.home_team, m.away_team, m.odds) : `<div class="odds-tag" style="margin-top:10px;">Paris fermés</div>`}
     </div>
   `;
 }
 
-function betForm(fixtureId, homeName, awayName){
+function betForm(predictionId, homeName, awayName, odds){
   return `
     <div class="bet-form">
-      <select id="pred_${fixtureId}" onchange="toggleScoreInput(${fixtureId})">
-        <option value="home">Victoire ${homeName} (x${ODDS.home})</option>
-        <option value="draw">Match nul (x${ODDS.draw})</option>
-        <option value="away">Victoire ${awayName} (x${ODDS.away})</option>
-        <option value="score">Score exact (x${ODDS.score})</option>
+      <select id="pred_${predictionId}">
+        <option value="home">Victoire ${homeName} (x${odds.home})</option>
+        <option value="draw">Match nul (x${odds.draw})</option>
+        <option value="away">Victoire ${awayName} (x${odds.away})</option>
       </select>
-      <input type="text" id="scoreInput_${fixtureId}" placeholder="ex: 2-1" style="display:none;">
-      <input type="number" id="stake_${fixtureId}" placeholder="Mise" min="1">
-      <button onclick="placeBet(${fixtureId}, '${escapeQ(homeName)}', '${escapeQ(awayName)}')">Parier</button>
+      <input type="number" id="stake_${predictionId}" placeholder="Mise" min="1">
+      <button onclick="placeBet(${predictionId}, '${escapeQ(homeName)}', '${escapeQ(awayName)}')">Parier</button>
     </div>
   `;
 }
 
 function escapeQ(s){ return s.replace(/'/g, "\\'"); }
 
-function toggleScoreInput(fixtureId){
-  const pred = document.getElementById(`pred_${fixtureId}`).value;
-  document.getElementById(`scoreInput_${fixtureId}`).style.display = pred === 'score' ? 'inline-block' : 'none';
-}
-
-async function placeBet(fixtureId, homeName, awayName){
-  const pred = document.getElementById(`pred_${fixtureId}`).value;
-  const stake = parseInt(document.getElementById(`stake_${fixtureId}`).value, 10);
-  const scoreVal = document.getElementById(`scoreInput_${fixtureId}`).value.trim();
+async function placeBet(predictionId, homeName, awayName){
+  const pred = document.getElementById(`pred_${predictionId}`).value;
+  const stake = parseInt(document.getElementById(`stake_${predictionId}`).value, 10);
 
   if(!stake || stake <= 0){
     setStatus("Entre une mise valide.", true);
     return;
   }
-  if(pred === 'score' && !/^\d+-\d+$/.test(scoreVal)){
-    setStatus("Score invalide, format attendu : 2-1", true);
-    return;
-  }
 
-  const odds = ODDS[pred];
+  const match = matchesData.find(m => m.prediction_id === predictionId);
+  const odds = match.odds[pred];
 
   const { data, error } = await sb.rpc('place_bet', {
-    p_fixture_id: fixtureId,
+    p_fixture_id: predictionId,
     p_home_team: homeName,
     p_away_team: awayName,
     p_prediction: pred,
-    p_predicted_score: pred === 'score' ? scoreVal : null,
+    p_predicted_score: null,
     p_stake: stake,
     p_odds: odds
   });
@@ -499,14 +591,14 @@ async function settlePendingBets(){
   if(!pending || pending.length === 0) return;
 
   for(const bet of pending){
-    const match = matchesData.find(m => m.fixture.id === bet.fixture_id);
+    // bet.fixture_id contient en réalité le prediction_id (voir placeBet)
+    const match = matchesData.find(m => m.prediction_id === bet.fixture_id);
     if(!match) continue;
-    const status = match.fixture.status.short;
-    if(status === 'FT' || status === 'AET' || status === 'PEN'){
+    if(match.status === 'FT' || match.status === 'AET' || match.status === 'PEN'){
       await sb.rpc('settle_bet', {
         p_bet_id: bet.id,
-        p_home_score: match.goals.home ?? 0,
-        p_away_score: match.goals.away ?? 0
+        p_home_score: match.home_goals ?? 0,
+        p_away_score: match.away_goals ?? 0
       });
     }
   }
