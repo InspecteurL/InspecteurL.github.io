@@ -236,7 +236,7 @@ async function init(){
 }
 
 async function refreshBalance(){
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('profiles')
     .select('balance')
     .eq('id', currentUser.id)
@@ -267,7 +267,7 @@ function renderTab(){
 // ==============================
 async function loadMatches(){
   setStatus("Chargement des matchs…");
-  const { data: cache } = await supabase
+  const { data: cache } = await sb
     .from('matches_cache')
     .select('*')
     .eq('id', 1)
@@ -282,7 +282,7 @@ async function loadMatches(){
     try{
       const fresh = await fetchFromApiFootball();
       matchesData = fresh;
-      await supabase
+      await sb
         .from('matches_cache')
         .update({ data: fresh, updated_at: new Date().toISOString() })
         .eq('id', 1);
@@ -422,7 +422,7 @@ async function placeBet(fixtureId, homeName, awayName){
 async function renderMyBets(){
   const el = document.getElementById('content');
   el.innerHTML = `<div class="empty">Chargement…</div>`;
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('bets')
     .select('*')
     .eq('user_id', currentUser.id)
@@ -468,7 +468,7 @@ function statusLabel(s){
 async function renderLeaderboard(){
   const el = document.getElementById('content');
   el.innerHTML = `<div class="empty">Chargement…</div>`;
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('profiles')
     .select('id, username, balance')
     .order('balance', { ascending: false })
@@ -491,7 +491,7 @@ async function renderLeaderboard(){
 // RÉSOLUTION AUTOMATIQUE DES PARIS TERMINÉS
 // ==============================
 async function settlePendingBets(){
-  const { data: pending } = await supabase
+  const { data: pending } = await sb
     .from('bets')
     .select('*')
     .eq('status', 'pending');
