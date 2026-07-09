@@ -1060,7 +1060,7 @@ async function renderMyBets(){
             <td>${b.stake} <span class="material-symbols-outlined">money_bag</span></td>
             <td class="status-${b.status}">
               ${statusLabel(b.status)}
-              ${b.status === 'pending' ? `<button class="cancel-bet-btn" onclick="cancelBet(${b.id}, '${b.fixture_id}')">Annuler</button>` : ''}
+              ${b.status === 'pending' ? `<button class="cancel-bet-btn" onclick="cancelBet('${b.id}', '${b.fixture_id}')">Annuler</button>` : ''}
             </td>
             <td>${b.status === 'won' ? '+' + b.payout : (b.status === 'lost' ? '-' + b.stake : '—')}</td>
           </tr>
