@@ -10,11 +10,48 @@
 <style>
    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
-   nav{background:rgba(10,10,15,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:2rem;position:sticky;top:0;z-index:100;height:60px;}
-    .nav-logo{font-family:'Bebas Neue',cursive;font-size:1.5rem;color:var(--accent);letter-spacing:2px;text-decoration:none;}
-    nav a{color:var(--muted);text-decoration:none;font-size:.875rem;font-weight:600;transition:color .2s;}
-    nav a:hover{color:var(--text);}
-    nav a.active{color:var(--accent);}
+   nav {
+    background: rgba(10,10,15,.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 60px;
+}
+
+.nav-logo {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.5rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-decoration: none;
+}
+
+nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: .875rem;
+    font-weight: 600;
+    transition: color .2s;
+    margin-right: 1.2rem; /* espace entre les liens */
+}
+
+nav a:last-child {
+    margin-right: 0;
+}
+
+nav a:hover {
+    color: var(--text);
+}
+
+nav a.active {
+    color: var(--accent);
+}
 :root {
     --bg: #0a0a0f;
     --surface: #12121a;
