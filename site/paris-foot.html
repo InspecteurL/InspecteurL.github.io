@@ -426,7 +426,13 @@ async function fetchScoresFreeApi(){
 async function fetchScoresFootballData(){
   const todayISO = new Date().toISOString().slice(0,10);
   const res = await fetch(
-    `${SUPABASE_URL}/functions/v1/football-proxy?dateFrom=${todayISO}&dateTo=${todayISO}`
+    `${SUPABASE_URL}/functions/v1/football-proxy?dateFrom=${todayISO}&dateTo=${todayISO}`,
+    {
+      headers: {
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        "apikey": SUPABASE_ANON_KEY
+      }
+    }
   );
   if(!res.ok) throw new Error("Erreur proxy football-data.org (" + res.status + ")");
   const json = await res.json();
