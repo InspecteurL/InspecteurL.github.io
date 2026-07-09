@@ -5,7 +5,6 @@
 <title>Paris Foot — HorizonCiné</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  
   :root{
     --pitch:#0d1f14;
     --pitch-line:#1e3a26;
@@ -425,9 +424,14 @@ async function fetchScoresFreeApi(){
 // Passe par la Edge Function Supabase (football-proxy) pour éviter le CORS
 // et garder la clé football-data.org cachée côté serveur
 async function fetchScoresFootballData(){
-  const todayISO = new Date().toISOString().slice(0,10);
+  const now = new Date();
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+  const dateFrom = yesterday.toISOString().slice(0,10);
+  const dateTo = tomorrow.toISOString().slice(0,10);
+
   const res = await fetch(
-    `${SUPABASE_URL}/functions/v1/football-proxy?dateFrom=${todayISO}&dateTo=${todayISO}`,
+    `${SUPABASE_URL}/functions/v1/football-proxy?dateFrom=${dateFrom}&dateTo=${dateTo}`,
     {
       headers: {
         "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
