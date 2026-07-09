@@ -8,322 +8,550 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --board:#111109;
-    --board-panel:#1a1a10;
-    --board-panel-raised:#222215;
-    --seam:#2c2c1c;
-    --amber:#ffb020;
-    --amber-dim:#7a5410;
-    --amber-glow:rgba(255,176,32,0.35);
-    --paper:#f1ead9;
-    --paper-shadow:#d8cdb4;
-    --ink:#2a2620;
-    --ink-soft:#6b6555;
-    --live:#ff5252;
-    --win:#5fbf6e;
-    --lose:#ff6b6b;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:
-      radial-gradient(ellipse at top, #1c1c12 0%, var(--board) 55%);
-    color:var(--amber);
-    font-family:'IBM Plex Sans', system-ui, sans-serif;
-    padding:28px 16px 60px;
-  }
+  :root {
+  --board: #111109;
+  --board-panel: #1a1a10;
+  --board-panel-raised: #222215;
+  --seam: #2c2c1c;
+  --amber: #ffb020;
+  --amber-dim: #7a5410;
+  --amber-glow: rgba(255, 176, 32, 0.35);
+  --paper: #f1ead9;
+  --paper-shadow: #d8cdb4;
+  --ink: #2a2620;
+  --ink-soft: #6b6555;
+  --live: #ff5252;
+  --win: #5fbf6e;
+  --lose: #ff6b6b;
+  --glass: rgba(255, 176, 32, 0.08);
+  --shadow-soft: 0 8px 24px -6px rgba(0, 0, 0, 0.6);
+  --shadow-neo: 6px 6px 12px #0f0f08, -6px -6px 12px #25251a;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  /* ---------- MASTHEAD ---------- */
-  header{
-    text-align:center;
-    margin-bottom:24px;
-  }
-  header h1{
-    font-family:'IBM Plex Mono', monospace;
-    font-weight:700;
-    font-size:1.9rem;
-    letter-spacing:0.12em;
-    text-transform:uppercase;
-    margin:0 0 6px;
-    color:var(--amber);
-    text-shadow:0 0 14px var(--amber-glow), 0 0 2px var(--amber-glow);
-  }
-  header p{
-    margin:0;
-    color:var(--ink-soft);
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.75rem;
-    letter-spacing:0.04em;
-  }
+* {
+  box-sizing: border-box;
+}
 
-  /* ---------- BALANCE COUNTER ---------- */
-  #balanceBar{
-    max-width:720px;
-    margin:0 auto 20px;
-    background:var(--board-panel);
-    border:1px solid var(--seam);
-    border-radius:4px;
-    padding:14px 20px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    box-shadow:inset 0 0 0 1px rgba(255,176,32,0.06);
-  }
-  #balanceBar .label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.65rem;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-  }
-  #balanceBar .amount{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:1.5rem;
-    font-weight:700;
-    color:var(--amber);
-    text-shadow:0 0 10px var(--amber-glow);
-  }
-  #userLabel{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.8rem;
-    color:var(--amber-dim);
-  }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: 
+    radial-gradient(ellipse at top, #1c1c12 0%, var(--board) 45%),
+    linear-gradient(to bottom, #111109 0%, #0a0a06 100%);
+  color: var(--amber);
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  padding: 24px 16px 80px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
 
-  /* ---------- NAV TABS (board switches) ---------- */
-  nav{
-    max-width:720px;
-    margin:0 auto 20px;
-    display:flex;
-    gap:2px;
-    background:var(--seam);
-    border-radius:4px;
-    padding:2px;
-  }
-  nav button{
-    flex:1;
-    background:var(--board-panel);
-    border:none;
-    color:var(--ink-soft);
-    padding:10px;
-    border-radius:3px;
-    cursor:pointer;
-    font-family:'IBM Plex Mono', monospace;
-    font-weight:600;
-    font-size:0.75rem;
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-    transition:background 0.15s, color 0.15s;
-  }
-  nav button:hover{ color:var(--amber-dim); }
-  nav button.active{
-    background:var(--board-panel-raised);
-    color:var(--amber);
-    box-shadow:inset 0 0 0 1px rgba(255,176,32,0.25);
-  }
+/* ---------- TYPOGRAPHY IMPROVEMENTS ---------- */
+h1, h2, h3 {
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.08em;
+}
 
-  .container{max-width:720px;margin:0 auto;}
+/* ---------- MASTHEAD ---------- */
+header {
+  text-align: center;
+  margin-bottom: 32px;
+  position: relative;
+}
 
-  /* ---------- MATCH ROW (split-flap board) ---------- */
-  .match{
-    background:var(--board-panel);
-    border:1px solid var(--seam);
-    border-radius:4px;
-    padding:16px 18px 0;
-    margin-bottom:14px;
-    position:relative;
-  }
-  .match-top{
-    display:grid;
-    grid-template-columns:1fr auto 1fr;
-    align-items:center;
-    gap:10px;
-    padding-bottom:14px;
-  }
-  .team{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-family:'IBM Plex Mono', monospace;
-    font-weight:600;
-    font-size:0.85rem;
-    text-transform:uppercase;
-    letter-spacing:0.03em;
-    color:#e8e2d0;
-  }
-  .team.right{justify-content:flex-end;text-align:right;}
-  .team img{width:20px;height:20px;object-fit:contain;}
+header::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--amber), transparent);
+  opacity: 0.6;
+}
 
-  .score-block{text-align:center;min-width:76px;}
-  .score{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:1.6rem;
-    font-weight:700;
-    color:var(--amber);
-    text-shadow:0 0 12px var(--amber-glow);
-    letter-spacing:0.05em;
-  }
-  .minute{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.6rem;
-    color:var(--live);
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.08em;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:4px;
-    margin-top:2px;
-  }
-  .minute::before{
-    content:"";
-    width:5px;height:5px;border-radius:50%;
-    background:var(--live);
-    box-shadow:0 0 6px var(--live);
-    animation:pulse 1.2s infinite;
-  }
-  .kickoff{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.65rem;
-    color:var(--ink-soft);
-    text-align:center;
-    margin-top:2px;
-  }
-  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.15;}}
+header h1 {
+  font-weight: 700;
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+  color: var(--amber);
+  text-shadow: 
+    0 0 20px var(--amber-glow),
+    0 0 40px rgba(255, 176, 32, 0.15);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
-  .league{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.6rem;
-    text-transform:uppercase;
-    letter-spacing:0.08em;
-    color:var(--amber-dim);
-    padding-bottom:12px;
-    margin-top:-6px;
-  }
+header h1:hover {
+  transform: scale(1.03);
+}
 
-  /* ---------- BET SLIP (paper ticket stub) ---------- */
-  .bet-form{
-    background:var(--paper);
-    color:var(--ink);
-    margin:0 -18px;
-    padding:14px 18px 16px;
-    border-top:2px dashed var(--paper-shadow);
-    border-radius:0 0 4px 4px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    align-items:center;
-    position:relative;
-  }
-  .bet-form::before{
-    content:"";
-    position:absolute;
-    top:-2px; left:16px; right:16px; height:0;
-    border-top:2px dashed var(--paper-shadow);
-  }
-  select, input[type=number], input[type=text]{
-    background:#fffdf8;
-    border:1px solid var(--paper-shadow);
-    color:var(--ink);
-    padding:7px 9px;
-    border-radius:3px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.75rem;
-  }
-  input[type=number]{width:78px;}
-  input[type=text]{width:60px;}
-  .bet-form button{
-    background:var(--ink);
-    border:none;
-    color:var(--paper);
-    font-family:'IBM Plex Mono', monospace;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.05em;
-    padding:8px 16px;
-    border-radius:3px;
-    cursor:pointer;
-    font-size:0.75rem;
-  }
-  .bet-form button:hover{ background:#42392a; }
-  .odds-tag{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.65rem;
-    color:var(--ink-soft);
-    font-style:italic;
-  }
-  /* Cas "Paris fermés" : affiché seul, hors du ticket papier */
-  .match > .odds-tag{
-    display:block;
-    padding:10px 0 14px;
-    color:var(--ink-soft);
-  }
+header p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  opacity: 0.9;
+}
 
-  /* ---------- MES PARIS (table) ---------- */
-  table{width:100%;border-collapse:collapse;}
-  th, td{
-    text-align:left;
-    padding:9px 10px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.75rem;
-    border-bottom:1px solid var(--seam);
-  }
-  th{
-    color:var(--amber-dim);
-    text-transform:uppercase;
-    font-size:0.62rem;
-    letter-spacing:0.06em;
-  }
-  td{ color:#e8e2d0; }
-  .status-won{color:var(--win);font-weight:700;}
-  .status-lost{color:var(--lose);font-weight:700;}
-  .status-pending{color:var(--ink-soft);}
+/* ---------- BALANCE COUNTER (Neumorphic + Glass) ---------- */
+#balanceBar {
+  max-width: 760px;
+  margin: 0 auto 28px;
+  background: var(--board-panel);
+  border: 1px solid var(--seam);
+  border-radius: 16px;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-neo), inset 0 2px 0 rgba(255,255,255,0.04);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
 
-  /* ---------- CLASSEMENT (ranked stubs) ---------- */
-  .rank{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:11px 16px;
-    background:var(--board-panel);
-    border:1px solid var(--seam);
-    border-left:3px solid var(--amber-dim);
-    border-radius:3px;
-    margin-bottom:6px;
-    font-family:'IBM Plex Mono', monospace;
-  }
-  .rank .pos{
-    color:var(--amber);
-    font-weight:700;
-    width:32px;
-    display:inline-block;
-  }
+#balanceBar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--glass);
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
 
-  .empty, .error{
-    text-align:center;
-    color:var(--ink-soft);
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.8rem;
-    padding:36px 10px;
+#balanceBar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px -10px rgba(0,0,0,0.7), var(--shadow-neo);
+}
+
+#balanceBar .label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+#balanceBar .amount {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 700;
+  color: var(--amber);
+  text-shadow: 0 0 16px var(--amber-glow);
+  transition: var(--transition);
+}
+
+#balanceBar:hover .amount {
+  text-shadow: 0 0 24px var(--amber-glow), 0 0 40px rgba(255,176,32,0.5);
+}
+
+#userLabel {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--amber-dim);
+  font-weight: 500;
+}
+
+/* ---------- NAV TABS ---------- */
+nav {
+  max-width: 760px;
+  margin: 0 auto 28px;
+  display: flex;
+  gap: 4px;
+  background: var(--seam);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+}
+
+nav button {
+  flex: 1;
+  background: var(--board-panel);
+  border: none;
+  color: var(--ink-soft);
+  padding: 14px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+nav button:hover {
+  color: var(--amber);
+  background: var(--board-panel-raised);
+  transform: translateY(-1px);
+}
+
+nav button.active {
+  background: var(--board-panel-raised);
+  color: var(--amber);
+  box-shadow: 
+    inset 0 3px 6px rgba(0,0,0,0.4),
+    0 0 0 2px var(--amber-glow);
+}
+
+/* ---------- CONTAINER ---------- */
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* ---------- MATCH CARD (Modern + Neumorphic) ---------- */
+.match {
+  background: var(--board-panel);
+  border: 1px solid var(--seam);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: var(--shadow-neo), inset 0 1px 0 rgba(255,255,255,0.03);
+  transition: var(--transition);
+  overflow: hidden;
+}
+
+.match:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(0,0,0,0.75), var(--shadow-neo);
+}
+
+.match::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(to right, transparent, var(--amber), transparent);
+  opacity: 0.6;
+}
+
+.match-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 16px;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #e8e2d0;
+  transition: var(--transition);
+}
+
+.team:hover {
+  color: var(--amber);
+}
+
+.team.right {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.team img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  transition: transform 0.3s ease;
+}
+
+.team:hover img {
+  transform: scale(1.15);
+}
+
+.score-block {
+  text-align: center;
+  min-width: 88px;
+}
+
+.score {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(1.75rem, 5vw, 2.3rem);
+  font-weight: 700;
+  color: var(--amber);
+  text-shadow: 0 0 20px var(--amber-glow);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  transition: var(--transition);
+}
+
+.minute {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--live);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.minute::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--live);
+  box-shadow: 0 0 10px var(--live), 0 0 20px var(--live);
+  animation: pulse 1.4s infinite;
+}
+
+.kickoff {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  text-align: center;
+  margin-top: 8px;
+}
+
+.league {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--amber-dim);
+  padding-top: 12px;
+  border-top: 1px solid var(--seam);
+  margin-top: 12px;
+}
+
+/* ---------- BET SLIP (Premium Paper Ticket) ---------- */
+.bet-form {
+  background: var(--paper);
+  color: var(--ink);
+  margin: 20px -20px -20px;
+  padding: 20px;
+  border-top: 3px dashed var(--paper-shadow);
+  border-radius: 0 0 16px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  position: relative;
+  box-shadow: inset 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.bet-form::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 20px;
+  right: 20px;
+  height: 3px;
+  border-top: 3px dashed var(--paper-shadow);
+}
+
+select, 
+input[type="number"], 
+input[type="text"] {
+  background: #fffdf8;
+  border: 2px solid var(--paper-shadow);
+  color: var(--ink);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  transition: var(--transition);
+}
+
+select:focus,
+input:focus {
+  outline: none;
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(255,176,32,0.2);
+}
+
+input[type="number"] { width: 92px; }
+input[type="text"] { width: 72px; }
+
+.bet-form button {
+  background: linear-gradient(145deg, #2a2620, #1f1b17);
+  border: none;
+  color: var(--paper);
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  box-shadow: 4px 4px 8px rgba(0,0,0,0.3),
+              inset 0 -2px 2px rgba(255,255,255,0.15);
+  transition: var(--transition);
+}
+
+.bet-form button:hover {
+  background: linear-gradient(145deg, #42392a, #2a2620);
+  transform: translateY(-2px);
+  box-shadow: 6px 8px 12px rgba(0,0,0,0.4);
+}
+
+.bet-form button:active {
+  transform: scale(0.97);
+}
+
+.odds-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* Closed odds */
+.match > .odds-tag {
+  display: block;
+  padding: 16px 0 8px;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+/* ---------- TABLES ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--board-panel);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-neo);
+}
+
+th, td {
+  text-align: left;
+  padding: 14px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  border-bottom: 1px solid var(--seam);
+}
+
+th {
+  color: var(--amber-dim);
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  background: rgba(255,176,32,0.06);
+}
+
+td { 
+  color: #e8e2d0; 
+}
+
+.status-won { color: var(--win); font-weight: 700; }
+.status-lost { color: var(--lose); font-weight: 700; }
+.status-pending { color: var(--ink-soft); }
+
+/* ---------- RANKING ---------- */
+.rank {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: var(--board-panel);
+  border: 1px solid var(--seam);
+  border-left: 5px solid var(--amber);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  transition: var(--transition);
+  box-shadow: var(--shadow-neo);
+}
+
+.rank:hover {
+  transform: translateX(6px);
+  border-left-color: var(--amber);
+}
+
+.rank .pos {
+  color: var(--amber);
+  font-weight: 700;
+  width: 36px;
+  font-size: 1.1rem;
+}
+
+/* ---------- UTILITIES ---------- */
+.empty, .error {
+  text-align: center;
+  color: var(--ink-soft);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  padding: 60px 20px;
+  border-radius: 16px;
+  background: var(--board-panel);
+  box-shadow: inset 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.error { color: #ff8a8a; }
+
+#status {
+  text-align: center;
+  color: var(--amber-dim);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 20px;
+}
+
+#authGate {
+  max-width: 420px;
+  margin: 100px auto;
+  text-align: center;
+  color: var(--ink-soft);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  padding: 40px 24px;
+  background: var(--board-panel);
+  border-radius: 16px;
+  box-shadow: var(--shadow-neo);
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 640px) {
+  body { padding: 16px 12px 70px; }
+  
+  .match-top {
+    gap: 10px;
   }
-  .error{color:#ff8a8a;}
-  #status{
-    text-align:center;
-    color:var(--amber-dim);
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.7rem;
-    letter-spacing:0.04em;
-    margin-bottom:16px;
+  
+  .score {
+    font-size: 1.85rem;
   }
-  #authGate{
-    max-width:400px;
-    margin:80px auto;
-    text-align:center;
-    color:var(--ink-soft);
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.85rem;
+  
+  .bet-form {
+    flex-direction: column;
+    align-items: stretch;
   }
+  
+  .bet-form button {
+    width: 100%;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
 </style>
 </head>
 <body>
