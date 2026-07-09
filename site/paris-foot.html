@@ -324,7 +324,7 @@ async function buildMatchesWithOddsAndScores(){
     };
 
     return {
-      prediction_id: s.id, // on utilise l'id du match (scores) comme identifiant unique désormais
+      prediction_id: String(s.id), // toujours en texte pour éviter les soucis de type (ex: "fd_537383")
       home_team: s.homeName,
       away_team: s.awayName,
       competition: matchedPrediction ? matchedPrediction.competition_name : '',
@@ -547,7 +547,7 @@ function betForm(predictionId, homeName, awayName, odds, hasRealOdds){
         <option value="away">Victoire ${awayName} (x${odds.away})</option>
       </select>
       <input type="number" id="stake_${predictionId}" placeholder="Mise" min="1">
-      <button onclick="placeBet(${predictionId}, '${escapeQ(homeName)}', '${escapeQ(awayName)}')">Parier</button>
+      <button onclick="placeBet('${predictionId}', '${escapeQ(homeName)}', '${escapeQ(awayName)}')">Parier</button>
       ${oddsNote}
     </div>
   `;
