@@ -6,10 +6,22 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=money_bag" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
+   .material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24;
+  vertical-align: middle;
+  font-size: 1.1em;
+  line-height: 1;
+  color: var(--accent);
+}
    nav {
     background: rgba(10,10,15,.95);
     backdrop-filter: blur(12px);
@@ -580,7 +592,7 @@ select:focus, input:focus {
 </nav>
 <header>
   <h1>Paris Foot</h1>
-  <p>HorizonCiné — Monnaie 100% fictive · Départ 100 💰</p>
+  <p>HorizonCiné — Monnaie 100% fictive · Départ 100 <span class="material-symbols-outlined"></span></p>
 </header>
 
 <div id="authGate">Connexion en cours…</div>
@@ -1019,7 +1031,7 @@ async function renderMyBets(){
           <tr>
             <td>${b.home_team} - ${b.away_team}</td>
             <td>${predLabel(b)}</td>
-            <td>${b.stake} 💰</td>
+            <td>${b.stake} <span class="material-symbols-outlined"></span></td>
             <td class="status-${b.status}">${statusLabel(b.status)}</td>
             <td>${b.status === 'won' ? '+' + b.payout : (b.status === 'lost' ? '-' + b.stake : '—')}</td>
           </tr>
@@ -1060,7 +1072,7 @@ async function renderLeaderboard(){
   el.innerHTML = data.map((p, i) => `
     <div class="rank">
       <div><span class="pos">#${i+1}</span> ${p.username || p.id.slice(0,8)}</div>
-      <div style="color:var(--flood);font-weight:700;">${p.balance} 💰</div>
+      <div style="color:var(--flood);font-weight:700;">${p.balance} <span class="material-symbols-outlined" style="color:var(--flood);"></span></div>
     </div>
   `).join('');
 }
@@ -1099,6 +1111,17 @@ function setStatus(msg, isError=false){
 }
 
 init();
+
+   async function refreshBalance(){
+  const { data, error } = await sb
+    .from('profiles')
+    .select('balance')
+    .eq('id', currentUser.id)
+    .single();
+  if(!error && data){
+    document.getElementById('balanceAmount').innerHTML = data.balance + ' <span class="material-symbols-outlined">money_bag</span>';
+  }
+}
 </script>
 
 </body>
