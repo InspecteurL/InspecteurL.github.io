@@ -19,13 +19,6 @@
         --muted: #7a7a9a;
         --radius: 12px;
         --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-bounce: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        
-        --live: #ff5252;
-        --win: #5fbf6e;
-        --lose: #ff6b6b;
-        --glass: rgba(232, 184, 75, 0.08);
-        --shadow-soft: 0 8px 24px -6px rgba(0, 0, 0, 0.6);
     }
 
     * {
@@ -37,86 +30,61 @@
     body {
         background: var(--bg);
         color: var(--text);
-        font-family: 'DM Sans', sans-serif;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
         min-height: 100vh;
-        line-height: 1.5;
+        line-height: 1.6;
         padding: 24px 16px 80px;
-        overflow-x: hidden;
     }
 
-    /* ---------- ANIMATIONS GLOBALES ---------- */
-    .animate-in {
-        animation: fadeInUp 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) backwards;
+    /* TYPOGRAPHIE */
+    h1, h2, h3, .forum-title, .detail-title, header h1, .sidebar-title {
+        font-family: 'Bebas Neue', cursive;
+        letter-spacing: 2px;
+        text-transform: uppercase;
     }
 
+    /* ANIMATIONS */
     @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(25px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    .thread-card, .match, .sidebar-card, .detail-card {
-        animation: cardPop 0.5s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+    @keyframes cardLift {
+        from { transform: translateY(8px); opacity: 0.9; }
+        to { transform: translateY(0); opacity: 1; }
     }
 
-    @keyframes cardPop {
-        0% {
-            opacity: 0;
-            transform: scale(0.95) translateY(20px);
-        }
-        100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
+    .thread-card, .match, .sidebar-card, .detail-card, .rank {
+        animation: fadeInUp 0.5s ease backwards, cardLift 0.6s ease backwards;
     }
 
-    /* Hover premium */
+    /* HOVER EFFECTS */
     .thread-card:hover,
     .match:hover {
-        transform: translateY(-6px) scale(1.01);
-        box-shadow: 0 20px 40px -10px rgba(232, 184, 75, 0.15);
+        transform: translateY(-5px);
         border-color: var(--accent);
+        box-shadow: 0 15px 35px -10px rgba(232, 184, 75, 0.15);
     }
 
-    /* Glow accent */
-    .glow-accent {
-        position: relative;
-    }
-    .glow-accent::after {
-        content: '';
-        position: absolute;
-        inset: -2px;
-        background: linear-gradient(45deg, transparent, var(--accent), transparent);
-        border-radius: var(--radius);
-        opacity: 0;
-        z-index: -1;
-        transition: opacity 0.3s;
-        filter: blur(8px);
-    }
-    .glow-accent:hover::after {
-        opacity: 0.6;
+    /* NAV & HEADER */
+    nav {
+        background: rgba(10,10,15,.95);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
     }
 
-    /* ---------- HEADER ---------- */
     header h1 {
-        font-family: 'Bebas Neue', cursive;
         font-size: clamp(1.8rem, 5vw, 2.6rem);
         color: var(--accent);
-        text-shadow: 0 0 20px rgba(232, 184, 75, 0.4);
-        transition: var(--transition-bounce);
+        text-shadow: 0 0 20px rgba(232, 184, 75, 0.3);
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     header h1:hover {
-        transform: scale(1.05) rotate(1deg);
-        text-shadow: 0 0 35px rgba(232, 184, 75, 0.7);
+        transform: scale(1.03);
     }
 
-    /* ---------- BALANCE BAR ---------- */
+    /* BALANCE */
     #balanceBar {
         max-width: 760px;
         margin: 0 auto 28px;
@@ -127,23 +95,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: var(--shadow-soft);
         transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-    }
-
-    #balanceBar::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: var(--glass);
-        border-radius: var(--radius);
-        pointer-events: none;
     }
 
     #balanceBar:hover {
-        transform: translateY(-4px);
+        transform: translateY(-3px);
         border-color: var(--accent);
     }
 
@@ -152,16 +108,21 @@
         font-size: clamp(1.6rem, 4vw, 2.2rem);
         font-weight: 700;
         color: var(--accent);
-        transition: var(--transition);
     }
 
-    #balanceBar:hover .amount {
-        text-shadow: 0 0 30px rgba(232, 184, 75, 0.8);
-        transform: scale(1.05);
+    /* TABS */
+    nav.tabs {
+        max-width: 760px;
+        margin: 0 auto 28px;
+        display: flex;
+        gap: 4px;
+        background: var(--surface);
+        border-radius: 12px;
+        padding: 4px;
+        border: 1px solid var(--border);
     }
 
-    /* ---------- NAV TABS ---------- */
-    nav button {
+    nav.tabs button {
         flex: 1;
         background: var(--card);
         border: none;
@@ -170,132 +131,129 @@
         border-radius: 10px;
         cursor: pointer;
         font-weight: 600;
-        font-size: 0.8rem;
+        font-size: 0.82rem;
         text-transform: uppercase;
         letter-spacing: 1px;
         transition: var(--transition);
-        position: relative;
     }
 
-    nav button.active {
-        color: var(--accent);
+    nav.tabs button.active {
         background: var(--surface);
-        box-shadow: 0 0 0 2px rgba(232, 184, 75, 0.3);
+        color: var(--accent);
     }
 
-    nav button::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 50%;
-        width: 0;
-        height: 2px;
+    /* FORUM */
+    .layout {
+        max-width: 960px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 260px;
+        gap: 1.5rem;
+    }
+
+    .thread-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1rem 1.25rem;
+        display: flex;
+        gap: 1rem;
+        transition: var(--transition);
+    }
+
+    .thread-title:hover {
+        color: var(--accent);
+    }
+
+    .cat-btn {
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        padding: .35rem .9rem;
+        border-radius: 20px;
+        font-size: .8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .cat-btn:hover, .cat-btn.active {
         background: var(--accent);
-        transition: width 0.3s ease;
-        transform: translateX(-50%);
+        color: #0a0a0f;
+        border-color: var(--accent);
     }
 
-    nav button:hover::after,
-    nav button.active::after {
-        width: 60%;
-    }
-
-    /* ---------- MATCH & THREADS ---------- */
-    .match, .thread-card {
+    /* BETTING */
+    .match {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        margin-bottom: 20px;
         transition: var(--transition);
     }
 
     .score {
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .match:hover .score,
-    .thread-card:hover .thread-title {
-        transform: scale(1.08);
+        font-family: 'Bebas Neue', cursive;
+        font-size: clamp(1.75rem, 5vw, 2.4rem);
+        font-weight: 700;
         color: var(--accent);
     }
 
-    /* ---------- BUTTONS ---------- */
-    .btn-post,
-    .bet-form button,
-    .btn-new-thread {
-        position: relative;
-        overflow: hidden;
+    .bet-form {
+        background: var(--surface);
+        margin: 20px -20px -20px;
+        padding: 20px;
+        border-top: 1px solid var(--border);
+        border-radius: 0 0 var(--radius) var(--radius);
+    }
+
+    .bet-form button {
+        background: var(--accent);
+        color: #0a0a0f;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
         transition: var(--transition);
     }
 
-    .btn-post::before,
-    .bet-form button::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 40%;
-        height: 100%;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255,255,255,0.4),
-            transparent
-        );
-        transition: 0.6s;
-    }
-
-    .btn-post:hover::before,
-    .bet-form button:hover::before {
-        left: 300%;
-    }
-
-    /* ---------- VOTES & INTERACTIONS ---------- */
-    .vote-btn {
-        transition: transform 0.2s ease;
-    }
-
-    .vote-btn:active {
-        transform: scale(1.6);
-    }
-
-    /* ---------- MODAL ANIMATION ---------- */
-    .modal-overlay {
-        animation: fadeIn 0.3s ease forwards;
-    }
-
+    /* MODAL */
     .modal {
         animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
     @keyframes modalPop {
-        0% {
+        from {
             opacity: 0;
-            transform: scale(0.7) translateY(60px);
+            transform: scale(0.85) translateY(40px);
         }
-        100% {
+        to {
             opacity: 1;
             transform: scale(1) translateY(0);
         }
     }
 
-    /* ---------- LIVE PULSE ---------- */
-    .live-pulse {
-        animation: livePulse 2s infinite;
+    /* UTILITIES */
+    .btn-post, .btn-new-thread {
+        position: relative;
+        overflow: hidden;
     }
 
-    @keyframes livePulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.6; }
+    .vote-btn:active {
+        transform: scale(1.5);
+        transition: transform 0.15s ease;
     }
 
-    /* Staggered animation for lists */
-    .thread-list > *:nth-child(1) { animation-delay: 0.05s; }
-    .thread-list > *:nth-child(2) { animation-delay: 0.1s; }
-    .thread-list > *:nth-child(3) { animation-delay: 0.15s; }
-    .thread-list > *:nth-child(4) { animation-delay: 0.2s; }
+    @media (max-width: 700px) {
+        .layout { grid-template-columns: 1fr; }
+        .sidebar { display: none; }
+    }
 
-    /* ---------- RESPONSIVE ---------- */
     @media (max-width: 640px) {
         body { padding: 16px 12px 70px; }
         .bet-form { flex-direction: column; align-items: stretch; }
-        .bet-form button { width: 100%; }
     }
 </style>
 </head>
