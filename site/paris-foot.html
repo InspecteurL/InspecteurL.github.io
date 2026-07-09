@@ -4,174 +4,333 @@
 <meta charset="UTF-8">
 <title>Paris Foot — HorizonCiné</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --pitch:#0d1f14;
-    --pitch-line:#1e3a26;
-    --grass:#2e7d32;
-    --flood:#d4ff5a;
-    --text:#eef5ea;
-    --muted:#8ea88f;
-    --live:#ff4d4d;
-    --card:#132a1b;
-    --win:#4dd67a;
+    --board:#111109;
+    --board-panel:#1a1a10;
+    --board-panel-raised:#222215;
+    --seam:#2c2c1c;
+    --amber:#ffb020;
+    --amber-dim:#7a5410;
+    --amber-glow:rgba(255,176,32,0.35);
+    --paper:#f1ead9;
+    --paper-shadow:#d8cdb4;
+    --ink:#2a2620;
+    --ink-soft:#6b6555;
+    --live:#ff5252;
+    --win:#5fbf6e;
     --lose:#ff6b6b;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
     background:
-      repeating-linear-gradient(90deg, var(--pitch) 0 40px, #0f2417 40px 80px);
-    color:var(--text);
-    font-family:'Segoe UI', system-ui, sans-serif;
-    padding:24px 16px 60px;
+      radial-gradient(ellipse at top, #1c1c12 0%, var(--board) 55%);
+    color:var(--amber);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    padding:28px 16px 60px;
   }
+
+  /* ---------- MASTHEAD ---------- */
   header{
     text-align:center;
-    margin-bottom:20px;
+    margin-bottom:24px;
   }
   header h1{
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size:2rem;
-    letter-spacing:1px;
-    margin:0 0 4px;
-    color:var(--flood);
-    text-shadow:0 0 18px rgba(212,255,90,0.25);
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    font-size:1.9rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    margin:0 0 6px;
+    color:var(--amber);
+    text-shadow:0 0 14px var(--amber-glow), 0 0 2px var(--amber-glow);
   }
-  header p{margin:0;color:var(--muted);font-size:0.85rem;}
+  header p{
+    margin:0;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.75rem;
+    letter-spacing:0.04em;
+  }
 
+  /* ---------- BALANCE COUNTER ---------- */
   #balanceBar{
     max-width:720px;
     margin:0 auto 20px;
-    background:var(--card);
-    border:1px solid var(--pitch-line);
-    border-radius:12px;
+    background:var(--board-panel);
+    border:1px solid var(--seam);
+    border-radius:4px;
     padding:14px 20px;
     display:flex;
     justify-content:space-between;
     align-items:center;
+    box-shadow:inset 0 0 0 1px rgba(255,176,32,0.06);
   }
-  #balanceBar .amount{font-size:1.4rem;font-weight:800;color:var(--flood);}
-  #balanceBar .label{font-size:0.75rem;color:var(--muted);}
+  #balanceBar .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.65rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  #balanceBar .amount{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:1.5rem;
+    font-weight:700;
+    color:var(--amber);
+    text-shadow:0 0 10px var(--amber-glow);
+  }
+  #userLabel{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.8rem;
+    color:var(--amber-dim);
+  }
 
+  /* ---------- NAV TABS (board switches) ---------- */
   nav{
     max-width:720px;
     margin:0 auto 20px;
     display:flex;
-    gap:8px;
+    gap:2px;
+    background:var(--seam);
+    border-radius:4px;
+    padding:2px;
   }
   nav button{
     flex:1;
-    background:var(--card);
-    border:1px solid var(--pitch-line);
-    color:var(--muted);
+    background:var(--board-panel);
+    border:none;
+    color:var(--ink-soft);
     padding:10px;
-    border-radius:8px;
+    border-radius:3px;
     cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
     font-weight:600;
-    font-size:0.85rem;
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    transition:background 0.15s, color 0.15s;
   }
+  nav button:hover{ color:var(--amber-dim); }
   nav button.active{
-    background:var(--grass);
-    color:#06120a;
-    border-color:var(--grass);
+    background:var(--board-panel-raised);
+    color:var(--amber);
+    box-shadow:inset 0 0 0 1px rgba(255,176,32,0.25);
   }
 
   .container{max-width:720px;margin:0 auto;}
+
+  /* ---------- MATCH ROW (split-flap board) ---------- */
   .match{
-    background:var(--card);
-    border:1px solid var(--pitch-line);
-    border-radius:12px;
-    padding:16px 18px;
-    margin-bottom:10px;
+    background:var(--board-panel);
+    border:1px solid var(--seam);
+    border-radius:4px;
+    padding:16px 18px 0;
+    margin-bottom:14px;
+    position:relative;
   }
   .match-top{
     display:grid;
     grid-template-columns:1fr auto 1fr;
     align-items:center;
     gap:10px;
+    padding-bottom:14px;
   }
-  .team{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.9rem;}
+  .team{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:0.85rem;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    color:#e8e2d0;
+  }
   .team.right{justify-content:flex-end;text-align:right;}
-  .team img{width:22px;height:22px;object-fit:contain;}
-  .score-block{text-align:center;min-width:70px;}
-  .score{font-size:1.4rem;font-weight:800;color:var(--flood);}
-  .minute{font-size:0.65rem;color:var(--live);font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px;}
-  .minute::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--live);animation:pulse 1.2s infinite;}
-  .kickoff{font-size:0.7rem;color:var(--muted);text-align:center;}
-  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.2;}}
+  .team img{width:20px;height:20px;object-fit:contain;}
 
-  .league{font-size:0.65rem;text-transform:uppercase;color:var(--muted);margin-top:10px;}
+  .score-block{text-align:center;min-width:76px;}
+  .score{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:1.6rem;
+    font-weight:700;
+    color:var(--amber);
+    text-shadow:0 0 12px var(--amber-glow);
+    letter-spacing:0.05em;
+  }
+  .minute{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.6rem;
+    color:var(--live);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    margin-top:2px;
+  }
+  .minute::before{
+    content:"";
+    width:5px;height:5px;border-radius:50%;
+    background:var(--live);
+    box-shadow:0 0 6px var(--live);
+    animation:pulse 1.2s infinite;
+  }
+  .kickoff{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.65rem;
+    color:var(--ink-soft);
+    text-align:center;
+    margin-top:2px;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.15;}}
 
+  .league{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.6rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--amber-dim);
+    padding-bottom:12px;
+    margin-top:-6px;
+  }
+
+  /* ---------- BET SLIP (paper ticket stub) ---------- */
   .bet-form{
-    margin-top:12px;
-    padding-top:12px;
-    border-top:1px dashed var(--pitch-line);
+    background:var(--paper);
+    color:var(--ink);
+    margin:0 -18px;
+    padding:14px 18px 16px;
+    border-top:2px dashed var(--paper-shadow);
+    border-radius:0 0 4px 4px;
     display:flex;
     flex-wrap:wrap;
     gap:8px;
     align-items:center;
+    position:relative;
+  }
+  .bet-form::before{
+    content:"";
+    position:absolute;
+    top:-2px; left:16px; right:16px; height:0;
+    border-top:2px dashed var(--paper-shadow);
   }
   select, input[type=number], input[type=text]{
-    background:#0a1810;
-    border:1px solid var(--pitch-line);
-    color:var(--text);
+    background:#fffdf8;
+    border:1px solid var(--paper-shadow);
+    color:var(--ink);
     padding:7px 9px;
-    border-radius:6px;
-    font-size:0.8rem;
+    border-radius:3px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.75rem;
   }
-  input[type=number]{width:80px;}
+  input[type=number]{width:78px;}
   input[type=text]{width:60px;}
   .bet-form button{
-    background:var(--grass);
+    background:var(--ink);
     border:none;
-    color:#06120a;
+    color:var(--paper);
+    font-family:'IBM Plex Mono', monospace;
     font-weight:700;
-    padding:8px 14px;
-    border-radius:6px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    padding:8px 16px;
+    border-radius:3px;
     cursor:pointer;
-    font-size:0.8rem;
+    font-size:0.75rem;
   }
+  .bet-form button:hover{ background:#42392a; }
   .odds-tag{
-    font-size:0.7rem;
-    color:var(--muted);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.65rem;
+    color:var(--ink-soft);
+    font-style:italic;
+  }
+  /* Cas "Paris fermés" : affiché seul, hors du ticket papier */
+  .match > .odds-tag{
+    display:block;
+    padding:10px 0 14px;
+    color:var(--ink-soft);
   }
 
+  /* ---------- MES PARIS (table) ---------- */
   table{width:100%;border-collapse:collapse;}
   th, td{
     text-align:left;
-    padding:8px 10px;
-    font-size:0.8rem;
-    border-bottom:1px solid var(--pitch-line);
+    padding:9px 10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.75rem;
+    border-bottom:1px solid var(--seam);
   }
-  th{color:var(--muted);text-transform:uppercase;font-size:0.65rem;}
+  th{
+    color:var(--amber-dim);
+    text-transform:uppercase;
+    font-size:0.62rem;
+    letter-spacing:0.06em;
+  }
+  td{ color:#e8e2d0; }
   .status-won{color:var(--win);font-weight:700;}
   .status-lost{color:var(--lose);font-weight:700;}
-  .status-pending{color:var(--muted);}
+  .status-pending{color:var(--ink-soft);}
 
+  /* ---------- CLASSEMENT (ranked stubs) ---------- */
   .rank{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:10px 14px;
-    background:var(--card);
-    border:1px solid var(--pitch-line);
-    border-radius:10px;
+    padding:11px 16px;
+    background:var(--board-panel);
+    border:1px solid var(--seam);
+    border-left:3px solid var(--amber-dim);
+    border-radius:3px;
     margin-bottom:6px;
+    font-family:'IBM Plex Mono', monospace;
   }
-  .rank .pos{color:var(--flood);font-weight:800;width:28px;}
+  .rank .pos{
+    color:var(--amber);
+    font-weight:700;
+    width:32px;
+    display:inline-block;
+  }
 
-  .empty, .error{text-align:center;color:var(--muted);padding:30px 10px;}
+  .empty, .error{
+    text-align:center;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.8rem;
+    padding:36px 10px;
+  }
   .error{color:#ff8a8a;}
-  #status{text-align:center;color:var(--muted);font-size:0.8rem;margin-bottom:14px;}
-  #authGate{max-width:400px;margin:60px auto;text-align:center;color:var(--muted);}
+  #status{
+    text-align:center;
+    color:var(--amber-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    letter-spacing:0.04em;
+    margin-bottom:16px;
+  }
+  #authGate{
+    max-width:400px;
+    margin:80px auto;
+    text-align:center;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.85rem;
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>⚽ Paris Foot — HorizonCiné</h1>
-  <p>Monnaie 100% fictive. Chaque membre commence avec 100 balles.</p>
+  <h1>⚽ Paris Foot</h1>
+  <p>HorizonCiné — Monnaie 100% fictive · Départ 100 💰</p>
 </header>
 
 <div id="authGate">Connexion en cours…</div>
