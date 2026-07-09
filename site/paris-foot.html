@@ -301,16 +301,19 @@ async function loadMatches(){
   renderTab();
 }
 
-// Combine les cotes (Football Prediction API) et les scores (API-FOOTBALL)
+// Combine les scores (large couverture : CDM, ligues nationales, etc.)
+// et les cotes (Football Prediction API, couverture plus étroite) quand elles existent
 async function buildMatchesWithOddsAndScores(){
   const [predictions, scores] = await Promise.all([
-    fetchPredictions(),
+    fetchPredictions().catch(() => []), // si l'API de cotes échoue, on continue quand même
     fetchScores()
   ]);
 
-  return predictions.map(p => {
-    const matched = findMatchingScore(p, scores);
-    const classic = p.prediction_per_market && p.prediction_per_market.classic;
+  return scores.map(s => {
+    const matchedPrediction = findMatchingPrediction(s, predictions);
+    const classic = matchedPrediction &&
+      matchedPrediction.prediction_per_market &&
+      matchedPrediction.prediction_per_market.classic;
     const oddsRaw = classic && classic.odds ? classic.odds : {};
     const probs = classic && classic.probabilities ? classic.probabilities : {};
 
@@ -321,19 +324,35 @@ async function buildMatchesWithOddsAndScores(){
     };
 
     return {
-      prediction_id: p.id,
-      home_team: p.home_team,
-      away_team: p.away_team,
-      competition: p.competition_name,
-      start_date: p.start_date,
+      prediction_id: s.id, // on utilise l'id du match (scores) comme identifiant unique désormais
+      home_team: s.homeName,
+      away_team: s.awayName,
+      competition: matchedPrediction ? matchedPrediction.competition_name : '',
+      start_date: s.dateISO,
       odds,
-      // infos venant du matching avec l'API de scores (peut être null si pas trouvé)
-      score_fixture_id: matched ? matched.id : null,
-      status: matched ? matched.statusShort : 'NS',
-      home_goals: matched ? matched.homeGoals : null,
-      away_goals: matched ? matched.awayGoals : null
+      status: s.statusShort,
+      home_goals: s.homeGoals,
+      away_goals: s.awayGoals,
+      has_real_odds: !!matchedPrediction
     };
   });
+}
+
+// Cherche une cote correspondante pour un match donné (par nom d'équipe + date)
+function findMatchingPrediction(scoreMatch, predictions){
+  const sHome = normalizeTeam(scoreMatch.homeName);
+  const sAway = normalizeTeam(scoreMatch.awayName);
+  const sDate = scoreMatch.dateISO.slice(0,10);
+
+  return predictions.find(p => {
+    const pHome = normalizeTeam(p.home_team);
+    const pAway = normalizeTeam(p.away_team);
+    const pDate = (p.start_date || "").slice(0,10);
+    const nameMatch =
+      (pHome.includes(sHome) || sHome.includes(pHome)) &&
+      (pAway.includes(sAway) || sAway.includes(pAway));
+    return nameMatch && pDate === sDate;
+  }) || null;
 }
 
 async function fetchPredictions(){
@@ -403,22 +422,6 @@ function normalizeTeam(name){
     .replace(/[^a-z0-9]/g, "");
 }
 
-function findMatchingScore(prediction, scores){
-  const predHome = normalizeTeam(prediction.home_team);
-  const predAway = normalizeTeam(prediction.away_team);
-  const predDate = (prediction.start_date || "").slice(0,10);
-
-  return scores.find(s => {
-    const sHome = normalizeTeam(s.homeName);
-    const sAway = normalizeTeam(s.awayName);
-    const sDate = s.dateISO.slice(0,10);
-    const nameMatch =
-      (sHome.includes(predHome) || predHome.includes(sHome)) &&
-      (sAway.includes(predAway) || predAway.includes(sAway));
-    return nameMatch && sDate === predDate;
-  }) || null;
-}
-
 // ==============================
 // RENDER: PARIER
 // ==============================
@@ -457,12 +460,13 @@ function matchCard(m){
         <div class="team right">${m.away_team}</div>
       </div>
       <div class="league">${m.competition || ''}</div>
-      ${canBet ? betForm(pid, m.home_team, m.away_team, m.odds) : `<div class="odds-tag" style="margin-top:10px;">Paris fermés</div>`}
+      ${canBet ? betForm(pid, m.home_team, m.away_team, m.odds, m.has_real_odds) : `<div class="odds-tag" style="margin-top:10px;">Paris fermés</div>`}
     </div>
   `;
 }
 
-function betForm(predictionId, homeName, awayName, odds){
+function betForm(predictionId, homeName, awayName, odds, hasRealOdds){
+  const oddsNote = hasRealOdds ? '' : `<span class="odds-tag">(cotes estimées)</span>`;
   return `
     <div class="bet-form">
       <select id="pred_${predictionId}">
@@ -472,6 +476,7 @@ function betForm(predictionId, homeName, awayName, odds){
       </select>
       <input type="number" id="stake_${predictionId}" placeholder="Mise" min="1">
       <button onclick="placeBet(${predictionId}, '${escapeQ(homeName)}', '${escapeQ(awayName)}')">Parier</button>
+      ${oddsNote}
     </div>
   `;
 }
