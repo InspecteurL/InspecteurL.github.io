@@ -284,7 +284,20 @@ nav button.active {
     color: var(--accent);
     text-align: center;
 }
-
+.cancel-bet-btn {
+  margin-left: 8px;
+  background: transparent;
+  border: 1px solid var(--lose);
+  color: var(--lose);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.cancel-bet-btn:hover {
+  background: rgba(255,107,107,0.1);
+}
 /* ---------- "EN DIRECT" STYLISÉ + ANIMÉ ---------- */
 .minute {
     display: inline-flex;
@@ -626,24 +639,21 @@ select:focus, input:focus {
 const SUPABASE_URL = "https://wuagahavmbugmnuzsouf.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
 
-// Une seule clé RapidAPI, utilisée pour les deux APIs abonnées sur RapidAPI
 const RAPIDAPI_KEY = "e00ebab9f1mshf31ddb456d99a8ep163f41jsnb4b4cd18334b";
-
-// API des cotes / prédictions (Football Prediction API — boggio-analytics)
 const PREDICTIONS_HOST = "football-prediction-api.p.rapidapi.com";
 
-const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
-const FALLBACK_ODDS = { home: 1.8, draw: 3.0, away: 2.2 }; // si l'API de cotes ne répond pas
+const CACHE_MAX_AGE_MS = 60 * 1000; // 1 minute (réduit pour garder scores/statuts à jour)
+const FALLBACK_ODDS = { home: 1.8, draw: 3.0, away: 2.2 };
+const AUTO_REFRESH_MS = 60 * 1000; // rafraîchit l'onglet "Parier" toutes les 60s
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
 let currentTab = 'bet';
 let matchesData = [];
+let activeBetFixtureIds = new Set();
+let autoRefreshTimer = null;
 
-// ==============================
-// AUTH
-// ==============================
 async function init(){
   const { data: { user } } = await sb.auth.getUser();
   if(!user){
@@ -659,6 +669,14 @@ async function init(){
   await refreshBalance();
   await loadMatches();
   renderTab();
+  startAutoRefresh();
+}
+
+function startAutoRefresh(){
+  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(() => {
+    if(currentTab === 'bet') loadMatches();
+  }, AUTO_REFRESH_MS);
 }
 
 async function refreshBalance(){
@@ -668,13 +686,10 @@ async function refreshBalance(){
     .eq('id', currentUser.id)
     .single();
   if(!error && data){
-    document.getElementById('balanceAmount').textContent = data.balance + " 💰";
+    document.getElementById('balanceAmount').innerHTML = data.balance + ' <span class="material-symbols-outlined">money_bag</span>';
   }
 }
 
-// ==============================
-// TABS
-// ==============================
 function switchTab(tab){
   currentTab = tab;
   ['tabBet','tabMine','tabBoard'].forEach(id => document.getElementById(id).classList.remove('active'));
@@ -688,9 +703,6 @@ function renderTab(){
   if(currentTab === 'board') renderLeaderboard();
 }
 
-// ==============================
-// MATCHS (avec cache partagé Supabase)
-// ==============================
 async function loadMatches(){
   setStatus("Chargement des matchs…");
   const { data: cache } = await sb
@@ -718,15 +730,26 @@ async function loadMatches(){
       setStatus("Impossible d'actualiser (quota API ?), affichage du cache. " + err.message, true);
     }
   }
+  await loadActiveBetFixtureIds();
   await settlePendingBets();
   renderTab();
 }
 
-// Combine les scores (large couverture : CDM, ligues nationales, etc.)
-// et les cotes (Football Prediction API, couverture plus étroite) quand elles existent
+async function loadActiveBetFixtureIds(){
+  const { data, error } = await sb
+    .from('bets')
+    .select('fixture_id')
+    .eq('user_id', currentUser.id)
+    .eq('status', 'pending');
+
+  if(!error && data){
+    activeBetFixtureIds = new Set(data.map(b => String(b.fixture_id)));
+  }
+}
+
 async function buildMatchesWithOddsAndScores(){
   const [predictions, scores] = await Promise.all([
-    fetchPredictions().catch(() => []), // si l'API de cotes échoue, on continue quand même
+    fetchPredictions().catch(() => []),
     fetchScores()
   ]);
 
@@ -745,7 +768,7 @@ async function buildMatchesWithOddsAndScores(){
     };
 
     return {
-      prediction_id: String(s.id), // toujours en texte pour éviter les soucis de type (ex: "fd_537383")
+      prediction_id: String(s.id),
       home_team: s.homeName,
       away_team: s.awayName,
       competition: matchedPrediction ? matchedPrediction.competition_name : '',
@@ -759,7 +782,6 @@ async function buildMatchesWithOddsAndScores(){
   });
 }
 
-// Cherche une cote correspondante pour un match donné (par nom d'équipe + date)
 function findMatchingPrediction(scoreMatch, predictions){
   const sHome = normalizeTeam(scoreMatch.homeName);
   const sAway = normalizeTeam(scoreMatch.awayName);
@@ -807,8 +829,7 @@ async function fetchScores(){
     console.warn("football-data.org (proxy) indisponible :", footballDataResult.reason);
   }
 
-  // Fusionne en évitant les doublons (même équipes + même date dans les deux sources)
-  const merged = [...footballDataMatches]; // priorité à football-data.org (plus fiable pour les grandes compets)
+  const merged = [...footballDataMatches];
   for(const m of freeApiMatches){
     const isDuplicate = merged.some(existing =>
       normalizeTeam(existing.homeName) === normalizeTeam(m.homeName) &&
@@ -825,7 +846,7 @@ async function fetchScoresFreeApi(){
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, '0');
   const dd = String(today.getDate()).padStart(2, '0');
-  const dateParam = `${yyyy}${mm}${dd}`; // format attendu : YYYYMMDD
+  const dateParam = `${yyyy}${mm}${dd}`;
 
   const res = await fetch(
     `https://free-api-live-football-data.p.rapidapi.com/football-get-matches-by-date?date=${dateParam}`,
@@ -842,8 +863,6 @@ async function fetchScoresFreeApi(){
   return rawMatches.map(normalizeScoreMatch);
 }
 
-// Passe par la Edge Function Supabase (football-proxy) pour éviter le CORS
-// et garder la clé football-data.org cachée côté serveur
 async function fetchScoresFootballData(){
   const now = new Date();
   const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
@@ -866,7 +885,6 @@ async function fetchScoresFootballData(){
   return rawMatches.map(normalizeFootballDataMatch);
 }
 
-// Convertit un match football-data.org vers le même format interne
 function normalizeFootballDataMatch(m){
   const statusMap = {
     SCHEDULED: 'NS', TIMED: 'NS',
@@ -875,7 +893,7 @@ function normalizeFootballDataMatch(m){
     POSTPONED: 'PP', SUSPENDED: 'PP', CANCELLED: 'PP'
   };
   return {
-    id: 'fd_' + m.id, // préfixe pour éviter toute collision d'id avec l'autre source
+    id: 'fd_' + m.id,
     dateISO: m.utcDate,
     homeName: m.homeTeam.name,
     awayName: m.awayTeam.name,
@@ -885,7 +903,6 @@ function normalizeFootballDataMatch(m){
   };
 }
 
-// Convertit un match de free-api-live-football-data vers un format interne commun
 function normalizeScoreMatch(m){
   let statusShort = 'NS';
   if(m.status.cancelled){
@@ -907,17 +924,13 @@ function normalizeScoreMatch(m){
   };
 }
 
-// Recoupe une prédiction (nom d'équipes + date) avec un match de l'API de scores
 function normalizeTeam(name){
   return (name || "")
     .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // enlève les accents
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]/g, "");
 }
 
-// ==============================
-// RENDER: PARIER
-// ==============================
 function renderMatches(){
   const el = document.getElementById('content');
   if(matchesData.length === 0){
@@ -928,7 +941,7 @@ function renderMatches(){
 }
 
 function matchCard(m){
-  const status = m.status; // NS, LIVE, FT, AET, PEN, PP
+  const status = m.status;
   const isLive = status === 'LIVE';
   const isFinished = status === 'FT' || status === 'AET' || status === 'PEN';
   const kickoff = new Date(m.start_date).toLocaleString('fr-FR', {weekday:'short', hour:'2-digit', minute:'2-digit'});
@@ -942,8 +955,17 @@ function matchCard(m){
     scoreBlock = `<div class="score">VS</div><div class="kickoff">${kickoff}</div>`;
   }
 
-  const canBet = !isFinished; // on peut parier tant que le match n'est pas fini
+  const alreadyBet = activeBetFixtureIds.has(m.prediction_id);
   const pid = m.prediction_id;
+
+  let footer;
+  if(isFinished){
+    footer = `<div class="odds-tag" style="margin-top:10px;">Paris fermés</div>`;
+  } else if(alreadyBet){
+    footer = `<div class="odds-tag" style="margin-top:10px;">Tu as déjà parié sur ce match — <span onclick="switchTab('mine')" style="text-decoration:underline;cursor:pointer;">voir mon pari</span></div>`;
+  } else {
+    footer = betForm(pid, m.home_team, m.away_team, m.odds, m.has_real_odds);
+  }
 
   return `
     <div class="match">
@@ -953,7 +975,7 @@ function matchCard(m){
         <div class="team right">${m.away_team}</div>
       </div>
       <div class="league">${m.competition || ''}</div>
-      ${canBet ? betForm(pid, m.home_team, m.away_team, m.odds, m.has_real_odds) : `<div class="odds-tag" style="margin-top:10px;">Paris fermés</div>`}
+      ${footer}
     </div>
   `;
 }
@@ -977,6 +999,11 @@ function betForm(predictionId, homeName, awayName, odds, hasRealOdds){
 function escapeQ(s){ return s.replace(/'/g, "\\'"); }
 
 async function placeBet(predictionId, homeName, awayName){
+  if(activeBetFixtureIds.has(predictionId)){
+    setStatus("Tu as déjà un pari en cours sur ce match.", true);
+    return;
+  }
+
   const pred = document.getElementById(`pred_${predictionId}`).value;
   const stake = parseInt(document.getElementById(`stake_${predictionId}`).value, 10);
 
@@ -999,16 +1026,35 @@ async function placeBet(predictionId, homeName, awayName){
   });
 
   if(error){
-    setStatus("Erreur : " + error.message, true);
+    if(error.message && error.message.includes('one_pending_bet_per_match')){
+      setStatus("Tu as déjà un pari en cours sur ce match.", true);
+    } else {
+      setStatus("Erreur : " + error.message, true);
+    }
     return;
   }
   setStatus("Pari enregistré !");
+  activeBetFixtureIds.add(predictionId);
   await refreshBalance();
+  renderMatches();
 }
 
-// ==============================
-// RENDER: MES PARIS
-// ==============================
+async function cancelBet(betId, fixtureId){
+  if(!confirm("Annuler ce pari et récupérer ta mise ?")) return;
+
+  const { error } = await sb.rpc('cancel_bet', { p_bet_id: betId });
+
+  if(error){
+    setStatus("Erreur lors de l'annulation : " + error.message, true);
+    return;
+  }
+
+  setStatus("Pari annulé, mise remboursée.");
+  activeBetFixtureIds.delete(String(fixtureId));
+  await refreshBalance();
+  await renderMyBets();
+}
+
 async function renderMyBets(){
   const el = document.getElementById('content');
   el.innerHTML = `<div class="empty">Chargement…</div>`;
@@ -1031,8 +1077,11 @@ async function renderMyBets(){
           <tr>
             <td>${b.home_team} - ${b.away_team}</td>
             <td>${predLabel(b)}</td>
-            <td>${b.stake} <span class="material-symbols-outlined"></span></td>
-            <td class="status-${b.status}">${statusLabel(b.status)}</td>
+            <td>${b.stake} <span class="material-symbols-outlined">money_bag</span></td>
+            <td class="status-${b.status}">
+              ${statusLabel(b.status)}
+              ${b.status === 'pending' ? `<button class="cancel-bet-btn" onclick="cancelBet(${b.id}, '${b.fixture_id}')">Annuler</button>` : ''}
+            </td>
             <td>${b.status === 'won' ? '+' + b.payout : (b.status === 'lost' ? '-' + b.stake : '—')}</td>
           </tr>
         `).join('')}
@@ -1052,9 +1101,6 @@ function statusLabel(s){
   return { pending: 'En attente', won: 'Gagné', lost: 'Perdu', void: 'Annulé' }[s] || s;
 }
 
-// ==============================
-// RENDER: CLASSEMENT
-// ==============================
 async function renderLeaderboard(){
   const el = document.getElementById('content');
   el.innerHTML = `<div class="empty">Chargement…</div>`;
@@ -1072,14 +1118,11 @@ async function renderLeaderboard(){
   el.innerHTML = data.map((p, i) => `
     <div class="rank">
       <div><span class="pos">#${i+1}</span> ${p.username || p.id.slice(0,8)}</div>
-      <div style="color:var(--flood);font-weight:700;">${p.balance} <span class="material-symbols-outlined" style="color:var(--flood);"></span></div>
+      <div style="color:var(--flood);font-weight:700;">${p.balance} <span class="material-symbols-outlined" style="color:var(--flood);">money_bag</span></div>
     </div>
   `).join('');
 }
 
-// ==============================
-// RÉSOLUTION AUTOMATIQUE DES PARIS TERMINÉS
-// ==============================
 async function settlePendingBets(){
   const { data: pending } = await sb
     .from('bets')
@@ -1089,7 +1132,6 @@ async function settlePendingBets(){
   if(!pending || pending.length === 0) return;
 
   for(const bet of pending){
-    // bet.fixture_id contient en réalité le prediction_id (voir placeBet)
     const match = matchesData.find(m => m.prediction_id === bet.fixture_id);
     if(!match) continue;
     if(match.status === 'FT' || match.status === 'AET' || match.status === 'PEN'){
@@ -1098,12 +1140,12 @@ async function settlePendingBets(){
         p_home_score: match.home_goals ?? 0,
         p_away_score: match.away_goals ?? 0
       });
+      activeBetFixtureIds.delete(String(bet.fixture_id));
     }
   }
   await refreshBalance();
 }
 
-// ==============================
 function setStatus(msg, isError=false){
   const el = document.getElementById('status');
   el.textContent = msg;
@@ -1111,17 +1153,6 @@ function setStatus(msg, isError=false){
 }
 
 init();
-
-   async function refreshBalance(){
-  const { data, error } = await sb
-    .from('profiles')
-    .select('balance')
-    .eq('id', currentUser.id)
-    .single();
-  if(!error && data){
-    document.getElementById('balanceAmount').innerHTML = data.balance + ' <span class="material-symbols-outlined">money_bag</span>';
-  }
-}
 </script>
 
 </body>
