@@ -371,6 +371,35 @@ async function fetchPredictions(){
 }
 
 async function fetchScores(){
+  const [freeApiResult, footballDataResult] = await Promise.allSettled([
+    fetchScoresFreeApi(),
+    fetchScoresFootballData()
+  ]);
+
+  const freeApiMatches = freeApiResult.status === 'fulfilled' ? freeApiResult.value : [];
+  const footballDataMatches = footballDataResult.status === 'fulfilled' ? footballDataResult.value : [];
+
+  if(freeApiResult.status === 'rejected'){
+    console.warn("free-api-live-football-data indisponible :", freeApiResult.reason);
+  }
+  if(footballDataResult.status === 'rejected'){
+    console.warn("football-data.org (proxy) indisponible :", footballDataResult.reason);
+  }
+
+  // Fusionne en évitant les doublons (même équipes + même date dans les deux sources)
+  const merged = [...footballDataMatches]; // priorité à football-data.org (plus fiable pour les grandes compets)
+  for(const m of freeApiMatches){
+    const isDuplicate = merged.some(existing =>
+      normalizeTeam(existing.homeName) === normalizeTeam(m.homeName) &&
+      normalizeTeam(existing.awayName) === normalizeTeam(m.awayName) &&
+      existing.dateISO.slice(0,10) === m.dateISO.slice(0,10)
+    );
+    if(!isDuplicate) merged.push(m);
+  }
+  return merged;
+}
+
+async function fetchScoresFreeApi(){
   const today = new Date();
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -386,10 +415,42 @@ async function fetchScores(){
       }
     }
   );
-  if(!res.ok) throw new Error("Erreur API scores (" + res.status + ")");
+  if(!res.ok) throw new Error("Erreur API scores free-api (" + res.status + ")");
   const json = await res.json();
   const rawMatches = (json.response && json.response.matches) || [];
   return rawMatches.map(normalizeScoreMatch);
+}
+
+// Passe par la Edge Function Supabase (football-proxy) pour éviter le CORS
+// et garder la clé football-data.org cachée côté serveur
+async function fetchScoresFootballData(){
+  const todayISO = new Date().toISOString().slice(0,10);
+  const res = await fetch(
+    `${SUPABASE_URL}/functions/v1/football-proxy?dateFrom=${todayISO}&dateTo=${todayISO}`
+  );
+  if(!res.ok) throw new Error("Erreur proxy football-data.org (" + res.status + ")");
+  const json = await res.json();
+  const rawMatches = json.matches || [];
+  return rawMatches.map(normalizeFootballDataMatch);
+}
+
+// Convertit un match football-data.org vers le même format interne
+function normalizeFootballDataMatch(m){
+  const statusMap = {
+    SCHEDULED: 'NS', TIMED: 'NS',
+    LIVE: 'LIVE', IN_PLAY: 'LIVE', PAUSED: 'LIVE',
+    FINISHED: 'FT', AWARDED: 'FT',
+    POSTPONED: 'PP', SUSPENDED: 'PP', CANCELLED: 'PP'
+  };
+  return {
+    id: 'fd_' + m.id, // préfixe pour éviter toute collision d'id avec l'autre source
+    dateISO: m.utcDate,
+    homeName: m.homeTeam.name,
+    awayName: m.awayTeam.name,
+    homeGoals: m.score.fullTime.home,
+    awayGoals: m.score.fullTime.away,
+    statusShort: statusMap[m.status] || 'NS'
+  };
 }
 
 // Convertit un match de free-api-live-football-data vers un format interne commun
