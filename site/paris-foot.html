@@ -676,6 +676,7 @@ async function init(){
   await loadMatches();
   renderTab();
   startAutoRefresh();
+  subscribeToNotifications();   // ← cette ligne doit être ici, pas en dehors
 }
 
 function startAutoRefresh(){
@@ -1242,8 +1243,7 @@ function subscribeToNotifications(){
     })
     .subscribe();
 }
-subscribeToNotifications();
-startAutoRefresh();
+
 init();
 </script>
 
