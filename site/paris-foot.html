@@ -10,7 +10,31 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
-
+#toastContainer {
+  position: fixed;
+  top: 70px;
+  right: 16px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 320px;
+}
+.toast {
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-soft);
+  font-size: 0.85rem;
+  color: var(--text);
+  animation: toastIn 0.3s ease-out;
+}
+.toast.money { border-color: var(--win); }
+@keyframes toastIn {
+  from { transform: translateX(40px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
    .material-symbols-outlined {
   font-variation-settings:
   'FILL' 0,
@@ -578,7 +602,8 @@ select:focus, input:focus {
 </style>
 </head>
 <body>
-<nav>
+   <div id="toastContainer"></div>
+   <nav>
   <a href="accueil.html" class="nav-logo">HorizonCiné</a>
   <a href="accueil.html">Accueil</a>
   <a href="https://inspecteurl.github.io/site/catalogue.html">Catalogue</a>
@@ -686,6 +711,7 @@ function renderTab(){
 }
 
 async function loadMatches(){
+  const previousMatches = matchesData;
   setStatus("Chargement des matchs…");
   const { data: cache } = await sb
     .from('matches_cache')
@@ -712,6 +738,7 @@ async function loadMatches(){
       setStatus("Impossible d'actualiser (quota API ?), affichage du cache. " + err.message, true);
     }
   }
+detectGoals(previousMatches, matchesData);
   await loadActiveBetFixtureIds();
   await settlePendingBets();
   renderTab();
@@ -1174,6 +1201,46 @@ async function sendMoney(){
   document.getElementById('sendUsername').value = '';
   document.getElementById('sendAmount').value = '';
   await refreshBalance();
+}
+
+   function showToast(message, type = 'goal'){
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 6000);
+}
+
+// Détecte les buts marqués sur les matchs où l'user a un pari actif
+function detectGoals(previousMatches, freshMatches){
+  if(!previousMatches || previousMatches.length === 0) return;
+  for(const fresh of freshMatches){
+    if(!activeBetFixtureIds.has(fresh.prediction_id)) continue;
+    const prev = previousMatches.find(m => m.prediction_id === fresh.prediction_id);
+    if(!prev) continue;
+    const prevTotal = (prev.home_goals ?? 0) + (prev.away_goals ?? 0);
+    const freshTotal = (fresh.home_goals ?? 0) + (fresh.away_goals ?? 0);
+    if(freshTotal > prevTotal){
+      showToast(`⚽ But ! ${fresh.home_team} ${fresh.home_goals} - ${fresh.away_goals} ${fresh.away_team}`, 'goal');
+    }
+  }
+}
+
+// Écoute en temps réel les notifications (argent reçu) pour l'utilisateur connecté
+function subscribeToNotifications(){
+  sb.channel('notifications-' + currentUser.id)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'notifications',
+      filter: `user_id=eq.${currentUser.id}`
+    }, (payload) => {
+      showToast(payload.new.message, payload.new.type === 'money' ? 'money' : 'goal');
+      sb.from('notifications').update({ read: true }).eq('id', payload.new.id).then(() => {});
+      if(currentTab === 'send' || currentTab === 'bet') refreshBalance();
+    })
+    .subscribe();
 }
 
 init();
