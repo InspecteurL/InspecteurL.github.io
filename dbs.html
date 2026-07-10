@@ -337,25 +337,23 @@
      ============================================================ -->
     
 <script>
+const pages = [];
+
+for (let i = 1; i <= 221; i++) {
+    pages.push(
+        `https://c1.sushiscan.net/wp-content/uploads15/DragonBallFixTome1-${String(i).padStart(3, "0")}.jpg`
+    );
+}
+
 const MANGA_DATA = {
-  title: "Dragon Ball",
-  chapters: [
-    {
-      number: 1,
-      title: "Chapitre 1 : Le réveil",
-      pages: [c1.sushiscan.net/wp-content/uploads15/DragonBallFixTome1-001.jpg] 
-    },
-    {
-      number: 2,
-      title: "Chapitre 2 : Premier affrontement",
-      pages: []
-    },
-    {
-      number: 3,
-      title: "Chapitre 3 : La percée",
-      pages: []
-    }
-  ]
+    title: "Dragon Ball",
+    chapters: [
+        {
+            number: 1,
+            title: "Tome 1",
+            pages: pages
+        }
+    ]
 };
 
 /* Génère une page de démo façon planche manga (panels + lignes de vitesse)
@@ -386,12 +384,7 @@ function demoPage(chapNum, pageNum, totalInChap){
   return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
 }
 
-// Remplissage des pages de démo (8 planches par chapitre)
-MANGA_DATA.chapters.forEach(ch => {
-  for(let p = 1; p <= 8; p++){
-    ch.pages.push(demoPage(ch.number, p, 8));
-  }
-});
+
 </script>
 
 <!-- ============================================================
