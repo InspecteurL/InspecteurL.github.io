@@ -1158,7 +1158,7 @@ async function settlePendingBets(){
 
 function setStatus(msg, isError=false){
   const el = document.getElementById('status');
-  el.textContent = msg;
+  el.innerHTML = msg;
   el.style.color = isError ? "#ff8a8a" : "";
 }
    function renderSendMoney(){
@@ -1198,7 +1198,7 @@ async function sendMoney(){
     return;
   }
 
-  setStatus(`${amount} 💰 envoyés à ${username} !`);
+  setStatus(`${amount} <span class="material-symbols-outlined">money_bag</span> envoyés à ${username} !`);
   document.getElementById('sendUsername').value = '';
   document.getElementById('sendAmount').value = '';
   await refreshBalance();
