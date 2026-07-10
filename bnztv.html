@@ -225,26 +225,21 @@
     </div>
   </div>
 
-  <div class="wrap">
-    <h2 class="section">Évènements en direct</h2>
-    <div class="carousel" id="carousel-2" aria-label="Évènements en direct">
-      <div class="arrow left" data-target="2" aria-hidden><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
-      <div class="rows">
-        <div class="scroll" data-scroll-id="2">
-          <div class="card" tabindex="0" data-title="Match du soir" data-src="https://fstv.fun/player/fsplayer.php?id=54" style="background-image:url('https://dicodusport.fr/blog/wp-content/uploads/2025/11/psg-tottenham-chaine-tv.png')">
-            <div class="meta">Match du soir</div>
-          </div>
-          <div class="card" tabindex="0" data-title="Grand Prix" data-src="sample7.mp4" style="background-image:url('https://static.cnews.fr/sites/default/files/styles/image_750_422/public/formule_1_grand_prix_abu_dhabi_lando_norris_mclaren_6755af2c26478_0.jpg?itok=is8mPWfc')">
-            <div class="meta">Grand Prix</div>
-          </div>
-          <div class="card" tabindex="0" data-title="Match Amical" data-src="sample8.mp4" style="background-image:url('https://cher.fff.fr/wp-content/uploads/sites/40/2021/06/matchs-amicaux-611x378.jpg')">
-            <div class="meta">Match Amical</div>
-          </div>
-        </div>
+<div class="wrap">
+  <h2 class="section">Évènements en direct 
+    <span id="live-count" style="font-size:0.9rem; color:var(--accent); font-weight:400;"></span>
+  </h2>
+  <div class="carousel" id="carousel-2" aria-label="Évènements en direct">
+    <div class="arrow left" data-target="2"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+    <div class="rows">
+      <div class="scroll" id="live-scroll" data-scroll-id="2">
+        <!-- Les cartes seront injectées ici par JS -->
+        <div id="live-loading" style="padding:20px; color:#888;">Chargement des matchs en direct...</div>
       </div>
-      <div class="arrow right" data-target="2" aria-hidden><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></div>
     </div>
+    <div class="arrow right" data-target="2"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></div>
   </div>
+</div>
 </main>
 
 <!-- Modal : player / page chaîne -->
@@ -271,250 +266,134 @@
 </div>
 
 <script>
-/* -----------------------
-   Parallax (mouse + scroll)
-   - translate layers different amounts
-   - subtle scale on scroll
-   ----------------------- */
-(function(){
-  const hero = document.getElementById('hero');
-  const bgFar = document.getElementById('bg-far');
-  const bgMid = document.getElementById('bg-mid');
-  const bgFront = document.getElementById('bg-front');
+// ==================== API STREAMFREE.TOP ====================
+const API_BASE = "https://streamfree.top/api/v1";
 
-  // mouse-based tilt
-  hero.addEventListener('mousemove', (e)=>{
-    const r = hero.getBoundingClientRect();
-    const mx = (e.clientX - r.left) / r.width - 0.5; // -0.5..0.5
-    const my = (e.clientY - r.top) / r.height - 0.5;
-    // multiply parallax strength
-    bgFar.style.transform = `translate3d(${mx * 6}px, ${my * 6}px, 0) scale(1.13)`;
-    bgMid.style.transform = `translate3d(${mx * 18}px, ${my * 14}px, 0) scale(1.09)`;
-    bgFront.style.transform = `translate3d(${mx * 28}px, ${my * 24}px, 0) scale(1.03)`;
-  });
+async function fetchLiveStreams(category = "soccer") {
+  const loadingEl = document.getElementById('live-loading');
+  const scrollEl = document.getElementById('live-scroll');
 
-  // scroll-based parallax (for mobile / touch)
-  window.addEventListener('scroll', ()=>{
-    const offset = window.scrollY;
-    // small vertical parallax on scroll
-    bgFar.style.transform = `translate3d(0, ${offset * 0.04}px, 0) scale(1.13)`;
-    bgMid.style.transform = `translate3d(0, ${offset * 0.06}px, 0) scale(1.09)`;
-    bgFront.style.transform = `translate3d(0, ${offset * 0.08}px, 0) scale(1.03)`;
-  });
-})();
+  try {
+    const res = await fetch(`${API_BASE}/streams?category=${category}`);
+    const data = await res.json();
 
-/* -----------------------
-   Carousel arrows & swipe
-   - arrow scrolls by container width * 0.8
-   - supports multiple carousels
-   ----------------------- */
-(function(){
-  const arrows = document.querySelectorAll('.arrow');
-  arrows.forEach(a=>{
-    a.addEventListener('click', ()=>{
-      const target = a.dataset.target;
-      const scrollEl = document.querySelector(`.scroll[data-scroll-id="${target}"]`);
-      if(!scrollEl) return;
-      const dir = a.classList.contains('left') ? -1 : 1;
-      const shift = Math.round(scrollEl.clientWidth * 0.72) * dir;
-      scrollEl.scrollBy({left: shift, behavior: 'smooth'});
+    // Mise à jour du compteur
+    document.getElementById('live-count').textContent = `(${data.count || 0} live)`;
+
+    // Nettoyage
+    scrollEl.innerHTML = '';
+
+    if (!data.streams || data.streams.length === 0) {
+      scrollEl.innerHTML = `<div style="padding:30px; color:#777;">Aucun match en direct pour le moment dans cette catégorie.</div>`;
+      return;
+    }
+
+    data.streams.forEach(stream => {
+      const cardHTML = `
+        <div class="card" tabindex="0" 
+             data-title="${stream.name}" 
+             data-embed="${stream.embed_url}"
+             data-thumbnail="${stream.thumbnail_url}"
+             style="background-image:url('${stream.thumbnail_url}')">
+          <div class="meta">${stream.league || stream.category}</div>
+        </div>
+      `;
+      scrollEl.insertAdjacentHTML('beforeend', cardHTML);
     });
-  });
 
-  // enable keyboard navigation for each scroll area (left/right)
-  document.querySelectorAll('.scroll').forEach(s=>{
-    s.addEventListener('keydown', (e)=>{
-      if(e.key === 'ArrowLeft') s.scrollBy({left:-300, behavior:'smooth'});
-      if(e.key === 'ArrowRight') s.scrollBy({left:300, behavior:'smooth'});
-    });
-  });
+    // Ré-attacher les événements sur les nouvelles cartes
+    attachCardListeners();
 
-  // touch drag to emulate swiping (desktop enhanced)
-  let isDown=false, startX, scrollLeft;
-  document.querySelectorAll('.scroll').forEach(s=>{
-    s.addEventListener('mousedown', (e)=>{
-      isDown=true; s.classList.add('dragging'); startX=e.pageX - s.offsetLeft; scrollLeft=s.scrollLeft;
-    });
-    s.addEventListener('mouseleave', ()=>{ isDown=false; s.classList.remove('dragging') });
-    s.addEventListener('mouseup', ()=>{ isDown=false; s.classList.remove('dragging') });
-    s.addEventListener('mousemove', (e)=>{
-      if(!isDown) return;
-      e.preventDefault();
-      const x = e.pageX - s.offsetLeft;
-      const walk = (x - startX) * 1.2;
-      s.scrollLeft = scrollLeft - walk;
-    });
-  });
-})();
+  } catch (err) {
+    console.error(err);
+    scrollEl.innerHTML = `<div style="padding:30px; color:#e50914;">Impossible de charger les streams en direct.</div>`;
+  }
+}
 
-/* -----------------------
-   3D tilt effect on cards (mouse)
-   - lighten on hover and tilt in 3D
-   - accessible: also reacts to focus
-   ----------------------- */
-(function(){
-  const cards = document.querySelectorAll('.card');
-  cards.forEach(card=>{
-    const rect = ()=>card.getBoundingClientRect();
-    const onMove = (e)=>{
-      const r = rect();
-      const x = e.clientX - r.left;
-      const y = e.clientY - r.top;
-      const px = (x / r.width) - 0.5; // -0.5..0.5
-      const py = (y / r.height) - 0.5;
-      const rotateY = px * 10; // degrees
-      const rotateX = -py * 8;
-      card.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(8px) scale(1.04)`;
-    };
-    const reset = ()=> card.style.transform = '';
-    card.addEventListener('mousemove', onMove);
-    card.addEventListener('mouseleave', reset);
-    card.addEventListener('blur', reset);
-    // keyboard / focus: small lift
-    card.addEventListener('focus', ()=> card.style.transform = 'translateY(-8px) scale(1.04)');
-    card.addEventListener('blur', reset);
-  });
-})();
+// ==================== GESTION DU MODAL ====================
+const modal = document.getElementById('playerModal');
+const modalVideo = document.getElementById('modalVideo');
+const modalTitle = document.getElementById('modalTitle');
 
-/* -----------------------
-   Modal video player (channel page)
-   - opens when card clicked
-   - supports PiP + subtitles toggle (demo)
-   ----------------------- */
-(function(){
-  const modal = document.getElementById('playerModal');
-  const modalVideo = document.getElementById('modalVideo');
-  const modalTitle = document.getElementById('modalTitle');
-  const close = document.getElementById('closeModal');
-  const pipBtn = document.getElementById('openPip');
-  const subBtn = document.getElementById('toggleSub');
+function openStream(title, embedUrl) {
+  modalTitle.textContent = title;
 
-  // For demo: cards open modal and set source
-  document.querySelectorAll('.card').forEach(c=>{
-    c.addEventListener('click', ()=>{
-      const src = c.dataset.src || ''; // replace with actual stream link / HLS
-      const title = c.dataset.title || 'Live';
-      openModal(title, src);
-    });
-    // Enter key also opens
-    c.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter') { c.click(); }
-    });
-  });
+  // On vide le player précédent
+  modalVideo.style.display = 'none';
 
-  function openModal(title, src){
-    modalTitle.textContent = title;
-    // set a demo mp4 if none provided (these files must exist on your server)
-    const videoSrc = src && src.trim() ? src : 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
-    modalVideo.querySelector('source').src = videoSrc;
-    modalVideo.load();
-    modal.classList.add('open');
-    modalVideo.play().catch(()=>{/* autoplay may be blocked */});
-    // lock scroll
-    document.body.style.overflow = 'hidden';
+  // Création ou réutilisation de l'iframe
+  let iframe = document.getElementById('stream-iframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'stream-iframe';
+    iframe.style.width = '100%';
+    iframe.style.aspectRatio = '16/9';
+    iframe.style.border = 'none';
+    iframe.allowFullscreen = true;
+    modal.querySelector('.modal-card').insertBefore(iframe, modal.querySelector('.modal-body'));
   }
 
-  function closeModal(){
-    modal.classList.remove('open');
-    modalVideo.pause();
-    modalVideo.currentTime = 0;
-    // clear src to stop network
-    modalVideo.querySelector('source').src = '';
-    modalVideo.load();
-    document.body.style.overflow = '';
-  }
+  iframe.src = embedUrl;
+  iframe.style.display = 'block';
 
-  close.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
-  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
 
-  // Picture-in-Picture (if supported)
-  pipBtn.addEventListener('click', async ()=>{
-    try{
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
+function closeModal() {
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+
+  const iframe = document.getElementById('stream-iframe');
+  if (iframe) iframe.src = ''; // stop le stream
+  modalVideo.style.display = 'block';
+}
+
+// ==================== ATTACHER LES CLICS SUR CARTES ====================
+function attachCardListeners() {
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => {
+      const title = card.dataset.title;
+      const embed = card.dataset.embed;
+      
+      if (embed) {
+        openStream(title, embed);
       } else {
-        await modalVideo.requestPictureInPicture();
+        // fallback pour les anciennes cartes (vidéo)
+        const src = card.dataset.src;
+        modalTitle.textContent = title;
+        modalVideo.querySelector('source').src = src || '';
+        modalVideo.load();
+        modalVideo.style.display = 'block';
+        const iframe = document.getElementById('stream-iframe');
+        if (iframe) iframe.style.display = 'none';
+        modal.classList.add('open');
       }
-    }catch(err){
-      alert('Picture-in-Picture non supporté ou bloqué.');
-    }
+    });
+  });
+}
+
+// ==================== INITIALISATION ====================
+document.addEventListener('DOMContentLoaded', () => {
+  // Charger les lives soccer au démarrage
+  fetchLiveStreams('soccer');
+
+  // Fermeture modal
+  document.getElementById('closeModal').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
   });
 
-  // Subtitle toggle demo (adds/removes a track)
-  let subOn = false;
-  subBtn.addEventListener('click', ()=>{
-    if(!subOn){
-      const track = document.createElement('track');
-      track.kind = 'subtitles';
-      track.srclang = 'fr';
-      track.label = 'Français';
-      // sample VTT must be available on your server; here we skip providing file
-      // for demo we add empty cues via JS if needed.
-      modalVideo.appendChild(track);
-      // show message
-      alert('Sous-titres activés (démo). Remplace la piste par tes .vtt.');
-      subOn = true;
-      subBtn.textContent = 'Sous-titres ✓';
-    } else {
-      // remove tracks
-      modalVideo.querySelectorAll('track').forEach(t=>t.remove());
-      subOn = false;
-      subBtn.textContent = 'Sous-titres';
-    }
+  // Garder les anciens listeners (recommandés, trailer, etc.)
+  document.getElementById('watch-now').addEventListener('click', () => {
+    openStream("Champions League — Direct", ""); // tu peux mettre un embed par défaut
   });
-})();
 
-/* -----------------------
-   Trailer button (opens small preview modal)
-   ----------------------- */
-document.getElementById('trailer').addEventListener('click', ()=>{
-  const evt = new Event('click');
-  // open first card as trailer demo
-  const firstCard = document.querySelector('.card');
-  if(firstCard) firstCard.click();
+  document.getElementById('trailer').addEventListener('click', () => {
+    openStream("Bande-annonce", "https://www.youtube.com/embed/dQw4w9wgxcq"); // exemple
+  });
 });
-
-/* -----------------------
-   "Regarder" button: open hero featured
-   ----------------------- */
-document.getElementById('watch-now').addEventListener('click', ()=>{
-  // open modal with featured; set your featured stream URL here
-  const featuredUrl = ''; // <-- mettre ton flux HLS/MP4 ici
-  const featuredTitle = 'Champions League — Direct';
-  // reuse card click handler via dispatch
-  // simulate openModal by clicking first card but we want featured; use modal opener directly if exposed
-  const evt = new CustomEvent('openFeatured', {detail:{title:featuredTitle, src:featuredUrl}});
-  window.dispatchEvent(evt);
-});
-
-// exposed listener for programmatic open
-window.addEventListener('openFeatured', function(e){
-  const title = (e.detail && e.detail.title) || 'Featured';
-  const src = (e.detail && e.detail.src) || '';
-  // attempt to reuse modal code: find modal opener function (scoped) - fallback: click first card
-  const firstCard = document.querySelector('.card');
-  if(firstCard){
-    // set dataset then click
-    firstCard.dataset.title = title;
-    if(src) firstCard.dataset.src = src;
-    firstCard.click();
-  }
-});
-
-/* -----------------------
-   Small enhancement: lazy-load poster/background images
-   - could be enhanced with IntersectionObserver
-   ----------------------- */
-(function(){
-  // prefetch hero images for smoother parity
-  const urls = [
-    'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=1800',
-    'https://images.unsplash.com/photo-1505842465776-3f8d1c7f01ab?w=2000',
-    'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=2000'
-  ];
-  urls.forEach(u=>{ const i=new Image(); i.src=u; });
-})();
 </script>
 </body>
 </html>
