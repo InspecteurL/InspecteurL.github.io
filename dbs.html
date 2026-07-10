@@ -1,154 +1,750 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <title>Accueil Manga</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Lecture — HorizonCiné</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0a0a0f;
+    --panel:#15151c;
+    --panel-2:#1c1c25;
+    --line:#26262f;
+    --ink:#f2f1ed;
+    --ink-dim:#8e8e9a;
+    --crimson:#e8342a;
+    --crimson-dim:#a3241d;
+    --impact:#f5b800;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+  }
+
+  /* ---------- Speed-line texture, used sparingly ---------- */
+  .speedlines{
+    background-image:repeating-linear-gradient(
+      115deg,
+      transparent 0px, transparent 10px,
+      rgba(232,52,42,0.10) 10px, rgba(232,52,42,0.10) 11px
+    );
+  }
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; align-items:center; gap:16px;
+    padding:12px 20px;
+    background:linear-gradient(180deg, rgba(10,10,15,0.97), rgba(10,10,15,0.88));
+    border-bottom:2px solid var(--line);
+    backdrop-filter:blur(6px);
+    transform:translateY(0);
+    transition:transform 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  .topbar.hidden{ transform:translateY(-100%); }
+
+  .back-link{
+    display:flex; align-items:center; gap:6px;
+    color:var(--ink-dim); text-decoration:none;
+    font-size:13px; font-weight:600; letter-spacing:.02em;
+    white-space:nowrap;
+    padding:8px 10px; border-radius:6px;
+    transition:color .2s, background .2s;
+  }
+  .back-link:hover{ color:var(--ink); background:var(--panel); }
+  .back-link svg{ width:16px; height:16px; flex-shrink:0; }
+
+  .divider-v{ width:1px; height:24px; background:var(--line); flex-shrink:0; }
+
+  .manga-title{
+    font-family:'Anton',sans-serif;
+    font-size:20px;
+    letter-spacing:.02em;
+    transform:skewX(-6deg);
+    color:var(--ink);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    flex-shrink:1;
+    min-width:0;
+  }
+  .manga-title span{ color:var(--crimson); }
+
+  .chapter-pill{
+    display:flex; align-items:center; gap:8px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:8px 12px;
+    color:var(--ink);
+    font-size:13px; font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:border-color .2s, background .2s;
+  }
+  .chapter-pill:hover{ border-color:var(--crimson); background:var(--panel-2); }
+  .chapter-pill svg{ width:14px; height:14px; opacity:.7; }
+
+  .spacer{ flex:1; }
+
+  .mode-switch{
+    display:flex; gap:2px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:3px;
+  }
+  .mode-btn{
+    display:flex; align-items:center; justify-content:center;
+    width:36px; height:32px;
+    background:transparent; border:none; border-radius:6px;
+    color:var(--ink-dim); cursor:pointer;
+    transition:background .2s, color .2s;
+  }
+  .mode-btn svg{ width:17px; height:17px; }
+  .mode-btn:hover{ color:var(--ink); }
+  .mode-btn.active{ background:var(--crimson); color:#fff; }
+
+  .icon-btn{
+    display:flex; align-items:center; justify-content:center;
+    width:34px; height:34px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink-dim); cursor:pointer;
+    flex-shrink:0;
+    transition:border-color .2s, color .2s;
+  }
+  .icon-btn:hover{ color:var(--ink); border-color:var(--crimson); }
+  .icon-btn svg{ width:16px; height:16px; }
+
+  @media (max-width:720px){
+    .back-link span.label{ display:none; }
+    .manga-title{ font-size:16px; }
+    .chapter-pill span.label{ display:none; }
+  }
+
+  /* ---------- Chapter drawer ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:60;
+    background:rgba(0,0,0,0.6);
+    opacity:0; pointer-events:none;
+    transition:opacity .25s;
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0; z-index:61;
+    width:300px; max-width:82vw;
+    background:var(--panel);
+    border-right:2px solid var(--line);
+    transform:translateX(-100%);
+    transition:transform .3s cubic-bezier(.4,0,.2,1);
+    display:flex; flex-direction:column;
+  }
+  .drawer.open{ transform:translateX(0); }
+
+  .drawer-head{
+    padding:20px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .drawer-head h2{
+    font-family:'Anton',sans-serif; font-size:18px; margin:0;
+    letter-spacing:.02em; transform:skewX(-6deg);
+  }
+  .drawer-list{ overflow-y:auto; padding:8px; flex:1; }
+  .chapter-item{
+    display:flex; align-items:center; gap:12px;
+    padding:12px; border-radius:8px;
+    cursor:pointer; margin-bottom:4px;
+    border:1px solid transparent;
+    transition:background .2s, border-color .2s;
+  }
+  .chapter-item:hover{ background:var(--panel-2); }
+  .chapter-item.active{
+    background:rgba(232,52,42,0.12);
+    border-color:var(--crimson-dim);
+  }
+  .chapter-num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px; color:var(--ink-dim);
+    width:34px; flex-shrink:0;
+  }
+  .chapter-item.active .chapter-num{ color:var(--impact); }
+  .chapter-name{ font-size:13px; font-weight:500; }
+  .chapter-count{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px; color:var(--ink-dim); margin-left:auto;
+  }
+
+  /* ---------- Reader area ---------- */
+  #reader{
+    padding-top:64px;
+    min-height:100vh;
+    display:flex; flex-direction:column;
+    align-items:center;
+  }
+
+  /* Scroll (webtoon) mode */
+  .reader-scroll{
+    width:100%; max-width:760px;
+    display:flex; flex-direction:column;
+    gap:2px;
+    padding-bottom:120px;
+  }
+  .reader-scroll img{
+    width:100%; display:block; cursor:zoom-in;
+  }
+
+  /* Page mode */
+  .reader-page{
+    width:100%; height:calc(100vh - 64px);
+    display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+  }
+  .reader-page img{
+    max-height:100%; max-width:100%;
+    object-fit:contain; cursor:zoom-in;
+    animation:pageIn .28s ease;
+  }
+  @keyframes pageIn{
+    from{ opacity:0; transform:scale(.98); }
+    to{ opacity:1; transform:scale(1); }
+  }
+  .tap-zone{
+    position:absolute; top:0; bottom:0; width:35%;
+    cursor:pointer; z-index:2;
+    display:flex; align-items:center;
+    opacity:0; transition:opacity .2s;
+    color:var(--ink-dim);
+  }
+  .tap-zone:hover{ opacity:1; }
+  .tap-zone.prev{ left:0; justify-content:flex-start; padding-left:14px;
+    background:linear-gradient(90deg, rgba(0,0,0,.35), transparent); }
+  .tap-zone.next{ right:0; justify-content:flex-end; padding-right:14px;
+    background:linear-gradient(270deg, rgba(0,0,0,.35), transparent); }
+  .tap-zone svg{ width:28px; height:28px; }
+
+  /* Double page mode */
+  .reader-double{
+    width:100%; height:calc(100vh - 64px);
+    display:flex; align-items:center; justify-content:center;
+    gap:2px; position:relative; overflow:hidden;
+  }
+  .reader-double img{
+    max-height:100%; max-width:49%;
+    object-fit:contain; cursor:zoom-in;
+    animation:pageIn .28s ease;
+    box-shadow:0 0 0 1px var(--line);
+  }
+
+  /* ---------- Page indicator (signature element) ---------- */
+  .indicator-wrap{
+    position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+    z-index:40;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    transition:opacity .3s, transform .3s;
+  }
+  .indicator-wrap.hidden{ opacity:0; transform:translate(-50%, 20px); pointer-events:none; }
+
+  .burst{
+    width:86px; height:52px;
+    background:linear-gradient(135deg, var(--crimson), var(--crimson-dim));
+    clip-path:polygon(50% 0%, 61% 20%, 80% 10%, 75% 32%, 100% 35%, 82% 50%, 100% 65%, 75% 68%, 80% 90%, 61% 80%, 50% 100%, 39% 80%, 20% 90%, 25% 68%, 0% 65%, 18% 50%, 0% 35%, 25% 32%, 20% 10%, 39% 20%);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 16px rgba(232,52,42,0.35);
+  }
+  .burst span{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px; font-weight:600; color:#fff;
+  }
+
+  .progress-track{
+    width:200px; height:3px; background:var(--panel);
+    border-radius:2px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; background:var(--impact);
+    width:0%; transition:width .25s ease;
+  }
+
+  /* ---------- Immersive toggle ---------- */
+  .immersive-btn{
+    position:fixed; top:14px; right:14px; z-index:55;
+    opacity:0; pointer-events:none;
+    transition:opacity .2s;
+  }
+  .immersive-btn.visible{ opacity:1; pointer-events:auto; }
+  .reveal-strip{
+    position:fixed; top:0; left:0; right:0; height:24px; z-index:45;
+  }
+
+  /* ---------- Zoom lightbox ---------- */
+  .lightbox{
+    position:fixed; inset:0; z-index:80;
+    background:rgba(5,5,8,0.96);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none;
+    transition:opacity .2s;
+    overflow:auto;
+  }
+  .lightbox.open{ opacity:1; pointer-events:auto; }
+  .lightbox img{
+    max-width:none;
+    width:180%;
+    cursor:zoom-out;
+    margin:auto;
+    display:block;
+  }
+  .lightbox-close{
+    position:fixed; top:16px; right:16px; z-index:81;
+  }
+
+  /* ---------- Empty state ---------- */
+  .empty-state{
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    padding:80px 20px; color:var(--ink-dim); text-align:center;
+  }
+  .empty-state strong{ color:var(--ink); font-family:'Anton',sans-serif; font-size:20px; letter-spacing:.02em; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="profile-picture"></div>
-        </header>
-        <a href="accueil.html"><button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button></a>
 
-        
+<!-- ============================================================
+     DONNÉES DU MANGA
+     Remplace les pages ci-dessous par tes vrais scans en base64 :
+     data:image/jpeg;base64,XXXXXXXX...  ou  data:image/png;base64,XXXX...
 
-        <div id="mangaCarousel" class="carousel slide" data-ride="carousel">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/001.jpg" class="d-block w-100" alt="Manga 1">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/002.jpg" class="d-block w-100" alt="Manga 2">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/003.jpg" class="d-block w-100" alt="Manga 3">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/004.jpg" class="d-block w-100" alt="Your Manga">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/005.jpg" class="d-block w-100" alt="Your Manga">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/006.jpg" class="d-block w-100" alt="Your Manga">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/007.jpg" class="d-block w-100" alt="Your Manga">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/008.jpg" class="d-block w-100" alt="Your Manga">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/009.jpg" class="d-block w-100" alt="Your Manga">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/010.jpg" class="d-block w-100" alt="Your Manga">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/011.jpg" class="d-block w-100">
-                </div><div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/012.jpg" class="d-block w-100">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/013.jpg" class="d-block w-100">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/014.jpg" class="d-block w-100">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/015.jpg" class="d-block w-100">
-                </div>
-                <div class="carousel-item">
-                    <img src="https://www.lelscanvf.cc/uploads/manga/dragon-ball-super/chapters/0001/016.jpg" class="d-block w-100">
-                </div>
-                
-                
-            <a class="carousel-control-prev" href="#mangaCarousel" role="button" data-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="sr-only">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#mangaCarousel" role="button" data-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="sr-only">Next</span>
-            </a>
-        </div>
-        <a href="accueil.html"><button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button>
-        <button type="button" class="btn btn-primary">Accueil</button></a>
-        <div class="content">
-            <!-- Contenu de la page -->
-        </div>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="script.js"></script>
+     Comment convertir une image en base64 (Windows PowerShell) :
+       [Convert]::ToBase64String([IO.File]::ReadAllBytes("page001.jpg"))
+     Puis colle le résultat après "data:image/jpeg;base64,"
+
+     Sous macOS/Linux :
+       base64 -i page001.jpg | tr -d '\n'
+     ============================================================ -->
     
-</body>
-</html>
+<script>
+const MANGA_DATA = {
+  title: "Dragon Ball",
+  chapters: [
+    {
+      number: 1,
+      title: "Chapitre 1 : Le réveil",
+      pages: [c1.sushiscan.net/wp-content/uploads15/DragonBallFixTome1-001.jpg] 
+    },
+    {
+      number: 2,
+      title: "Chapitre 2 : Premier affrontement",
+      pages: []
+    },
+    {
+      number: 3,
+      title: "Chapitre 3 : La percée",
+      pages: []
+    }
+  ]
+};
 
-
-    <style>
-
-       
-        body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: #31383e;
-    color: white;
+/* Génère une page de démo façon planche manga (panels + lignes de vitesse)
+   Purement pour que la page fonctionne dès l'ouverture.
+   SUPPRIME cette fonction et remplis "pages" ci-dessus avec tes vrais scans en base64. */
+function demoPage(chapNum, pageNum, totalInChap){
+  const seedColors = ['#e8342a','#f5b800','#2a2a35'];
+  const c = seedColors[(chapNum + pageNum) % seedColors.length];
+  const big = pageNum === 1;
+  const svg = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="800" height="1200" viewBox="0 0 800 1200">
+    <rect width="800" height="1200" fill="#101014"/>
+    <defs>
+      <pattern id="sp" width="24" height="24" patternTransform="rotate(115)" patternUnits="userSpaceOnUse">
+        <rect width="24" height="24" fill="transparent"/>
+        <rect width="2" height="24" fill="#e8342a" opacity="0.06"/>
+      </pattern>
+    </defs>
+    <rect width="800" height="1200" fill="url(#sp)"/>
+    <rect x="24" y="24" width="752" height="${big ? 500 : 340}" fill="none" stroke="#3a3a45" stroke-width="3"/>
+    <rect x="24" y="${big ? 548 : 388}" width="360" height="300" fill="none" stroke="#3a3a45" stroke-width="3"/>
+    <rect x="408" y="${big ? 548 : 388}" width="368" height="300" fill="none" stroke="#3a3a45" stroke-width="3"/>
+    <rect x="24" y="${big ? 872 : 712}" width="752" height="${1200-24-(big?872:712)}" fill="none" stroke="#3a3a45" stroke-width="3"/>
+    <circle cx="${big ? 400 : 200}" cy="${big ? 260 : 200}" r="90" fill="${c}" opacity="0.5"/>
+    <text x="400" y="${big ? 300 : 220}" font-family="Arial" font-size="26" fill="#f2f1ed" text-anchor="middle" opacity="0.85">Ch.${chapNum} — Planche ${pageNum}</text>
+    <text x="400" y="1160" font-family="monospace" font-size="16" fill="#8e8e9a" text-anchor="middle">page de démo — remplace-moi par ton scan</text>
+  </svg>`;
+  return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
+// Remplissage des pages de démo (8 planches par chapitre)
+MANGA_DATA.chapters.forEach(ch => {
+  for(let p = 1; p <= 8; p++){
+    ch.pages.push(demoPage(ch.number, p, 8));
+  }
+});
+</script>
 
-header {
-    display: flex;
-    justify-content: flex-end;
-    padding: 20px;
-}
+<!-- ============================================================
+     STRUCTURE DE LA PAGE
+     ============================================================ -->
 
-.profile-picture {
-    width: 50px;
-    height: 50px;
-    background-image: url('path/to/profile-picture.jpg');
-    background-size: cover;
-    border-radius: 50%;
-}
-.container{
-    display: flex;
-}
-.carousel {
-    /* Styles pour le carousel */
-}
+<div class="reveal-strip" id="revealStrip"></div>
 
-.content {
-    /* Styles pour le contenu de la page */
-}
+<header class="topbar" id="topbar">
+  <a class="back-link" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    <span class="label">HorizonCiné</span>
+  </a>
+  <div class="divider-v"></div>
+  <div class="manga-title" id="mangaTitleLabel">— <span id="chapTitleLabel">Chargement…</span></div>
+  <div class="spacer"></div>
+  <button class="chapter-pill" id="openDrawerBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span class="label" id="chapterPillLabel">Chapitres</span>
+  </button>
+  <div class="mode-switch">
+    <button class="mode-btn" data-mode="scroll" title="Scroll vertical">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="4"/><rect x="4" y="10" width="16" height="4"/><rect x="4" y="16" width="16" height="4"/></svg>
+    </button>
+    <button class="mode-btn" data-mode="page" title="Page par page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="18" rx="1"/></svg>
+    </button>
+    <button class="mode-btn" data-mode="double" title="Double page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="9" height="16" rx="1"/><rect x="13" y="4" width="9" height="16" rx="1"/></svg>
+    </button>
+  </div>
+</header>
 
-/* Ajoutez ici les styles pour les carousels et le contenu de la page */
+<button class="icon-btn immersive-btn" id="immersiveBtn" title="Afficher l'interface">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+</button>
 
-    </style>
-    <script src="script.js"></script>
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h2>Chapitres</h2>
+    <button class="icon-btn" id="closeDrawerBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-list" id="drawerList"></div>
+</aside>
+
+<main id="reader"></main>
+
+<div class="indicator-wrap" id="indicatorWrap">
+  <div class="burst"><span id="pageCounter">1/8</span></div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button class="icon-btn lightbox-close" id="closeLightboxBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <img id="lightboxImg" src="" alt="Planche agrandie">
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'horizoncine_manga_progress_' + MANGA_DATA.title;
+
+  let state = {
+    chapterIndex: 0,
+    pageIndex: 0,
+    mode: 'page'
+  };
+
+  // Restaure la progression si elle existe
+  try{
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if(saved){
+      state.chapterIndex = Math.min(saved.chapterIndex ?? 0, MANGA_DATA.chapters.length - 1);
+      state.pageIndex = saved.pageIndex ?? 0;
+      state.mode = saved.mode || 'page';
+    }
+  }catch(e){}
+
+  const readerEl = document.getElementById('reader');
+  const drawerList = document.getElementById('drawerList');
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+  const topbar = document.getElementById('topbar');
+  const immersiveBtn = document.getElementById('immersiveBtn');
+  const revealStrip = document.getElementById('revealStrip');
+  const indicatorWrap = document.getElementById('indicatorWrap');
+  const pageCounter = document.getElementById('pageCounter');
+  const progressFill = document.getElementById('progressFill');
+  const chapTitleLabel = document.getElementById('chapTitleLabel');
+  const chapterPillLabel = document.getElementById('chapterPillLabel');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+
+  document.getElementById('mangaTitleLabel').innerHTML =
+    escapeHtml(MANGA_DATA.title) + ' — <span id="chapTitleLabel"></span>';
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function currentChapter(){ return MANGA_DATA.chapters[state.chapterIndex]; }
+
+  function saveProgress(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function buildDrawer(){
+    drawerList.innerHTML = '';
+    MANGA_DATA.chapters.forEach((ch, i) => {
+      const item = document.createElement('div');
+      item.className = 'chapter-item' + (i === state.chapterIndex ? ' active' : '');
+      item.innerHTML = `
+        <div class="chapter-num">${String(ch.number).padStart(2,'0')}</div>
+        <div class="chapter-name">${escapeHtml(ch.title)}</div>
+        <div class="chapter-count">${ch.pages.length}p</div>
+      `;
+      item.addEventListener('click', () => {
+        state.chapterIndex = i;
+        state.pageIndex = 0;
+        closeDrawer();
+        saveProgress();
+        render();
+      });
+      drawerList.appendChild(item);
+    });
+  }
+
+  function openDrawer(){ drawer.classList.add('open'); overlay.classList.add('open'); }
+  function closeDrawer(){ drawer.classList.remove('open'); overlay.classList.remove('open'); }
+  document.getElementById('openDrawerBtn').addEventListener('click', openDrawer);
+  document.getElementById('closeDrawerBtn').addEventListener('click', closeDrawer);
+  overlay.addEventListener('click', closeDrawer);
+
+  // ---------- Mode switch ----------
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.mode = btn.dataset.mode;
+      state.pageIndex = 0;
+      saveProgress();
+      render();
+    });
+  });
+
+  function updateModeButtons(){
+    document.querySelectorAll('.mode-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === state.mode);
+    });
+  }
+
+  // ---------- Lightbox / zoom ----------
+  function openZoom(src){
+    lightboxImg.src = src;
+    lightbox.classList.add('open');
+  }
+  function closeZoom(){
+    lightbox.classList.remove('open');
+    lightboxImg.src = '';
+  }
+  document.getElementById('closeLightboxBtn').addEventListener('click', closeZoom);
+  lightbox.addEventListener('click', (e) => { if(e.target === lightbox) closeZoom(); });
+  lightboxImg.addEventListener('click', closeZoom);
+
+  // ---------- Immersive mode ----------
+  let immersive = false;
+  function setImmersive(on){
+    immersive = on;
+    topbar.classList.toggle('hidden', on);
+    immersiveBtn.classList.toggle('visible', on);
+  }
+  immersiveBtn.addEventListener('click', () => setImmersive(false));
+  revealStrip.addEventListener('mouseenter', () => { if(immersive) setImmersive(false); });
+
+  // Double-click sur le lecteur = bascule immersive (desktop)
+  readerEl.addEventListener('dblclick', (e) => {
+    if(e.target.tagName !== 'IMG') setImmersive(!immersive);
+  });
+
+  // ---------- Indicator ----------
+  function updateIndicator(){
+    const ch = currentChapter();
+    const total = ch.pages.length;
+    const shown = state.mode === 'double'
+      ? Math.min(state.pageIndex + 2, total)
+      : state.pageIndex + 1;
+    pageCounter.textContent = `${Math.min(shown,total)}/${total}`;
+    progressFill.style.width = (Math.min(shown,total) / total * 100) + '%';
+  }
+
+  // ---------- Renderers ----------
+  function render(){
+    const ch = currentChapter();
+    if(!ch || ch.pages.length === 0){
+      readerEl.innerHTML = `<div class="empty-state"><strong>Aucune planche</strong><span>Ce chapitre ne contient pas encore de pages.</span></div>`;
+      return;
+    }
+    chapTitleLabel.textContent = ch.title;
+    chapterPillLabel.textContent = `Ch. ${ch.number}`;
+    updateModeButtons();
+    buildDrawer();
+    indicatorWrap.classList.remove('hidden');
+
+    if(state.mode === 'scroll') renderScroll(ch);
+    else if(state.mode === 'double') renderDouble(ch);
+    else renderPage(ch);
+
+    updateIndicator();
+    saveProgress();
+  }
+
+  function renderScroll(ch){
+    readerEl.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'reader-scroll';
+    ch.pages.forEach((src, i) => {
+      const img = document.createElement('img');
+      img.src = src;
+      img.loading = 'lazy';
+      img.dataset.index = i;
+      img.addEventListener('click', () => openZoom(src));
+      wrap.appendChild(img);
+    });
+    readerEl.appendChild(wrap);
+
+    // Suit la page visible pour mettre à jour le compteur
+    const imgs = wrap.querySelectorAll('img');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if(e.isIntersecting){
+          state.pageIndex = parseInt(e.target.dataset.index, 10);
+          updateIndicator();
+        }
+      });
+    }, { threshold: 0.6 });
+    imgs.forEach(img => io.observe(img));
+
+    // Reprend à la page sauvegardée
+    requestAnimationFrame(() => {
+      const target = imgs[state.pageIndex];
+      if(target) target.scrollIntoView({ block: 'start' });
+    });
+  }
+
+  function renderPage(ch){
+    readerEl.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'reader-page';
+
+    const img = document.createElement('img');
+    img.src = ch.pages[state.pageIndex];
+    img.addEventListener('click', () => openZoom(img.src));
+    wrap.appendChild(img);
+
+    const prevZone = document.createElement('div');
+    prevZone.className = 'tap-zone prev';
+    prevZone.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>`;
+    prevZone.addEventListener('click', () => gotoPage(state.pageIndex - 1));
+
+    const nextZone = document.createElement('div');
+    nextZone.className = 'tap-zone next';
+    nextZone.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>`;
+    nextZone.addEventListener('click', () => gotoPage(state.pageIndex + 1));
+
+    wrap.appendChild(prevZone);
+    wrap.appendChild(nextZone);
+    readerEl.appendChild(wrap);
+  }
+
+  function renderDouble(ch){
+    readerEl.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'reader-double';
+
+    const i1 = state.pageIndex;
+    const i2 = state.pageIndex + 1;
+
+    [i1, i2].forEach(idx => {
+      if(ch.pages[idx]){
+        const img = document.createElement('img');
+        img.src = ch.pages[idx];
+        img.addEventListener('click', () => openZoom(img.src));
+        wrap.appendChild(img);
+      }
+    });
+
+    const prevZone = document.createElement('div');
+    prevZone.className = 'tap-zone prev';
+    prevZone.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>`;
+    prevZone.addEventListener('click', () => gotoPage(state.pageIndex - 2));
+
+    const nextZone = document.createElement('div');
+    nextZone.className = 'tap-zone next';
+    nextZone.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>`;
+    nextZone.addEventListener('click', () => gotoPage(state.pageIndex + 2));
+
+    wrap.appendChild(prevZone);
+    wrap.appendChild(nextZone);
+    readerEl.appendChild(wrap);
+  }
+
+  function gotoPage(idx){
+    const ch = currentChapter();
+    const step = state.mode === 'double' ? 2 : 1;
+
+    if(idx < 0){
+      // Chapitre précédent
+      if(state.chapterIndex > 0){
+        state.chapterIndex--;
+        const prevCh = currentChapter();
+        state.pageIndex = state.mode === 'double'
+          ? Math.max(0, prevCh.pages.length - (prevCh.pages.length % 2 === 0 ? 2 : 1))
+          : prevCh.pages.length - 1;
+        render();
+      }
+      return;
+    }
+    if(idx >= ch.pages.length){
+      // Chapitre suivant
+      if(state.chapterIndex < MANGA_DATA.chapters.length - 1){
+        state.chapterIndex++;
+        state.pageIndex = 0;
+        render();
+      }
+      return;
+    }
+    state.pageIndex = idx;
+    render();
+  }
+
+  // ---------- Clavier ----------
+  document.addEventListener('keydown', (e) => {
+    if(lightbox.classList.contains('open')){
+      if(e.key === 'Escape') closeZoom();
+      return;
+    }
+    if(drawer.classList.contains('open')){
+      if(e.key === 'Escape') closeDrawer();
+      return;
+    }
+    if(state.mode === 'scroll') return; // scroll natif dans ce mode
+
+    const step = state.mode === 'double' ? 2 : 1;
+    if(e.key === 'ArrowRight') gotoPage(state.pageIndex + step);
+    if(e.key === 'ArrowLeft') gotoPage(state.pageIndex - step);
+    if(e.key === 'f' || e.key === 'F') setImmersive(!immersive);
+  });
+
+  render();
+})();
+</script>
+
 </body>
 </html>
