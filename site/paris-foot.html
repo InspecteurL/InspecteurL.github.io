@@ -609,6 +609,7 @@ select:focus, input:focus {
     <button id="tabBet" class="active" onclick="switchTab('bet')">Parier</button>
     <button id="tabMine" onclick="switchTab('mine')">Mes paris</button>
     <button id="tabBoard" onclick="switchTab('board')">Classement</button>
+     <button id="tabSend" onclick="switchTab('send')">Envoyer</button>
   </nav>
 
   <div id="status"></div>
@@ -672,7 +673,7 @@ async function refreshBalance(){
 
 function switchTab(tab){
   currentTab = tab;
-  ['tabBet','tabMine','tabBoard'].forEach(id => document.getElementById(id).classList.remove('active'));
+  ['tabBet','tabMine','tabBoard','tabSend'].forEach(id => document.getElementById(id).classList.remove('active'));
   document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
   renderTab();
 }
@@ -681,6 +682,7 @@ function renderTab(){
   if(currentTab === 'bet') renderMatches();
   if(currentTab === 'mine') renderMyBets();
   if(currentTab === 'board') renderLeaderboard();
+  if(currentTab === 'send') renderSendMoney();
 }
 
 async function loadMatches(){
@@ -1130,6 +1132,48 @@ function setStatus(msg, isError=false){
   const el = document.getElementById('status');
   el.textContent = msg;
   el.style.color = isError ? "#ff8a8a" : "";
+}
+   function renderSendMoney(){
+  const el = document.getElementById('content');
+  el.innerHTML = `
+    <div class="match">
+      <div class="league" style="margin-top:0;border-top:none;padding-top:0;">Envoyer de l'argent à un autre joueur</div>
+      <div class="bet-form" style="margin:20px 0 0;border-top:none;border-radius:var(--radius);">
+        <input type="text" id="sendUsername" placeholder="Pseudo du destinataire">
+        <input type="number" id="sendAmount" placeholder="Montant" min="1">
+        <button onclick="sendMoney()">Envoyer</button>
+      </div>
+    </div>
+  `;
+}
+
+async function sendMoney(){
+  const username = document.getElementById('sendUsername').value.trim();
+  const amount = parseInt(document.getElementById('sendAmount').value, 10);
+
+  if(!username){
+    setStatus("Entre un pseudo.", true);
+    return;
+  }
+  if(!amount || amount <= 0){
+    setStatus("Entre un montant valide.", true);
+    return;
+  }
+
+  const { error } = await sb.rpc('send_money', {
+    p_recipient_username: username,
+    p_amount: amount
+  });
+
+  if(error){
+    setStatus("Erreur : " + error.message, true);
+    return;
+  }
+
+  setStatus(`${amount} 💰 envoyés à ${username} !`);
+  document.getElementById('sendUsername').value = '';
+  document.getElementById('sendAmount').value = '';
+  await refreshBalance();
 }
 
 init();
