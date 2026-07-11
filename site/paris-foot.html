@@ -646,12 +646,10 @@ select:focus, input:focus {
 const SUPABASE_URL = "https://wuagahavmbugmnuzsouf.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
 
-const RAPIDAPI_KEY = "e00ebab9f1mshf31ddb456d99a8ep163f41jsnb4b4cd18334b";
-const PREDICTIONS_HOST = "football-prediction-api.p.rapidapi.com";
-
 const CACHE_MAX_AGE_MS = 60 * 1000;
 const FALLBACK_ODDS = { home: 1.8, draw: 3.0, away: 2.2 };
 const AUTO_REFRESH_MS = 60 * 1000;
+const ADMIN_USER_ID = "b341b986-b829-4979-b5d1-4ba6ea0b1979"; // récupère-le dans Supabase > Authentication > Users
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -673,12 +671,14 @@ async function init(){
     document.getElementById('tabAdmin').style.display = '';
   }
   document.getElementById('authGate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('userLabel').textContent = user.email || user.id.slice(0,8);
 
   await refreshBalance();
   await loadMatches();
   renderTab();
   startAutoRefresh();
-  subscribeToNotifications();   // ← cette ligne doit être ici, pas en dehors
+  subscribeToNotifications();
 }
 
 function startAutoRefresh(){
@@ -742,7 +742,7 @@ async function loadMatches(){
       setStatus("Impossible d'actualiser (quota API ?), affichage du cache. " + err.message, true);
     }
   }
-detectGoals(previousMatches, matchesData);
+  detectGoals(previousMatches, matchesData);
   await loadActiveBetFixtureIds();
   await settlePendingBets();
   renderTab();
@@ -761,43 +761,31 @@ async function loadActiveBetFixtureIds(){
 }
 
 async function buildMatchesWithOddsAndScores(){
-  const [predictions, scores, manualOddsMap] = await Promise.all([
-    fetchPredictions().catch(() => []),
+  const [scores, manualOddsMap] = await Promise.all([
     fetchScores(),
     fetchManualOdds()
   ]);
 
   return scores.map(s => {
-    const matchedPrediction = findMatchingPrediction(s, predictions);
-    const classic = matchedPrediction &&
-      matchedPrediction.prediction_per_market &&
-      matchedPrediction.prediction_per_market.classic;
-    const oddsRaw = classic && classic.odds ? classic.odds : {};
-    const probs = classic && classic.probabilities ? classic.probabilities : {};
-
     const manual = manualOddsMap[String(s.id)];
 
     const odds = manual ? {
       home: manual.home_odds,
       draw: manual.draw_odds,
       away: manual.away_odds
-    } : {
-      home: oddsRaw['1'] || (probs['1'] ? +(1/probs['1']).toFixed(2) : FALLBACK_ODDS.home),
-      draw: oddsRaw['X'] || (probs['X'] ? +(1/probs['X']).toFixed(2) : FALLBACK_ODDS.draw),
-      away: oddsRaw['2'] || (probs['2'] ? +(1/probs['2']).toFixed(2) : FALLBACK_ODDS.away)
-    };
+    } : { ...FALLBACK_ODDS };
 
     return {
       prediction_id: String(s.id),
       home_team: s.homeName,
       away_team: s.awayName,
-      competition: matchedPrediction ? matchedPrediction.competition_name : '',
+      competition: '',
       start_date: s.dateISO,
       odds,
       status: s.statusShort,
       home_goals: s.homeGoals,
       away_goals: s.awayGoals,
-      has_real_odds: !!manual || !!matchedPrediction
+      has_real_odds: !!manual
     };
   });
 }
@@ -810,37 +798,6 @@ async function fetchManualOdds(){
     map[row.fixture_id] = row;
   }
   return map;
-}
-
-   function findMatchingPrediction(scoreMatch, predictions){
-  const sHome = normalizeTeam(scoreMatch.homeName);
-  const sAway = normalizeTeam(scoreMatch.awayName);
-  const sDate = scoreMatch.dateISO.slice(0,10);
-
-  return predictions.find(p => {
-    const pHome = normalizeTeam(p.home_team);
-    const pAway = normalizeTeam(p.away_team);
-    const pDate = (p.start_date || "").slice(0,10);
-    const nameMatch =
-      (pHome.includes(sHome) || sHome.includes(pHome)) &&
-      (pAway.includes(sAway) || sAway.includes(pAway));
-    return nameMatch && pDate === sDate;
-  }) || null;
-}
-   
-async function fetchPredictions(){
-  const res = await fetch(
-    "https://football-prediction-api.p.rapidapi.com/api/v2/predictions?market=classic",
-    {
-      headers: {
-        "x-rapidapi-key": RAPIDAPI_KEY,
-        "x-rapidapi-host": PREDICTIONS_HOST
-      }
-    }
-  );
-  if(!res.ok) throw new Error("Erreur API cotes (" + res.status + ")");
-  const json = await res.json();
-  return json.data || [];
 }
 
 async function fetchScores(){
@@ -886,8 +843,6 @@ function normalizeFootballDataMatch(m){
     statusShort: statusMap[m.status] || 'NS'
   };
 }
-
-const ADMIN_USER_ID = "b341b986-b829-4979-b5d1-4ba6ea0b1979"; // récupère-le dans Supabase > Authentication > Users
 
 function renderAdminOdds(){
   const el = document.getElementById('content');
@@ -1164,7 +1119,8 @@ function setStatus(msg, isError=false){
   el.innerHTML = msg;
   el.style.color = isError ? "#ff8a8a" : "";
 }
-   function renderSendMoney(){
+
+function renderSendMoney(){
   const el = document.getElementById('content');
   el.innerHTML = `
     <div class="match">
@@ -1207,7 +1163,7 @@ async function sendMoney(){
   await refreshBalance();
 }
 
-   function showToast(message, type = 'goal'){
+function showToast(message, type = 'goal'){
   const container = document.getElementById('toastContainer');
   const toast = document.createElement('div');
   toast.className = 'toast ' + type;
@@ -1246,7 +1202,6 @@ function subscribeToNotifications(){
     })
     .subscribe();
 }
-
 
 init();
 </script>
