@@ -759,9 +759,14 @@ async function loadActiveBetFixtureIds(){
 
 async function buildMatchesWithOddsAndScores(){
   const [predictions, scores] = await Promise.all([
-    fetchPredictions().catch(() => []),
+    fetchPredictions().catch((e) => { console.error("fetchPredictions a échoué:", e); return []; }),
     fetchScores()
   ]);
+
+  console.log("Nombre de prédictions reçues :", predictions.length);
+  console.log("Exemple de prédiction :", predictions[0]);
+  console.log("Nombre de scores reçus :", scores.length);
+  console.log("Exemple de score :", scores[0]);
 
   return scores.map(s => {
     const matchedPrediction = findMatchingPrediction(s, predictions);
