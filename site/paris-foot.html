@@ -824,10 +824,8 @@ async function fetchPredictions(){
 }
 
 async function fetchScores(){
-  const [freeApiResult, footballDataResult] = await Promise.allSettled([
-    fetchScoresFreeApi(),
-    fetchScoresFootballData()
-  ]);
+  return await fetchScoresFootballData();
+}
 
   const freeApiMatches = freeApiResult.status === 'fulfilled' ? freeApiResult.value : [];
   const footballDataMatches = footballDataResult.status === 'fulfilled' ? footballDataResult.value : [];
@@ -851,27 +849,6 @@ async function fetchScores(){
   return merged;
 }
 
-async function fetchScoresFreeApi(){
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  const dateParam = `${yyyy}${mm}${dd}`;
-
-  const res = await fetch(
-    `https://free-api-live-football-data.p.rapidapi.com/football-get-matches-by-date?date=${dateParam}`,
-    {
-      headers: {
-        "x-rapidapi-key": RAPIDAPI_KEY,
-        "x-rapidapi-host": "free-api-live-football-data.p.rapidapi.com"
-      }
-    }
-  );
-  if(!res.ok) throw new Error("Erreur API scores free-api (" + res.status + ")");
-  const json = await res.json();
-  const rawMatches = (json.response && json.response.matches) || [];
-  return rawMatches.map(normalizeScoreMatch);
-}
 
 async function fetchScoresFootballData(){
   const now = new Date();
@@ -913,26 +890,7 @@ function normalizeFootballDataMatch(m){
   };
 }
 
-function normalizeScoreMatch(m){
-  let statusShort = 'NS';
-  if(m.status.cancelled){
-    statusShort = 'PP';
-  } else if(m.status.finished){
-    statusShort = (m.status.reason && m.status.reason.short || 'FT').toUpperCase();
-  } else if(m.status.started){
-    statusShort = 'LIVE';
-  }
 
-  return {
-    id: m.id,
-    dateISO: new Date(m.timeTS).toISOString(),
-    homeName: m.home.longName || m.home.name,
-    awayName: m.away.longName || m.away.name,
-    homeGoals: m.home.score,
-    awayGoals: m.away.score,
-    statusShort
-  };
-}
 
 function normalizeTeam(name){
   return (name || "")
