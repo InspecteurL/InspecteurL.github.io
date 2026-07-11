@@ -827,29 +827,6 @@ async function fetchScores(){
   return await fetchScoresFootballData();
 }
 
-  const freeApiMatches = freeApiResult.status === 'fulfilled' ? freeApiResult.value : [];
-  const footballDataMatches = footballDataResult.status === 'fulfilled' ? footballDataResult.value : [];
-
-  if(freeApiResult.status === 'rejected'){
-    console.warn("free-api-live-football-data indisponible :", freeApiResult.reason);
-  }
-  if(footballDataResult.status === 'rejected'){
-    console.warn("football-data.org (proxy) indisponible :", footballDataResult.reason);
-  }
-
-  const merged = [...footballDataMatches];
-  for(const m of freeApiMatches){
-    const isDuplicate = merged.some(existing =>
-      normalizeTeam(existing.homeName) === normalizeTeam(m.homeName) &&
-      normalizeTeam(existing.awayName) === normalizeTeam(m.awayName) &&
-      existing.dateISO.slice(0,10) === m.dateISO.slice(0,10)
-    );
-    if(!isDuplicate) merged.push(m);
-  }
-  return merged;
-}
-
-
 async function fetchScoresFootballData(){
   const now = new Date();
   const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
