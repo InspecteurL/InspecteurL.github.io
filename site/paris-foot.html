@@ -763,10 +763,12 @@ async function buildMatchesWithOddsAndScores(){
     fetchScores()
   ]);
 
-  console.log("Nombre de prédictions reçues :", predictions.length);
-  console.log("Exemple de prédiction :", predictions[0]);
-  console.log("Nombre de scores reçus :", scores.length);
-  console.log("Exemple de score :", scores[0]);
+console.log("Prédictions (date + équipes) :", predictions.map(p => ({
+  home: p.home_team, away: p.away_team, date: p.start_date
+})));
+console.log("Scores (date + équipes) :", scores.map(s => ({
+  home: s.homeName, away: s.awayName, date: s.dateISO
+})));
 
   return scores.map(s => {
     const matchedPrediction = findMatchingPrediction(s, predictions);
