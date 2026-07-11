@@ -635,6 +635,7 @@ select:focus, input:focus {
     <button id="tabMine" onclick="switchTab('mine')">Mes paris</button>
     <button id="tabBoard" onclick="switchTab('board')">Classement</button>
      <button id="tabSend" onclick="switchTab('send')">Envoyer</button>
+     <button id="tabAdmin" onclick="switchTab('admin')" style="display:none;">Admin</button>
   </nav>
 
   <div id="status"></div>
@@ -668,9 +669,10 @@ async function init(){
     return;
   }
   currentUser = user;
+  if(currentUser.id === ADMIN_USER_ID){
+    document.getElementById('tabAdmin').style.display = '';
+  }
   document.getElementById('authGate').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('userLabel').textContent = user.email || user.id.slice(0,8);
 
   await refreshBalance();
   await loadMatches();
@@ -699,7 +701,7 @@ async function refreshBalance(){
 
 function switchTab(tab){
   currentTab = tab;
-  ['tabBet','tabMine','tabBoard','tabSend'].forEach(id => document.getElementById(id).classList.remove('active'));
+  ['tabBet','tabMine','tabBoard','tabSend','tabAdmin'].forEach(id => document.getElementById(id).classList.remove('active'));
   document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
   renderTab();
 }
@@ -709,6 +711,7 @@ function renderTab(){
   if(currentTab === 'mine') renderMyBets();
   if(currentTab === 'board') renderLeaderboard();
   if(currentTab === 'send') renderSendMoney();
+  if(currentTab === 'admin') renderAdminOdds();
 }
 
 async function loadMatches(){
@@ -758,17 +761,11 @@ async function loadActiveBetFixtureIds(){
 }
 
 async function buildMatchesWithOddsAndScores(){
-  const [predictions, scores] = await Promise.all([
-    fetchPredictions().catch((e) => { console.error("fetchPredictions a échoué:", e); return []; }),
-    fetchScores()
+  const [predictions, scores, manualOddsMap] = await Promise.all([
+    fetchPredictions().catch(() => []),
+    fetchScores(),
+    fetchManualOdds()
   ]);
-
-console.log("Prédictions (date + équipes) :", predictions.map(p => ({
-  home: p.home_team, away: p.away_team, date: p.start_date
-})));
-console.log("Scores (date + équipes) :", scores.map(s => ({
-  home: s.homeName, away: s.awayName, date: s.dateISO
-})));
 
   return scores.map(s => {
     const matchedPrediction = findMatchingPrediction(s, predictions);
@@ -778,7 +775,13 @@ console.log("Scores (date + équipes) :", scores.map(s => ({
     const oddsRaw = classic && classic.odds ? classic.odds : {};
     const probs = classic && classic.probabilities ? classic.probabilities : {};
 
-    const odds = {
+    const manual = manualOddsMap[String(s.id)];
+
+    const odds = manual ? {
+      home: manual.home_odds,
+      draw: manual.draw_odds,
+      away: manual.away_odds
+    } : {
       home: oddsRaw['1'] || (probs['1'] ? +(1/probs['1']).toFixed(2) : FALLBACK_ODDS.home),
       draw: oddsRaw['X'] || (probs['X'] ? +(1/probs['X']).toFixed(2) : FALLBACK_ODDS.draw),
       away: oddsRaw['2'] || (probs['2'] ? +(1/probs['2']).toFixed(2) : FALLBACK_ODDS.away)
@@ -794,25 +797,19 @@ console.log("Scores (date + équipes) :", scores.map(s => ({
       status: s.statusShort,
       home_goals: s.homeGoals,
       away_goals: s.awayGoals,
-      has_real_odds: !!matchedPrediction
+      has_real_odds: !!manual || !!matchedPrediction
     };
   });
 }
 
-function findMatchingPrediction(scoreMatch, predictions){
-  const sHome = normalizeTeam(scoreMatch.homeName);
-  const sAway = normalizeTeam(scoreMatch.awayName);
-  const sDate = scoreMatch.dateISO.slice(0,10);
-
-  return predictions.find(p => {
-    const pHome = normalizeTeam(p.home_team);
-    const pAway = normalizeTeam(p.away_team);
-    const pDate = (p.start_date || "").slice(0,10);
-    const nameMatch =
-      (pHome.includes(sHome) || sHome.includes(pHome)) &&
-      (pAway.includes(sAway) || sAway.includes(pAway));
-    return nameMatch && pDate === sDate;
-  }) || null;
+async function fetchManualOdds(){
+  const { data, error } = await sb.from('manual_odds').select('*');
+  if(error || !data) return {};
+  const map = {};
+  for(const row of data){
+    map[row.fixture_id] = row;
+  }
+  return map;
 }
 
 async function fetchPredictions(){
@@ -874,7 +871,55 @@ function normalizeFootballDataMatch(m){
   };
 }
 
+const ADMIN_USER_ID = "b341b986-b829-4979-b5d1-4ba6ea0b1979"; // récupère-le dans Supabase > Authentication > Users
 
+function renderAdminOdds(){
+  const el = document.getElementById('content');
+  if(currentUser.id !== ADMIN_USER_ID){
+    el.innerHTML = `<div class="empty">Accès réservé.</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="match">
+      <div class="league" style="margin-top:0;border-top:none;padding-top:0;">Définir des cotes manuelles</div>
+      <div class="bet-form" style="margin:20px 0 0;border-top:none;flex-wrap:wrap;">
+        <select id="adminFixtureSelect">
+          ${matchesData.map(m => `<option value="${m.prediction_id}">${m.home_team} vs ${m.away_team}</option>`).join('')}
+        </select>
+        <input type="number" step="0.01" id="adminHomeOdds" placeholder="Cote 1">
+        <input type="number" step="0.01" id="adminDrawOdds" placeholder="Cote N">
+        <input type="number" step="0.01" id="adminAwayOdds" placeholder="Cote 2">
+        <button onclick="saveManualOdds()">Enregistrer</button>
+      </div>
+    </div>
+  `;
+}
+
+async function saveManualOdds(){
+  const fixtureId = document.getElementById('adminFixtureSelect').value;
+  const home = parseFloat(document.getElementById('adminHomeOdds').value);
+  const draw = parseFloat(document.getElementById('adminDrawOdds').value);
+  const away = parseFloat(document.getElementById('adminAwayOdds').value);
+
+  if(!home || !draw || !away){
+    setStatus("Remplis les 3 cotes.", true);
+    return;
+  }
+
+  const { error } = await sb.from('manual_odds').upsert({
+    fixture_id: fixtureId,
+    home_odds: home,
+    draw_odds: draw,
+    away_odds: away
+  });
+
+  if(error){
+    setStatus("Erreur : " + error.message, true);
+    return;
+  }
+  setStatus("Cotes enregistrées !");
+  await loadMatches();
+}
 
 function normalizeTeam(name){
   return (name || "")
@@ -1185,6 +1230,10 @@ function subscribeToNotifications(){
     })
     .subscribe();
 }
+   if(currentUser.id === ADMIN_USER_ID){
+  document.getElementById('tabAdmin').style.display = '';
+}
+   if(currentTab === 'admin') renderAdminOdds();
 
 init();
 </script>
