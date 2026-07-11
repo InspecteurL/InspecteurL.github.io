@@ -812,6 +812,22 @@ async function fetchManualOdds(){
   return map;
 }
 
+   function findMatchingPrediction(scoreMatch, predictions){
+  const sHome = normalizeTeam(scoreMatch.homeName);
+  const sAway = normalizeTeam(scoreMatch.awayName);
+  const sDate = scoreMatch.dateISO.slice(0,10);
+
+  return predictions.find(p => {
+    const pHome = normalizeTeam(p.home_team);
+    const pAway = normalizeTeam(p.away_team);
+    const pDate = (p.start_date || "").slice(0,10);
+    const nameMatch =
+      (pHome.includes(sHome) || sHome.includes(pHome)) &&
+      (pAway.includes(sAway) || sAway.includes(pAway));
+    return nameMatch && pDate === sDate;
+  }) || null;
+}
+   
 async function fetchPredictions(){
   const res = await fetch(
     "https://football-prediction-api.p.rapidapi.com/api/v2/predictions?market=classic",
@@ -1230,10 +1246,7 @@ function subscribeToNotifications(){
     })
     .subscribe();
 }
-   if(currentUser.id === ADMIN_USER_ID){
-  document.getElementById('tabAdmin').style.display = '';
-}
-   if(currentTab === 'admin') renderAdminOdds();
+
 
 init();
 </script>
