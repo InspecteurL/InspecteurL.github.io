@@ -3,104 +3,191 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trouve la Règle</title>
+<title>Trouve la Règle — HorizonCiné</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
   :root {
-    --bg:#0d0d0f; --surface:#16161a; --surface2:#1e1e24; --border:#2a2a35;
-    --accent:#7c5cfc; --accent2:#c084fc; --danger:#fc5c5c; --success:#5cfca0;
-    --warning:#fcc45c; --text:#e8e8f0; --muted:#6b6b80; --radius:14px;
+    --bg:#0a0908;
+    --panel:#15120e;
+    --panel2:#1c170f;
+    --border:#3a2f1c;
+    --amber:#ffb400;
+    --amber-dim:#c98a1c;
+    --amber-glow:rgba(255,180,20,.4);
+    --paper:#e9dcc0;
+    --danger:#ff4630;
+    --danger-glow:rgba(255,70,48,.4);
+    --muted:#6f6350;
+    --radius:6px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
-  .logo{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;opacity:.7;}
-  h1{font-size:clamp(28px,5vw,48px);font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:40px;text-align:center;}
+  body{
+    font-family:'IBM Plex Mono',monospace;
+    background:
+      radial-gradient(ellipse at top, rgba(255,180,20,.05), transparent 60%),
+      var(--bg);
+    color:var(--paper);
+    min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:20px;
+    letter-spacing:.02em;
+  }
+  .logo{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--amber-dim);margin-bottom:8px;text-align:center;}
+  h1{
+    font-size:clamp(24px,5vw,38px);font-weight:700;color:var(--amber);
+    text-shadow:0 0 18px var(--amber-glow);
+    margin-bottom:36px;text-align:center;text-transform:uppercase;letter-spacing:.08em;
+  }
   .screen{width:100%;max-width:500px;display:none;flex-direction:column;gap:16px;animation:fadeIn .3s ease;}
   .screen.active{display:flex;}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
-  .card-title{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;font-family:'Space Mono',monospace;}
-  input,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:15px;outline:none;transition:border-color .2s;resize:none;}
-  input:focus,textarea:focus{border-color:var(--accent);}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px;
+    position:relative;
+    box-shadow:inset 0 0 0 1px rgba(255,180,20,.03), 0 4px 14px rgba(0,0,0,.4);
+  }
+  .card::before,.card::after{
+    content:'';position:absolute;top:8px;width:5px;height:5px;border-radius:50%;
+    background:var(--border);box-shadow:inset 0 0 0 1px rgba(0,0,0,.5);
+  }
+  .card::before{left:8px;} .card::after{right:8px;}
+  .card-title{
+    font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--amber-dim);
+    margin-bottom:16px;font-weight:600;
+  }
+  input,textarea{
+    width:100%;background:var(--bg);border:1px solid var(--border);border-radius:4px;
+    padding:13px 14px;color:var(--paper);font-family:'IBM Plex Mono',monospace;font-size:15px;
+    outline:none;transition:border-color .2s,box-shadow .2s;resize:none;
+  }
+  input:focus,textarea:focus{border-color:var(--amber-dim);box-shadow:0 0 0 2px rgba(255,180,20,.12);}
   input::placeholder,textarea::placeholder{color:var(--muted);}
-  button{width:100%;padding:14px 20px;border:none;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;}
+  button{
+    width:100%;padding:14px 20px;border:1px solid transparent;border-radius:4px;
+    font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;letter-spacing:1.5px;
+    text-transform:uppercase;cursor:pointer;transition:all .15s;
+  }
   button:active{transform:scale(.98);}
-  button:disabled{opacity:.4;cursor:not-allowed;}
-  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;}
-  .btn-primary:hover{opacity:.9;}
-  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
-  .btn-secondary:hover{border-color:var(--accent);}
-  .btn-danger{background:var(--danger);color:white;}
-  .btn-success{background:var(--success);color:#0d0d0f;}
-  .btn-buzzer{background:linear-gradient(135deg,#fc5c5c,#ff8c42);color:white;font-size:18px;font-weight:700;padding:22px;border-radius:16px;letter-spacing:2px;animation:pulse 2s infinite;}
-  @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(252,92,92,.3)}50%{box-shadow:0 0 40px rgba(252,92,92,.6)}}
-  .room-code{font-family:'Space Mono',monospace;font-size:36px;font-weight:700;text-align:center;letter-spacing:8px;color:var(--accent2);padding:20px;background:var(--surface2);border-radius:12px;border:1px dashed var(--accent);}
+  button:disabled{opacity:.35;cursor:not-allowed;}
+  .btn-primary{background:var(--amber);color:#1a1204;box-shadow:0 0 16px var(--amber-glow);}
+  .btn-primary:hover{background:#ffc22e;}
+  .btn-secondary{background:var(--panel2);color:var(--paper);border-color:var(--border);}
+  .btn-secondary:hover{border-color:var(--amber-dim);}
+  .btn-danger{background:transparent;color:var(--danger);border-color:var(--danger);}
+  .btn-danger:hover{background:rgba(255,70,48,.1);}
+  .btn-success{background:transparent;color:var(--amber);border-color:var(--amber);}
+  .btn-success:hover{background:rgba(255,180,20,.1);}
+  .btn-buzzer{
+    background:repeating-linear-gradient(135deg,var(--danger),var(--danger) 10px,#c8341f 10px,#c8341f 20px);
+    color:#fff;font-size:16px;font-weight:700;padding:22px;border-radius:8px;letter-spacing:2px;
+    animation:pulse 2s infinite;text-shadow:0 1px 2px rgba(0,0,0,.5);
+  }
+  @keyframes pulse{0%,100%{box-shadow:0 0 18px var(--danger-glow)}50%{box-shadow:0 0 34px var(--danger-glow)}}
+
+  /* ── Split-flap tiles (signature element) ── */
+  .flap-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+  .flap-tile{
+    position:relative;width:42px;height:54px;background:#0d0b08;
+    border:1px solid var(--border);border-radius:4px;overflow:hidden;
+    box-shadow:inset 0 0 0 1px rgba(255,180,20,.06), 0 2px 6px rgba(0,0,0,.6);
+  }
+  .flap-tile::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.7);z-index:2;}
+  .flap-tile .flap-char{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:24px;color:var(--amber);text-shadow:0 0 8px var(--amber-glow);
+  }
+  .flap-tile.flip .flap-char{animation:flapFlip .45s ease;}
+  @keyframes flapFlip{0%{transform:rotateX(0)}45%{transform:rotateX(90deg);opacity:.25}55%{transform:rotateX(-90deg);opacity:.25}100%{transform:rotateX(0);opacity:1}}
+  .life-pip{width:36px;height:46px;}
+  .life-pip.empty .flap-char{color:var(--muted);text-shadow:none;}
+
   .players-list{display:flex;flex-direction:column;gap:8px;}
-  .player-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);}
-  .player-item.host{border-color:var(--accent);}
-  .player-item.selected-guesser{background:rgba(252,196,92,.1);border-color:var(--warning);}
-  .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-  .avatar-host{background:rgba(124,92,252,.2);}
-  .avatar-guesser{background:rgba(252,196,92,.2);}
-  .avatar-player{background:rgba(92,252,160,.2);}
-  .player-name{font-weight:500;flex:1;}
-  .player-badge{font-size:10px;letter-spacing:1px;text-transform:uppercase;font-family:'Space Mono',monospace;padding:3px 8px;border-radius:20px;}
-  .badge-host{background:rgba(124,92,252,.2);color:var(--accent2);}
-  .btn-select-guesser{background:transparent;border:1px solid var(--warning);color:var(--warning);width:auto;padding:6px 12px;font-size:12px;border-radius:8px;}
-  .btn-select-guesser.selected{background:var(--warning);color:#0d0d0f;}
-  .secret-rule-box{background:rgba(124,92,252,.1);border:1px solid var(--accent);border-radius:12px;padding:20px;text-align:center;}
-  .secret-rule-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:10px;font-family:'Space Mono',monospace;}
-  .secret-rule-text{font-size:18px;font-weight:600;color:var(--text);line-height:1.4;}
-  .lives-display{display:flex;gap:8px;justify-content:center;font-size:24px;}
+  .player-item{
+    display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--panel2);
+    border-radius:4px;border:1px solid var(--border);
+  }
+  .player-item.host{border-color:var(--amber-dim);}
+  .player-item.selected-guesser{background:rgba(255,70,48,.06);border-color:var(--danger);}
+  .avatar{
+    width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:15px;flex-shrink:0;background:var(--bg);border:1px solid var(--border);
+  }
+  .player-name{font-weight:500;flex:1;font-size:14px;}
+  .player-badge{
+    font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:20px;
+    border:1px solid var(--amber-dim);color:var(--amber-dim);
+  }
+  .btn-select-guesser{
+    background:transparent;border:1px solid var(--danger);color:var(--danger);width:auto;
+    padding:6px 12px;font-size:11px;border-radius:4px;letter-spacing:1px;
+  }
+  .btn-select-guesser.selected{background:var(--danger);color:#1a0805;}
+
+  .secret-rule-box{
+    background:var(--panel2);border:1px solid var(--amber-dim);border-radius:6px;padding:20px;text-align:center;
+  }
+  .secret-rule-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--amber-dim);margin-bottom:10px;}
+  .secret-rule-text{font-size:17px;font-weight:600;color:var(--amber);line-height:1.4;text-shadow:0 0 10px var(--amber-glow);}
+
   .chat-area{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;padding:4px;}
   .chat-area::-webkit-scrollbar{width:4px;}
   .chat-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
-  .msg{padding:10px 14px;border-radius:10px;font-size:14px;line-height:1.4;max-width:85%;}
-  .msg-question{background:rgba(252,196,92,.15);border:1px solid rgba(252,196,92,.3);align-self:flex-start;}
-  .msg-answer{background:rgba(92,252,160,.1);border:1px solid rgba(92,252,160,.2);align-self:flex-end;}
-  .msg-system{background:var(--surface2);color:var(--muted);font-size:12px;font-style:italic;text-align:center;align-self:center;max-width:100%;}
-  .msg-buzz{background:rgba(252,92,92,.15);border:1px solid rgba(252,92,92,.4);align-self:center;max-width:100%;text-align:center;}
-  .msg-sender{font-size:11px;font-family:'Space Mono',monospace;margin-bottom:4px;opacity:.6;}
+  .msg{padding:10px 14px;border-radius:4px;font-size:13px;line-height:1.5;max-width:85%;border:1px solid transparent;}
+  .msg-question{background:rgba(255,180,20,.06);border-color:rgba(255,180,20,.25);align-self:flex-start;}
+  .msg-answer{background:rgba(233,220,192,.05);border-color:var(--border);align-self:flex-end;}
+  .msg-system{background:transparent;color:var(--muted);font-size:11px;font-style:italic;text-align:center;align-self:center;max-width:100%;}
+  .msg-buzz{background:rgba(255,70,48,.08);border-color:rgba(255,70,48,.35);align-self:center;max-width:100%;text-align:center;}
+  .msg-sender{font-size:10px;margin-bottom:4px;opacity:.6;letter-spacing:.5px;}
   .chat-input-row{display:flex;gap:8px;}
   .chat-input-row input{flex:1;}
-  .chat-input-row button{width:auto;padding:14px 18px;flex-shrink:0;}
+  .chat-input-row button{width:auto;padding:13px 18px;flex-shrink:0;}
   .waiting-screen{text-align:center;padding:40px 20px;}
-  .waiting-icon{font-size:64px;margin-bottom:20px;animation:bob 3s ease-in-out infinite;}
-  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .waiting-icon{font-size:56px;margin-bottom:20px;animation:bob 3s ease-in-out infinite;filter:grayscale(.3) sepia(.4);}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
   .buzz-input-row{display:flex;flex-direction:column;gap:10px;}
-  .status-bar{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted);font-family:'Space Mono',monospace;}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;margin-right:6px;animation:blink 2s infinite;}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-  .count-badge{background:var(--accent);color:white;font-size:11px;padding:2px 8px;border-radius:20px;font-family:'Space Mono',monospace;}
-  .overlay{position:fixed;inset:0;background:rgba(13,13,15,.95);display:none;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:20px;padding:20px;}
+  .status-bar{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:6px;animation:blink 2s infinite;box-shadow:0 0 6px var(--amber-glow);}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .count-badge{background:transparent;border:1px solid var(--amber-dim);color:var(--amber-dim);font-size:10px;padding:2px 8px;border-radius:20px;letter-spacing:1px;}
+  .overlay{position:fixed;inset:0;background:rgba(10,9,8,.96);display:none;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:20px;padding:20px;}
   .overlay.active{display:flex;}
-  .overlay-icon{font-size:80px;}
-  .overlay-title{font-size:28px;font-weight:700;text-align:center;}
-  .overlay-sub{color:var(--muted);text-align:center;font-size:15px;}
+  .overlay-icon{font-size:72px;}
+  .overlay-title{font-size:26px;font-weight:700;text-align:center;color:var(--amber);text-shadow:0 0 20px var(--amber-glow);text-transform:uppercase;letter-spacing:1px;}
+  .overlay-sub{color:var(--muted);text-align:center;font-size:14px;}
   .divider{height:1px;background:var(--border);margin:4px 0;}
-  .hint{font-size:13px;color:var(--muted);text-align:center;}
+  .hint{font-size:12px;color:var(--muted);text-align:center;}
 
   /* VOCAL */
-  .voice-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);}
+  .voice-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--panel2);border-radius:4px;border:1px solid var(--border);}
   .voice-players{display:flex;gap:8px;flex-wrap:wrap;flex:1;}
-  .voice-avatar{position:relative;width:40px;height:40px;border-radius:50%;background:var(--surface);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;transition:border-color .2s;}
-  .voice-avatar.speaking{border-color:var(--success);box-shadow:0 0 10px rgba(92,252,160,.4);}
+  .voice-avatar{
+    position:relative;width:38px;height:38px;border-radius:50%;background:var(--bg);
+    border:2px solid var(--border);display:flex;align-items:center;justify-content:center;
+    font-size:15px;transition:border-color .2s,box-shadow .2s;
+  }
+  .voice-avatar.speaking{border-color:var(--amber);box-shadow:0 0 10px var(--amber-glow);}
   .voice-avatar.muted{opacity:.4;}
-  .voice-avatar.isolated{opacity:.3;filter:grayscale(1);}
-  .voice-label{font-size:9px;font-family:'Space Mono',monospace;text-align:center;margin-top:2px;color:var(--muted);max-width:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .voice-avatar.isolated{opacity:.3;filter:grayscale(1);border-color:var(--danger);}
+  .voice-label{font-size:9px;text-align:center;margin-top:2px;color:var(--muted);max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .voice-wrap{display:flex;flex-direction:column;align-items:center;}
-  .btn-mic{width:auto;padding:8px 14px;font-size:13px;border-radius:8px;background:rgba(92,252,160,.15);border:1px solid var(--success);color:var(--success);}
-  .btn-mic.muted{background:rgba(252,92,92,.15);border-color:var(--danger);color:var(--danger);}
-  .btn-mic.forced{background:rgba(107,107,128,.15);border-color:var(--muted);color:var(--muted);}
+  .btn-mic{
+    width:auto;padding:8px 14px;font-size:11px;border-radius:4px;background:transparent;
+    border:1px solid var(--amber-dim);color:var(--amber-dim);letter-spacing:1px;
+  }
+  .btn-mic.muted{border-color:var(--danger);color:var(--danger);}
+  .btn-mic.forced{border-color:var(--muted);color:var(--muted);}
 
   .buzz-validate{display:flex;gap:8px;margin-top:8px;}
-  .buzz-validate button{font-size:13px;padding:10px 16px;}
+  .buzz-validate button{font-size:12px;padding:11px 16px;}
 
-  .host-validate-card{background:rgba(252,92,92,.08);border:1px solid rgba(252,92,92,.3);}
+  .host-validate-card{background:rgba(255,70,48,.05);border:1px solid rgba(255,70,48,.3);}
   .host-validate-card .card-title{color:var(--danger);}
 
-  .vote-status{font-size:13px;color:var(--muted);text-align:center;margin-top:8px;font-family:'Space Mono',monospace;}
+  .vote-status{font-size:11px;color:var(--muted);text-align:center;margin-top:8px;letter-spacing:.5px;}
 </style>
 </head>
 <body>
@@ -108,24 +195,24 @@
 <!-- Accueil -->
 <div class="screen active" id="screen-home">
   <div style="text-align:center">
-    <div class="logo">HorizonCiné Games</div>
+    <div class="logo">HorizonCiné // Games</div>
     <h1>Trouve la Règle</h1>
   </div>
   <div class="card">
     <div class="card-title">Ton pseudo</div>
     <input type="text" id="input-name" placeholder="Entre ton prénom..." maxlength="20">
   </div>
-  <button class="btn-primary" onclick="createRoom()">Créer une room 🎯</button>
+  <button class="btn-primary" onclick="createRoom()">Créer une room ▸</button>
   <div style="display:flex;align-items:center;gap:10px">
     <div class="divider" style="flex:1"></div>
-    <span style="color:var(--muted);font-size:13px">ou</span>
+    <span style="color:var(--muted);font-size:12px">ou</span>
     <div class="divider" style="flex:1"></div>
   </div>
   <div class="card">
     <div class="card-title">Rejoindre avec un code</div>
     <div style="display:flex;gap:8px">
-      <input type="text" id="input-code" placeholder="XXXX" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-family:'Space Mono',monospace;font-size:18px;text-align:center">
-      <button class="btn-secondary" style="width:auto;padding:14px 18px" onclick="joinRoom()">→</button>
+      <input type="text" id="input-code" placeholder="XXXX" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-size:17px;text-align:center">
+      <button class="btn-secondary" style="width:auto;padding:13px 18px" onclick="joinRoom()">→</button>
     </div>
   </div>
 </div>
@@ -139,13 +226,13 @@
   <div class="card" style="padding:16px">
     <div class="voice-bar" style="padding:0;background:transparent;border:none;">
       <div class="voice-players" id="voice-players-lobby-host"></div>
-      <button class="btn-mic" id="btn-mic-lobby-host" onclick="toggleMic()">🎙️ Micro ON</button>
+      <button class="btn-mic" id="btn-mic-lobby-host" onclick="toggleMic()">MIC ON</button>
     </div>
   </div>
   <div class="card">
     <div class="card-title">Code de la room</div>
-    <div class="room-code" id="display-code">----</div>
-    <p class="hint" style="margin-top:10px">Partage ce code avec tes amis</p>
+    <div class="flap-row" id="display-code"></div>
+    <p class="hint" style="margin-top:14px">Partage ce code avec tes amis</p>
   </div>
   <div class="card">
     <div class="card-title">Joueurs connectés</div>
@@ -164,28 +251,28 @@
   <div class="card" style="padding:16px">
     <div class="voice-bar" style="padding:0;background:transparent;border:none;">
       <div class="voice-players" id="voice-players-lobby-player"></div>
-      <button class="btn-mic" id="btn-mic-lobby-player" onclick="toggleMic()">🎙️ Micro ON</button>
+      <button class="btn-mic" id="btn-mic-lobby-player" onclick="toggleMic()">MIC ON</button>
     </div>
   </div>
   <div class="card">
     <div class="card-title">Tu es dans la room</div>
-    <div class="room-code" id="display-code-player">----</div>
+    <div class="flap-row" id="display-code-player"></div>
   </div>
   <div class="card">
     <div class="card-title">Joueurs connectés</div>
     <div class="players-list" id="player-players-list"></div>
   </div>
   <div class="card" style="text-align:center;padding:30px">
-    <div style="font-size:40px;margin-bottom:12px">⏳</div>
+    <div style="font-size:36px;margin-bottom:12px">⏳</div>
     <div style="color:var(--muted)">En attente du lancement par l'hôte...</div>
   </div>
 </div>
 
 <!-- Hôte écrit la règle -->
 <div class="screen" id="screen-set-rule">
-  <div class="card" style="background:rgba(252,196,92,.05);border-color:rgba(252,196,92,.3)">
-    <div class="card-title" style="color:var(--warning)">⚠️ Les devineurs n'entendent plus rien</div>
-    <p style="font-size:14px;color:var(--muted)">Discute la règle à l'oral ou à l'écrit avec les autres, puis valide.</p>
+  <div class="card" style="background:rgba(255,70,48,.05);border-color:rgba(255,70,48,.3)">
+    <div class="card-title" style="color:var(--danger)">▲ Les devineurs n'entendent plus rien</div>
+    <p style="font-size:13px;color:var(--muted)">Discute la règle à l'oral ou à l'écrit avec les autres, puis valide.</p>
   </div>
   <div class="card">
     <div class="card-title">La règle secrète</div>
@@ -198,8 +285,8 @@
 <div class="screen" id="screen-rule-discuss">
   <div class="waiting-screen">
     <div class="waiting-icon">🗣️</div>
-    <h2 style="margin-bottom:12px">La règle se prépare</h2>
-    <p style="color:var(--muted);line-height:1.6">Discute-en à l'oral avec les autres, le devineur n'entend rien pour le moment.</p>
+    <h2 style="margin-bottom:12px;color:var(--amber);text-transform:uppercase;letter-spacing:1px;font-size:20px">La règle se prépare</h2>
+    <p style="color:var(--muted);line-height:1.6;font-size:13px">Discute-en à l'oral avec les autres, le devineur n'entend rien pour le moment.</p>
   </div>
 </div>
 
@@ -207,8 +294,8 @@
 <div class="screen" id="screen-guesser-wait">
   <div class="waiting-screen">
     <div class="waiting-icon">🙈</div>
-    <h2 style="margin-bottom:12px">Ferme les yeux et les oreilles !</h2>
-    <p style="color:var(--muted);line-height:1.6">Les autres établissent la règle. Ton micro et ton audio sont coupés le temps qu'ils discutent.</p>
+    <h2 style="margin-bottom:12px;color:var(--amber);text-transform:uppercase;letter-spacing:1px;font-size:20px">Yeux et oreilles fermés</h2>
+    <p style="color:var(--muted);line-height:1.6;font-size:13px">Les autres établissent la règle. Ton micro et ton audio sont coupés le temps qu'ils discutent.</p>
   </div>
 </div>
 
@@ -218,12 +305,12 @@
   <div class="card" style="padding:16px">
     <div class="voice-bar" style="padding:0;background:transparent;border:none;">
       <div class="voice-players" id="voice-players-guesser"></div>
-      <button class="btn-mic" id="btn-mic-guesser" onclick="toggleMic()">🎙️ Micro ON</button>
+      <button class="btn-mic" id="btn-mic-guesser" onclick="toggleMic()">MIC ON</button>
     </div>
   </div>
   <div class="card" style="text-align:center">
     <div class="card-title">Tes vies</div>
-    <div class="lives-display" id="lives-display">❤️ ❤️ ❤️</div>
+    <div class="flap-row" id="lives-display"></div>
   </div>
   <div class="card">
     <div class="card-title">Conversation écrite</div>
@@ -233,11 +320,11 @@
     <div class="card-title">Pose une question</div>
     <div class="chat-input-row">
       <input type="text" id="guesser-question" placeholder="Ta question...">
-      <button class="btn-secondary" style="background:rgba(252,196,92,.2);border-color:var(--warning);color:var(--warning)" onclick="sendQuestion()">→</button>
+      <button class="btn-secondary" style="border-color:var(--amber-dim);color:var(--amber-dim)" onclick="sendQuestion()">→</button>
     </div>
   </div>
   <div class="buzz-input-row">
-    <button class="btn-buzzer" id="btn-buzzer-main" onclick="pressBuzzer()">🔴 BUZZER — dire la règle à l'oral</button>
+    <button class="btn-buzzer" id="btn-buzzer-main" onclick="pressBuzzer()">● BUZZER — dire la règle à l'oral</button>
     <p class="hint">Buzze puis annonce la règle à voix haute via le micro. Les autres voteront ensuite.</p>
   </div>
 </div>
@@ -248,7 +335,7 @@
   <div class="card" style="padding:16px">
     <div class="voice-bar" style="padding:0;background:transparent;border:none;">
       <div class="voice-players" id="voice-players-main"></div>
-      <button class="btn-mic" id="btn-mic-main" onclick="toggleMic()">🎙️ Micro ON</button>
+      <button class="btn-mic" id="btn-mic-main" onclick="toggleMic()">MIC ON</button>
     </div>
   </div>
   <div class="secret-rule-box">
@@ -261,7 +348,7 @@
   </div>
   <!-- Vote après buzz oral (tous les non-devineurs) -->
   <div class="card host-validate-card" id="vote-card" style="display:none">
-    <div class="card-title">🔴 <span id="vote-buzzer-name"></span> vient d'annoncer la règle à l'oral</div>
+    <div class="card-title">● <span id="vote-buzzer-name"></span> vient d'annoncer la règle à l'oral</div>
     <p class="hint" style="margin-bottom:12px">Est-ce la bonne règle ?</p>
     <div class="buzz-validate">
       <button class="btn-success" onclick="castVote(true)">✓ Oui, c'est ça</button>
@@ -273,12 +360,12 @@
     <div class="card-title">Répondre (respecte la règle !)</div>
     <div class="chat-input-row">
       <input type="text" id="player-answer" placeholder="Ta réponse...">
-      <button class="btn-success" style="width:auto;padding:14px 18px" onclick="sendAnswer()">→</button>
+      <button class="btn-success" style="width:auto;padding:13px 18px" onclick="sendAnswer()">→</button>
     </div>
   </div>
   <div class="card" style="text-align:center">
     <div class="card-title">Vies du devineur</div>
-    <div class="lives-display" id="lives-display-players">❤️ ❤️ ❤️</div>
+    <div class="flap-row" id="lives-display-players"></div>
   </div>
 </div>
 
@@ -326,7 +413,6 @@ async function initMic() {
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     localStream.getAudioTracks().forEach(t => t.enabled = !(micMuted || forcedMuted));
-    // Connecte à tous les pairs existants
     Object.keys(players).forEach(id => { if (id !== myId) createOffer(id); });
     updateVoiceUI();
   } catch(e) {
@@ -335,7 +421,7 @@ async function initMic() {
 }
 
 function toggleMic() {
-  if (forcedMuted) return; // pas de contrôle manuel pendant l'isolation forcée
+  if (forcedMuted) return;
   if (!localStream) { initMic(); return; }
   setMicMuted(!micMuted);
 }
@@ -410,9 +496,8 @@ function createPC(peerId) {
       document.body.appendChild(audio);
     }
     audio.srcObject = stream;
-    audio.muted = forcedMuted; // respecte l'isolation en cours si le devineur reçoit un flux
+    audio.muted = forcedMuted;
 
-    // Détection de parole via Web Audio
     try {
       const ctx = new AudioContext();
       const src = ctx.createMediaStreamSource(stream);
@@ -455,7 +540,7 @@ function updateVoiceUI() {
         + (isSelf && (micMuted || forcedMuted) ? ' muted' : '')
         + (isolatedGuesser ? ' isolated' : '');
       av.dataset.id = id;
-      av.textContent = p.isHost ? '👑' : (guessers.has(id) ? '🕵️' : '🎮');
+      av.textContent = p.isHost ? '★' : (guessers.has(id) ? '◉' : '●');
       const lbl = document.createElement('div');
       lbl.className = 'voice-label';
       lbl.textContent = p.name.split(' ')[0] + (isolatedGuesser ? ' (isolé)' : '');
@@ -465,20 +550,18 @@ function updateVoiceUI() {
     });
   });
 
-  // Boutons micro : reflète l'état forcé / manuel
   document.querySelectorAll('.btn-mic').forEach(btn => {
     if (forcedMuted) {
-      btn.textContent = '🔇 Micro coupé (phase règle)';
+      btn.textContent = 'MIC COUPÉ';
       btn.classList.add('forced');
       btn.classList.remove('muted');
     } else {
       btn.classList.remove('forced');
-      btn.textContent = micMuted ? '🔇 Micro OFF' : '🎙️ Micro ON';
+      btn.textContent = micMuted ? 'MIC OFF' : 'MIC ON';
       btn.classList.toggle('muted', micMuted);
     }
   });
 
-  // Détection parole pour soi-même
   if (localStream && !micMuted && !forcedMuted) {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -498,6 +581,42 @@ function updateVoiceUI() {
   }
 }
 
+// ── SPLIT-FLAP RENDERING ────────────────────────────────────────
+function renderFlapString(id, str) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const prev = el.dataset.value || '';
+  el.innerHTML = '';
+  str.split('').forEach((ch, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'flap-tile' + (prev[i] !== ch ? ' flip' : '');
+    const span = document.createElement('div');
+    span.className = 'flap-char';
+    span.textContent = ch;
+    tile.appendChild(span);
+    el.appendChild(tile);
+  });
+  el.dataset.value = str;
+}
+
+function renderLives(id, count) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const prev = el.dataset.value !== undefined ? parseInt(el.dataset.value) : -1;
+  el.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const filled = i < count;
+    const tile = document.createElement('div');
+    tile.className = 'flap-tile life-pip' + (filled ? '' : ' empty') + (prev !== count ? ' flip' : '');
+    const span = document.createElement('div');
+    span.className = 'flap-char';
+    span.textContent = filled ? '♥' : '·';
+    tile.appendChild(span);
+    el.appendChild(tile);
+  }
+  el.dataset.value = count;
+}
+
 // ── SUPABASE ───────────────────────────────────────────────────
 async function connect() {
   channel = db.channel(`room-${roomCode}`, {
@@ -512,7 +631,6 @@ async function connect() {
     }));
     updatePlayerLists();
     updateVoiceUI();
-    // Si quelqu'un rejoint et qu'on a un micro, on lui envoie une offre
     if (localStream) {
       Object.keys(players).forEach(id => { if (id !== myId && !peers[id]) createOffer(id); });
     }
@@ -526,7 +644,6 @@ async function connect() {
   await channel.subscribe(async status => {
     if (status === 'SUBSCRIBED') {
       await channel.track({ id: myId, name: myName, host: isHost });
-      // Vocal actif dès qu'on rejoint le salon
       initMic();
     }
   });
@@ -558,7 +675,7 @@ function renderList(cid) {
   Object.entries(players).forEach(([id, p]) => {
     const div = document.createElement('div');
     div.className = 'player-item' + (p.isHost ? ' host' : '');
-    div.innerHTML = `<div class="avatar ${p.isHost?'avatar-host':'avatar-player'}">${p.isHost?'👑':'🎮'}</div><div class="player-name">${p.name}</div>${p.isHost?'<span class="player-badge badge-host">Hôte</span>':''}`;
+    div.innerHTML = `<div class="avatar">${p.isHost?'★':'●'}</div><div class="player-name">${p.name}</div>${p.isHost?'<span class="player-badge">Hôte</span>':''}`;
     el.appendChild(div);
   });
 }
@@ -572,7 +689,7 @@ function renderGuesserSelect() {
     const sel = guessers.has(id);
     const div = document.createElement('div');
     div.className = 'player-item' + (sel ? ' selected-guesser' : '');
-    div.innerHTML = `<div class="avatar ${sel?'avatar-guesser':'avatar-player'}">${sel?'🕵️':'🎮'}</div><div class="player-name">${p.name}</div><button class="btn-select-guesser ${sel?'selected':''}" onclick="toggleGuesser('${id}')">${sel?'✓ Devineur':'Désigner'}</button>`;
+    div.innerHTML = `<div class="avatar">${sel?'◉':'●'}</div><div class="player-name">${p.name}</div><button class="btn-select-guesser ${sel?'selected':''}" onclick="toggleGuesser('${id}')">${sel?'✓ Devineur':'Désigner'}</button>`;
     el.appendChild(div);
   });
 }
@@ -589,7 +706,7 @@ async function createRoom() {
   if (!myName) { alert('Entre ton prénom !'); return; }
   isHost = true;
   roomCode = Math.random().toString(36).substr(2,4).toUpperCase();
-  document.getElementById('display-code').textContent = roomCode;
+  renderFlapString('display-code', roomCode);
   showScreen('screen-lobby-host');
   await connect();
 }
@@ -600,7 +717,7 @@ async function joinRoom() {
   if (!myName) { alert('Entre ton prénom !'); return; }
   if (code.length !== 4) { alert('Code invalide !'); return; }
   roomCode = code;
-  document.getElementById('display-code-player').textContent = roomCode;
+  renderFlapString('display-code-player', roomCode);
   showScreen('screen-lobby-player');
   await connect();
 }
@@ -631,15 +748,13 @@ async function sendAnswer() {
   await sendGame({ type: 'msg', msg: { kind: 'answer', sender: myName, text } });
 }
 
-// Le devineur buzze : il annonce la règle À L'ORAL via le micro, pas de texte.
 async function pressBuzzer() {
   const btn = document.getElementById('btn-buzzer-main');
   btn.disabled = true;
-  btn.textContent = '⏳ En attente du vote des autres...';
+  btn.textContent = '⏳ EN ATTENTE DU VOTE DES AUTRES...';
   await sendGame({ type: 'buzz-alert', id: myId, name: myName });
 }
 
-// Chaque non-devineur vote une seule fois par buzz
 async function castVote(value) {
   if (hasVoted) return;
   hasVoted = true;
@@ -660,7 +775,7 @@ function handleGame(payload) {
 
     if (isGuesser) {
       showScreen('screen-guesser-wait');
-      applyVoiceIsolation(true); // le devineur ne parle plus et n'entend plus rien
+      applyVoiceIsolation(true);
     } else if (isHost) {
       showScreen('screen-set-rule');
     } else {
@@ -671,23 +786,25 @@ function handleGame(payload) {
 
   if (payload.type === 'rule') {
     gameRule = payload.rule;
-    lives = 3; updateLivesDisplay(); clearChats();
+    lives = 3; clearChats();
+    renderLives('lives-display', lives);
+    renderLives('lives-display-players', lives);
     phase = 'playing';
     voteTally = {}; hasVoted = false; currentBuzz = null;
     document.getElementById('vote-card').style.display = 'none';
 
     if (isGuesser) {
       showScreen('screen-guesser-play');
-      applyVoiceIsolation(false); // le devineur retrouve le micro et l'écoute
+      applyVoiceIsolation(false);
       const btn = document.getElementById('btn-buzzer-main');
       btn.disabled = false;
-      btn.textContent = "🔴 BUZZER — dire la règle à l'oral";
+      btn.textContent = "● BUZZER — dire la règle à l'oral";
     } else {
       document.getElementById('rule-display-players').textContent = gameRule;
       showScreen('screen-players-play');
     }
     updateVoiceUI();
-    addMsg({ kind: 'system', text: '🎮 La partie commence !' });
+    addMsg({ kind: 'system', text: '▶ La partie commence !' });
   }
 
   if (payload.type === 'msg') addMsg(payload.msg);
@@ -695,7 +812,7 @@ function handleGame(payload) {
   if (payload.type === 'buzz-alert') {
     currentBuzz = { id: payload.id, name: payload.name };
     voteTally = {}; hasVoted = false;
-    addMsg({ kind: 'buzz', sender: payload.name, text: "annonce la règle à l'oral 🎙️" });
+    addMsg({ kind: 'buzz', sender: payload.name, text: "annonce la règle à l'oral" });
     if (!isGuesser) {
       document.getElementById('vote-buzzer-name').textContent = payload.name;
       document.getElementById('vote-status').textContent = '';
@@ -712,7 +829,6 @@ function handleGame(payload) {
       document.getElementById('vote-status').textContent = `${received}/${total} vote(s) reçu(s)`;
     }
     if (received >= total && total > 0) {
-      // Un seul client (l'hôte) tranche pour éviter les verdicts en double
       if (isHost) {
         const yes = Object.values(voteTally).filter(v => v).length;
         const no = received - yes;
@@ -725,17 +841,18 @@ function handleGame(payload) {
   if (payload.type === 'verdict') {
     document.getElementById('vote-card').style.display = 'none';
     if (payload.correct) {
-      showResult(true, `${payload.guesserName} a trouvé ! 🎉`, `La règle était : "${gameRule}"`);
+      showResult(true, `${payload.guesserName} a trouvé !`, `La règle était : "${gameRule}"`);
     } else {
       lives = Math.max(0, lives - 1);
-      updateLivesDisplay();
-      addMsg({ kind: 'system', text: `❌ Mauvaise règle annoncée par ${payload.guesserName} ! ${lives} vie${lives!==1?'s':''} restante${lives!==1?'s':''}` });
+      renderLives('lives-display', lives);
+      renderLives('lives-display-players', lives);
+      addMsg({ kind: 'system', text: `✗ Mauvaise règle annoncée par ${payload.guesserName} ! ${lives} vie${lives!==1?'s':''} restante${lives!==1?'s':''}` });
       if (isGuesser) {
         const btn = document.getElementById('btn-buzzer-main');
         btn.disabled = false;
-        btn.textContent = "🔴 BUZZER — dire la règle à l'oral";
+        btn.textContent = "● BUZZER — dire la règle à l'oral";
       }
-      if (lives === 0) showResult(false, 'Perdu ! 💀', `La règle était : "${gameRule}"`);
+      if (lives === 0) showResult(false, 'Perdu', `La règle était : "${gameRule}"`);
     }
   }
 }
@@ -751,21 +868,16 @@ function addMsg(msg) {
     const c = document.getElementById(id); if (!c) return;
     const div = document.createElement('div');
     if (msg.kind === 'system') { div.className='msg msg-system'; div.textContent=msg.text; }
-    else if (msg.kind === 'question') { div.className='msg msg-question'; div.innerHTML=`<div class="msg-sender">🕵️ ${msg.sender}</div>${msg.text}`; }
-    else if (msg.kind === 'buzz') { div.className='msg msg-buzz'; div.innerHTML=`<div class="msg-sender">🔴 ${msg.sender}</div><strong>${msg.text}</strong>`; }
-    else { div.className='msg msg-answer'; div.innerHTML=`<div class="msg-sender">💬 ${msg.sender}</div>${msg.text}`; }
+    else if (msg.kind === 'question') { div.className='msg msg-question'; div.innerHTML=`<div class="msg-sender">◉ ${msg.sender}</div>${msg.text}`; }
+    else if (msg.kind === 'buzz') { div.className='msg msg-buzz'; div.innerHTML=`<div class="msg-sender">● ${msg.sender}</div><strong>${msg.text}</strong>`; }
+    else { div.className='msg msg-answer'; div.innerHTML=`<div class="msg-sender">${msg.sender}</div>${msg.text}`; }
     c.appendChild(div);
     c.scrollTop = c.scrollHeight;
   });
 }
 
-function updateLivesDisplay() {
-  const h = '❤️'.repeat(lives)+'🖤'.repeat(3-lives);
-  document.querySelectorAll('#lives-display,#lives-display-players').forEach(el=>el.textContent=h);
-}
-
 function showResult(win, title, sub) {
-  document.getElementById('overlay-icon').textContent = win?'🎉':'💀';
+  document.getElementById('overlay-icon').textContent = win?'🏆':'✖';
   document.getElementById('overlay-title').textContent = title;
   document.getElementById('overlay-sub').textContent = sub;
   document.getElementById('overlay-result').classList.add('active');
@@ -782,6 +894,9 @@ document.addEventListener('keydown', e => {
   if (a==='screen-players-play' && document.activeElement.id==='player-answer') sendAnswer();
 });
 
+// Vies affichées dès le départ (3/3) avant le lancement de la partie
+renderLives('lives-display', 3);
+renderLives('lives-display-players', 3);
 </script>
 </body>
 </html>
