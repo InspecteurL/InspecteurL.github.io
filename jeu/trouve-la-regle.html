@@ -33,8 +33,8 @@ body{
   min-height:100vh;
   display:flex;flex-direction:column;align-items:center;
   letter-spacing:.02em;
+  padding-top:calc(var(--nav-height) + 32px);
 }
-
 /* ── Navigation ── */
 nav{
   position:fixed;top:0;left:0;
@@ -62,11 +62,7 @@ nav a:hover{color:var(--paper);}
 nav a.active{color:var(--amber);}
 
 /* ── Contenu principal ── */
-main, .page-content{
-  width:100%;
-  display:flex;flex-direction:column;align-items:center;
-  padding:calc(var(--nav-height) + 32px) 20px 40px;
-}
+
 
 .logo{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--amber-dim);margin-bottom:8px;text-align:center;}
 h1{
