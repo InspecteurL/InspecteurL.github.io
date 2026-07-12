@@ -26,6 +26,7 @@
   input::placeholder,textarea::placeholder{color:var(--muted);}
   button{width:100%;padding:14px 20px;border:none;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;}
   button:active{transform:scale(.98);}
+  button:disabled{opacity:.4;cursor:not-allowed;}
   .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;}
   .btn-primary:hover{opacity:.9;}
   .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
@@ -86,17 +87,20 @@
   .voice-avatar{position:relative;width:40px;height:40px;border-radius:50%;background:var(--surface);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;transition:border-color .2s;}
   .voice-avatar.speaking{border-color:var(--success);box-shadow:0 0 10px rgba(92,252,160,.4);}
   .voice-avatar.muted{opacity:.4;}
+  .voice-avatar.isolated{opacity:.3;filter:grayscale(1);}
   .voice-label{font-size:9px;font-family:'Space Mono',monospace;text-align:center;margin-top:2px;color:var(--muted);max-width:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .voice-wrap{display:flex;flex-direction:column;align-items:center;}
   .btn-mic{width:auto;padding:8px 14px;font-size:13px;border-radius:8px;background:rgba(92,252,160,.15);border:1px solid var(--success);color:var(--success);}
   .btn-mic.muted{background:rgba(252,92,92,.15);border-color:var(--danger);color:var(--danger);}
+  .btn-mic.forced{background:rgba(107,107,128,.15);border-color:var(--muted);color:var(--muted);}
 
-  /* validation buzzer */
   .buzz-validate{display:flex;gap:8px;margin-top:8px;}
   .buzz-validate button{font-size:13px;padding:10px 16px;}
 
   .host-validate-card{background:rgba(252,92,92,.08);border:1px solid rgba(252,92,92,.3);}
   .host-validate-card .card-title{color:var(--danger);}
+
+  .vote-status{font-size:13px;color:var(--muted);text-align:center;margin-top:8px;font-family:'Space Mono',monospace;}
 </style>
 </head>
 <body>
@@ -132,6 +136,12 @@
     <span><span class="dot"></span>En attente</span>
     <span class="count-badge" id="player-count">1 joueur</span>
   </div>
+  <div class="card" style="padding:16px">
+    <div class="voice-bar" style="padding:0;background:transparent;border:none;">
+      <div class="voice-players" id="voice-players-lobby-host"></div>
+      <button class="btn-mic" id="btn-mic-lobby-host" onclick="toggleMic()">🎙️ Micro ON</button>
+    </div>
+  </div>
   <div class="card">
     <div class="card-title">Code de la room</div>
     <div class="room-code" id="display-code">----</div>
@@ -151,6 +161,12 @@
 
 <!-- Lobby Joueur -->
 <div class="screen" id="screen-lobby-player">
+  <div class="card" style="padding:16px">
+    <div class="voice-bar" style="padding:0;background:transparent;border:none;">
+      <div class="voice-players" id="voice-players-lobby-player"></div>
+      <button class="btn-mic" id="btn-mic-lobby-player" onclick="toggleMic()">🎙️ Micro ON</button>
+    </div>
+  </div>
   <div class="card">
     <div class="card-title">Tu es dans la room</div>
     <div class="room-code" id="display-code-player">----</div>
@@ -168,8 +184,8 @@
 <!-- Hôte écrit la règle -->
 <div class="screen" id="screen-set-rule">
   <div class="card" style="background:rgba(252,196,92,.05);border-color:rgba(252,196,92,.3)">
-    <div class="card-title" style="color:var(--warning)">⚠️ Les devineurs sont sortis</div>
-    <p style="font-size:14px;color:var(--muted)">Établis la règle secrète avec les autres.</p>
+    <div class="card-title" style="color:var(--warning)">⚠️ Les devineurs n'entendent plus rien</div>
+    <p style="font-size:14px;color:var(--muted)">Discute la règle à l'oral ou à l'écrit avec les autres, puis valide.</p>
   </div>
   <div class="card">
     <div class="card-title">La règle secrète</div>
@@ -178,12 +194,21 @@
   <button class="btn-primary" onclick="submitRule()">Valider la règle ✓</button>
 </div>
 
+<!-- Joueur (non hôte, non devineur) pendant l'établissement de la règle -->
+<div class="screen" id="screen-rule-discuss">
+  <div class="waiting-screen">
+    <div class="waiting-icon">🗣️</div>
+    <h2 style="margin-bottom:12px">La règle se prépare</h2>
+    <p style="color:var(--muted);line-height:1.6">Discute-en à l'oral avec les autres, le devineur n'entend rien pour le moment.</p>
+  </div>
+</div>
+
 <!-- Devineur en attente -->
 <div class="screen" id="screen-guesser-wait">
   <div class="waiting-screen">
     <div class="waiting-icon">🙈</div>
-    <h2 style="margin-bottom:12px">Ferme les yeux !</h2>
-    <p style="color:var(--muted);line-height:1.6">Les autres établissent la règle...</p>
+    <h2 style="margin-bottom:12px">Ferme les yeux et les oreilles !</h2>
+    <p style="color:var(--muted);line-height:1.6">Les autres établissent la règle. Ton micro et ton audio sont coupés le temps qu'ils discutent.</p>
   </div>
 </div>
 
@@ -212,14 +237,8 @@
     </div>
   </div>
   <div class="buzz-input-row">
-    <button class="btn-buzzer" onclick="showBuzzInput()">🔴 BUZZER</button>
-    <div id="buzz-input-area" style="display:none;flex-direction:column;gap:8px">
-      <input type="text" id="buzz-answer" placeholder="Quelle est la règle ?">
-      <div style="display:flex;gap:8px">
-        <button class="btn-danger" onclick="submitGuess()">Confirmer</button>
-        <button class="btn-secondary" style="width:auto;padding:14px 18px" onclick="hideBuzzInput()">✕</button>
-      </div>
-    </div>
+    <button class="btn-buzzer" id="btn-buzzer-main" onclick="pressBuzzer()">🔴 BUZZER — dire la règle à l'oral</button>
+    <p class="hint">Buzze puis annonce la règle à voix haute via le micro. Les autres voteront ensuite.</p>
   </div>
 </div>
 
@@ -240,14 +259,15 @@
     <div class="card-title">Conversation écrite</div>
     <div class="chat-area" id="players-chat"></div>
   </div>
-  <!-- Validation buzzer (hôte seulement) -->
-  <div class="card host-validate-card" id="host-validate-card" style="display:none">
-    <div class="card-title">🔴 Le devineur a buzzé !</div>
-    <div id="buzz-guess-text" style="font-size:16px;font-weight:600;margin-bottom:12px;text-align:center;"></div>
+  <!-- Vote après buzz oral (tous les non-devineurs) -->
+  <div class="card host-validate-card" id="vote-card" style="display:none">
+    <div class="card-title">🔴 <span id="vote-buzzer-name"></span> vient d'annoncer la règle à l'oral</div>
+    <p class="hint" style="margin-bottom:12px">Est-ce la bonne règle ?</p>
     <div class="buzz-validate">
-      <button class="btn-success" onclick="validateGuess(true)">✓ Correct !</button>
-      <button class="btn-danger" onclick="validateGuess(false)">✗ Faux</button>
+      <button class="btn-success" onclick="castVote(true)">✓ Oui, c'est ça</button>
+      <button class="btn-danger" onclick="castVote(false)">✗ Non, faux</button>
     </div>
+    <div class="vote-status" id="vote-status"></div>
   </div>
   <div class="card">
     <div class="card-title">Répondre (respecte la règle !)</div>
@@ -285,38 +305,52 @@ let channel = null;
 let players = {};
 let guessers = new Set();
 let lives = 3, gameRule = '';
-let pendingGuess = null; // { guesserId, answer }
+
+// phase: 'lobby' | 'setting-rule' | 'playing'
+let phase = 'lobby';
+
+// vote oral
+let voteTally = {};       // id -> true/false
+let hasVoted = false;
+let currentBuzz = null;   // { id, name }
 
 // ── WEBRTC ─────────────────────────────────────────────────────
 const ICE_SERVERS = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 let localStream = null;
 let peers = {}; // peerId -> RTCPeerConnection
-let micMuted = false;
-let speakingTimers = {};
+let micMuted = false;     // mute manuel demandé par l'utilisateur
+let forcedMuted = false;  // mute forcé par la phase de jeu (devineur pendant l'écriture de la règle)
 
 async function initMic() {
+  if (localStream) return; // déjà actif
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    setMicMuted(false);
+    localStream.getAudioTracks().forEach(t => t.enabled = !(micMuted || forcedMuted));
     // Connecte à tous les pairs existants
     Object.keys(players).forEach(id => { if (id !== myId) createOffer(id); });
+    updateVoiceUI();
   } catch(e) {
-    alert('Impossible d\'accéder au micro : ' + e.message);
+    console.warn('Micro indisponible : ' + e.message);
   }
 }
 
 function toggleMic() {
+  if (forcedMuted) return; // pas de contrôle manuel pendant l'isolation forcée
   if (!localStream) { initMic(); return; }
   setMicMuted(!micMuted);
 }
 
 function setMicMuted(muted) {
   micMuted = muted;
-  if (localStream) localStream.getAudioTracks().forEach(t => t.enabled = !muted);
-  document.querySelectorAll('.btn-mic').forEach(btn => {
-    btn.textContent = muted ? '🔇 Micro OFF' : '🎙️ Micro ON';
-    btn.classList.toggle('muted', muted);
-  });
+  if (localStream) localStream.getAudioTracks().forEach(t => t.enabled = !(micMuted || forcedMuted));
+  updateVoiceUI();
+}
+
+// Isole (ou restaure) le devineur : coupe le micro ET l'écoute des autres.
+function applyVoiceIsolation(isolate) {
+  forcedMuted = isolate;
+  if (localStream) localStream.getAudioTracks().forEach(t => t.enabled = !(micMuted || forcedMuted));
+  document.querySelectorAll('audio[id^="audio-"]').forEach(a => { a.muted = isolate; });
   updateVoiceUI();
 }
 
@@ -376,6 +410,7 @@ function createPC(peerId) {
       document.body.appendChild(audio);
     }
     audio.srcObject = stream;
+    audio.muted = forcedMuted; // respecte l'isolation en cours si le devineur reçoit un flux
 
     // Détection de parole via Web Audio
     try {
@@ -388,9 +423,8 @@ function createPC(peerId) {
       const check = () => {
         analyser.getByteFrequencyData(buf);
         const avg = buf.reduce((a,b)=>a+b,0)/buf.length;
-        const el = document.querySelector(`.voice-avatar[data-id="${peerId}"]`);
-        if (el) el.classList.toggle('speaking', avg > 10);
-        speakingTimers[peerId] = requestAnimationFrame(check);
+        document.querySelectorAll(`.voice-avatar[data-id="${peerId}"]`).forEach(el => el.classList.toggle('speaking', avg > 10));
+        requestAnimationFrame(check);
       };
       check();
     } catch(e) {}
@@ -407,29 +441,45 @@ function createPC(peerId) {
 }
 
 function updateVoiceUI() {
-  ['voice-players-guesser','voice-players-main'].forEach(cid => {
+  ['voice-players-lobby-host','voice-players-lobby-player','voice-players-guesser','voice-players-main'].forEach(cid => {
     const el = document.getElementById(cid);
     if (!el) return;
     el.innerHTML = '';
     Object.entries(players).forEach(([id, p]) => {
       const isSelf = id === myId;
+      const isolatedGuesser = phase === 'setting-rule' && guessers.has(id);
       const wrap = document.createElement('div');
       wrap.className = 'voice-wrap';
       const av = document.createElement('div');
-      av.className = 'voice-avatar' + (isSelf && micMuted ? ' muted' : '');
+      av.className = 'voice-avatar'
+        + (isSelf && (micMuted || forcedMuted) ? ' muted' : '')
+        + (isolatedGuesser ? ' isolated' : '');
       av.dataset.id = id;
-      av.textContent = p.isHost ? '👑' : '🎮';
+      av.textContent = p.isHost ? '👑' : (guessers.has(id) ? '🕵️' : '🎮');
       const lbl = document.createElement('div');
       lbl.className = 'voice-label';
-      lbl.textContent = p.name.split(' ')[0];
+      lbl.textContent = p.name.split(' ')[0] + (isolatedGuesser ? ' (isolé)' : '');
       wrap.appendChild(av);
       wrap.appendChild(lbl);
       el.appendChild(wrap);
     });
   });
 
+  // Boutons micro : reflète l'état forcé / manuel
+  document.querySelectorAll('.btn-mic').forEach(btn => {
+    if (forcedMuted) {
+      btn.textContent = '🔇 Micro coupé (phase règle)';
+      btn.classList.add('forced');
+      btn.classList.remove('muted');
+    } else {
+      btn.classList.remove('forced');
+      btn.textContent = micMuted ? '🔇 Micro OFF' : '🎙️ Micro ON';
+      btn.classList.toggle('muted', micMuted);
+    }
+  });
+
   // Détection parole pour soi-même
-  if (localStream && !micMuted) {
+  if (localStream && !micMuted && !forcedMuted) {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const src = ctx.createMediaStreamSource(localStream);
@@ -476,6 +526,8 @@ async function connect() {
   await channel.subscribe(async status => {
     if (status === 'SUBSCRIBED') {
       await channel.track({ id: myId, name: myName, host: isHost });
+      // Vocal actif dès qu'on rejoint le salon
+      initMic();
     }
   });
 }
@@ -563,8 +615,6 @@ async function submitRule() {
   if (!rule) { alert('Écris la règle !'); return; }
   gameRule = rule;
   await sendGame({ type: 'rule', rule });
-  document.getElementById('rule-display-players').textContent = rule;
-  showScreen('screen-players-play');
 }
 
 async function sendQuestion() {
@@ -581,58 +631,110 @@ async function sendAnswer() {
   await sendGame({ type: 'msg', msg: { kind: 'answer', sender: myName, text } });
 }
 
-async function submitGuess() {
-  const answer = document.getElementById('buzz-answer').value.trim();
-  if (!answer) return;
-  hideBuzzInput();
-  document.getElementById('buzz-answer').value = '';
-  await sendGame({ type: 'guess', id: myId, name: myName, answer });
+// Le devineur buzze : il annonce la règle À L'ORAL via le micro, pas de texte.
+async function pressBuzzer() {
+  const btn = document.getElementById('btn-buzzer-main');
+  btn.disabled = true;
+  btn.textContent = '⏳ En attente du vote des autres...';
+  await sendGame({ type: 'buzz-alert', id: myId, name: myName });
 }
 
-// Hôte valide ou invalide
-async function validateGuess(correct) {
-  document.getElementById('host-validate-card').style.display = 'none';
-  if (!pendingGuess) return;
-  await sendGame({ type: 'verdict', correct, answer: pendingGuess.answer, guesserId: pendingGuess.id, guesserName: pendingGuess.name });
-  pendingGuess = null;
+// Chaque non-devineur vote une seule fois par buzz
+async function castVote(value) {
+  if (hasVoted) return;
+  hasVoted = true;
+  document.querySelectorAll('#vote-card .buzz-validate button').forEach(b => b.disabled = true);
+  document.getElementById('vote-status').textContent = 'Vote envoyé, en attente des autres...';
+  await sendGame({ type: 'vote', id: myId, value });
+}
+
+function nonGuesserCount() {
+  return Object.keys(players).filter(id => !guessers.has(id)).length;
 }
 
 function handleGame(payload) {
   if (payload.type === 'start') {
     guessers = new Set(payload.guessers);
     isGuesser = guessers.has(myId);
-    if (isHost) showScreen('screen-set-rule');
-    else if (isGuesser) showScreen('screen-guesser-wait');
+    phase = 'setting-rule';
+
+    if (isGuesser) {
+      showScreen('screen-guesser-wait');
+      applyVoiceIsolation(true); // le devineur ne parle plus et n'entend plus rien
+    } else if (isHost) {
+      showScreen('screen-set-rule');
+    } else {
+      showScreen('screen-rule-discuss');
+    }
+    updateVoiceUI();
   }
 
   if (payload.type === 'rule') {
     gameRule = payload.rule;
     lives = 3; updateLivesDisplay(); clearChats();
-    if (isGuesser) showScreen('screen-guesser-play');
-    else if (!isHost) { document.getElementById('rule-display-players').textContent = gameRule; showScreen('screen-players-play'); }
+    phase = 'playing';
+    voteTally = {}; hasVoted = false; currentBuzz = null;
+    document.getElementById('vote-card').style.display = 'none';
+
+    if (isGuesser) {
+      showScreen('screen-guesser-play');
+      applyVoiceIsolation(false); // le devineur retrouve le micro et l'écoute
+      const btn = document.getElementById('btn-buzzer-main');
+      btn.disabled = false;
+      btn.textContent = "🔴 BUZZER — dire la règle à l'oral";
+    } else {
+      document.getElementById('rule-display-players').textContent = gameRule;
+      showScreen('screen-players-play');
+    }
+    updateVoiceUI();
     addMsg({ kind: 'system', text: '🎮 La partie commence !' });
   }
 
   if (payload.type === 'msg') addMsg(payload.msg);
 
-  if (payload.type === 'guess') {
-    // Tout le monde voit le buzz dans le chat
-    addMsg({ kind: 'buzz', sender: payload.name, text: payload.answer });
-    // L'hôte voit la carte de validation
-    if (isHost) {
-      pendingGuess = { id: payload.id, name: payload.name, answer: payload.answer };
-      document.getElementById('buzz-guess-text').textContent = `"${payload.answer}"`;
-      document.getElementById('host-validate-card').style.display = 'block';
+  if (payload.type === 'buzz-alert') {
+    currentBuzz = { id: payload.id, name: payload.name };
+    voteTally = {}; hasVoted = false;
+    addMsg({ kind: 'buzz', sender: payload.name, text: "annonce la règle à l'oral 🎙️" });
+    if (!isGuesser) {
+      document.getElementById('vote-buzzer-name').textContent = payload.name;
+      document.getElementById('vote-status').textContent = '';
+      document.querySelectorAll('#vote-card .buzz-validate button').forEach(b => b.disabled = false);
+      document.getElementById('vote-card').style.display = 'block';
+    }
+  }
+
+  if (payload.type === 'vote') {
+    voteTally[payload.id] = payload.value;
+    const total = nonGuesserCount();
+    const received = Object.keys(voteTally).length;
+    if (!isGuesser) {
+      document.getElementById('vote-status').textContent = `${received}/${total} vote(s) reçu(s)`;
+    }
+    if (received >= total && total > 0) {
+      // Un seul client (l'hôte) tranche pour éviter les verdicts en double
+      if (isHost) {
+        const yes = Object.values(voteTally).filter(v => v).length;
+        const no = received - yes;
+        const correct = yes > no;
+        sendGame({ type: 'verdict', correct, guesserId: currentBuzz?.id, guesserName: currentBuzz?.name });
+      }
     }
   }
 
   if (payload.type === 'verdict') {
+    document.getElementById('vote-card').style.display = 'none';
     if (payload.correct) {
       showResult(true, `${payload.guesserName} a trouvé ! 🎉`, `La règle était : "${gameRule}"`);
     } else {
       lives = Math.max(0, lives - 1);
       updateLivesDisplay();
-      addMsg({ kind: 'system', text: `❌ "${payload.answer}" — Mauvaise réponse ! ${lives} vie${lives!==1?'s':''} restante${lives!==1?'s':''}` });
+      addMsg({ kind: 'system', text: `❌ Mauvaise règle annoncée par ${payload.guesserName} ! ${lives} vie${lives!==1?'s':''} restante${lives!==1?'s':''}` });
+      if (isGuesser) {
+        const btn = document.getElementById('btn-buzzer-main');
+        btn.disabled = false;
+        btn.textContent = "🔴 BUZZER — dire la règle à l'oral";
+      }
       if (lives === 0) showResult(false, 'Perdu ! 💀', `La règle était : "${gameRule}"`);
     }
   }
@@ -650,7 +752,7 @@ function addMsg(msg) {
     const div = document.createElement('div');
     if (msg.kind === 'system') { div.className='msg msg-system'; div.textContent=msg.text; }
     else if (msg.kind === 'question') { div.className='msg msg-question'; div.innerHTML=`<div class="msg-sender">🕵️ ${msg.sender}</div>${msg.text}`; }
-    else if (msg.kind === 'buzz') { div.className='msg msg-buzz'; div.innerHTML=`<div class="msg-sender">🔴 ${msg.sender} buzze</div><strong>${msg.text}</strong>`; }
+    else if (msg.kind === 'buzz') { div.className='msg msg-buzz'; div.innerHTML=`<div class="msg-sender">🔴 ${msg.sender}</div><strong>${msg.text}</strong>`; }
     else { div.className='msg msg-answer'; div.innerHTML=`<div class="msg-sender">💬 ${msg.sender}</div>${msg.text}`; }
     c.appendChild(div);
     c.scrollTop = c.scrollHeight;
@@ -661,9 +763,6 @@ function updateLivesDisplay() {
   const h = '❤️'.repeat(lives)+'🖤'.repeat(3-lives);
   document.querySelectorAll('#lives-display,#lives-display-players').forEach(el=>el.textContent=h);
 }
-
-function showBuzzInput() { document.getElementById('buzz-input-area').style.display='flex'; document.getElementById('buzz-answer').focus(); }
-function hideBuzzInput() { document.getElementById('buzz-input-area').style.display='none'; }
 
 function showResult(win, title, sub) {
   document.getElementById('overlay-icon').textContent = win?'🎉':'💀';
@@ -682,7 +781,7 @@ document.addEventListener('keydown', e => {
   if (a==='screen-guesser-play' && document.activeElement.id==='guesser-question') sendQuestion();
   if (a==='screen-players-play' && document.activeElement.id==='player-answer') sendAnswer();
 });
-  
+
 </script>
 </body>
 </html>
