@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Admin — Auto-fill images (AniList)</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+  body { font-family: monospace; background: #0b0e14; color: #edeef2; padding: 24px; }
+  button { padding: 10px 20px; font-size: 14px; cursor: pointer; margin-bottom: 16px; }
+  #log { white-space: pre-wrap; font-size: 12px; line-height: 1.6; }
+  .ok { color: #6fdc8c; }
+  .err { color: #f06060; }
+  .skip { color: #8a90a3; }
+</style>
+</head>
+<body>
+
+<h2>Auto-fill des image_url via AniList</h2>
+<p>Cet outil cherche chaque carte par nom sur l'API publique AniList (GraphQL) et met à jour <code>image_url</code> dans Supabase si un visuel officiel est trouvé. Les cartes non trouvées gardent leur placeholder actuel — à toi de compléter à la main.</p>
+
+<button id="startBtn">Lancer la mise à jour</button>
+<div id="log"></div>
+
+<script>
+const SUPABASE_URL = 'https://wuagahavmbugmnuzsouf.supabase.co';
+const SUPABASE_ANON_KEY = 'COLLE_TA_CLE_ANON_ICI'; // même clé que sur anime-cards.html
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const logEl = document.getElementById('log');
+
+function log(msg, cls = '') {
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = msg;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+// Requête GraphQL AniList : recherche un personnage par nom
+async function chercherPersonnage(nom) {
+  const query = `
+    query ($search: String) {
+      Character(search: $search) {
+        name { full }
+        image { large }
+      }
+    }
+  `;
+  try {
+    const res = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables: { search: nom } }),
+    });
+    const json = await res.json();
+    return json?.data?.Character?.image?.large || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function run() {
+  document.getElementById('startBtn').disabled = true;
+  log('Récupération des cartes avec placeholder...');
+
+  const { data: cards, error } = await sb
+    .from('cards')
+    .select('id, nom, image_url')
+    .like('image_url', '%via.placeholder.com%');
+
+  if (error) {
+    log('Erreur Supabase : ' + error.message, 'err');
+    return;
+  }
+
+  log(`${cards.length} cartes à traiter.\n`);
+
+  let trouvees = 0;
+  let manquees = 0;
+
+  for (const card of cards) {
+    // Respecte le rate-limit public d'AniList (~90 req/min)
+    await new Promise(r => setTimeout(r, 700));
+
+    const imageUrl = await chercherPersonnage(card.nom);
+
+    if (imageUrl) {
+      const { error: updateError } = await sb
+        .from('cards')
+        .update({ image_url: imageUrl })
+        .eq('id', card.id);
+
+      if (updateError) {
+        log(`✗ ${card.nom} — erreur update : ${updateError.message}`, 'err');
+      } else {
+        log(`✓ ${card.nom} — image trouvée`, 'ok');
+        trouvees++;
+      }
+    } else {
+      log(`— ${card.nom} — non trouvé, à compléter manuellement`, 'skip');
+      manquees++;
+    }
+  }
+
+  log(`\nTerminé : ${trouvees} trouvées, ${manquees} à compléter à la main.`);
+  document.getElementById('startBtn').disabled = false;
+}
+
+document.getElementById('startBtn').addEventListener('click', run);
+</script>
+
+</body>
+</html>
