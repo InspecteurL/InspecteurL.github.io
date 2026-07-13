@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anime-Cards — HorizonCiné</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg-void: #0b0e14;
+    --bg-panel: #131826;
+    --bg-panel-2: #1a2032;
+    --ink: #edeef2;
+    --ink-dim: #8a90a3;
+    --border: rgba(255,255,255,0.08);
+
+    --c-commune: #8a90a3;
+    --c-rare: #4c8ce8;
+    --c-epique: #a855f7;
+    --c-legendaire: #e8a94c;
+    --c-mythique: #ff6fd8;
+
+    --font-display: 'Oswald', sans-serif;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg-void);
+    color: var(--ink);
+    font-family: var(--font-body);
+    min-height: 100vh;
+  }
+
+  a { color: inherit; }
+
+  /* ---------------- NAV ---------------- */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(11,14,20,0.9);
+    backdrop-filter: blur(10px);
+    z-index: 20;
+  }
+  .nav-left { display: flex; align-items: center; gap: 18px; }
+  .nav-back {
+    font-size: 13px;
+    color: var(--ink-dim);
+    text-decoration: none;
+    letter-spacing: 0.03em;
+  }
+  .nav-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .nav-balance {
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: 0.03em;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg-panel);
+  }
+  .nav-balance span { color: var(--c-legendaire); }
+
+  /* ---------------- BANNIÈRES ---------------- */
+  .banniere-tabs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 28px 20px 0;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    color: var(--ink-dim);
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--ink); border-color: var(--ink-dim); }
+  .tab-btn.active {
+    color: var(--bg-void);
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+
+  /* ---------------- PACK ZONE ---------------- */
+  .pack-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 56px;
+    text-align: center;
+  }
+
+  .pack-art {
+    width: 200px;
+    height: 280px;
+    border-radius: 12px;
+    background: linear-gradient(160deg, var(--bg-panel-2), var(--bg-panel));
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-shadow: 0 0 60px -20px var(--pack-glow, rgba(232,169,76,0.35));
+  }
+  .pack-art:hover { transform: translateY(-4px); }
+  .pack-art::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    border: 1px solid var(--pack-glow, rgba(232,169,76,0.6));
+    opacity: 0.6;
+  }
+  .pack-symbol {
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+
+  .pity-info {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--ink-dim);
+    letter-spacing: 0.02em;
+  }
+  .pity-bar {
+    width: 220px;
+    height: 3px;
+    background: var(--bg-panel-2);
+    border-radius: 2px;
+    margin: 8px auto 0;
+    overflow: hidden;
+  }
+  .pity-bar-fill {
+    height: 100%;
+    background: var(--c-legendaire);
+    transition: width 0.4s;
+  }
+
+  .pull-buttons {
+    display: flex;
+    gap: 14px;
+    margin-top: 28px;
+  }
+  .pull-btn {
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 14px 26px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .pull-btn:active { transform: scale(0.97); }
+  .pull-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .pull-btn.simple { background: var(--bg-panel-2); color: var(--ink); border: 1px solid var(--border); }
+  .pull-btn.dix { background: var(--c-legendaire); color: #1a1204; }
+
+  .status-msg {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--c-rare);
+    min-height: 18px;
+  }
+  .status-msg.error { color: #f06060; }
+
+  /* ---------------- COLLECTION ---------------- */
+  .collection-section {
+    padding: 40px 28px 80px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .collection-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .collection-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .collection-count { color: var(--ink-dim); font-size: 13px; }
+
+  .filters { display: flex; gap: 8px; }
+  .filters select {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 4px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+  }
+
+  .card-item {
+    aspect-ratio: 3/4.2;
+    border-radius: 8px;
+    background: var(--bg-panel);
+    border: 1px solid var(--rarity-color, var(--border));
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-item.locked { opacity: 0.25; filter: grayscale(1); }
+  .card-item img {
+    width: 100%;
+    height: 65%;
+    object-fit: cover;
+  }
+  .card-item .card-info {
+    padding: 8px 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .card-item .card-nom {
+    font-family: var(--font-display);
+    font-size: 13px;
+    line-height: 1.2;
+  }
+  .card-item .card-anime {
+    font-size: 10px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .card-item .card-qte {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.7);
+    color: var(--ink);
+    font-size: 11px;
+    font-family: var(--font-display);
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+  .card-item .rarity-tag {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--rarity-color);
+    font-family: var(--font-display);
+    background: rgba(0,0,0,0.6);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  /* ---------------- REVEAL OVERLAY ---------------- */
+  .reveal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(4,5,8,0.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .reveal-overlay.active { display: flex; }
+
+  .reveal-cards {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 900px;
+  }
+
+  .reveal-card {
+    width: 160px;
+    height: 224px;
+    border-radius: 10px;
+    background: var(--bg-panel);
+    border: 2px solid var(--rarity-color);
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+    animation: cardIn 0.5s forwards;
+    box-shadow: 0 0 40px -10px var(--rarity-color);
+  }
+  @keyframes cardIn {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .reveal-card img { width: 100%; height: 65%; object-fit: cover; }
+  .reveal-card .r-info { padding: 8px 10px; }
+  .reveal-card .r-nom { font-family: var(--font-display); font-size: 14px; }
+  .reveal-card .r-rarete {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--rarity-color);
+  }
+  .reveal-card.foil::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.5) 48%, rgba(255,255,255,0.15) 52%, transparent 70%);
+    background-size: 250% 250%;
+    animation: foilSweep 2.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes foilSweep {
+    0% { background-position: 200% 200%; }
+    100% { background-position: -50% -50%; }
+  }
+  .reveal-card.pity-tag::before {
+    content: 'PITY';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-family: var(--font-display);
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    background: var(--c-legendaire);
+    color: #1a1204;
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 2;
+  }
+
+  .reveal-close {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--bg-panel-2);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    padding: 10px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--ink-dim);
+    padding: 40px 20px;
+    font-size: 13px;
+  }
+
+  @media (max-width: 600px) {
+    .nav { padding: 14px 16px; }
+    .nav-title { font-size: 16px; }
+    .pull-buttons { flex-direction: column; width: 100%; padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← HorizonCiné</a>
+    <div class="nav-title">Anime-Cards</div>
+  </div>
+  <div class="nav-balance">Solde : <span id="balanceDisplay">—</span></div>
+</div>
+
+<div class="banniere-tabs" id="banniereTabs">
+  <button class="tab-btn active" data-banniere="standard" data-glow="rgba(140,150,180,0.4)">Standard</button>
+  <button class="tab-btn" data-banniere="conan_vermouth" data-glow="rgba(232,169,76,0.5)">Conan — Arc Vermouth</button>
+  <button class="tab-btn" data-banniere="dragon_ball_saiyan" data-glow="rgba(255,111,216,0.5)">Dragon Ball — Saiyan</button>
+</div>
+
+<div class="pack-zone">
+  <div class="pack-art" id="packArt" style="--pack-glow: rgba(140,150,180,0.4);">
+    <div class="pack-symbol">Pack</div>
+  </div>
+
+  <div class="pity-info">
+    <span id="pityText">Pity légendaire : — / 90</span>
+    <div class="pity-bar"><div class="pity-bar-fill" id="pityBarFill" style="width:0%;"></div></div>
+  </div>
+
+  <div class="pull-buttons">
+    <button class="pull-btn simple" id="btnPull1">Tirage x1 — 100</button>
+    <button class="pull-btn dix" id="btnPull10">Tirage x10 — 900</button>
+  </div>
+
+  <div class="status-msg" id="statusMsg"></div>
+</div>
+
+<div class="collection-section">
+  <div class="collection-header">
+    <div>
+      <div class="collection-title">Ma collection</div>
+      <div class="collection-count" id="collectionCount">0 carte obtenue</div>
+    </div>
+    <div class="filters">
+      <select id="filterRarete">
+        <option value="">Toutes raretés</option>
+        <option value="commune">Commune</option>
+        <option value="rare">Rare</option>
+        <option value="epique">Épique</option>
+        <option value="legendaire">Légendaire</option>
+        <option value="mythique">Mythique</option>
+      </select>
+      <select id="filterAnime">
+        <option value="">Tous animes</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card-grid" id="cardGrid"></div>
+  <div class="empty-state" id="emptyState" style="display:none;">
+    Aucune carte pour l'instant. Fais un tirage pour commencer ta collection.
+  </div>
+</div>
+
+<div class="reveal-overlay" id="revealOverlay">
+  <div class="reveal-cards" id="revealCards"></div>
+  <button class="reveal-close" id="revealClose">Continuer</button>
+</div>
+
+<script>
+// ============================================
+// CONFIGURATION SUPABASE
+// ============================================
+const SUPABASE_URL = 'https://wuagahavmbugmnuzsouf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'; // <-- à remplacer par ta clé anon publique
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const RARITY_COLORS = {
+  commune: 'var(--c-commune)',
+  rare: 'var(--c-rare)',
+  epique: 'var(--c-epique)',
+  legendaire: 'var(--c-legendaire)',
+  mythique: 'var(--c-mythique)',
+};
+
+let activeBanniere = 'standard';
+let allCards = []; // toutes les cartes possédées (jointes)
+
+// ============================================
+// AUTH — récupère la session existante
+// ============================================
+async function getSessionOrRedirect() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    document.getElementById('statusMsg').textContent = 'Connecte-toi sur HorizonCiné pour accéder à Anime-Cards.';
+    document.getElementById('statusMsg').classList.add('error');
+    document.getElementById('btnPull1').disabled = true;
+    document.getElementById('btnPull10').disabled = true;
+    return null;
+  }
+  return session;
+}
+
+// ============================================
+// SOLDE
+// ============================================
+async function refreshBalance() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const { data, error } = await sb.from('profiles').select('balance').eq('id', user.id).single();
+  if (!error && data) {
+    document.getElementById('balanceDisplay').textContent = data.balance;
+  }
+}
+
+// ============================================
+// PITY (affichage indicatif, lecture seule côté client)
+// ============================================
+async function refreshPity() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const { data } = await sb
+    .from('user_pity')
+    .select('pulls_depuis_legendaire')
+    .eq('user_id', user.id)
+    .eq('banniere', activeBanniere)
+    .maybeSingle();
+
+  const pulls = data?.pulls_depuis_legendaire ?? 0;
+  document.getElementById('pityText').textContent = `Pity légendaire : ${pulls} / 90`;
+  document.getElementById('pityBarFill').style.width = `${Math.min(100, (pulls / 90) * 100)}%`;
+}
+
+// ============================================
+// TIRAGE — appel de l'Edge Function
+// ============================================
+async function faireTirage(nombre) {
+  const session = await getSessionOrRedirect();
+  if (!session) return;
+
+  const statusMsg = document.getElementById('statusMsg');
+  statusMsg.classList.remove('error');
+  statusMsg.textContent = 'Ouverture du pack...';
+  document.getElementById('btnPull1').disabled = true;
+  document.getElementById('btnPull10').disabled = true;
+
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/gacha-pull`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ nombre, banniere: activeBanniere }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      statusMsg.textContent = result.error || 'Erreur lors du tirage.';
+      statusMsg.classList.add('error');
+      return;
+    }
+
+    statusMsg.textContent = '';
+    afficherReveal(result.cartes);
+    document.getElementById('balanceDisplay').textContent = result.nouveau_solde;
+    await refreshPity();
+    await refreshCollection();
+  } catch (err) {
+    statusMsg.textContent = 'Erreur réseau, réessaie.';
+    statusMsg.classList.add('error');
+  } finally {
+    document.getElementById('btnPull1').disabled = false;
+    document.getElementById('btnPull10').disabled = false;
+  }
+}
+
+// ============================================
+// ANIMATION DE REVEAL
+// ============================================
+function afficherReveal(cartes) {
+  const overlay = document.getElementById('revealOverlay');
+  const container = document.getElementById('revealCards');
+  container.innerHTML = '';
+
+  cartes.forEach((c, i) => {
+    const div = document.createElement('div');
+    const isFoil = c.rarete === 'legendaire' || c.rarete === 'mythique' || c.rarete === 'epique';
+    div.className = `reveal-card ${isFoil ? 'foil' : ''} ${c.isPity ? 'pity-tag' : ''}`;
+    div.style.setProperty('--rarity-color', RARITY_COLORS[c.rarete] || 'var(--c-commune)');
+    div.style.animationDelay = `${i * 0.15}s`;
+    div.innerHTML = `
+      <img src="${c.image_url}" alt="${c.nom}">
+      <div class="r-info">
+        <div class="r-nom">${c.nom}</div>
+        <div class="r-rarete">${c.rarete}</div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+
+  overlay.classList.add('active');
+}
+
+document.getElementById('revealClose').addEventListener('click', () => {
+  document.getElementById('revealOverlay').classList.remove('active');
+});
+
+// ============================================
+// COLLECTION
+// ============================================
+async function refreshCollection() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+
+  // Toutes les cartes du catalogue (pour afficher aussi celles non obtenues, grisées)
+  const { data: catalogue } = await sb.from('cards').select('*').eq('is_active', true);
+  const { data: possedees } = await sb
+    .from('user_cards')
+    .select('card_id, quantite')
+    .eq('user_id', user.id);
+
+  const quantiteParCarte = {};
+  (possedees || []).forEach(pc => { quantiteParCarte[pc.card_id] = pc.quantite; });
+
+  allCards = (catalogue || []).map(c => ({
+    ...c,
+    quantite: quantiteParCarte[c.id] || 0,
+  }));
+
+  const animesUniques = [...new Set(allCards.map(c => c.anime))].sort();
+  const filterAnime = document.getElementById('filterAnime');
+  const currentAnimeValue = filterAnime.value;
+  filterAnime.innerHTML = '<option value="">Tous animes</option>' +
+    animesUniques.map(a => `<option value="${a}">${a}</option>`).join('');
+  filterAnime.value = currentAnimeValue;
+
+  renderCollection();
+}
+
+function renderCollection() {
+  const rareteFiltre = document.getElementById('filterRarete').value;
+  const animeFiltre = document.getElementById('filterAnime').value;
+
+  const cartesAffichees = allCards.filter(c =>
+    (!rareteFiltre || c.rarete === rareteFiltre) &&
+    (!animeFiltre || c.anime === animeFiltre)
+  );
+
+  const grid = document.getElementById('cardGrid');
+  const empty = document.getElementById('emptyState');
+  const nbObtenues = allCards.filter(c => c.quantite > 0).length;
+
+  document.getElementById('collectionCount').textContent =
+    `${nbObtenues} / ${allCards.length} cartes obtenues`;
+
+  if (cartesAffichees.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = cartesAffichees.map(c => `
+    <div class="card-item ${c.quantite === 0 ? 'locked' : ''}" style="--rarity-color: ${RARITY_COLORS[c.rarete]};">
+      <div class="rarity-tag">${c.rarete}</div>
+      ${c.quantite > 1 ? `<div class="card-qte">x${c.quantite}</div>` : ''}
+      <img src="${c.image_url}" alt="${c.nom}">
+      <div class="card-info">
+        <div class="card-nom">${c.quantite > 0 ? c.nom : '???'}</div>
+        <div class="card-anime">${c.quantite > 0 ? c.anime : ''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('filterRarete').addEventListener('change', renderCollection);
+document.getElementById('filterAnime').addEventListener('change', renderCollection);
+
+// ============================================
+// BANNIÈRES
+// ============================================
+document.getElementById('banniereTabs').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeBanniere = btn.dataset.banniere;
+  document.getElementById('packArt').style.setProperty('--pack-glow', btn.dataset.glow);
+  await refreshPity();
+});
+
+// ============================================
+// BOUTONS DE TIRAGE
+// ============================================
+document.getElementById('btnPull1').addEventListener('click', () => faireTirage(1));
+document.getElementById('btnPull10').addEventListener('click', () => faireTirage(10));
+document.getElementById('packArt').addEventListener('click', () => faireTirage(1));
+
+// ============================================
+// INIT
+// ============================================
+(async function init() {
+  const session = await getSessionOrRedirect();
+  if (!session) return;
+  await refreshBalance();
+  await refreshPity();
+  await refreshCollection();
+})();
+</script>
+
+</body>
+</html>
