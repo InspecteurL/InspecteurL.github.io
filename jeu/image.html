@@ -101,7 +101,19 @@ async function run() {
     // Respecte le rate-limit public d'AniList (marge de sécurité)
     await new Promise(r => setTimeout(r, 1500));
 
-    const imageUrl = await chercherPersonnage(card.nom);
+    const imageUrlComplet = await chercherPersonnage(card.nom);
+    let imageUrl = imageUrlComplet;
+
+    // Fallback : si le nom complet échoue, on retente avec juste le premier mot
+    // (AniList stocke souvent les persos sous leur seul prénom : "Levi", "Zeke"...)
+    if (!imageUrl) {
+      const premierMot = card.nom.split(' ')[0];
+      if (premierMot !== card.nom) {
+        await new Promise(r => setTimeout(r, 1500));
+        imageUrl = await chercherPersonnage(premierMot);
+        if (imageUrl) log(`  ↳ trouvé via fallback "${premierMot}"`, 'skip');
+      }
+    }
 
     if (imageUrl) {
       const { error: updateError } = await sb
