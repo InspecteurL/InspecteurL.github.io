@@ -1,1134 +1,607 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Forum – HorizonCiné</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet"/>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+	<title>PS4</title>
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <style>
-    /** CSS Clean Syntax
- identifier {
-   CONTENT:    content...;
-   DISPLAY:    background, border, color, display, overflow...;
-   POSITION:   float, margin, position, z-index...;
-   SIZE:       height, width...;
-   TRANSITION: animation, transition...;
- }
-*/
-
-body {
-  background-color: #F33;
-  overflow-x:       hidden;
-  overflow-y:       auto;
-
-  margin: 0;
-
-  padding: 0;
+    body{
+	margin: 0;
+	padding: 0;
+	background-color: #0e6cc4;
+	overflow-x:hidden;
+	overflow-y:hidden;
 }
 
-*::-webkit-scrollbar, *::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0);
-
-  height: 5px;
-  width:  5px;
+header{
+	height: 3em;
+	position: fixed;
+	width: 100%;
+	top: 0;
+	left: 0;
+	z-index: 999;
 }
 
-*::-webkit-scrollbar-track {
-  opacity: 0.3;
+header div{
+	height: 100%;
+	display: inline-block;
 }
 
-*::-webkit-scrollbar-track-piece:start, *::-webkit-scrollbar-track-piece:end {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 0;
+#plus{
+	width: 3em;
+	background-image: url("https://s20.postimg.org/9jdjr9lml/plus.png");
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	float: left;
 }
 
-*::-webkit-scrollbar-thumb {
-  background:    #FFF;
-  border-radius: 0;
+#info{
+	width: 3em;
+	background-image: url("https://i.postimg.cc/m2x13xDd/info.png");
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	float: left;
 }
 
-*::-webkit-scrollbar-button {
-  background: rgba(0,0,0,0);
+#textInfo{
+	color: white;
+	font-family: arial;
+	width: 25%;
+	float: left;
+	line-height: 3em;
 }
 
-/* ICONS */
-
-#plus, #info, #friends {
-  background-position: center;
-  background-repeat:   no-repeat;
-  background-size:     contain;
-
-  float: left;
-
-  width: 3em;
+#friends{
+	width: 3em;
+	background-image: url("https://i.postimg.cc/vHwbv8v1/friends.png");
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	float: left;
 }
 
-#plus {
-  background-image: url("https://s20.postimg.org/9jdjr9lml/plus.png");
+#user{
+	margin-left: 1em;
+	width: 3em;
+	background-image: url("https://s20.postimg.org/yvwsexlfh/user.png");
+	background-size: 140%;
+	background-repeat: no-repeat;
+	background-position: center;
+	float: left;
 }
 
-#info {
-  background-image: url("https://s20.postimg.org/xfgoj1t4t/info.png");
+#userName{
+	color: white;
+	font-family: arial;
+	width: 25%;
+	float: left;
+	line-height: 3em;
 }
 
-#notifications {
-  color:       #FFF;
-  font-family: Arial;
-  overflow: hidden;
-
-  float: left;
-
-  line-height: 3em;
-  width:       25%;
+#trophies{
+	margin-left: 1em;
+	width: 3em;
+	background-image: url("https://i.postimg.cc/wTKmp1Cx/trophy.png");
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	float: left;
 }
 
-#friends {
-  background-image: url("https://s20.postimg.org/71wqmvvel/friends.png");
-  color:            #FFF;
-
-  text-align: left;
+#clock{
+	font-family: arial;
+	line-height: 3em;
+	float: right;
+	margin-right: 1em;
+	color: white;;
 }
 
-#user {
-  background-image:    url("https://s20.postimg.org/yvwsexlfh/user.png");
-  background-position: center;
-  background-repeat:   no-repeat;
-  background-size:     140%;
+/*ENF OF HEADER********************************/
 
-  float:       left;
-  margin-left: 1em;
-
-  width: 3em;
+#games{
+	width: 1120em;
+	position: absolute;
+	top: .5em;
+	left: 0;
+	padding: 5em;
+	z-index: 99;
+	
 }
 
-#username {
-  color:       #FFF;
-  font-family: Arial;
-
-  float: left;
-
-  line-height: 3em;
-  width:       25%;
+.squareGame{
+	height: 11em;
+	width: 11em;
+	vertical-align: top;
+	display: inline-block;
+	transition: 0.3s ease;
 }
 
-#trophies {
-  background-image:    url("https://s20.postimg.org/4d6ztyw8t/trophy.png");
-  background-position: center;
-  background-repeat:   no-repeat;
-  background-size:     contain;
-
-  float:       left;
-  margin-left: 1em;
-
-  width: 3em;
+.squareGame:hover{
+	height: 16.5em;
+	width: 15em;
+	border: 3px solid white;
+	cursor: pointer;
 }
 
-#clock {
-  color:       #FFF;
-  font-family: Arial;
-
-  float:        right;
-  margin-right: 3em;
-
-  line-height: 3em;
+.squareGame:hover .imgGame{
+	height: 85%;
 }
 
-/* HEADER */
-
-header {
-  left:     0;
-  padding:  1em;
-  position: fixed;
-  top:      0;
-  z-index:  18;
-
-  height: 3em;
-  width:  100%;
-
-  transition: 0.5s;
+.imgGame{
+	height: 100%;
+	background-size: 100%;
+	background-repeat: no-repeat;
+	background-position: center;
 }
 
-header div {
-  display: inline-block;
-
-  height: 100%;
+.gameText{
+	color: white;
+	font-family: arial;
+	text-align: center;
+	line-height: 2.4em;
+	background-color: rgba(255,255,255,.2);
 }
 
-/* OPTIONS MENU */
+.gameTitle{
+	position: absolute;
+	color: white;
+	font-size: 1.2em;
+	font-family: Arial;
+	transform: translate(13.2em,-1.5em);
+}
+/*SQUARE IMAGE*****************************************/
 
-#context-menu {
-  background:  #000;
-  border:      none;
-  border-left: 1px solid #fff;
-  color:       #FFF;
-  opacity:     0;
-
-  left:     86em;
-  position: fixed;
-  top:      0;
-  z-index:  36;
-
-  height: 100%;
-  width:  25em;
-
-  transition: 0.5s ease;
+.ascii{
+	font-weight: bold;
 }
 
-#context-menu.display {
-  opacity: 1;
-
-  left: 61em;
+.ps{
+	background-image: url("https://i.postimg.cc/c1pRT9TJ/ps.png");
 }
 
-#context-menu a {
-  color:           inherit;
-  text-decoration: inherit;
-
-  width: 100%;
+.new{
+	background-image: url("https://i.postimg.cc/X7SSnLHG/new.png");
 }
 
-#context-menu hr {
-  background:   #444;
-  border-color: #444;
-
-  margin-left: 0;
-
-  width: 80%;
+.overwatch{
+	background-image: url("https://i.postimg.cc/kX3QwRGP/overwatch.png");
 }
 
-/* XMB MENU */
+.rocketLeague{
+	background-image: url("https://i.postimg.cc/sfkLSJhY/rl.png");
+}
 
-#xmb-menu {
-  left:     0;
+.cod{
+	background-image: url("https://i.postimg.cc/9F5G2TcL/cod.png");
+}
+
+.furi{
+	background-image: url("https://i.postimg.cc/dtcZTYk6/furi.png");
+}
+
+.youtube{
+	background-image: url("https://i.postimg.cc/L6KF3S10/yt.png");
+}
+
+.bro{
+	background-image: url("https://i.postimg.cc/Dykz0PJb/bro.png");
+}
+
+.outlast{
+	background-image: url("https://i.postimg.cc/8PQ5xhLw/outlast.png");
+}
+
+.storeGame{
+	background-size: 100%;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+#god{
+	background-image: url("https://i.postimg.cc/bY7QwSfF/god.png");
+}
+
+#raider{
+	background-image: url("https://i.postimg.cc/VLyY6nsT/tomb.png");
+}
+
+#codi{
+	background-image: url("https://i.postimg.cc/MKkq3q1Q/if.png");
+}
+
+#mafia{
+	background-image: url("https://i.postimg.cc/gk94xTPp/mafia.png");
+}
+
+#destiny{
+	background-image: url("https://i.postimg.cc/ncbwWCgJ/destiny.png");
+}
+
+#bt1{
+	background-image: url("https://i.postimg.cc/fT4GmHvD/b1.png");
+}
+
+#lg{
+	background-image: url("https://i.postimg.cc/sfkNC263/horizon.png");
+}
+
+#per{
+	background-image: url("https://i.postimg.cc/QxGz5trH/per.png");
+}
+
+/*store*/
+
+#store{
+	padding: 1em;
+	padding-top: 6em;
+	margin-top: -3em;
+	width: 60em;
+	height: 25em;
+	padding-left: 12em;
+}
+
+#store div{
+	float: left;
+	border: 3px solid rgba(245,245,245,1);
+	width: 12em;
+	height: 12em;
+	display: inline-block;
+}
+
+#store div:hover{
+	transform: scale(1.1, 1.1);
+	box-shadow: 0px 5px 10px 3px rgba(45,45,45,.7);
+	transition: 0.3s ease;
+}
+
+/*waves****************************/
+
+
+.box {
+	position: fixed;
+	top: 0;
+	transform: rotate(80deg);
+	left: 0;
+}
+
+.wave {
+	position: fixed;
+	top: 0;
+	left: 0;
+  opacity: .4;
   position: absolute;
-  top:      0.5em;
-  z-index:  9;
-
-  padding: 5em;
-
-  width: 1024em;
-}
-
-.menu-item {
-  display: inline-block;
-
-  vertical-align: top;
-
-  height: 11em;
-  width:  11em;
-
-  transition: height 0.5s ease, width 0.5s ease;
-}
-
-#context-menu .menu-item {
-  display: block;
-
-  margin-left:   -1em;
-  padding:        1em;
-  vertical-align: middle;
-
-  height:      1em;
-  line-height: 1;
-  width:       80%;
-}
-
-.menu-item:hover, .menu-item.focus {
-  border: 3px solid #FFF;
-  cursor: pointer;
-
-  margin: -3px;
-
-  height: inherit;
-  width:  inherit;
-}
-
-.menu-item:not(.context-menu):hover, .menu-item.focus:not(.context-menu) {
-  height: 16.5em;
-  width:  15em;
-}
-
-.menu-item:before {
-  content: "";
-
-  margin-left: -3px;
-  margin-top:  -3px;
-  position:     absolute;
-  z-index:      27;
-
-  height: inherit;
-  width:  inherit;
-}
-
-.menu-item:not(.context-item):hover:before, .menu-item.focus:not(.context-item):before {
-  margin:  inherit;
-  padding: inherit;
-
-  height: inherit;
-  width:  inherit;
-
-  animation:       border-animation 5s infinite cubic-bezier(0.1, 0.7, 0.5, 1.0);
-  animation-delay: 5s;
-}
-
-.menu-item.context-item:hover:before, .menu-item.focus.context-item:before {
-  left:        1.5em;
-  margin:      0;
-  margin-top: -1em;
-  padding:     1em 1.5em;
-
-  height: 1em;
-  width:  17.2em;
-
-  animation:       sub-border-animation 5s infinite cubic-bezier(0.1, 0.7, 0.5, 1.0);
-  animation-delay: 5s;
-}
-
-/* XMB ITEM ANIMATION */
-
-@-webkit-keyframes border-animation {
-  0% {
-    border: 3px solid #FFF;
-  }
-
-  100% {
-    border: 1px rgba(255, 255, 255, 0);
-
-    padding: 1em;
-
-    margin-left: -1em;
-    margin-top:  -1em;
-  }
-}
-
-@keyframes border-animation {
-  0% {
-    border: 3px solid #FFF;
-  }
-
-  100% {
-    border: 1px rgba(255, 255, 255, 0);
-
-    padding: 1em;
-
-    margin-left: -1em;
-    margin-top:  -1em;
-  }
-}
-
-@-webkit-keyframes sub-border-animation {
-  0% {
-    border: 3px solid #FFF;
-  }
-
-  100% {
-    border: 1px rgba(255, 255, 255, 0);
-
-    margin-left: -0.5em;
-    margin-top: -1.75em;
-    padding: 1.5em 2em;
-  }
-}
-
-@keyframes sub-border-animation {
-  0% {
-    border: 3px solid #FFF;
-  }
-
-  100% {
-    border: 1px rgba(255, 255, 255, 0);
-
-    margin-left: -0.5em;
-    margin-top: -1.75em;
-    padding: 1.5em 2em;
-  }
-}
-
-/* XMB ITEMS */
-
-.item-img {
-  background-position: center;
-  background-repeat:   no-repeat;
-  background-size:     cover;
-
-  height: 100%;
-}
-
-.item-subtitle {
-  background-color: rgba(0, 0, 0, 0.6);
-  color:            #FFF;
-  font-family:      Arial;
-  text-align:       center;
-
-  line-height: 2.4em;
-  margin-top: -2.4em;
-}
-
-.item-title {
-  color:       #FFF;
-  font-size:   1.2em;
-  font-family: Arial;
-
-  position:  absolute;
-  transform: translate(13.2em, -1.5em);
-}
-
-/* SQUARE IMAGE */
-
-.ascii {
-  font-weight: bold;
-}
-
-.ps-store {
-  background-image: url("https://s20.postimg.org/4m4kjw919/ps.png");
-}
-
-.new {
-  background-image: url("https://s20.postimg.org/jbktanlx9/new.png");
-}
-
-.sub-item {
-  background-position: center;
-  background-repeat:   no-repeat;
-  background-size:     100%;
-}
-
-.cod-bo3 {
-  background-image: url("https://s20.postimg.org/mxlkq6lz1/cod.png");
-}
-
-.furi {
-  background-image: url("https://s20.postimg.org/trvvfvem5/furi.png");
-}
-
-.outlast {
-  background-image: url("https://s20.postimg.org/g607kg3b1/outlast.png");
-}
-
-.overwatch {
-  background-image: url("https://s20.postimg.org/5kgc8fwzh/overwatch.png");
-}
-
-.rocketleague {
-  background-image: url("https://s20.postimg.org/m0oss6665/rl.png");
-}
-
-.tvv {
-  background-image: url("data:image/png;base64,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YMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrWYMdkTqEDFHIDa1mDHZM5hQ5QyA2sZQ12TOYUOkAhN7CWNdgxmVPoAIXcwFrW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");
-}
-
-.youtube {
-  background-image: url("https://s20.postimg.org/q25vxtygt/yt.png");
-}
-
-#bf {
-  background-image: url("https://s20.postimg.org/z9oh3o9tp/image.png");
-}
-
-#cod-iw {
-  background-image: url("https://s20.postimg.org/3m9oag4hp/if.png");
-}
-
-#destiny {
-  background-image: url("https://s20.postimg.org/58ttyka7x/destiny.png");
-}
-
-#god {
-  background-image: url("https://s20.postimg.org/kx032gw59/god.png");
-}
-
-#horizon {
-  background-image: url("https://s20.postimg.org/4n9wzklh9/horizon.png");
-}
-
-#mafia {
-  background-image: url("https://s20.postimg.org/voxnhkblp/mafia.png");
-}
-
-#persona {
-  background-image: url("https://s20.postimg.org/d1pjnnmil/per.png");
-}
-
-#tombraider {
-  background-image: url("https://s20.postimg.org/4oog6qcot/tomb.png");
-}
-
-/* ICONS */
-
-.triangle {
-  background-image: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/769286/triangle.png");
-}
-
-.circle {
-  background-image: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/769286/circle.png");
-}
-
-.square {
-  background-image: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/769286/square.png");
-}
-
-.cross {
-  background-image: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/769286/cross.png");
-}
-
-/* STORE */
-
-.rss {
-  margin-top:  -3em;
-  padding:      1em;
-  padding-left: 12em;
-  padding-top:  6em;
-
-  height: 25em;
-  width:  60em;
-}
-
-.rss > .sub-item {
-  border:  none;
-  display: inline-block;
-
-  float:   left;
-  padding: 3px;
-
-  height: 12em;
-  width:  12em;
-
-  transition: 0.3s ease;
-}
-
-.rss > .sub-item:hover, .rss > .sub-item.focus {
-  border:  3px solid rgba(245, 245, 245, 1);
-  box-shadow: 0px 5px 10px 3px rgba(45, 45, 45, 0.7);
-
-  padding: 0;
-
-  transform: scale(1.1, 1.1);
-}
-
-/* WAVES */
-
-#wave-container {
-  left:      0;
-  position:  fixed;
-  top:       0;
-  transform: rotate(80deg);
-}
-
-#wave-container > .wave {
-  background:    #F66;
-  border-radius: 43%;
-  opacity:       0.4;
-
-  margin-left:     -150px;
-  margin-top:      -250px;
-  transform-origin: 50% 48%;
-  left:             10%;
-  position:         absolute;
-  top:              3%;
-
-  width:  1500px;
+  top: 3%;
+  left: 10%;
+  background: #0af;
+  width: 1500px;
   height: 1300px;
-
-  animation: wave-animation 7s infinite linear;
+  margin-left: -150px;
+  margin-top: -250px;
+  transform-origin: 50% 48%;
+  border-radius: 43%;
+  animation: drift 7000ms infinite linear;
 }
 
-#wave-container > .wave:nth-child(2) {
-  background: #FCC;
-  opacity:    0.1;
-
-  position: fixed;
-
-  animation: wave-animation 3s infinite linear;
+.wave.-three {
+  animation: drift 7500ms infinite linear;
+	position: fixed;
+	background-color: #77daff;
 }
 
-#wave-container > .wave:nth-child(3) {
-  background-color: #F99;
-
-  position: fixed;
-
-  animation: wave-animation 7.5s infinite linear;
+.wave.-two {
+  animation: drift 3000ms infinite linear;
+  opacity: .1;
+  background: black;
+	position: fixed;
 }
 
-#wave-container:after {
-  content: "";
-
+.box:after {
+  content: '';
   display: block;
-
-  left:    0;
-  top:     0;
-  z-index: 9;
-
+  left: 0;
+  top: 0;
+  width: 100%;
   height: 100%;
-  width:  100%;
-
+  z-index: 11;
   transform: translate3d(0, 0, 0);
 }
 
-@keyframes wave-animation {
-  from {
-    transform: rotate(0deg);
-  } to {
-    transform: rotate(360deg);
-  }
+@keyframes drift {
+  from { transform: rotate(0deg); }
+  from { transform: rotate(360deg); }
 }
 
-/* LOADING SPACE */
+/*LOADING SPACE*/
 
-.loading-container {
-  align-items: center;
-  background:  #000;
-  border:      none;
-  display:     none;
-  outline:     none;
-  overflow:    hidden;
-
-  -webkit-box-pack: center;
-  -ms-flex-pack:    center;
-  flex-flow:        row nowrap;
-
-  -webkit-box-align: center;
-  -ms-flex-align:    center;
-  justify-content:   center;
-
-  bottom:   0;
-  left:     0;
-  position: fixed;
-  top:      0;
-  right:    0;
-  z-index:  45;
-
-  height: 100%;
-  width:  100%;
-
-  animation-delay: 4s;
-}
-
-.loading-container.display {
+.contain {
+	animation-delay: 4s;
+	z-index: 1000;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  -ms-flex-flow: row nowrap;
+  flex-flow: row nowrap;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+
+  background: #25a7d7;
+  background: -webkit-linear-gradient(#25a7d7, #2962FF);
+  background: linear-gradient(#25a7d7, #25a7d7);
 }
 
-.loading-container > .logo {
-  margin-top: -5em;
-  position:   absolute;
-  z-index:    63;
-
-  height: 10em;
-  width:  auto;
+.icon {
+  width: 100px;
+  height: 100px;
+  margin: 0 5px;
 }
 
-.loading-icon {
-  margin:  15em 0 0 1em;
-  z-index: 54;
+/*Animation*/
+.icon:nth-child(2) img {-webkit-animation-delay: 0.2s;animation-delay: 0.2s}
+.icon:nth-child(3) img {-webkit-animation-delay: 0.3s;animation-delay: 0.3s}
+.icon:nth-child(4) img {-webkit-animation-delay: 0.4s;animation-delay: 0.4s}
 
-  height: 5em;
-  width:  5em;
+.icon img {
+  -webkit-animation: anim 2s ease infinite;
+  animation: anim 2s ease infinite;
+  -webkit-transform: scale(0,0) rotateZ(180deg);
+  transform: scale(0,0) rotateZ(180deg);
 }
 
-/* LOADING ANIMATION */
-
-.loading-icon img {
-  background-repeat: no-repeat;
-  background-size:   contain;
-  border:            none;
-
-  height: inherit;
-  width:  inherit;
-
-  -webkit-animation: loading-animation 2s alternate ease infinite;
-  -moz-animation:    loading-animation 2s alternate ease infinite;
-  -ms-animation:     loading-animation 2s alternate ease infinite;
-  -o-animation:      loading-animation 2s alternate ease infinite;
-  animation:         loading-animation 2s alternate ease infinite;
-}
-
-.loading-icon:nth-child(2) img {
-  -webkit-animation-delay: 0.1s;
-  -moz-animation-delay:    0.1s;
-  -ms-animation-delay:     0.1s;
-  -o-animation-delay:      0.1s;
-  animation-delay:         0.1s;
-}
-
-.loading-icon:nth-child(3) img {
-  -webkit-animation-delay: 0.2s;
-  -moz-animation-delay:    0.2s;
-  -ms-animation-delay:     0.2s;
-  -o-animation-delay:      0.2s;
-  animation-delay:         0.2s;
-}
-
-.loading-icon:nth-child(4) img {
-  -webkit-animation-delay: 0.3s;
-  -moz-animation-delay:    0.3s;
-  -ms-animation-delay:     0.3s;
-  -o-animation-delay:      0.3s;
-  animation-delay:         0.3s;
-}
-
-/* EDIT: https://codepen.io/CameronFitzwilliam/pen/yaxVRj */
-/* If the animation is from here, I already know -webkit- is being used */
-@-webkit-keyframes loading-animation {
+@-webkit-keyframes anim{
   0% {
-    opacity: 0;
-
-    -webkit-transform: rotate(0deg) scale(0);
+    -webkit-transform: scale(0,0) rotateZ(-90deg);
+    transform: scale(0,0) rotateZ(-90deg);opacity:0
   }
-
-  20% {
-    opacity: 0;
+  30% {
+    -webkit-transform: scale(1,1) rotateZ(0deg);
+    transform: scale(1,1) rotateZ(0deg);opacity:1
   }
-
-  100% {
-    -webkit-transform: rotate(360deg) scale(1);
+  50% {
+    -webkit-transform: scale(1,1) rotateZ(0deg);
+    transform: scale(1,1) rotateZ(0deg);opacity:1
+  }
+  80% {
+    -webkit-transform: scale(0,0) rotateZ(90deg);
+    transform: scale(0,0) rotateZ(90deg);opacity:0
   }
 }
 
-/* ... -moz- */
-@-moz-keyframes loading-animation {
+@keyframes anim{
   0% {
-    opacity: 0;
-
-    -moz-transform: rotate(0deg) scale(0);
+    -webkit-transform: scale(0,0) rotateZ(-90deg);
+    transform: scale(0,0) rotateZ(-90deg);opacity:0
   }
-
-  20% {
-    opacity: 0;
+  30% {
+    -webkit-transform: scale(1,1) rotateZ(0deg);transform: scale(1,1) rotateZ(0deg);opacity:1
   }
-
-  100% {
-    -moz-transform: rotate(360deg) scale(1);
+  50% {
+    -webkit-transform: scale(1,1) rotateZ(0deg);
+    transform: scale(1,1) rotateZ(0deg);opacity:1
   }
-}
-
-/* ... -ms- */
-@-moz-keyframes loading-animation {
-  0% {
-    opacity: 0;
-
-    -ms-transform: rotate(0deg) scale(0);
-  }
-
-  20% {
-    opacity: 0;
-  }
-
-  100% {
-    -ms-transform: rotate(360deg) scale(1);
+  80% {
+    -webkit-transform: scale(0,0) rotateZ(90deg);
+    transform: scale(0,0) rotateZ(90deg);opacity:0
   }
 }
-
-/* ... -o- */
-@-o-keyframes loading-animation {
-  0% {
-    opacity: 0;
-
-    -o-transform: rotate(0deg) scale(0);
-  }
-
-  20% {
-    opacity: 0;
-  }
-
-  100% {
-    -o-transform: rotate(360deg) scale(1);
-  }
-}
-
-/* "normal" */
-@keyframes loading-animation {
-  0% {
-    opacity: 0;
-
-    transform: rotate(0deg) scale(0);
-  }
-
-  20% {
-    opacity: 0;
-  }
-
-  100% {
-    transform: rotate(360deg) scale(1);
-  }
-}
-
   </style>
 </head>
 <body>
-  <!--
-Blush | PS4 XMB Styled OS
--->
+  <header>
+		<div id="plus"></div>
+		<div id="info"></div>
+		<div id="textInfo">Overwatch Update V 1.2.3</div>
+		<div id="friends"></div>
+		<div id="user"></div>
+		<div id="userName">Pixmy Sky</div>
+		<div id="trophies"></div>
+		<div id="clock">10:02 PM</div>
+	</header>
 
-<!-- Quick-Glance menu -->
-<header>
-  <div id="plus"></div>
-  <div id="info"></div>
-  <div id="notifications"></div>
-  <div id="friends">15</div>
-  <div id="user"></div>
-  <div id="username">Pixmy Sky</div>
-  <div id="trophies"></div>
-  <div id="clock">--:-- AM</div>
-</header>
 
-<!-- The XMB -->
-<div id="xmb-menu">
+	<div id="games">
+		<div class="squareGame animated bounceInLeft">
+			<div class="imgGame ps"></div>
+			<div class="gameText">Start</div>
+			<span class="gameTitle">Playstation Store</span>
+			<div id="store">
+				<div id="god" class="storeGame"></div>
+				<div id="raider" class="storeGame"></div>
+				<div id="codi" class="storeGame"></div>
+				<div id="mafia" class="storeGame"></div>
+				<div id="destiny" class="storeGame"></div>
+				<div id="bt1" class="storeGame"></div>
+				<div id="lg" class="storeGame"></div>
+				<div id="per" class="storeGame"></div>
+			</div>
+		</div>
+		<div class="squareGame animated bounceInLeft">
+			<div class="imgGame new"></div>
+			<div class="gameText ascii">▼</div>
+			<span class="gameTitle">What's New</span>
+		</div>
+		<div class="squareGame animated bounceInLeft">
+			<div class="imgGame overwatch"></div>
+			<div class="gameText">Start</div>
+			<span class="gameTitle">Overwatch</span>
+		</div>
+		<div class="squareGame animated bounceInLeft">
+			<div class="imgGame rocketLeague"></div>
+			<div class="gameText">Start</div>
+			<span class="gameTitle">Rocket League</span>
+		</div>
+		<div class="squareGame animated bounceInLeft">
+			<div class="imgGame cod"></div>
+			<div class="gameText">Start</div>
+			<span class="gameTitle">Call Of Duty: Black Ops III</span>
+		</div>
+		<div class="squareGame animated bounceInLeft">
+			<div class="imgGame furi"></div>
+			<div class="gameText">Start</div>
+			<span class="gameTitle">Furi</span>
+		</div>
+		<div class="squareGame animated bounceInLeft">
+			<div class="imgGame youtube"></div>
+			<div class="gameText">Start</div>
+			<span class="gameTitle">YouTube</span>
+		</div>
+		<div class="squareGame animated bounceInLeft">
+			<div class="imgGame bro"></div>
+			<div class="gameText">Start</div>
+			<span class="gameTitle">BroForce</span>
+		</div>
+		<div class="squareGame animated bounceInLeft">
+			<div class="imgGame outlast"></div>
+			<div class="gameText">Start</div>
+			<span class="gameTitle">Outlast 2</span>
+		</div>
+	</div>
 
-  <!-- Store menu item -->
-  <div class="menu-item">
-    <div class="item-img ps-store"></div>
-    <div class="item-subtitle">Start</div>
-    <span class="item-title">PlayStation&reg; Store</span>
-
-    <!-- Store items -->
-    <div class="rss">
-      <div id="god"        class="sub-item"></div>
-      <div id="tombraider" class="sub-item"></div>
-      <div id="cod-iw"     class="sub-item"></div>
-      <div id="mafia"      class="sub-item"></div>
-      <div id="destiny"    class="sub-item"></div>
-      <div id="bf"         class="sub-item"></div>
-      <div id="horizon"    class="sub-item"></div>
-      <div id="persona"    class="sub-item"></div>
-    </div>
-  </div>
-
-  <!-- Other menu items -->
-  <div class="menu-item">
-    <div class="item-img new"></div>
-    <div class="item-subtitle ascii">▼</div>
-    <span class="item-title">What's New</span>
-
-    <!-- What's New -->
-    <div class="rss">
-      
-    </div>
-  </div>
-
-  <!-- Overwatch -->
-  <div class="menu-item"
-       context-menu="
-                     Start Overwatch&reg; => #
-                     ----
-                     Upload/Download Saved Data => #
-                     Check for Update => #
-                     Health and Safety => #
-                     Intellectual Property Notices => #
-                     Delete => javascript:$(this).css({display: 'none'})
-                     Information => #
-                     "
-       >
-    <div class="item-img overwatch"></div>
-    <div class="item-subtitle">Start</div>
-    <span class="item-title">Overwatch&reg;</span>
-  </div>
-
-  <!-- Rocket League -->
-  <div class="menu-item"
-       context-menu="
-                     Start Rocket League => #
-                     ----
-                     Upload/Download Saved Data => #
-                     Check for Update => #
-                     Health and Safety => #
-                     Intellectual Property Notices => #
-                     Delete => javascript:$(this).css({display: 'none'})
-                     Information => #
-                     "
-       >
-    <div class="item-img rocketleague"></div>
-    <div class="item-subtitle">Start</div>
-    <span class="item-title">Rocket League</span>
-  </div>
-
-  <!-- Call of Duty: Black Ops III -->
-  <div class="menu-item"
-       context-menu="
-                     Start Call of Duty&reg;: Black Ops III => #
-                     ----
-                     Upload/Download Saved Data => #
-                     Check for Update => #
-                     Health and Safety => #
-                     Intellectual Property Notices => #
-                     Delete => javascript:$(this).css({display: 'none'})
-                     Information => #
-                     "
-       >
-    <div class="item-img cod-bo3"></div>
-    <div class="item-subtitle">Start</div>
-    <span class="item-title">Call of Duty&reg;: Black Ops III</span>
-  </div>
-
-  <!-- Furi -->
-  <div class="menu-item"
-       context-menu="
-                     Start Furi => #
-                     ----
-                     Upload/Download Saved Data => #
-                     Check for Update => #
-                     Health and Safety => #
-                     Intellectual Property Notices => #
-                     Delete => javascript:$(this).css({display: 'none'})
-                     Information => #
-                     "
-       >
-    <div class="item-img furi"></div>
-    <div class="item-subtitle">Start</div>
-    <span class="item-title">Furi</span>
-  </div>
-
-  <!-- TV & Video -->
-  <div class="menu-item">
-    <div class="item-img tvv"></div>
-    <div class="item-subtitle ascii">▼</div>
-    <span class="item-title">TV &amp; Video</span>
-
-    <div class="rss">
-
-      <!-- YouTube -->
-      <div class="sub-item"
-           context-menu="
-                         Start YouTube => #
-                         ----
-                         Upload/Download Saved Data => #
-                         Check for Update => #
-                         Health and Safety => #
-                         Intellectual Property Notices => #
-                         Delete => javascript:$(this).css({display: 'none'})
-                         Information => #
-                         "
-           >
-        <div class="item-img youtube"></div>
-        <span class="item-title">YouTube&trade;</span>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Outlast 2 -->
-  <div class="menu-item"
-       context-menu="
-                     Start Outlast 2 => #
-                     ----
-                     Upload/Download Saved Data => #
-                     Check for Update => #
-                     Health and Safety => #
-                     Intellectual Property Notices => #
-                     Delete => javascript:$(this).css({display: 'none'})
-                     Information => #
-                     "
-       >
-    <div class="item-img outlast"></div>
-    <div class="item-subtitle">Start</div>
-    <span class="item-title">Outlast 2</span>
-  </div>
-
-</div>
-
-<!-- Context menu -->
-<div id="context-menu"></div>
-
-<!-- Loading animation container -->
-<div class="loading-container display">
-  <div class="loading-icon"><img/></div>
-  <div class="loading-icon"><img/></div>
-  <div class="loading-icon"><img/></div>
-  <div class="loading-icon"><img/></div>
-  <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Playstation_logo_colour.svg/2000px-Playstation_logo_colour.svg.png"/>
-</div>
-
-<!-- Background -->
-<div id="wave-container">
-  <div class="wave"></div>
-  <div class="wave"></div>
-  <div class="wave"></div>
-</div>
+	<div class='box'>
+	  <div class='wave -one'></div>
+	  <div class='wave -two'></div>
+	  <div class='wave -three'></div>
+	</div>
+</body>
 <script>
-  /** PS4 Interface Version 1.0.0
- * Thanks to
- * https://codepen.io/Kapilnemo/pen/bwYoPZ
- * https://codepen.io/rstacruz/pen/oxJqNv
- * https://codepen.io/Pixmy/pen/qaYQoV
- */
+/*PS4 Interface Version 1.0.0
+  thanks to
+  https://codepen.io/Kapilnemo/pen/bwYoPZ
+  and
+  https://codepen.io/rstacruz/pen/oxJqNv
+*/
 
-var notifications = [
-  "Updates installed successfully. See Settings for new features",
-  "Discover. You can create a password for your account",
-  "Installed. Netflix update file",
-  "Installed. Furi",
-  "There are new events for Call of Duty: Blac Ops III",
-  "Invite. You received an invite from IamtheRealDonFrank"
-];
+$(document).ready(function(){
+		$(".gameText").hide();
+		$('.gameTitle').hide();
+		$('#store').hide();
+		timeout();
 
-$(document).ready(function() {
-  $(this).find('.item-title, .item-subtitle, .rss').hide();
+		// Variables for current position
+		var x, y;
 
-  initialise();
+		function handleMouse(e) {
+		  // Verify that x and y already have some value
+		  if (x && y) {
+		    // Scroll window by difference between current and previous positions
+		    window.scrollBy(e.clientX - x, e.clientY - y);
+		  }
 
-  // Assign handleMouse to mouse movement events
-  document.onmousemove =
-  function(event) {
-    var x = event.clientX,
-        y = event.clientY,
-        X = window.scrollX,
-        Y = window.scrollY,
-        w = screen.availWidth,
-        h = screen.availHeight,
-        l = $('#xmb-menu').children().length;
+		  // Store current position
+		  x = e.clientX;
+		  y = e.clientY;
+		}
 
-    if(!$("#context-menu").hasClass("display"))
-      window.scrollTo(x - 240, Y);
-  };
+		// Assign handleMouse to mouse movement events
+		document.onmousemove = handleMouse;
 
-  $(window).scroll(function() {
-    if($(this).scrollTop() > 10)
-      $('header').css("background-color", "rgba(255, 49, 49, 0.8)");
-    else
-      $('header').css("background-color", "rgba(0,0,0,0)");
-  });
-});
+		 $(window).scroll(function(){
+	        if ($(this).scrollTop() > 10) {
+	            $('header').css("background-color","rgba(34,123,165,.8)");
+	        } else {
+	            $('header').css("background-color","rgba(255,255,255,0)");
+	        }
+	    });
+	});
 
-$(".menu-item, .sub-item").hover(
-  function() {
-    $(this).find('.item-title, .item-subtitle, .rss').show();
+	
+	var time = 0;
 
-    $(this).toggleClass("ripple", true);
-  },
+	function timeout() {
+	    setTimeout(function () {
+	    	if(time===0){
+				$("#textInfo").text("Rocket League new content!");
+				$("#textInfo").addClass("animated slideInDown");
+				time++;
+			}else
+				if(time===1){
+				$("#textInfo").text("Outlast 2 Demo Downloaded");
+				$("#textInfo").addClass("animated slideInDown");
+				time++;
+			}else
+				if(time===2){
+				$("#textInfo").text("Overwatch Update V 1.2.3");
+				$("#textInfo").addClass("animated slideInDown");
+				time=0;
+			}
+			setTimeout(function () {
+				$("#textInfo").removeClass("animated slideInDown");
+	    	}, 1000);
+	        timeout();
+	    }, 4000);
+	}
 
-  function() {
-    $(this).find('.item-title, .item-subtitle, .rss').hide();
+	$(".squareGame").hover(
+		function(){
+			$(this).find('.gameText').show();
+			$(this).find('.gameTitle').show();
+			$(this).find('#store').show();
+		},
+		function(){
+			$(this).find('.gameText').hide();
+			$(this).find('.gameTitle').hide();
+			$(this).find('#store').hide();
+		}
+	);
 
-    $(this).toggleClass("ripple", false);
-  })
-.contextmenu(function(event) {
-  event.preventDefault();
-  offcontextmenu();
+function init() {
+	  'use strict'
+	  function select(a) {
+	    return document.querySelector(a);
+	  }
+	  var randomNum = Math.floor((Math.random() * 24) + 1),
+	      triangle = select('.triangle img'),
+	      circle = select('.circle img'),
+	      cross = select('.cross img'),
+	      box = select('.boxi img'),
+	      link = 'http://kapilnemo.free.fr/codepen/playstation-loading/',
+	      order = [
+	        [1,2,3,4],
+	        [1,2,4,3],
+	        [1,3,2,4],
+	        [1,3,4,2],
+	        [1,4,2,3],
+	        [1,4,3,2],
+	        [2,1,3,4],
+	        [2,1,4,3],
+	        [2,3,1,4],
+	        [2,3,4,1],
+	        [2,4,1,3],
+	        [2,4,3,1],
+	        [3,1,2,4],
+	        [3,1,4,2],
+	        [3,2,1,4],
+	        [3,2,4,1],
+	        [3,4,1,2],
+	        [3,4,2,1],
+	        [4,1,2,3],
+	        [4,1,3,2],
+	        [4,2,1,3],
+	        [4,2,3,1],
+	        [4,3,1,2],
+	        [4,3,2,1]
+	      ];
 
-  var menu = $(this).attr("context-menu") || "",
-      bumu;
-
-  if($(this).find(".sub-item[context-menu]").length > 0)
-    return $("#context-menu").toggleClass("display", true);
-
-  $("#context-menu")
-    .html(function() {
-      menu = (bumu = menu.replace(/^\s+|\s+$/g, "")).split(/\n\r?|\r\n?/);
-
-      if(menu.length <= 1 && menu[0].length < 1)
-        return "";
-      else
-        menu.push("----");
-
-      menu.push("Cancel => javascript:offcontextmenu(this)");
-
-      for(var index = 0, length = menu.length, html = "", items, R = /^javascript\:/i; index < length; index++) {
-        items = menu[index].replace(/^\s+|\s+$/g, "").split(/\s*\=>\s*/, 2);
-
-        if(items.length == 1 && menu[index].length > 0) {
-          html += "<hr>";
-          continue;
-        }
-
-        if(R.test(items[1]))
-          html += "<a href='#' onclick='" + items[1].replace(R, "") + "'><li class='menu-item context-item'>" + items[0] + "</li></a>";
-        else
-          html += "<a href='" + items[1] + "'><li class='menu-item context-item'>" + items[0] + "</li></a>";
-      }
-
-      return "<ul>" + html + "</ul>";
-    })
-    .toggleClass("display", bumu = bumu.replace(/[\n\r]/g).length > 0);
-
-  $(this).toggleClass("focus", bumu);
-});
+	  triangle.src = link + order[randomNum][0] + ".png";
+	  circle.src = link + order[randomNum][1] + ".png";
+	  cross.src = link + order[randomNum][2] + ".png";
+	  box.src = link + order[randomNum][3] + ".png";
 
 
-function initialise() {
-  "use strict";
-
-  setInterval(function() {
-    var date = new Date(),
-        hrs  = date.getHours(),
-        mins = date.getMinutes();
-
-    $('#clock').text(
-      (" " + (hrs < 13? hrs || 12: hrs - 12)).slice(-2) + ":" + ("0" + mins).slice(-2) + " " + (hrs < 12? "AM": "PM")
-    );
-  }, 1000);
-
-  notify();
-}
-
-function offcontextmenu() {
-  $("#context-menu").removeClass("display");
-  $(".focus").removeClass("focus");
-}
-
-function notify() {
-
-  for(var index = notifications.index = 0, timeout = 7000, length = notifications.length; index < length; index++) {
-    setTimeout(function() {
-      var message = notifications[notifications.index++];
-
-      if(message.length > 45)
-        message = message.slice(0, 42) + '...';
-
-      $('#notifications')
-        .addClass("animated slideInDown")
-        .text(message);
-
-      setTimeout(function() {
-        $('#notifications').removeClass("animated slideInDown");
-      }, timeout - 1000);
-    }, index * timeout);
-  }
-
-  setTimeout(notify, length * timeout);
-}
-
-function loading(state) {
-  state = (state == undefined || state == null)?
-    document.readyState != 'complete':
-  eval(loading.state = state);
-
-  $('.loading-container, #wave-container').toggleClass("display", state);
-
-  if(!state)
-    return loading.state = undefined, state;
-
-  function select(l) {
-    return document.querySelector(l);
-  }
-
-  var _1   = $('.loading-icon:nth-child(1) > img'),
-      _2   = $('.loading-icon:nth-child(2) > img'),
-      _3   = $('.loading-icon:nth-child(3) > img'),
-      _4   = $('.loading-icon:nth-child(4) > img');
-
-  function random() {
-    for(var s = "triangle circle square cross".split(' '), S = [], i = 0, l = s.length; i < l; i++)
-      S.push(s[Math.floor(Math.random() * l)]);
-    return S;
-  }
-
-  var order = random(),
-      url   = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/769286/",
-      i     = 0;
-
-  _1.attr('src', url + order[i++] + '.png');
-  _2.attr('src', url + order[i++] + '.png');
-  _3.attr('src', url + order[i++] + '.png');
-  _4.attr('src', url + order[i++] + '.png');
-
-  setTimeout(function() {
-    loading(loading.state);
-  }, 4000);
-}
-
-loading("document.readyState != 'complete'");
-
-</script>
+	}
+	window.setInterval(init, 2000);
+          </script>
 </body>
 </html>
 
