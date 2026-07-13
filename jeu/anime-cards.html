@@ -292,80 +292,197 @@
   }
 
   /* ---------------- REVEAL OVERLAY ---------------- */
-  .reveal-overlay {
+/* =========================
+   REVEAL V2
+========================= */
+.reveal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(4,5,8,0.92);
+    background: rgba(4,5,8,.92);
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 100;
     flex-direction: column;
     gap: 24px;
-  }
-  .reveal-overlay.active { display: flex; }
+}
 
-  .reveal-cards {
-    display: flex;
-    gap: 18px;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 900px;
-  }
+.reveal-overlay.active{
+    display:flex;
+}
+.reveal-cards{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:18px;
+    perspective:1500px;
+  
+  
+}
 
-  .reveal-card {
-    width: 160px;
-    height: 224px;
-    border-radius: 10px;
-    background: var(--bg-panel);
-    border: 2px solid var(--rarity-color);
-    position: relative;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(20px) scale(0.9);
-    animation: cardIn 0.5s forwards;
-    box-shadow: 0 0 40px -10px var(--rarity-color);
-  }
-  @keyframes cardIn {
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  .reveal-card img { width: 100%; height: 65%; object-fit: cover; }
-  .reveal-card .r-info { padding: 8px 10px; }
-  .reveal-card .r-nom { font-family: var(--font-display); font-size: 14px; }
-  .reveal-card .r-rarete {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--rarity-color);
-  }
-  .reveal-card.foil::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.5) 48%, rgba(255,255,255,0.15) 52%, transparent 70%);
-    background-size: 250% 250%;
-    animation: foilSweep 2.2s ease-in-out infinite;
-    pointer-events: none;
-  }
-  @keyframes foilSweep {
-    0% { background-position: 200% 200%; }
-    100% { background-position: -50% -50%; }
-  }
-  .reveal-card.pity-tag::before {
-    content: 'PITY';
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    font-family: var(--font-display);
-    font-size: 9px;
-    letter-spacing: 0.06em;
-    background: var(--c-legendaire);
-    color: #1a1204;
-    padding: 2px 6px;
-    border-radius: 3px;
-    z-index: 2;
-  }
+.reveal-card{
+      width:160px;
+    height:224px;
+    position:relative;
+    cursor:pointer;
 
+    perspective:1000px;
+  
+}
+
+.card-inner{
+    width:100%;
+    height:100%;
+    position:relative;
+    transform-style:preserve-3d;
+    transition:transform .9s cubic-bezier(.2,.8,.2,1);
+}
+
+.reveal-card.revealed .card-inner{
+    transform:rotateY(180deg);
+}
+
+.card-front,
+.card-back{
+
+    background:
+    linear-gradient(135deg,#2d3448,#111826);
+
+    border:2px solid #555;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:white;
+
+    font-family:var(--font-display);
+
+    font-size:24px;
+
+    letter-spacing:.2em;
+}
+
+.card-back{
+    background:
+        radial-gradient(circle at center,#444,#111);
+    border:2px solid #555;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:var(--font-display);
+    letter-spacing:.15em;
+    font-size:20px;
+}
+
+.card-front{
+    transform:rotateY(180deg);
+    background:var(--bg-panel);
+    border:2px solid var(--rarity-color);
+    box-shadow:0 0 25px var(--rarity-color);
+}
+
+.card-front img{
+    width:100%;
+    height:65%;
+    object-fit:cover;
+}
+
+.card-front .r-info{
+    padding:8px;
+}
+
+.card-front .r-nom{
+    font-family:var(--font-display);
+}
+
+.card-front .r-rarete{
+    color:var(--rarity-color);
+    font-size:11px;
+    text-transform:uppercase;
+}
+  @keyframes rarePulse{
+
+0%{
+transform:scale(.9);
+filter:brightness(1);
+}
+
+50%{
+transform:scale(1.08);
+filter:brightness(1.6);
+}
+
+100%{
+transform:scale(1);
+}
+
+}
+
+@keyframes epicShake{
+
+0%,100%{transform:translateX(0);}
+20%{transform:translateX(-3px);}
+40%{transform:translateX(3px);}
+60%{transform:translateX(-2px);}
+80%{transform:translateX(2px);}
+
+}
+
+@keyframes legendaryGlow{
+
+0%{
+box-shadow:0 0 0 gold;
+}
+
+50%{
+box-shadow:
+0 0 20px gold,
+0 0 50px orange,
+0 0 100px gold;
+}
+
+100%{
+box-shadow:
+0 0 8px gold;
+}
+
+}
+
+@keyframes mythicExplosion{
+
+0%{
+transform:scale(.6);
+filter:brightness(.5);
+}
+
+40%{
+transform:scale(1.18);
+filter:brightness(3);
+}
+
+100%{
+transform:scale(1);
+filter:brightness(1);
+}
+
+}
+
+.reveal-card.rare{
+animation:rarePulse .7s;
+}
+
+.reveal-card.epique{
+animation:epicShake .8s;
+}
+
+.reveal-card.legendaire{
+animation:legendaryGlow 2s;
+}
+
+.reveal-card.mythique{
+animation:mythicExplosion 2.5s;
+}
   .reveal-close {
     font-family: var(--font-display);
     font-size: 13px;
@@ -385,6 +502,31 @@
     padding: 40px 20px;
     font-size: 13px;
   }
+  .reveal-card.pity-tag::before{
+
+content:"PITY";
+
+position:absolute;
+
+top:8px;
+
+right:8px;
+
+background:gold;
+
+color:black;
+
+padding:4px 8px;
+
+font-size:10px;
+
+font-family:var(--font-display);
+
+border-radius:4px;
+
+z-index:5;
+
+}
 
   @media (max-width: 600px) {
     .nav { padding: 14px 16px; }
@@ -572,33 +714,108 @@ async function faireTirage(nombre) {
 // ============================================
 // ANIMATION DE REVEAL
 // ============================================
-function afficherReveal(cartes) {
-  const overlay = document.getElementById('revealOverlay');
-  const container = document.getElementById('revealCards');
-  container.innerHTML = '';
+async function afficherReveal(cartes){
 
-  cartes.forEach((c, i) => {
-    const div = document.createElement('div');
-    const isFoil = c.rarete === 'legendaire' || c.rarete === 'mythique' || c.rarete === 'epique';
-    div.className = `reveal-card ${isFoil ? 'foil' : ''} ${c.isPity ? 'pity-tag' : ''}`;
-    div.style.setProperty('--rarity-color', RARITY_COLORS[c.rarete] || 'var(--c-commune)');
-    div.style.animationDelay = `${i * 0.15}s`;
-    div.innerHTML = `
-      <img src="${c.image_url}" alt="${c.nom}">
-      <div class="r-info">
-        <div class="r-nom">${c.nom}</div>
-        <div class="r-rarete">${c.rarete}</div>
-      </div>
-    `;
-    container.appendChild(div);
-  });
+const overlay=document.getElementById("revealOverlay");
+const container=document.getElementById("revealCards");
 
-  overlay.classList.add('active');
+container.innerHTML="";
+overlay.classList.add("active");
+
+for(const carte of cartes){
+
+const div=document.createElement("div");
+
+div.className = `reveal-card ${carte.rarete} ${carte.isPity ? 'pity-tag' : ''}`;
+
+div.style.setProperty(
+"--rarity-color",
+RARITY_COLORS[carte.rarete]
+);
+
+div.innerHTML=`
+
+<div class="card-inner">
+
+<div class="card-back">
+
+PACK
+
+</div>
+
+<div class="card-front">
+
+<img src="${carte.image_url}" alt="${carte.nom}">
+
+<div class="r-info">
+
+<div class="r-nom">${carte.nom}</div>
+
+<div class="r-rarete">${carte.rarete}</div>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+container.appendChild(div);
+
+await attendre(220);
+
+await animationReveal(div,carte);
+
+}
+
 }
 
 document.getElementById('revealClose').addEventListener('click', () => {
   document.getElementById('revealOverlay').classList.remove('active');
 });
+  
+  function attendre(ms){
+    return new Promise(resolve=>setTimeout(resolve,ms));
+}
+
+async function animationReveal(div,carte){
+
+let temps=600;
+
+switch(carte.rarete){
+
+case "rare":
+
+temps=900;
+
+break;
+
+case "epique":
+
+temps=1500;
+
+break;
+
+case "legendaire":
+
+temps=2400;
+
+break;
+
+case "mythique":
+
+temps=3200;
+
+break;
+
+}
+
+await attendre(temps);
+
+div.classList.add("revealed");
+
+}
 
 // ============================================
 // COLLECTION
