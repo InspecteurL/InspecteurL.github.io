@@ -36,18 +36,19 @@ function log(msg, cls = '') {
   logEl.scrollTop = logEl.scrollHeight;
 }
 
-const ANIME_ANILIST_TITLES = {
-  "Detective Conan": "Detective Conan",
-  "Dragon Ball": "Dragon Ball",
-  "Attack on Titan": "Attack on Titan",
-  "Blue Lock": "Blue Lock",
+const ANIME_ANILIST_IDS = {
+  "Detective Conan": [235],
+  "Dragon Ball": [223, 813, 225, 21175], // DB, DBZ, GT, Super
+  "Attack on Titan": [16498],
+  "Blue Lock": [137822],
 };
 
-// Récupère la liste des personnages d'un anime précis (scopé, pas de cross-contamination)
-async function chargerPersonnagesAnime(titreAnilist) {
+// Récupère la liste des personnages pour une liste d'IDs Media précis
+// (évite toute ambiguïté de titre, et permet de pooler plusieurs séries pour Dragon Ball)
+async function chargerPersonnagesAnime(mediaIds) {
   const query = `
-    query ($search: String, $page: Int) {
-      Media(search: $search, type: ANIME) {
+    query ($id: Int, $page: Int) {
+      Media(id: $id) {
         characters(sort: FAVOURITES_DESC, page: $page, perPage: 25) {
           pageInfo { hasNextPage }
           nodes { name { full } image { large } }
@@ -57,30 +58,33 @@ async function chargerPersonnagesAnime(titreAnilist) {
   `;
 
   const tousPersonnages = [];
-  let page = 1;
-  let hasNextPage = true;
 
-  while (hasNextPage && page <= 6) {
-    const res = await fetch('https://graphql.anilist.co', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, variables: { search: titreAnilist, page } }),
-    });
+  for (const mediaId of mediaIds) {
+    let page = 1;
+    let hasNextPage = true;
 
-    if (res.status === 429) {
-      await new Promise(r => setTimeout(r, 6000));
-      continue;
+    while (hasNextPage && page <= 8) {
+      const res = await fetch('https://graphql.anilist.co', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, variables: { id: mediaId, page } }),
+      });
+
+      if (res.status === 429) {
+        await new Promise(r => setTimeout(r, 6000));
+        continue;
+      }
+      if (!res.ok) break;
+
+      const json = await res.json();
+      const chars = json?.data?.Media?.characters;
+      if (!chars) break;
+
+      tousPersonnages.push(...chars.nodes);
+      hasNextPage = chars.pageInfo.hasNextPage;
+      page++;
+      await new Promise(r => setTimeout(r, 1500));
     }
-    if (!res.ok) break;
-
-    const json = await res.json();
-    const chars = json?.data?.Media?.characters;
-    if (!chars) break;
-
-    tousPersonnages.push(...chars.nodes);
-    hasNextPage = chars.pageInfo.hasNextPage;
-    page++;
-    await new Promise(r => setTimeout(r, 1500));
   }
 
   return tousPersonnages;
