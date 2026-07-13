@@ -16,7 +16,7 @@
 <body>
 
 <h2>Auto-fill des image_url via AniList</h2>
-<p>Cet outil cherche chaque carte par nom sur l'API publique AniList (GraphQL) et met à jour <code>image_url</code> dans Supabase si un visuel officiel est trouvé. Les cartes non trouvées gardent leur placeholder actuel — à toi de compléter à la main.</p>
+<p>Cet outil charge le casting complet de chaque anime sur AniList (scopé, pas de confusion inter-anime) et matche chaque carte dedans. Il retraite <strong>toutes</strong> les cartes (y compris celles déjà remplies), donc ça corrige aussi les mauvais matchs précédents comme le souci Mike Zacharius / Mikey.</p>
 
 <button id="startBtn">Lancer la mise à jour</button>
 <div id="log"></div>
@@ -36,100 +36,131 @@ function log(msg, cls = '') {
   logEl.scrollTop = logEl.scrollHeight;
 }
 
-// Requête GraphQL AniList : recherche un personnage par nom
-// Gère le rate-limit (429) avec retry automatique
-async function chercherPersonnage(nom, tentative = 1) {
+const ANIME_ANILIST_TITLES = {
+  "Detective Conan": "Detective Conan",
+  "Dragon Ball": "Dragon Ball",
+  "Attack on Titan": "Attack on Titan",
+  "Blue Lock": "Blue Lock",
+};
+
+// Récupère la liste des personnages d'un anime précis (scopé, pas de cross-contamination)
+async function chargerPersonnagesAnime(titreAnilist) {
   const query = `
-    query ($search: String) {
-      Character(search: $search) {
-        name { full }
-        image { large }
+    query ($search: String, $page: Int) {
+      Media(search: $search, type: ANIME) {
+        characters(sort: FAVOURITES_DESC, page: $page, perPage: 25) {
+          pageInfo { hasNextPage }
+          nodes { name { full } image { large } }
+        }
       }
     }
   `;
-  try {
+
+  const tousPersonnages = [];
+  let page = 1;
+  let hasNextPage = true;
+
+  while (hasNextPage && page <= 6) {
     const res = await fetch('https://graphql.anilist.co', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, variables: { search: nom } }),
+      body: JSON.stringify({ query, variables: { search: titreAnilist, page } }),
     });
 
     if (res.status === 429) {
-      if (tentative > 3) {
-        log(`  ⚠ ${nom} — rate-limit persistant, abandon après 3 essais`, 'err');
-        return null;
-      }
-      const retryAfter = parseInt(res.headers.get('Retry-After') || '5', 10);
-      log(`  ⏳ Rate-limit atteint, pause ${retryAfter}s...`, 'skip');
-      await new Promise(r => setTimeout(r, (retryAfter + 1) * 1000));
-      return chercherPersonnage(nom, tentative + 1);
+      await new Promise(r => setTimeout(r, 6000));
+      continue;
     }
-
-    if (!res.ok) {
-      log(`  ⚠ ${nom} — HTTP ${res.status}`, 'err');
-      return null;
-    }
+    if (!res.ok) break;
 
     const json = await res.json();
-    return json?.data?.Character?.image?.large || null;
-  } catch (e) {
-    log(`  ⚠ ${nom} — erreur réseau : ${e.message}`, 'err');
-    return null;
+    const chars = json?.data?.Media?.characters;
+    if (!chars) break;
+
+    tousPersonnages.push(...chars.nodes);
+    hasNextPage = chars.pageInfo.hasNextPage;
+    page++;
+    await new Promise(r => setTimeout(r, 1500));
   }
+
+  return tousPersonnages;
+}
+
+// Normalise pour comparaison (minuscule, sans accents/espaces superflus)
+function normaliser(str) {
+  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+}
+
+// Cherche le meilleur match d'un nom de carte dans la liste de perso d'un anime
+function trouverMatch(nomCarte, listePersonnages) {
+  const cible = normaliser(nomCarte);
+
+  // 1. Match exact
+  for (const p of listePersonnages) {
+    if (normaliser(p.name.full) === cible) return p.image?.large || null;
+  }
+  // 2. Le nom AniList contient le nom de la carte (ou inversement)
+  for (const p of listePersonnages) {
+    const nomAnilist = normaliser(p.name.full);
+    if (nomAnilist.includes(cible) || cible.includes(nomAnilist)) return p.image?.large || null;
+  }
+  // 3. Match sur le premier mot uniquement, en dernier recours
+  const premierMot = normaliser(nomCarte.split(' ')[0]);
+  for (const p of listePersonnages) {
+    if (normaliser(p.name.full).includes(premierMot)) return p.image?.large || null;
+  }
+  return null;
 }
 
 async function run() {
   document.getElementById('startBtn').disabled = true;
-  log('Récupération des cartes avec placeholder...');
+  log('Récupération de toutes les cartes...');
 
-  const { data: cards, error } = await sb
-    .from('cards')
-    .select('id, nom, image_url')
-    .like('image_url', '%via.placeholder.com%');
+  const { data: cards, error } = await sb.from('cards').select('id, nom, anime, image_url');
 
   if (error) {
     log('Erreur Supabase : ' + error.message, 'err');
     return;
   }
 
-  log(`${cards.length} cartes à traiter.\n`);
+  log(`${cards.length} cartes au total.\n`);
 
   let trouvees = 0;
   let manquees = 0;
 
+  // Regroupe les cartes par anime pour ne charger la liste de perso qu'une fois par anime
+  const parAnime = {};
   for (const card of cards) {
-    // Respecte le rate-limit public d'AniList (marge de sécurité)
-    await new Promise(r => setTimeout(r, 1500));
+    if (!parAnime[card.anime]) parAnime[card.anime] = [];
+    parAnime[card.anime].push(card);
+  }
 
-    const imageUrlComplet = await chercherPersonnage(card.nom);
-    let imageUrl = imageUrlComplet;
+  for (const [anime, cardsDeCetAnime] of Object.entries(parAnime)) {
+    const titreAnilist = ANIME_ANILIST_TITLES[anime] || anime;
+    log(`\n=== ${anime} : chargement du casting AniList... ===`);
 
-    // Fallback : si le nom complet échoue, on retente avec juste le premier mot
-    // (AniList stocke souvent les persos sous leur seul prénom : "Levi", "Zeke"...)
-    if (!imageUrl) {
-      const premierMot = card.nom.split(' ')[0];
-      if (premierMot !== card.nom) {
-        await new Promise(r => setTimeout(r, 1500));
-        imageUrl = await chercherPersonnage(premierMot);
-        if (imageUrl) log(`  ↳ trouvé via fallback "${premierMot}"`, 'skip');
-      }
-    }
+    const personnages = await chargerPersonnagesAnime(titreAnilist);
+    log(`  ${personnages.length} personnages récupérés pour ${anime}.\n`);
 
-    if (imageUrl) {
-      const { error: updateError } = await sb
-        .from('cards')
-        .update({ image_url: imageUrl })
-        .eq('id', card.id);
+    for (const card of cardsDeCetAnime) {
+      const imageUrl = trouverMatch(card.nom, personnages);
 
-      if (updateError) {
-        log(`✗ ${card.nom} — erreur update : ${updateError.message}`, 'err');
+      if (imageUrl) {
+        const { error: updateError } = await sb
+          .from('cards')
+          .update({ image_url: imageUrl })
+          .eq('id', card.id);
+
+        if (updateError) {
+          log(`✗ ${card.nom} — erreur update : ${updateError.message}`, 'err');
+        } else {
+          log(`✓ ${card.nom} — image trouvée`, 'ok');
+          trouvees++;
+        }
       } else {
-        log(`✓ ${card.nom} — image trouvée`, 'ok');
-        trouvees++;
+        log(`— ${card.nom} — non trouvé, à compléter manuellement`, 'skip');
+        manquees++;
       }
-    } else {
-      log(`— ${card.nom} — non trouvé, à compléter manuellement`, 'skip');
-      manquees++;
     }
   }
 
