@@ -291,54 +291,147 @@
     border-radius: 3px;
   }
 
-  /* ---------------- REVEAL OVERLAY ---------------- */
+  /* ---------------- REVEAL OVERLAY (séquentiel) ---------------- */
   .reveal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(4,5,8,0.92);
+    background: rgba(4,5,8,0.94);
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 100;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
+    overflow: hidden;
   }
   .reveal-overlay.active { display: flex; }
-
-  .reveal-cards {
-    display: flex;
-    gap: 18px;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 900px;
+  .reveal-overlay.shake { animation: screenShake 0.4s ease-in-out; }
+  @keyframes screenShake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-6px, 3px); }
+    40% { transform: translate(6px, -3px); }
+    60% { transform: translate(-4px, 2px); }
+    80% { transform: translate(4px, -2px); }
   }
 
-  .reveal-card {
-    width: 160px;
-    height: 224px;
+  /* halo de fond derrière la carte, teinté selon la rareté à venir */
+  .reveal-glow-bg {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--rarity-color, transparent) 0%, transparent 70%);
+    opacity: 0;
+    filter: blur(20px);
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .reveal-glow-bg.charging { animation: glowPulse var(--charge-duration, 0.8s) ease-in-out; }
+  @keyframes glowPulse {
+    0% { opacity: 0; transform: scale(0.6); }
+    50% { opacity: 0.55; transform: scale(1); }
+    100% { opacity: 0.25; transform: scale(1.1); }
+  }
+
+  .reveal-progress {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    z-index: 2;
+  }
+
+  .reveal-stage {
+    perspective: 1200px;
+    z-index: 2;
+  }
+
+  .reveal-card-3d {
+    width: 200px;
+    height: 280px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .reveal-card-3d.flipped { transform: rotateY(180deg); }
+
+  .reveal-card-3d.charging-commune { animation: chargeSmall 0.5s ease-in-out; }
+  .reveal-card-3d.charging-rare { animation: chargeSmall 0.7s ease-in-out; }
+  .reveal-card-3d.charging-epique { animation: chargeMedium 0.9s ease-in-out; }
+  .reveal-card-3d.charging-legendaire { animation: chargeBig 1.2s ease-in-out; }
+  .reveal-card-3d.charging-mythique { animation: chargeBig 1.6s ease-in-out; }
+
+  @keyframes chargeSmall {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-4px) scale(1.02); }
+  }
+  @keyframes chargeMedium {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    25% { transform: translateY(-3px) rotate(-1.5deg) scale(1.02); }
+    75% { transform: translateY(-3px) rotate(1.5deg) scale(1.02); }
+  }
+  @keyframes chargeBig {
+    0% { transform: translateY(0) scale(1); }
+    30% { transform: translateY(-6px) scale(1.03); }
+    50% { transform: translateY(-2px) scale(1.06); }
+    70% { transform: translateY(-6px) scale(1.03); }
+    100% { transform: translateY(0) scale(1.04); }
+  }
+
+  /* flash plein écran au moment du flip, uniquement légendaire+ */
+  .flip-flash {
+    position: fixed;
+    inset: 0;
+    background: var(--rarity-color, white);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 99;
+  }
+  .flip-flash.active { animation: flashOnce 0.5s ease-out; }
+  @keyframes flashOnce {
+    0% { opacity: 0; }
+    15% { opacity: 0.85; }
+    100% { opacity: 0; }
+  }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
     border-radius: 10px;
+    overflow: hidden;
+  }
+  .card-face.face-back {
+    background: linear-gradient(160deg, var(--bg-panel-2), var(--bg-panel));
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-face.face-back .back-symbol {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .card-face.face-front {
+    transform: rotateY(180deg);
     background: var(--bg-panel);
     border: 2px solid var(--rarity-color);
-    position: relative;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(20px) scale(0.9);
-    animation: cardIn 0.5s forwards;
-    box-shadow: 0 0 40px -10px var(--rarity-color);
+    box-shadow: 0 0 50px -10px var(--rarity-color);
   }
-  @keyframes cardIn {
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  .reveal-card img { width: 100%; height: 65%; object-fit: cover; }
-  .reveal-card .r-info { padding: 8px 10px; }
-  .reveal-card .r-nom { font-family: var(--font-display); font-size: 14px; }
-  .reveal-card .r-rarete {
+  .card-face.face-front img { width: 100%; height: 65%; object-fit: cover; }
+  .card-face.face-front .r-info { padding: 8px 10px; }
+  .card-face.face-front .r-nom { font-family: var(--font-display); font-size: 14px; }
+  .card-face.face-front .r-rarete {
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--rarity-color);
   }
-  .reveal-card.foil::after {
+  .card-face.face-front.foil::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -351,7 +444,7 @@
     0% { background-position: 200% 200%; }
     100% { background-position: -50% -50%; }
   }
-  .reveal-card.pity-tag::before {
+  .card-face.face-front.pity-tag::before {
     content: 'PITY';
     position: absolute;
     top: 8px;
@@ -363,6 +456,34 @@
     color: #1a1204;
     padding: 2px 6px;
     border-radius: 3px;
+    z-index: 2;
+  }
+
+  .reveal-strip {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 700px;
+    min-height: 52px;
+    z-index: 2;
+  }
+  .strip-thumb {
+    width: 40px;
+    height: 56px;
+    border-radius: 5px;
+    border: 1.5px solid var(--rarity-color);
+    overflow: hidden;
+    opacity: 0;
+    transform: scale(0.7);
+    animation: thumbIn 0.3s forwards;
+  }
+  @keyframes thumbIn { to { opacity: 1; transform: scale(1); } }
+  .strip-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  .reveal-actions {
+    display: flex;
+    gap: 12px;
     z-index: 2;
   }
 
@@ -455,9 +576,27 @@
 </div>
 
 <div class="reveal-overlay" id="revealOverlay">
-  <div class="reveal-cards" id="revealCards"></div>
-  <button class="reveal-close" id="revealClose">Continuer</button>
+  <div class="reveal-glow-bg" id="revealGlowBg"></div>
+  <div class="reveal-progress" id="revealProgress"></div>
+
+  <div class="reveal-stage">
+    <div class="reveal-card-3d" id="revealCard3d">
+      <div class="card-face face-back">
+        <div class="back-symbol">Pack</div>
+      </div>
+      <div class="card-face face-front" id="revealCardFront"></div>
+    </div>
+  </div>
+
+  <div class="reveal-strip" id="revealStrip"></div>
+
+  <div class="reveal-actions">
+    <button class="reveal-close" id="revealSkipAll">Tout révéler</button>
+    <button class="reveal-close" id="revealClose" style="display:none;">Continuer</button>
+  </div>
 </div>
+
+<div class="flip-flash" id="flipFlash"></div>
 
 <script>
 // ============================================
@@ -570,31 +709,118 @@ async function faireTirage(nombre) {
 }
 
 // ============================================
-// ANIMATION DE REVEAL
+// ANIMATION DE REVEAL — séquentiel, carte par carte
 // ============================================
-function afficherReveal(cartes) {
-  const overlay = document.getElementById('revealOverlay');
-  const container = document.getElementById('revealCards');
-  container.innerHTML = '';
+const CHARGE_DURATION = {
+  commune: 500,
+  rare: 700,
+  epique: 900,
+  legendaire: 1200,
+  mythique: 1600,
+};
 
-  cartes.forEach((c, i) => {
-    const div = document.createElement('div');
-    const isFoil = c.rarete === 'legendaire' || c.rarete === 'mythique' || c.rarete === 'epique';
-    div.className = `reveal-card ${isFoil ? 'foil' : ''} ${c.isPity ? 'pity-tag' : ''}`;
-    div.style.setProperty('--rarity-color', RARITY_COLORS[c.rarete] || 'var(--c-commune)');
-    div.style.animationDelay = `${i * 0.15}s`;
-    div.innerHTML = `
-      <img src="${c.image_url}" alt="${c.nom}">
+let skipAllDemande = false;
+let resolveEtapeCourante = null;
+
+function attendre(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function afficherReveal(cartes) {
+  const overlay = document.getElementById('revealOverlay');
+  const card3d = document.getElementById('revealCard3d');
+  const cardFront = document.getElementById('revealCardFront');
+  const glowBg = document.getElementById('revealGlowBg');
+  const progress = document.getElementById('revealProgress');
+  const strip = document.getElementById('revealStrip');
+  const flash = document.getElementById('flipFlash');
+  const btnClose = document.getElementById('revealClose');
+  const btnSkipAll = document.getElementById('revealSkipAll');
+
+  skipAllDemande = false;
+  strip.innerHTML = '';
+  btnClose.style.display = 'none';
+  btnSkipAll.style.display = cartes.length > 1 ? 'inline-block' : 'none';
+  overlay.classList.add('active');
+
+  for (let i = 0; i < cartes.length; i++) {
+    const carte = cartes[i];
+    const rarityVar = `var(--c-${carte.rarete})`;
+    const isFoil = carte.rarete === 'epique' || carte.rarete === 'legendaire' || carte.rarete === 'mythique';
+    const isBigReveal = carte.rarete === 'legendaire' || carte.rarete === 'mythique';
+
+    progress.textContent = cartes.length > 1 ? `Carte ${i + 1} / ${cartes.length}` : '';
+
+    // Reset carte : face cachée, pas de flip
+    card3d.classList.remove('flipped');
+    card3d.className = 'reveal-card-3d';
+    card3d.style.setProperty('--rarity-color', rarityVar);
+    glowBg.style.setProperty('--rarity-color', rarityVar);
+    void card3d.offsetWidth; // force reflow pour rejouer les animations
+
+    if (!skipAllDemande) {
+      // Phase 1 : montée en tension (durée/intensité selon rareté)
+      const duree = CHARGE_DURATION[carte.rarete] || 500;
+      glowBg.style.setProperty('--charge-duration', `${duree}ms`);
+      glowBg.classList.remove('charging');
+      void glowBg.offsetWidth;
+      glowBg.classList.add('charging');
+      card3d.classList.add(`charging-${carte.rarete}`);
+
+      await Promise.race([
+        attendre(duree),
+        new Promise(resolve => { resolveEtapeCourante = resolve; }),
+      ]);
+    }
+
+    // Prépare le contenu de la face avant juste avant le flip
+    cardFront.className = `card-face face-front ${isFoil ? 'foil' : ''} ${carte.isPity ? 'pity-tag' : ''}`;
+    cardFront.innerHTML = `
+      <img src="${carte.image_url}" alt="${carte.nom}">
       <div class="r-info">
-        <div class="r-nom">${c.nom}</div>
-        <div class="r-rarete">${c.rarete}</div>
+        <div class="r-nom">${carte.nom}</div>
+        <div class="r-rarete">${carte.rarete}</div>
       </div>
     `;
-    container.appendChild(div);
-  });
 
-  overlay.classList.add('active');
+    // Flash plein écran + tremblement pour légendaire/mythique
+    if (isBigReveal && !skipAllDemande) {
+      flash.style.setProperty('--rarity-color', rarityVar);
+      flash.classList.remove('active');
+      void flash.offsetWidth;
+      flash.classList.add('active');
+      overlay.classList.remove('shake');
+      void overlay.offsetWidth;
+      overlay.classList.add('shake');
+    }
+
+    card3d.classList.add('flipped');
+
+    // Ajoute la miniature dans la bande du bas
+    const thumb = document.createElement('div');
+    thumb.className = 'strip-thumb';
+    thumb.style.setProperty('--rarity-color', rarityVar);
+    thumb.innerHTML = `<img src="${carte.image_url}" alt="${carte.nom}">`;
+    strip.appendChild(thumb);
+
+    if (!skipAllDemande) {
+      const tempsAffichage = isBigReveal ? 1400 : 900;
+      await Promise.race([
+        attendre(tempsAffichage),
+        new Promise(resolve => { resolveEtapeCourante = resolve; }),
+      ]);
+    }
+  }
+
+  progress.textContent = '';
+  btnSkipAll.style.display = 'none';
+  btnClose.style.display = 'inline-block';
 }
+
+document.getElementById('revealSkipAll').addEventListener('click', () => {
+  skipAllDemande = true;
+  if (resolveEtapeCourante) resolveEtapeCourante();
+});
 
 document.getElementById('revealClose').addEventListener('click', () => {
   document.getElementById('revealOverlay').classList.remove('active');
