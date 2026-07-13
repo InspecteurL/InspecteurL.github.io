@@ -144,6 +144,13 @@
     color: var(--ink-dim);
   }
 
+  .pack-description {
+    margin-top: 14px;
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    max-width: 320px;
+  }
+
   .pity-info {
     margin-top: 16px;
     font-size: 12px;
@@ -356,27 +363,82 @@
   }
   .reveal-card-3d.flipped { transform: rotateY(180deg); }
 
-  .reveal-card-3d.charging-commune { animation: chargeSmall 0.5s ease-in-out; }
-  .reveal-card-3d.charging-rare { animation: chargeSmall 0.7s ease-in-out; }
-  .reveal-card-3d.charging-epique { animation: chargeMedium 0.9s ease-in-out; }
-  .reveal-card-3d.charging-legendaire { animation: chargeBig 1.2s ease-in-out; }
-  .reveal-card-3d.charging-mythique { animation: chargeBig 1.6s ease-in-out; }
+  .reveal-card-3d.charging-commune { animation: chargeCommune 0.8s ease-in-out; }
+  .reveal-card-3d.charging-rare { animation: chargeRare 1.2s ease-in-out; }
+  .reveal-card-3d.charging-epique { animation: chargeEpique 1.8s ease-in-out; }
+  .reveal-card-3d.charging-legendaire { animation: chargeLegendaire 2.6s ease-in-out; }
+  .reveal-card-3d.charging-mythique { animation: chargeMythique 3.4s ease-in-out; }
 
-  @keyframes chargeSmall {
+  @keyframes chargeCommune {
     0%, 100% { transform: translateY(0) scale(1); }
     50% { transform: translateY(-4px) scale(1.02); }
   }
-  @keyframes chargeMedium {
-    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-    25% { transform: translateY(-3px) rotate(-1.5deg) scale(1.02); }
-    75% { transform: translateY(-3px) rotate(1.5deg) scale(1.02); }
+  @keyframes chargeRare {
+    0%, 100% { transform: translateY(0) scale(1); }
+    25% { transform: translateY(-3px) scale(1.01); }
+    50% { transform: translateY(0) scale(1); }
+    75% { transform: translateY(-5px) scale(1.03); }
   }
-  @keyframes chargeBig {
+  @keyframes chargeEpique {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    15% { transform: translateY(-3px) rotate(-1deg) scale(1.01); }
+    30% { transform: translateY(0) rotate(1deg) scale(1); }
+    45% { transform: translateY(-4px) rotate(-1.5deg) scale(1.02); }
+    60% { transform: translateY(0) rotate(1.5deg) scale(1.01); }
+    80% { transform: translateY(-6px) rotate(-1deg) scale(1.04); }
+  }
+  @keyframes chargeLegendaire {
     0% { transform: translateY(0) scale(1); }
-    30% { transform: translateY(-6px) scale(1.03); }
-    50% { transform: translateY(-2px) scale(1.06); }
-    70% { transform: translateY(-6px) scale(1.03); }
-    100% { transform: translateY(0) scale(1.04); }
+    12% { transform: translateY(-5px) scale(1.02); }
+    24% { transform: translateY(0) scale(1); }
+    36% { transform: translateY(-6px) scale(1.03); }
+    48% { transform: translateY(0) scale(1.01); }
+    62% { transform: translateY(-8px) scale(1.05); }
+    74% { transform: translateY(0) scale(1.02); }
+    85% { transform: translateY(-4px) scale(1.06); }
+    93% { transform: translateY(2px) scale(1.04); }
+    100% { transform: translateY(0) scale(1.05); }
+  }
+  @keyframes chargeMythique {
+    0% { transform: translateY(0) rotate(0deg) scale(1); }
+    10% { transform: translateY(-5px) rotate(-1deg) scale(1.02); }
+    20% { transform: translateY(0) rotate(1deg) scale(1); }
+    30% { transform: translateY(-6px) rotate(-1.5deg) scale(1.03); }
+    40% { transform: translateY(0) rotate(1.5deg) scale(1.02); }
+    50% { transform: translateY(-7px) rotate(-2deg) scale(1.05); }
+    60% { transform: translateY(0) rotate(2deg) scale(1.03); }
+    68% { transform: translateY(-8px) rotate(-2deg) scale(1.06); }
+    76% { transform: translateY(2px) rotate(2deg) scale(1.04); }
+    83% { transform: translateY(-9px) rotate(-2.5deg) scale(1.08); }
+    89% { transform: translateY(3px) rotate(2.5deg) scale(1.05); }
+    95% { transform: translateY(-6px) scale(1.09); }
+    100% { transform: translateY(0) scale(1.06); }
+  }
+
+  /* symbole "?" qui pulse au-dessus de la carte pendant la charge (épique+) */
+  .suspense-mark {
+    position: absolute;
+    top: -70px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-display);
+    font-size: 56px;
+    color: var(--rarity-color);
+    opacity: 0;
+    pointer-events: none;
+    text-shadow: 0 0 20px var(--rarity-color);
+  }
+  .suspense-mark.show-epique { animation: suspenseMarkPulse 1.8s ease-in-out; }
+  .suspense-mark.show-legendaire { animation: suspenseMarkPulse 2.6s ease-in-out; }
+  .suspense-mark.show-mythique { animation: suspenseMarkPulse 3.4s ease-in-out; }
+  @keyframes suspenseMarkPulse {
+    0% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+    15% { opacity: 0.9; transform: translateX(-50%) scale(1.1); }
+    30% { opacity: 0.4; transform: translateX(-50%) scale(0.95); }
+    50% { opacity: 0.9; transform: translateX(-50%) scale(1.15); }
+    70% { opacity: 0.3; transform: translateX(-50%) scale(0.9); }
+    88% { opacity: 1; transform: translateX(-50%) scale(1.25); }
+    100% { opacity: 0; transform: translateX(-50%) scale(1.4); }
   }
 
   /* flash plein écran au moment du flip, uniquement légendaire+ */
@@ -525,15 +587,18 @@
 </div>
 
 <div class="banniere-tabs" id="banniereTabs">
-  <button class="tab-btn active" data-banniere="standard" data-glow="rgba(140,150,180,0.4)">Standard</button>
-  <button class="tab-btn" data-banniere="conan_vermouth" data-glow="rgba(232,169,76,0.5)">Conan — Arc Vermouth</button>
-  <button class="tab-btn" data-banniere="dragon_ball_saiyan" data-glow="rgba(255,111,216,0.5)">Dragon Ball — Saiyan</button>
+  <button class="tab-btn active" data-banniere="standard" data-glow="rgba(140,150,180,0.4)" data-cost1="100" data-cost10="900">Pack Standard</button>
+  <button class="tab-btn" data-banniere="Detective Conan" data-glow="rgba(76,140,232,0.5)" data-cost1="150" data-cost10="1350">Pack Detective Conan</button>
+  <button class="tab-btn" data-banniere="Dragon Ball" data-glow="rgba(232,169,76,0.5)" data-cost1="150" data-cost10="1350">Pack Dragon Ball</button>
+  <button class="tab-btn" data-banniere="Attack on Titan" data-glow="rgba(168,60,60,0.5)" data-cost1="150" data-cost10="1350">Pack Attack on Titan</button>
+  <button class="tab-btn" data-banniere="Blue Lock" data-glow="rgba(80,200,140,0.5)" data-cost1="150" data-cost10="1350">Pack Blue Lock</button>
 </div>
 
 <div class="pack-zone">
   <div class="pack-art" id="packArt" style="--pack-glow: rgba(140,150,180,0.4);">
     <div class="pack-symbol">Pack</div>
   </div>
+  <div class="pack-description" id="packDescription">Pool complet, toutes séries confondues.</div>
 
   <div class="pity-info">
     <span id="pityText">Pity légendaire : — / 90</span>
@@ -585,6 +650,7 @@
         <div class="back-symbol">Pack</div>
       </div>
       <div class="card-face face-front" id="revealCardFront"></div>
+      <div class="suspense-mark" id="suspenseMark">?</div>
     </div>
   </div>
 
@@ -712,11 +778,11 @@ async function faireTirage(nombre) {
 // ANIMATION DE REVEAL — séquentiel, carte par carte
 // ============================================
 const CHARGE_DURATION = {
-  commune: 500,
-  rare: 700,
-  epique: 900,
-  legendaire: 1200,
-  mythique: 1600,
+  commune: 800,
+  rare: 1200,
+  epique: 1800,
+  legendaire: 2600,
+  mythique: 3400,
 };
 
 let skipAllDemande = false;
@@ -736,6 +802,7 @@ async function afficherReveal(cartes) {
   const flash = document.getElementById('flipFlash');
   const btnClose = document.getElementById('revealClose');
   const btnSkipAll = document.getElementById('revealSkipAll');
+  const suspenseMark = document.getElementById('suspenseMark');
 
   skipAllDemande = false;
   strip.innerHTML = '';
@@ -766,6 +833,13 @@ async function afficherReveal(cartes) {
       void glowBg.offsetWidth;
       glowBg.classList.add('charging');
       card3d.classList.add(`charging-${carte.rarete}`);
+
+      suspenseMark.className = 'suspense-mark';
+      suspenseMark.style.setProperty('--rarity-color', rarityVar);
+      if (isFoil) {
+        void suspenseMark.offsetWidth;
+        suspenseMark.classList.add(`show-${carte.rarete}`);
+      }
 
       await Promise.race([
         attendre(duree),
@@ -900,6 +974,14 @@ document.getElementById('filterAnime').addEventListener('change', renderCollecti
 // ============================================
 // BANNIÈRES
 // ============================================
+const PACK_DESCRIPTIONS = {
+  standard: 'Pool complet, toutes séries confondues.',
+  'Detective Conan': 'Cartes Detective Conan uniquement — meilleurs taux épique et plus.',
+  'Dragon Ball': 'Cartes Dragon Ball uniquement (DB, Z, Super, GT) — meilleurs taux.',
+  'Attack on Titan': 'Cartes Attack on Titan uniquement — meilleurs taux épique et plus.',
+  'Blue Lock': 'Cartes Blue Lock uniquement — meilleurs taux épique et plus.',
+};
+
 document.getElementById('banniereTabs').addEventListener('click', async (e) => {
   const btn = e.target.closest('.tab-btn');
   if (!btn) return;
@@ -907,6 +989,13 @@ document.getElementById('banniereTabs').addEventListener('click', async (e) => {
   btn.classList.add('active');
   activeBanniere = btn.dataset.banniere;
   document.getElementById('packArt').style.setProperty('--pack-glow', btn.dataset.glow);
+  document.getElementById('packDescription').textContent = PACK_DESCRIPTIONS[activeBanniere] || '';
+
+  const cost1 = btn.dataset.cost1;
+  const cost10 = btn.dataset.cost10;
+  document.getElementById('btnPull1').textContent = `Tirage x1 — ${cost1}`;
+  document.getElementById('btnPull10').textContent = `Tirage x10 — ${cost10}`;
+
   await refreshPity();
 });
 
