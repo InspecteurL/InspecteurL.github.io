@@ -37,7 +37,8 @@ function log(msg, cls = '') {
 }
 
 // Requête GraphQL AniList : recherche un personnage par nom
-async function chercherPersonnage(nom) {
+// Gère le rate-limit (429) avec retry automatique
+async function chercherPersonnage(nom, tentative = 1) {
   const query = `
     query ($search: String) {
       Character(search: $search) {
@@ -52,9 +53,27 @@ async function chercherPersonnage(nom) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, variables: { search: nom } }),
     });
+
+    if (res.status === 429) {
+      if (tentative > 3) {
+        log(`  ⚠ ${nom} — rate-limit persistant, abandon après 3 essais`, 'err');
+        return null;
+      }
+      const retryAfter = parseInt(res.headers.get('Retry-After') || '5', 10);
+      log(`  ⏳ Rate-limit atteint, pause ${retryAfter}s...`, 'skip');
+      await new Promise(r => setTimeout(r, (retryAfter + 1) * 1000));
+      return chercherPersonnage(nom, tentative + 1);
+    }
+
+    if (!res.ok) {
+      log(`  ⚠ ${nom} — HTTP ${res.status}`, 'err');
+      return null;
+    }
+
     const json = await res.json();
     return json?.data?.Character?.image?.large || null;
   } catch (e) {
+    log(`  ⚠ ${nom} — erreur réseau : ${e.message}`, 'err');
     return null;
   }
 }
@@ -79,8 +98,8 @@ async function run() {
   let manquees = 0;
 
   for (const card of cards) {
-    // Respecte le rate-limit public d'AniList (~90 req/min)
-    await new Promise(r => setTimeout(r, 700));
+    // Respecte le rate-limit public d'AniList (marge de sécurité)
+    await new Promise(r => setTimeout(r, 1500));
 
     const imageUrl = await chercherPersonnage(card.nom);
 
