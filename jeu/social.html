@@ -1,4 +1,4 @@
-Enter file contents here<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -8,6 +8,84 @@ Enter file contents here<!DOCTYPE html>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
+  /* ---------------- BATTLE ARENA ---------------- */
+.battle-overlay {
+  position: fixed; inset: 0; background: rgba(4,5,8,0.96);
+  display: none; align-items: center; justify-content: center;
+  z-index: 200; flex-direction: column; gap: 18px; padding: 20px;
+}
+.battle-overlay.active { display: flex; }
+.battle-overlay.shake-battle { animation: battleShake 0.35s ease-in-out; }
+@keyframes battleShake {
+  0%, 100% { transform: translate(0,0); }
+  25% { transform: translate(-5px, 2px); }
+  50% { transform: translate(5px, -2px); }
+  75% { transform: translate(-3px, 2px); }
+}
+
+.battle-arena {
+  display: flex; align-items: center; justify-content: center;
+  gap: 60px; width: 100%; max-width: 700px;
+}
+.battle-fighter { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 160px; }
+.battle-fighter.mine { order: 1; }
+.battle-fighter.theirs { order: 2; }
+
+.battle-card-img {
+  width: 130px; height: 182px; border-radius: 10px; object-fit: cover;
+  border: 2px solid var(--rarity-color, var(--border));
+  box-shadow: 0 0 30px -8px var(--rarity-color, transparent);
+  transition: transform 0.15s;
+}
+.battle-card-img.attacking.mine { animation: lungeRight 0.4s ease-in-out; }
+.battle-card-img.attacking.theirs { animation: lungeLeft 0.4s ease-in-out; }
+@keyframes lungeRight {
+  0% { transform: translateX(0); } 40% { transform: translateX(24px) scale(1.05); } 100% { transform: translateX(0); }
+}
+@keyframes lungeLeft {
+  0% { transform: translateX(0); } 40% { transform: translateX(-24px) scale(1.05); } 100% { transform: translateX(0); }
+}
+.battle-card-img.hit { animation: hitFlash 0.3s ease-in-out; }
+@keyframes hitFlash {
+  0%, 100% { filter: brightness(1); } 30% { filter: brightness(2.5) saturate(0); }
+}
+.battle-card-img.ko { animation: koFall 0.6s ease-in forwards; }
+@keyframes koFall {
+  0% { transform: rotate(0) translateY(0); opacity: 1; }
+  100% { transform: rotate(15deg) translateY(40px); opacity: 0.15; }
+}
+
+.battle-fighter-nom {
+  font-family: var(--font-display); font-size: 13px; text-transform: uppercase; letter-spacing: 0.03em;
+}
+.battle-hp-bar { width: 130px; height: 10px; background: var(--bg-panel-2); border-radius: 5px; overflow: hidden; border: 1px solid var(--border); }
+.battle-hp-fill { height: 100%; background: linear-gradient(90deg, #6ee88a, #4ec96f); transition: width 0.5s ease; }
+.battle-hp-fill.low { background: linear-gradient(90deg, #e8a94c, #d68d2f); }
+.battle-hp-fill.crit-low { background: linear-gradient(90deg, #f06060, #d33f3f); }
+.battle-hp-text { font-size: 11px; color: var(--ink-dim); }
+
+.battle-vs { font-family: var(--font-display); font-size: 22px; color: var(--ink-dim); }
+
+.battle-log-line {
+  font-family: var(--font-body); font-size: 14px; min-height: 24px; text-align: center;
+  color: var(--ink); letter-spacing: 0.01em;
+}
+.battle-log-line .dmg { color: #f06060; font-family: var(--font-display); }
+.battle-log-line .crit { color: var(--c-legendaire); font-weight: 600; }
+
+.battle-skip-btn {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase;
+  background: var(--bg-panel-2); border: 1px solid var(--border); color: var(--ink-dim);
+  padding: 8px 18px; border-radius: 4px; cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .battle-arena { gap: 24px; }
+  .battle-card-img { width: 90px; height: 126px; }
+  .battle-fighter { width: 100px; }
+  .battle-hp-bar { width: 100px; }
+}
+  
   :root {
     --bg-void: #0b0e14;
     --bg-panel: #131826;
@@ -252,6 +330,25 @@ Enter file contents here<!DOCTYPE html>
   <div class="modal-box" id="resultBox"></div>
 </div>
 
+  <div class="battle-overlay" id="battleOverlay">
+  <div class="battle-arena">
+    <div class="battle-fighter mine">
+      <img class="battle-card-img" id="myFighterImg" src="" alt="">
+      <div class="battle-fighter-nom" id="myFighterNom"></div>
+      <div class="battle-hp-bar"><div class="battle-hp-fill" id="myHpFill" style="width:100%;"></div></div>
+      <div class="battle-hp-text" id="myHpText"></div>
+    </div>
+    <div class="battle-vs">VS</div>
+    <div class="battle-fighter theirs">
+      <img class="battle-card-img" id="theirFighterImg" src="" alt="">
+      <div class="battle-fighter-nom" id="theirFighterNom"></div>
+      <div class="battle-hp-bar"><div class="battle-hp-fill" id="theirHpFill" style="width:100%;"></div></div>
+      <div class="battle-hp-text" id="theirHpText"></div>
+    </div>
+  </div>
+  <div class="battle-log-line" id="battleLogLine"></div>
+  <button class="battle-skip-btn" id="battleSkipBtn">Passer l'animation</button>
+</div>
 <script>
 const SUPABASE_URL = 'https://wuagahavmbugmnuzsouf.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
@@ -682,26 +779,36 @@ function souscrireDuel(battleId) {
     .subscribe();
 }
 
-function afficherResultatDuel(battle) {
-  document.getElementById('duelRoomModal').classList.remove('active');
+async function chargerInfosEquipe(userCardIds) {
+  const { data } = await sb
+    .from('user_cards')
+    .select('id, card:cards(nom, rarete, image_url, vie)')
+    .in('id', userCardIds);
+  const map = new Map((data || []).map(c => [c.id, c.card]));
+  return userCardIds.map(id => map.get(id)).filter(Boolean);
+}
+
+async function afficherResultatDuel(battle) {
   if (realtimeChannel) sb.removeChannel(realtimeChannel);
+  document.getElementById('duelRoomModal').classList.remove('active');
 
   const jeSuisAttaquant = battle.attacker_id === currentUser.id;
+  const mesIds = jeSuisAttaquant ? battle.attacker_cards : battle.defender_cards;
+  const leursIds = jeSuisAttaquant ? battle.defender_cards : battle.attacker_cards;
+
+  const mesCartesInfo = await chargerInfosEquipe(mesIds);
+  const leursCartesInfo = await chargerInfosEquipe(leursIds);
+
+  await jouerAnimationCombat(battle, mesCartesInfo, leursCartesInfo);
+
   const jeGagne = (jeSuisAttaquant && battle.resultat === 'attacker_win') || (!jeSuisAttaquant && battle.resultat === 'defender_win');
   const estEgalite = battle.resultat === 'draw';
 
   const titre = estEgalite ? 'Égalité' : (jeGagne ? 'Victoire !' : 'Défaite');
   const classe = estEgalite ? 'draw' : (jeGagne ? 'win' : 'lose');
 
-  const scoreMoi = jeSuisAttaquant ? battle.log?.attaquant?.score : battle.log?.defenseur?.score;
-  const scoreAdv = jeSuisAttaquant ? battle.log?.defenseur?.score : battle.log?.attaquant?.score;
-
   document.getElementById('resultBox').innerHTML = `
     <div class="result-title ${classe}">${titre}</div>
-    <div class="result-scores">
-      <div class="result-score-block">Toi<br><span class="score-num">${Math.round(scoreMoi || 0)}</span></div>
-      <div class="result-score-block">Adversaire<br><span class="score-num">${Math.round(scoreAdv || 0)}</span></div>
-    </div>
     ${battle.mise > 0 ? `<div class="duel-status-text">Mise : ${battle.mise} pièces</div>` : ''}
     <div class="modal-actions" style="justify-content:center;">
       <button class="btn primary" onclick="document.getElementById('resultModal').classList.remove('active')">Fermer</button>
@@ -710,6 +817,146 @@ function afficherResultatDuel(battle) {
   document.getElementById('resultModal').classList.add('active');
   refreshBalance();
   loadDuels();
+}
+  // ============================================
+// BATTLE ARENA — lecteur de combat tour par tour
+// ============================================
+const SOUNDS = {
+  attack: new Audio('sounds/attack.mp3'),
+  crit: new Audio('sounds/crit.mp3'),
+  ko: new Audio('sounds/ko.mp3'),
+  victory: new Audio('sounds/victory.mp3'),
+};
+function jouerSon(nom) {
+  try {
+    const s = SOUNDS[nom];
+    s.currentTime = 0;
+    s.play().catch(() => {});
+  } catch (e) {}
+}
+
+let battleSkipDemande = false;
+let battleResolveEtape = null;
+
+function battleAttendre(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function battleAttendreEtape(ms) {
+  if (battleSkipDemande) return;
+  await Promise.race([
+    battleAttendre(ms),
+    new Promise(resolve => { battleResolveEtape = resolve; }),
+  ]);
+}
+
+document.getElementById('battleSkipBtn').addEventListener('click', () => {
+  battleSkipDemande = true;
+  if (battleResolveEtape) battleResolveEtape();
+});
+
+// battle: la ligne complète de la table `battles` (avec battle.log.tours)
+// mesCartesInfo / leursCartesInfo: tableaux { id, nom, rarete, image_url, vie } dans l'ordre d'engagement
+async function jouerAnimationCombat(battle, mesCartesInfo, leursCartesInfo) {
+  const overlay = document.getElementById('battleOverlay');
+  const logLine = document.getElementById('battleLogLine');
+  const myImg = document.getElementById('myFighterImg');
+  const theirImg = document.getElementById('theirFighterImg');
+  const myNom = document.getElementById('myFighterNom');
+  const theirNom = document.getElementById('theirFighterNom');
+  const myHpFill = document.getElementById('myHpFill');
+  const theirHpFill = document.getElementById('theirHpFill');
+  const myHpText = document.getElementById('myHpText');
+  const theirHpText = document.getElementById('theirHpText');
+
+  battleSkipDemande = false;
+  overlay.classList.add('active');
+
+  const jeSuisAttaquant = battle.attacker_id === currentUser.id;
+
+  // index de la carte active de chaque côté
+  let myIdx = 0, theirIdx = 0;
+  let myCarte = mesCartesInfo[myIdx];
+  let theirCarte = leursCartesInfo[theirIdx];
+  let myPvMax = myCarte.vie, theirPvMax = theirCarte.vie;
+  let myPv = myPvMax, theirPv = theirPvMax;
+
+  function setFighter(side, carte, pv, pvMax) {
+    const img = side === 'mine' ? myImg : theirImg;
+    const nomEl = side === 'mine' ? myNom : theirNom;
+    const fillEl = side === 'mine' ? myHpFill : theirHpFill;
+    const textEl = side === 'mine' ? myHpText : theirHpText;
+    img.src = carte.image_url;
+    img.style.setProperty('--rarity-color', `var(--c-${carte.rarete})`);
+    nomEl.textContent = carte.nom;
+    const pct = Math.max(0, (pv / pvMax) * 100);
+    fillEl.style.width = `${pct}%`;
+    fillEl.classList.toggle('low', pct <= 50 && pct > 20);
+    fillEl.classList.toggle('crit-low', pct <= 20);
+    textEl.textContent = `${Math.max(0, Math.round(pv))} / ${pvMax}`;
+  }
+
+  setFighter('mine', myCarte, myPv, myPvMax);
+  setFighter('theirs', theirCarte, theirPv, theirPvMax);
+  logLine.textContent = 'Le combat commence !';
+  await battleAttendreEtape(1000);
+
+  for (const evt of battle.log.tours) {
+    if (evt.type === 'ko') {
+      const cSide = evt.side === (jeSuisAttaquant ? 'attacker' : 'defender') ? 'mine' : 'theirs';
+      const img = cSide === 'mine' ? myImg : theirImg;
+      logLine.innerHTML = `<span class="crit">${evt.carte_nom} est K.O. !</span>`;
+      jouerSon('ko');
+      img.classList.add('ko');
+      await battleAttendreEtape(900);
+      img.classList.remove('ko');
+      continue;
+    }
+    if (evt.type === 'changement_carte') {
+      const side = evt.side === (jeSuisAttaquant ? 'attacker' : 'defender') ? 'mine' : 'theirs';
+      if (side === 'mine') {
+        myIdx++; myCarte = mesCartesInfo[myIdx]; myPvMax = myCarte.vie; myPv = myPvMax;
+        setFighter('mine', myCarte, myPv, myPvMax);
+      } else {
+        theirIdx++; theirCarte = leursCartesInfo[theirIdx]; theirPvMax = theirCarte.vie; theirPv = theirPvMax;
+        setFighter('theirs', theirCarte, theirPv, theirPvMax);
+      }
+      logLine.textContent = `${evt.nouvelle_carte} entre en combat !`;
+      await battleAttendreEtape(800);
+      continue;
+    }
+
+    // tour d'attaque normal
+    const attSide = evt.attaquant_side === (jeSuisAttaquant ? 'attacker' : 'defender') ? 'mine' : 'theirs';
+    const defSide = attSide === 'mine' ? 'theirs' : 'mine';
+    const attImg = attSide === 'mine' ? myImg : theirImg;
+    const defImg = defSide === 'mine' ? myImg : theirImg;
+
+    attImg.classList.add('attacking', attSide);
+    jouerSon(evt.critique ? 'crit' : 'attack');
+    await battleAttendreEtape(350);
+    attImg.classList.remove('attacking', attSide);
+
+    defImg.classList.add('hit');
+    overlay.classList.add('shake-battle');
+    logLine.innerHTML = `${evt.carte_nom} inflige <span class="dmg">${evt.degats}</span> dégâts${evt.critique ? ' <span class="crit">— COUP CRITIQUE !</span>' : ''}`;
+
+    if (defSide === 'mine') { myPv = evt.pv_restant_cible; setFighter('mine', myCarte, myPv, myPvMax); }
+    else { theirPv = evt.pv_restant_cible; setFighter('theirs', theirCarte, theirPv, theirPvMax); }
+
+    await battleAttendreEtape(200);
+    defImg.classList.remove('hit');
+    overlay.classList.remove('shake-battle');
+
+    await battleAttendreEtape(700);
+  }
+
+  const jeGagne = (jeSuisAttaquant && battle.resultat === 'attacker_win') || (!jeSuisAttaquant && battle.resultat === 'defender_win');
+  logLine.textContent = battle.resultat === 'draw' ? 'Égalité !' : (jeGagne ? 'Victoire !' : 'Défaite...');
+  if (jeGagne) jouerSon('victory');
+  await battleAttendreEtape(1500);
+
+  overlay.classList.remove('active');
 }
 
 // ============================================
