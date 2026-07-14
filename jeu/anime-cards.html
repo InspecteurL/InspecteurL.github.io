@@ -790,7 +790,6 @@
   <div class="recap-grid" id="recapGrid"></div>
   <button class="reveal-close" id="recapClose">Fermer</button>
 </div>
-
 <script>
 // ============================================
 // CONFIGURATION SUPABASE
@@ -914,7 +913,7 @@ const CHARGE_DURATION = {
 
 let skipAllDemande = false;
 let resolveEtapeCourante = null;
-  let modeAuto = true; // true = auto (timers), false = manuel (clic pour avancer)
+let modeAuto = true; // true = auto (timers), false = manuel (clic pour avancer)
 
 function setMode(auto) {
   modeAuto = auto;
@@ -1089,66 +1088,6 @@ document.getElementById('revealClose').addEventListener('click', () => {
   document.getElementById('revealOverlay').classList.remove('active');
 });
 
-    // Prépare le contenu de la face avant juste avant le flip
-    cardFront.className = `card-face face-front ${isFoil ? 'foil' : ''} ${carte.isPity ? 'pity-tag' : ''}`;
-    cardFront.innerHTML = `
-      <img src="${carte.image_url}" alt="${carte.nom}">
-      <div class="r-info">
-        <div class="r-nom">${carte.nom}</div>
-        <div class="r-rarete">${carte.rarete}</div>
-      </div>
-    `;
-
-    // Flash plein écran + tremblement pour légendaire/mythique
-    if (isBigReveal && !skipAllDemande) {
-      flash.style.setProperty('--rarity-color', rarityVar);
-      flash.classList.remove('active');
-      void flash.offsetWidth;
-      flash.classList.add('active');
-      overlay.classList.remove('shake');
-      void overlay.offsetWidth;
-      overlay.classList.add('shake');
-    }
-
-    card3d.classList.add('flipped');
-
-    // Ajoute la miniature dans la bande du bas
-    const thumb = document.createElement('div');
-    thumb.className = 'strip-thumb';
-    thumb.style.setProperty('--rarity-color', rarityVar);
-    thumb.innerHTML = `<img src="${carte.image_url}" alt="${carte.nom}">`;
-    strip.appendChild(thumb);
-
-    if (!skipAllDemande) {
-      const tempsAffichage = isBigReveal ? 1400 : 900;
-      // Phase 2 (affichage après flip) — remplace le second bloc "await Promise.race(...)"
-if (modeAuto) {
-  await Promise.race([
-    attendre(tempsAffichage),
-    new Promise(resolve => { resolveEtapeCourante = resolve; }),
-  ]);
-} else {
-  document.getElementById('revealTapHint').style.display = 'block';
-  await new Promise(resolve => { resolveEtapeCourante = resolve; });
-  document.getElementById('revealTapHint').style.display = 'none';
-}
-    }
-  }
-
-  progress.textContent = '';
-  btnSkipAll.style.display = 'none';
-  btnClose.style.display = 'inline-block';
-}
-
-document.getElementById('revealSkipAll').addEventListener('click', () => {
-  skipAllDemande = true;
-  if (resolveEtapeCourante) resolveEtapeCourante();
-});
-
-document.getElementById('revealClose').addEventListener('click', () => {
-  document.getElementById('revealOverlay').classList.remove('active');
-});
-
 // ============================================
 // COLLECTION
 // ============================================
@@ -1156,7 +1095,6 @@ async function refreshCollection() {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return;
 
-  // Toutes les cartes du catalogue (pour afficher aussi celles non obtenues, grisées)
   const { data: catalogue } = await sb.from('cards').select('*').eq('is_active', true);
   const { data: possedees } = await sb
     .from('user_cards')
@@ -1265,7 +1203,7 @@ document.getElementById('packArt').addEventListener('click', () => faireTirage(1
   await refreshPity();
   await refreshCollection();
 })();
-</script>
 
+    </script>
 </body>
 </html>
