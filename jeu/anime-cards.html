@@ -299,6 +299,44 @@
   }
 
   /* ---------------- REVEAL OVERLAY (séquentiel) ---------------- */
+ .reveal-mode-toggle {
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+.mode-btn {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  color: var(--ink-dim);
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mode-btn.active {
+  color: var(--bg-void);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.reveal-tap-hint {
+  display: none;
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  animation: tapHintPulse 1.2s ease-in-out infinite;
+  z-index: 2;
+}
+@keyframes tapHintPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
   .reveal-overlay {
     position: fixed;
     inset: 0;
@@ -574,6 +612,81 @@
     .nav-title { font-size: 16px; }
     .pull-buttons { flex-direction: column; width: 100%; padding: 0 20px; }
   }
+
+  .recap-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4,5,8,0.94);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 101;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+.recap-overlay.active { display: flex; }
+
+.recap-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.recap-summary {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.recap-tag {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border: 1px solid var(--rarity-color);
+  color: var(--rarity-color);
+  border-radius: 20px;
+}
+
+.recap-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  max-width: 800px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 8px;
+}
+.recap-card {
+  width: 110px;
+  border-radius: 8px;
+  border: 2px solid var(--rarity-color);
+  background: var(--bg-panel);
+  overflow: hidden;
+  text-align: center;
+  transition: transform 0.2s;
+}
+.recap-card.best {
+  box-shadow: 0 0 25px -5px var(--rarity-color);
+  transform: scale(1.08);
+}
+.recap-card img { width: 100%; height: 100px; object-fit: cover; }
+.recap-card-nom {
+  font-family: var(--font-display);
+  font-size: 12px;
+  padding: 6px 4px 2px;
+}
+.recap-card-rarete {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rarity-color);
+  padding-bottom: 6px;
+}
 </style>
 </head>
 <body>
@@ -643,6 +756,11 @@
 </div>
 
 <div class="reveal-overlay" id="revealOverlay">
+  <div class="reveal-mode-toggle">
+  <button id="modeAutoBtn" class="mode-btn active">⏱ Auto</button>
+  <button id="modeManuelBtn" class="mode-btn">Manuel</button>
+</div>
+<div class="reveal-tap-hint" id="revealTapHint">Touche l'écran pour continuer</div>
   <div class="reveal-glow-bg" id="revealGlowBg"></div>
   <div class="reveal-progress" id="revealProgress"></div>
 
@@ -665,6 +783,13 @@
 </div>
 
 <div class="flip-flash" id="flipFlash"></div>
+
+  <div class="recap-overlay" id="recapOverlay">
+  <div class="recap-title">Récapitulatif du tirage</div>
+  <div class="recap-summary" id="recapSummary"></div>
+  <div class="recap-grid" id="recapGrid"></div>
+  <button class="reveal-close" id="recapClose">Fermer</button>
+</div>
 
 <script>
 // ============================================
@@ -789,6 +914,27 @@ const CHARGE_DURATION = {
 
 let skipAllDemande = false;
 let resolveEtapeCourante = null;
+  let modeAuto = true; // true = auto (timers), false = manuel (clic pour avancer)
+
+function setMode(auto) {
+  modeAuto = auto;
+  document.getElementById('modeAutoBtn').classList.toggle('active', auto);
+  document.getElementById('modeManuelBtn').classList.toggle('active', !auto);
+}
+
+document.getElementById('modeAutoBtn').addEventListener('click', () => setMode(true));
+document.getElementById('modeManuelBtn').addEventListener('click', () => setMode(false));
+
+// Clic sur l'overlay = avancer en mode manuel (ignore les boutons)
+document.getElementById('revealOverlay').addEventListener('click', (e) => {
+  if (modeAuto) return;
+  if (e.target.closest('#revealSkipAll') || e.target.closest('#revealClose') || e.target.closest('#modeAutoBtn') || e.target.closest('#modeManuelBtn')) return;
+  if (resolveEtapeCourante) {
+    const r = resolveEtapeCourante;
+    resolveEtapeCourante = null;
+    r();
+  }
+});
 
 function attendre(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -820,15 +966,13 @@ async function afficherReveal(cartes) {
 
     progress.textContent = cartes.length > 1 ? `Carte ${i + 1} / ${cartes.length}` : '';
 
-    // Reset carte : face cachée, pas de flip
     card3d.classList.remove('flipped');
     card3d.className = 'reveal-card-3d';
     card3d.style.setProperty('--rarity-color', rarityVar);
     glowBg.style.setProperty('--rarity-color', rarityVar);
-    void card3d.offsetWidth; // force reflow pour rejouer les animations
+    void card3d.offsetWidth;
 
     if (!skipAllDemande) {
-      // Phase 1 : montée en tension (durée/intensité selon rareté)
       const duree = CHARGE_DURATION[carte.rarete] || 500;
       glowBg.style.setProperty('--charge-duration', `${duree}ms`);
       glowBg.classList.remove('charging');
@@ -843,11 +987,107 @@ async function afficherReveal(cartes) {
         suspenseMark.classList.add(`show-${carte.rarete}`);
       }
 
-      await Promise.race([
-        attendre(duree),
-        new Promise(resolve => { resolveEtapeCourante = resolve; }),
-      ]);
+      if (modeAuto) {
+        await Promise.race([
+          attendre(duree),
+          new Promise(resolve => { resolveEtapeCourante = resolve; }),
+        ]);
+      } else {
+        document.getElementById('revealTapHint').style.display = 'block';
+        await new Promise(resolve => { resolveEtapeCourante = resolve; });
+        document.getElementById('revealTapHint').style.display = 'none';
+      }
     }
+
+    cardFront.className = `card-face face-front ${isFoil ? 'foil' : ''} ${carte.isPity ? 'pity-tag' : ''}`;
+    cardFront.innerHTML = `
+      <img src="${carte.image_url}" alt="${carte.nom}">
+      <div class="r-info">
+        <div class="r-nom">${carte.nom}</div>
+        <div class="r-rarete">${carte.rarete}</div>
+      </div>
+    `;
+
+    if (isBigReveal && !skipAllDemande) {
+      flash.style.setProperty('--rarity-color', rarityVar);
+      flash.classList.remove('active');
+      void flash.offsetWidth;
+      flash.classList.add('active');
+      overlay.classList.remove('shake');
+      void overlay.offsetWidth;
+      overlay.classList.add('shake');
+    }
+
+    card3d.classList.add('flipped');
+
+    const thumb = document.createElement('div');
+    thumb.className = 'strip-thumb';
+    thumb.style.setProperty('--rarity-color', rarityVar);
+    thumb.innerHTML = `<img src="${carte.image_url}" alt="${carte.nom}">`;
+    strip.appendChild(thumb);
+
+    if (!skipAllDemande) {
+      const tempsAffichage = isBigReveal ? 1400 : 900;
+      if (modeAuto) {
+        await Promise.race([
+          attendre(tempsAffichage),
+          new Promise(resolve => { resolveEtapeCourante = resolve; }),
+        ]);
+      } else {
+        document.getElementById('revealTapHint').style.display = 'block';
+        await new Promise(resolve => { resolveEtapeCourante = resolve; });
+        document.getElementById('revealTapHint').style.display = 'none';
+      }
+    }
+  }
+
+  progress.textContent = '';
+  btnSkipAll.style.display = 'none';
+  afficherRecap(cartes);
+}
+
+function afficherRecap(cartes) {
+  const recapOverlay = document.getElementById('recapOverlay');
+  const recapGrid = document.getElementById('recapGrid');
+  const recapSummary = document.getElementById('recapSummary');
+
+  const ordreRarete = ['mythique', 'legendaire', 'epique', 'rare', 'commune'];
+  const comptage = {};
+  cartes.forEach(c => { comptage[c.rarete] = (comptage[c.rarete] || 0) + 1; });
+
+  const meilleure = cartes.reduce((best, c) =>
+    ordreRarete.indexOf(c.rarete) < ordreRarete.indexOf(best.rarete) ? c : best
+  , cartes[0]);
+
+  recapSummary.innerHTML = ordreRarete
+    .filter(r => comptage[r])
+    .map(r => `<span class="recap-tag" style="--rarity-color: var(--c-${r});">${comptage[r]} ${r}${comptage[r] > 1 ? 's' : ''}</span>`)
+    .join('');
+
+  recapGrid.innerHTML = cartes.map(c => `
+    <div class="recap-card ${c.id === meilleure.id ? 'best' : ''}" style="--rarity-color: var(--c-${c.rarete});">
+      <img src="${c.image_url}" alt="${c.nom}">
+      <div class="recap-card-nom">${c.nom}</div>
+      <div class="recap-card-rarete">${c.rarete}</div>
+    </div>
+  `).join('');
+
+  recapOverlay.classList.add('active');
+}
+
+document.getElementById('recapClose').addEventListener('click', () => {
+  document.getElementById('recapOverlay').classList.remove('active');
+  document.getElementById('revealOverlay').classList.remove('active');
+});
+
+document.getElementById('revealSkipAll').addEventListener('click', () => {
+  skipAllDemande = true;
+  if (resolveEtapeCourante) resolveEtapeCourante();
+});
+
+document.getElementById('revealClose').addEventListener('click', () => {
+  document.getElementById('revealOverlay').classList.remove('active');
+});
 
     // Prépare le contenu de la face avant juste avant le flip
     cardFront.className = `card-face face-front ${isFoil ? 'foil' : ''} ${carte.isPity ? 'pity-tag' : ''}`;
@@ -881,10 +1121,17 @@ async function afficherReveal(cartes) {
 
     if (!skipAllDemande) {
       const tempsAffichage = isBigReveal ? 1400 : 900;
-      await Promise.race([
-        attendre(tempsAffichage),
-        new Promise(resolve => { resolveEtapeCourante = resolve; }),
-      ]);
+      // Phase 2 (affichage après flip) — remplace le second bloc "await Promise.race(...)"
+if (modeAuto) {
+  await Promise.race([
+    attendre(tempsAffichage),
+    new Promise(resolve => { resolveEtapeCourante = resolve; }),
+  ]);
+} else {
+  document.getElementById('revealTapHint').style.display = 'block';
+  await new Promise(resolve => { resolveEtapeCourante = resolve; });
+  document.getElementById('revealTapHint').style.display = 'none';
+}
     }
   }
 
