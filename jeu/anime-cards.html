@@ -8,6 +8,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
+  .new-badge {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--c-legendaire);
+  color: #1a1204;
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 10px;
+  z-index: 3;
+  cursor: pointer;
+  animation: newBadgePulse 1.5s ease-in-out infinite;
+}
+@keyframes newBadgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,169,76,0.5); }
+  50% { box-shadow: 0 0 8px 2px rgba(232,169,76,0.5); }
+}
+  
   :root {
     --bg-void: #0b0e14;
     --bg-panel: #131826;
@@ -795,7 +817,7 @@
 // CONFIGURATION SUPABASE
 // ============================================
 const SUPABASE_URL = 'https://wuagahavmbugmnuzsouf.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'; // <-- à remplacer par ta clé anon publique
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -808,10 +830,29 @@ const RARITY_COLORS = {
 };
 
 let activeBanniere = 'standard';
-let allCards = []; // toutes les cartes possédées (jointes)
+let allCards = [];
 
 // ============================================
-// AUTH — récupère la session existante
+// SONS DE REVEAL — un par rareté
+// ============================================
+const REVEAL_SOUNDS = {
+  commune: new Audio('soundsreveal_commune.mp3'),
+  rare: new Audio('soundsreveal_rare.mp3'),
+  epique: new Audio('soundsreveal_epique.mp3'),
+  legendaire: new Audio('soundsreveal_legendaire.mp3'),
+  mythique: new Audio('soundsreveal_mythique.mp3'),
+};
+function jouerSonReveal(rarete) {
+  try {
+    const s = REVEAL_SOUNDS[rarete];
+    if (!s) return;
+    s.currentTime = 0;
+    s.play().catch(() => {});
+  } catch (e) {}
+}
+
+// ============================================
+// AUTH
 // ============================================
 async function getSessionOrRedirect() {
   const { data: { session } } = await sb.auth.getSession();
@@ -838,7 +879,7 @@ async function refreshBalance() {
 }
 
 // ============================================
-// PITY (affichage indicatif, lecture seule côté client)
+// PITY
 // ============================================
 async function refreshPity() {
   const { data: { user } } = await sb.auth.getUser();
@@ -856,7 +897,7 @@ async function refreshPity() {
 }
 
 // ============================================
-// TIRAGE — appel de l'Edge Function
+// TIRAGE
 // ============================================
 async function faireTirage(nombre) {
   const session = await getSessionOrRedirect();
@@ -901,7 +942,7 @@ async function faireTirage(nombre) {
 }
 
 // ============================================
-// ANIMATION DE REVEAL — séquentiel, carte par carte
+// ANIMATION DE REVEAL
 // ============================================
 const CHARGE_DURATION = {
   commune: 800,
@@ -913,7 +954,7 @@ const CHARGE_DURATION = {
 
 let skipAllDemande = false;
 let resolveEtapeCourante = null;
-let modeAuto = true; // true = auto (timers), false = manuel (clic pour avancer)
+let modeAuto = true;
 
 function setMode(auto) {
   modeAuto = auto;
@@ -924,7 +965,6 @@ function setMode(auto) {
 document.getElementById('modeAutoBtn').addEventListener('click', () => setMode(true));
 document.getElementById('modeManuelBtn').addEventListener('click', () => setMode(false));
 
-// Clic sur l'overlay = avancer en mode manuel (ignore les boutons)
 document.getElementById('revealOverlay').addEventListener('click', (e) => {
   if (modeAuto) return;
   if (e.target.closest('#revealSkipAll') || e.target.closest('#revealClose') || e.target.closest('#modeAutoBtn') || e.target.closest('#modeManuelBtn')) return;
@@ -1001,6 +1041,7 @@ async function afficherReveal(cartes) {
     cardFront.className = `card-face face-front ${isFoil ? 'foil' : ''} ${carte.isPity ? 'pity-tag' : ''}`;
     cardFront.innerHTML = `
       <img src="${carte.image_url}" alt="${carte.nom}">
+      ${carte.isNew ? '<div class="new-badge">NEW</div>' : ''}
       <div class="r-info">
         <div class="r-nom">${carte.nom}</div>
         <div class="r-rarete">${carte.rarete}</div>
@@ -1018,6 +1059,7 @@ async function afficherReveal(cartes) {
     }
 
     card3d.classList.add('flipped');
+    jouerSonReveal(carte.rarete);
 
     const thumb = document.createElement('div');
     thumb.className = 'strip-thumb';
@@ -1098,16 +1140,27 @@ async function refreshCollection() {
   const { data: catalogue } = await sb.from('cards').select('*').eq('is_active', true);
   const { data: possedees } = await sb
     .from('user_cards')
-    .select('card_id, quantite')
+    .select('id, card_id, quantite, est_nouvelle')
     .eq('user_id', user.id);
 
-  const quantiteParCarte = {};
-  (possedees || []).forEach(pc => { quantiteParCarte[pc.card_id] = pc.quantite; });
+  const infoParCarte = {};
+  (possedees || []).forEach(pc => {
+    infoParCarte[pc.card_id] = {
+      quantite: pc.quantite,
+      userCardId: pc.id,
+      estNouvelle: pc.est_nouvelle,
+    };
+  });
 
-  allCards = (catalogue || []).map(c => ({
-    ...c,
-    quantite: quantiteParCarte[c.id] || 0,
-  }));
+  allCards = (catalogue || []).map(c => {
+    const info = infoParCarte[c.id] || {};
+    return {
+      ...c,
+      quantite: info.quantite || 0,
+      userCardId: info.userCardId || null,
+      estNouvelle: info.estNouvelle || false,
+    };
+  });
 
   const animesUniques = [...new Set(allCards.map(c => c.anime))].sort();
   const filterAnime = document.getElementById('filterAnime');
@@ -1146,6 +1199,7 @@ function renderCollection() {
     <div class="card-item ${c.quantite === 0 ? 'locked' : ''}" style="--rarity-color: ${RARITY_COLORS[c.rarete]};">
       <div class="rarity-tag">${c.rarete}</div>
       ${c.quantite > 1 ? `<div class="card-qte">x${c.quantite}</div>` : ''}
+      ${c.estNouvelle ? `<div class="new-badge" onclick="retirerBadgeNew('${c.userCardId}', event)">NEW</div>` : ''}
       <img src="${c.image_url}" alt="${c.nom}">
       <div class="card-info">
         <div class="card-nom">${c.quantite > 0 ? c.nom : '???'}</div>
@@ -1154,6 +1208,16 @@ function renderCollection() {
     </div>
   `).join('');
 }
+
+async function retirerBadgeNew(userCardId, event) {
+  if (event) event.stopPropagation();
+  if (!userCardId) return;
+  await sb.from('user_cards').update({ est_nouvelle: false }).eq('id', userCardId);
+  const carte = allCards.find(c => c.userCardId === userCardId);
+  if (carte) carte.estNouvelle = false;
+  renderCollection();
+}
+window.retirerBadgeNew = retirerBadgeNew;
 
 document.getElementById('filterRarete').addEventListener('change', renderCollection);
 document.getElementById('filterAnime').addEventListener('change', renderCollection);
@@ -1203,7 +1267,6 @@ document.getElementById('packArt').addEventListener('click', () => faireTirage(1
   await refreshPity();
   await refreshCollection();
 })();
-
     </script>
 </body>
 </html>
