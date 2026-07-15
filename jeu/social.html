@@ -169,27 +169,7 @@
   .mini-card.selectable { cursor: pointer; }
   .mini-card.selectable.selected { outline: 2px solid var(--c-legendaire); }
   .mini-card.selectable:hover { transform: translateY(-2px); transition: transform 0.1s; }
-.mini-card .mc-rarity {
-  position: absolute; top: 5px; left: 5px;
-  font-family: var(--font-display); font-size: 9px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.03em;
-  padding: 1px 6px; border-radius: 8px;
-  color: #0b0e14; background: var(--rarity-color, var(--ink-dim));
-}
 
-.collection-stats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-.stat-chip {
-  font-family: var(--font-display); font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;
-  padding: 6px 12px; border-radius: 4px; background: var(--bg-panel-2); border: 1px solid var(--border);
-  display: flex; align-items: center; gap: 6px;
-}
-.stat-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot-color, var(--ink-dim)); }
-
-.collection-filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-.filter-select {
-  background: var(--bg-panel); border: 1px solid var(--border); color: var(--ink);
-  padding: 8px 12px; border-radius: 4px; font-family: var(--font-body); font-size: 13px;
-}
   /* ---------------- MODALS ---------------- */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(4,5,8,0.85); display: none;
@@ -270,27 +250,14 @@
   </div>
   <div id="playersList"></div>
 
-<div class="collection-panel" id="collectionPanel" style="display:none;">
-  <h3 id="collectionPlayerName"></h3>
-  <div class="panel-actions">
-    <button class="btn primary" id="btnProposeTrade">Proposer un échange</button>
-    <button class="btn primary" id="btnChallenge">Défier en duel</button>
+  <div class="collection-panel" id="collectionPanel" style="display:none;">
+    <h3 id="collectionPlayerName"></h3>
+    <div class="panel-actions">
+      <button class="btn primary" id="btnProposeTrade">Proposer un échange</button>
+      <button class="btn primary" id="btnChallenge">Défier en duel</button>
+    </div>
+    <div class="card-grid" id="collectionGrid"></div>
   </div>
-  <div class="collection-stats" id="collectionStats"></div>
-  <div class="collection-filters">
-    <select class="filter-select" id="filterRarete">
-      <option value="">Toutes raretés</option>
-      <option value="commune">Commune</option>
-      <option value="rare">Rare</option>
-      <option value="epique">Épique</option>
-      <option value="legendaire">Légendaire</option>
-      <option value="mythique">Mythique</option>
-    </select>
-    <select class="filter-select" id="filterAnime">
-      <option value="">Tous animes</option>
-    </select>
-  </div>
-  <div class="card-grid" id="collectionGrid"></div>
 </div>
 
 <!-- ONGLET ECHANGES -->
@@ -473,13 +440,6 @@ document.getElementById('searchInput').addEventListener('keydown', (e) => { if (
 // ============================================
 // VOIR LA COLLECTION D'UN JOUEUR
 // ============================================
-const RARITY_LABELS = {
-  commune: 'Commune', rare: 'Rare', epique: 'Épique',
-  legendaire: 'Légendaire', mythique: 'Mythique',
-};
-
-let selectedPlayerCards = []; // toutes les cartes brutes du joueur consulté
-
 async function voirCollection(playerId, username) {
   selectedPlayer = { id: playerId, username };
 
@@ -489,75 +449,25 @@ async function voirCollection(playerId, username) {
     .eq('user_id', playerId);
 
   const panel = document.getElementById('collectionPanel');
+  const grid = document.getElementById('collectionGrid');
   document.getElementById('collectionPlayerName').textContent = `Collection de ${username}`;
   panel.style.display = 'block';
 
   if (error || !cards || cards.length === 0) {
-    selectedPlayerCards = [];
-    document.getElementById('collectionStats').innerHTML = '';
-    document.getElementById('filterAnime').innerHTML = '<option value="">Tous animes</option>';
-    document.getElementById('collectionGrid').innerHTML = '<div class="empty-msg">Ce joueur n\'a encore aucune carte.</div>';
+    grid.innerHTML = '<div class="empty-msg">Ce joueur n\'a encore aucune carte.</div>';
     return;
   }
 
-  selectedPlayerCards = cards;
-  peuplerFiltreAnime(cards);
-  afficherStatsCollection(cards);
-  renderCollectionGrid();
-}
-window.voirCollection = voirCollection;
-
-function peuplerFiltreAnime(cards) {
-  const animes = [...new Set(cards.map(c => c.card.anime))].sort();
-  const select = document.getElementById('filterAnime');
-  const valeurActuelle = select.value;
-  select.innerHTML = '<option value="">Tous animes</option>' +
-    animes.map(a => `<option value="${a}">${a}</option>`).join('');
-  select.value = animes.includes(valeurActuelle) ? valeurActuelle : '';
-}
-
-function afficherStatsCollection(cards) {
-  const counts = {};
-  cards.forEach(c => { counts[c.card.rarete] = (counts[c.card.rarete] || 0) + 1; });
-
-  const ordre = ['mythique', 'legendaire', 'epique', 'rare', 'commune'];
-  const html = ordre
-    .filter(r => counts[r])
-    .map(r => `
-      <div class="stat-chip" style="--dot-color:${RARITY_COLORS[r]};">
-        <span class="dot"></span>${RARITY_LABELS[r]} : ${counts[r]}
-      </div>
-    `).join('');
-
-  document.getElementById('collectionStats').innerHTML = html;
-}
-
-function renderCollectionGrid() {
-  const rareteFiltre = document.getElementById('filterRarete').value;
-  const animeFiltre = document.getElementById('filterAnime').value;
-
-  let cartes = selectedPlayerCards;
-  if (rareteFiltre) cartes = cartes.filter(c => c.card.rarete === rareteFiltre);
-  if (animeFiltre) cartes = cartes.filter(c => c.card.anime === animeFiltre);
-
-  const grid = document.getElementById('collectionGrid');
-  if (cartes.length === 0) {
-    grid.innerHTML = '<div class="empty-msg">Aucune carte ne correspond à ce filtre.</div>';
-    return;
-  }
-
-  grid.innerHTML = cartes.map(c => `
+  grid.innerHTML = cards.map(c => `
     <div class="mini-card" style="--rarity-color:${RARITY_COLORS[c.card.rarete]};">
-      <div class="mc-rarity">${RARITY_LABELS[c.card.rarete]}</div>
       ${c.quantite > 1 ? `<div class="mc-qte">x${c.quantite}</div>` : ''}
       <img src="${c.card.image_url}" alt="${c.card.nom}">
       <div class="mc-info"><div class="mc-nom">${c.card.nom}</div></div>
     </div>
   `).join('');
 }
+window.voirCollection = voirCollection;
 
-document.getElementById('filterRarete').addEventListener('change', renderCollectionGrid);
-document.getElementById('filterAnime').addEventListener('change', renderCollectionGrid);
 // ============================================
 // MODAL ECHANGE
 // ============================================
