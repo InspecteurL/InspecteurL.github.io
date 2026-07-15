@@ -169,7 +169,27 @@
   .mini-card.selectable { cursor: pointer; }
   .mini-card.selectable.selected { outline: 2px solid var(--c-legendaire); }
   .mini-card.selectable:hover { transform: translateY(-2px); transition: transform 0.1s; }
+.mini-card .mc-rarity {
+  position: absolute; top: 5px; left: 5px;
+  font-family: var(--font-display); font-size: 9px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 1px 6px; border-radius: 8px;
+  color: #0b0e14; background: var(--rarity-color, var(--ink-dim));
+}
 
+.collection-stats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.stat-chip {
+  font-family: var(--font-display); font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;
+  padding: 6px 12px; border-radius: 4px; background: var(--bg-panel-2); border: 1px solid var(--border);
+  display: flex; align-items: center; gap: 6px;
+}
+.stat-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot-color, var(--ink-dim)); }
+
+.collection-filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-select {
+  background: var(--bg-panel); border: 1px solid var(--border); color: var(--ink);
+  padding: 8px 12px; border-radius: 4px; font-family: var(--font-body); font-size: 13px;
+}
   /* ---------------- MODALS ---------------- */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(4,5,8,0.85); display: none;
