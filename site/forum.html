@@ -110,6 +110,28 @@
     .toast.error{background:var(--accent2);color:#fff;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
     .loading{text-align:center;padding:2rem;color:var(--muted);font-size:.875rem;}
+
+    .xp-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 9999;
+}
+.xp-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
   </style>
 </head>
 <body>
@@ -452,7 +474,74 @@
   }
   function closeModal() { document.getElementById('newThreadModal').classList.remove('open'); }
   function closeModalOutside(e) { if (e.target.id==='newThreadModal') closeModal(); }
+async function createThread(title, content) {
+  const { data: thread, error } = await supabase
+    .from('forum_threads')
+    .insert({ title, content, user_id: user.id })
+    .select()
+    .single();
 
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  // donne l'XP après création réussie
+  const { data: xpResult } = await supabase.rpc('award_xp', {
+    p_user_id: user.id,
+    p_reason: 'forum_thread',
+    p_reference_id: thread.id
+  });
+
+  if (xpResult?.success) {
+    showXpToast(xpResult); // notif "+20 XP, +5 pièces"
+    if (xpResult.leveled_up) {
+      showLevelUpAnimation(xpResult.new_level, xpResult.money_gained);
+    }
+  }
+}
+  async function postReply(threadId, content) {
+  const { data: reply, error } = await supabase
+    .from('forum_replies')
+    .insert({ thread_id: threadId, content, user_id: user.id })
+    .select()
+    .single();
+
+  if (error) return;
+
+  const { data: xpResult } = await supabase.rpc('award_xp', {
+    p_user_id: user.id,
+    p_reason: 'forum_reply',
+    p_reference_id: reply.id
+  });
+
+  if (xpResult?.success) showXpToast(xpResult);
+  // si error === 'cooldown_active' ou 'daily_limit_reached', tu ignores juste silencieusement
+}
+
+  async function likeReply(replyId, replyAuthorId) {
+  await supabase.from('forum_likes').insert({ reply_id: replyId, user_id: user.id });
+
+  await supabase.rpc('award_xp', {
+    p_user_id: replyAuthorId,
+    p_reason: 'forum_like_received',
+    p_reference_id: replyId // évite qu'un même like redonne de l'xp si retiré/remis
+  });
+}
+  function showXpToast({ xp_gained, money_gained }) {
+  const toast = document.createElement('div');
+  toast.className = 'xp-toast';
+  toast.innerHTML = `
+    <span class="xp-toast-icon">✨</span>
+    <span>+${xp_gained} XP${money_gained > 0 ? ` · +${money_gained} 🪙` : ''}</span>
+  `;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+}
   async function postThread() {
     if (!currentUser) return;
     const title = document.getElementById('newTitle').value.trim();
