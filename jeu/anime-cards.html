@@ -8,6 +8,37 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
+  .free-draw-zone {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.btn-free-draw {
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--c-legendaire), #ff6fd8);
+  color: #1a1204;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn-free-draw:hover { transform: translateY(-2px); }
+.btn-free-draw:active { transform: scale(0.97); }
+.btn-free-draw:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.free-draw-countdown {
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  letter-spacing: 0.03em;
+  color: var(--ink-dim);
+  display: none;
+}
   .new-badge {
   position: absolute;
   top: 8px;
@@ -747,7 +778,10 @@
     <button class="pull-btn simple" id="btnPull1">Tirage x1 — 10</button>
     <button class="pull-btn dix" id="btnPull10">Tirage x10 — 100</button>
   </div>
-
+<div class="free-draw-zone">
+  <button class="btn-free-draw" id="btnFreeDraw">Tirage gratuit du jour</button>
+  <div class="free-draw-countdown" id="freeDrawCountdown"></div>
+</div>
   <div class="status-msg" id="statusMsg"></div>
 </div>
 
@@ -942,6 +976,112 @@ async function faireTirage(nombre) {
   }
 }
 
+  // ============================================
+// TIRAGE GRATUIT QUOTIDIEN
+// ============================================
+let freeDrawCountdownInterval = null;
+
+async function faireTirageGratuit() {
+  const session = await getSessionOrRedirect();
+  if (!session) return;
+
+  const statusMsg = document.getElementById('statusMsg');
+  const btnFree = document.getElementById('btnFreeDraw');
+  statusMsg.classList.remove('error');
+  statusMsg.textContent = 'Ouverture du pack gratuit...';
+  btnFree.disabled = true;
+
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/gacha-pull`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ gratuit: true, banniere: activeBanniere }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      if (result.error === 'deja_reclame') {
+        statusMsg.textContent = '';
+        lancerFreeDrawCountdown(result.prochain_disponible);
+        return;
+      }
+      statusMsg.textContent = result.error || 'Erreur lors du tirage.';
+      statusMsg.classList.add('error');
+      btnFree.disabled = false;
+      return;
+    }
+
+    statusMsg.textContent = '';
+    afficherReveal(result.cartes);
+    await refreshPity();
+    await refreshCollection();
+
+    // Le tirage vient d'être réclamé, cooldown de 24h qui démarre maintenant
+    const prochainDispo = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    lancerFreeDrawCountdown(prochainDispo);
+  } catch (err) {
+    statusMsg.textContent = 'Erreur réseau, réessaie.';
+    statusMsg.classList.add('error');
+    btnFree.disabled = false;
+  }
+}
+
+function lancerFreeDrawCountdown(prochainDispoISO) {
+  const btnFree = document.getElementById('btnFreeDraw');
+  const countdownEl = document.getElementById('freeDrawCountdown');
+
+  btnFree.style.display = 'none';
+  countdownEl.style.display = 'block';
+
+  if (freeDrawCountdownInterval) clearInterval(freeDrawCountdownInterval);
+
+  const prochainDispo = new Date(prochainDispoISO).getTime();
+
+  function tick() {
+    const diff = prochainDispo - Date.now();
+
+    if (diff <= 0) {
+      clearInterval(freeDrawCountdownInterval);
+      countdownEl.style.display = 'none';
+      btnFree.style.display = 'inline-block';
+      btnFree.disabled = false;
+      return;
+    }
+
+    const heures = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const secondes = Math.floor((diff % (1000 * 60)) / 1000);
+
+    countdownEl.textContent = `Prochain tirage gratuit dans ${heures}h ${minutes}m ${secondes}s`;
+  }
+
+  tick();
+  freeDrawCountdownInterval = setInterval(tick, 1000);
+}
+
+async function checkFreeDrawDispo() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('last_free_draw_at')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.last_free_draw_at) {
+    const prochainDispo = new Date(profile.last_free_draw_at).getTime() + 24 * 60 * 60 * 1000;
+    if (Date.now() < prochainDispo) {
+      lancerFreeDrawCountdown(new Date(prochainDispo).toISOString());
+    }
+  }
+}
+
+document.getElementById('btnFreeDraw').addEventListener('click', faireTirageGratuit);
 // ============================================
 // ANIMATION DE REVEAL
 // ============================================
@@ -1267,6 +1407,7 @@ document.getElementById('packArt').addEventListener('click', () => faireTirage(1
   await refreshBalance();
   await refreshPity();
   await refreshCollection();
+  await checkFreeDrawDispo();
 })();
     </script>
 </body>
