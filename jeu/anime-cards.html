@@ -9,6 +9,17 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=money_bag">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
+  .face-back-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  display: none;
+}
+.card-face.face-back.has-image .back-symbol { display: none; }
+.card-face.face-back.has-image .face-back-image { display: block; }
   
   .pack-art-image {
   position: absolute;
@@ -918,7 +929,8 @@
 
   <div class="reveal-stage">
     <div class="reveal-card-3d" id="revealCard3d">
-      <div class="card-face face-back">
+     <div class="card-face face-back" id="revealCardBack">
+        <img class="face-back-image" id="revealBackImage" src="" alt="">
         <div class="back-symbol">Pack</div>
       </div>
       <div class="card-face face-front" id="revealCardFront"></div>
@@ -975,6 +987,7 @@ const RARITY_COLORS = {
 };
 
 let activeBanniere = 'standard';
+  const PACK_IMAGES = {};
 let allCards = [];
 
 // ============================================
@@ -1253,6 +1266,18 @@ async function afficherReveal(cartes) {
   btnSkipAll.style.display = cartes.length > 1 ? 'inline-block' : 'none';
   overlay.classList.add('active');
 
+  // ↓ Nouveau bloc à ajouter ici : applique l'image du pack au dos de la carte
+  const revealCardBack = document.getElementById('revealCardBack');
+  const revealBackImage = document.getElementById('revealBackImage');
+  const packImage = PACK_IMAGES[activeBanniere];
+  if (packImage && packImage.trim() !== '') {
+    revealBackImage.src = packImage;
+    revealCardBack.classList.add('has-image');
+  } else {
+    revealBackImage.src = '';
+    revealCardBack.classList.remove('has-image');
+  }
+
   for (let i = 0; i < cartes.length; i++) {
     const carte = cartes[i];
     const rarityVar = `var(--c-${carte.rarete})`;
@@ -1514,6 +1539,8 @@ function appliquerBanniere(btn) {
   const cost10 = btn.dataset.cost10;
   document.getElementById('btnPull1').textContent = `Tirage x1 — ${cost1}`;
   document.getElementById('btnPull10').textContent = `Tirage x10 — ${cost10}`;
+
+  PACK_IMAGES[activeBanniere] = image; // ← nouvelle ligne à ajouter
 }
 
 document.getElementById('banniereTabs').addEventListener('click', async (e) => {
