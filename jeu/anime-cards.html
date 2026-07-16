@@ -6,8 +6,10 @@
 <title>Anime-Cards — HorizonCiné</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=money_bag">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
+  
   .free-draw-zone {
   margin-top: 22px;
   display: flex;
@@ -749,6 +751,44 @@
   padding: 8px 18px; border-radius: 4px; cursor: pointer; margin: 0 4px;
 }
 .sub-tab-marche.active { color: var(--bg-void); background: var(--ink); border-color: var(--ink); }
+
+  .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  font-size: 1.05em;
+  line-height: 1;
+  color: var(--c-legendaire);
+}
+
+/* ---------------- MODAL DE SAISIE DE PRIX ---------------- */
+.price-modal-overlay {
+  position: fixed; inset: 0; background: rgba(4,5,8,0.9);
+  display: none; align-items: center; justify-content: center; z-index: 150; padding: 20px;
+}
+.price-modal-overlay.active { display: flex; }
+.price-modal-box {
+  background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px;
+  padding: 24px; max-width: 380px; width: 100%;
+  box-shadow: 0 0 60px -20px rgba(232,169,76,0.25);
+}
+.price-modal-box h3 {
+  font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.03em;
+  font-size: 16px; margin-bottom: 8px;
+}
+.price-modal-hint { font-size: 12px; color: var(--ink-dim); margin-bottom: 16px; }
+.price-modal-input-wrap {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-panel-2); border: 1px solid var(--border); border-radius: 4px;
+  padding: 4px 12px; margin-bottom: 8px; transition: border-color 0.15s;
+}
+.price-modal-input-wrap:focus-within { border-color: var(--c-legendaire); }
+.price-modal-input {
+  flex: 1; background: transparent; border: none; color: var(--ink);
+  padding: 10px 0; font-family: var(--font-display); font-size: 18px; outline: none;
+}
+.price-modal-error { font-size: 12px; color: #f06060; min-height: 16px; margin-bottom: 12px; }
+.price-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.price-modal-actions .pull-btn { padding: 10px 20px; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -889,6 +929,21 @@
   <div class="recap-summary" id="recapSummary"></div>
   <div class="recap-grid" id="recapGrid"></div>
   <button class="reveal-close" id="recapClose">Fermer</button>
+</div>
+  <div class="price-modal-overlay" id="priceModalOverlay">
+  <div class="price-modal-box">
+    <h3 id="priceModalTitle">Titre</h3>
+    <div class="price-modal-hint" id="priceModalHint"></div>
+    <div class="price-modal-input-wrap">
+      <input type="number" id="priceModalInput" class="price-modal-input" placeholder="0">
+      <span class="material-symbols-outlined">money_bag</span>
+    </div>
+    <div class="price-modal-error" id="priceModalError"></div>
+    <div class="price-modal-actions">
+      <button class="pull-btn dix" id="priceModalConfirmBtn">Valider</button>
+      <button class="pull-btn simple" id="priceModalCancelBtn">Annuler</button>
+    </div>
+  </div>
 </div>
 <script>
 // ============================================
@@ -1506,7 +1561,7 @@ async function chargerCartesVendables() {
           <div class="card-nom">${c.nom}</div>
           <div class="card-anime">${c.anime}</div>
           <div style="display:flex;gap:6px;margin-top:6px;">
-            <button class="pull-btn simple" style="flex:1;font-size:10px;padding:6px;" onclick="venteInstantanee('${uc.id}', ${prix.instant})">Vendre (${prix.instant})</button>
+            <button class="pull-btn simple" style="flex:1;font-size:10px;padding:6px;" onclick="venteInstantanee('${uc.id}', ${prix.instant})">Vendre (${prix.instant} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span>)</button>
             <button class="pull-btn dix" style="flex:1;font-size:10px;padding:6px;" onclick="venteMarche('${uc.id}', ${prix.min}, ${prix.max})">Marché</button>
           </div>
         </div>
@@ -1526,11 +1581,13 @@ async function venteInstantanee(userCardId, prixAttendu) {
 }
 
 async function venteMarche(userCardId, min, max) {
-  const prix = parseInt(prompt(`Prix de vente (entre ${min} et ${max} pièces) :`, min));
-  if (!prix || prix < min || prix > max) {
-    if (prix) alert(`Le prix doit être entre ${min} et ${max}.`);
-    return;
-  }
+  const prix = await ouvrirModalPrix({
+    titre: 'Mettre en vente',
+    hint: `Prix libre, entre ${min} et ${max} pièces.`,
+    valeurDefaut: min,
+    min, max,
+  });
+  if (!prix) return;
   try {
     const { error } = await sb.rpc('mettre_en_vente', { p_user_card_id: userCardId, p_prix: prix });
     if (error) throw error;
@@ -1564,7 +1621,7 @@ async function chargerAnnonces() {
         <img src="${l.image_url}" alt="${l.nom}">
         <div class="card-info">
           <div class="card-nom">${l.nom}</div>
-          <div class="card-anime">${l.prix} pièces</div>
+         <div class="card-anime">${l.prix} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></div>
           ${estMoi
             ? `<button class="pull-btn simple" style="width:100%;font-size:10px;margin-top:6px;" onclick="annulerAnnonce('${l.id}')">Annuler</button>`
             : `<div style="display:flex;gap:6px;margin-top:6px;">
@@ -1588,8 +1645,12 @@ async function acheterAnnonce(listingId, prix) {
 }
 
 async function fairreUneOffre(listingId) {
-  const montant = parseInt(prompt('Montant de ton offre (pièces) :'));
-  if (!montant || montant <= 0) return;
+  const montant = await ouvrirModalPrix({
+    titre: 'Faire une offre',
+    hint: 'Propose ton prix au vendeur.',
+    min: 1,
+  });
+  if (!montant) return;
   try {
     const { error } = await sb.rpc('faire_offre', { p_listing_id: listingId, p_montant: montant });
     if (error) throw error;
@@ -1639,7 +1700,7 @@ async function chargerOffresRecues() {
 
   container.innerHTML = offres.map(o => `
     <div class="player-row" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-      <div>Offre de <strong>${o.montant}</strong> pièces sur "${o.listing?.nom}" (prix affiché : ${o.listing?.prix})</div>
+      <div>Offre de <strong>${o.montant} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></strong> sur "${o.listing?.nom}" (prix affiché : ${o.listing?.prix} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span>)</div>
       <div style="display:flex;gap:6px;">
         <button class="pull-btn dix" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'accepter')">Accepter</button>
         <button class="pull-btn simple" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'refuser')">Refuser</button>
@@ -1659,8 +1720,12 @@ async function repondreOffreMarche(offerId, reponse) {
 }
 
 async function contreOffreMarche(offerId) {
-  const montant = parseInt(prompt('Montant de ta contre-offre :'));
-  if (!montant || montant <= 0) return;
+  const montant = await ouvrirModalPrix({
+    titre: 'Contre-offre',
+    hint: 'Propose un nouveau montant.',
+    min: 1,
+  });
+  if (!montant) return;
   try {
     const { error } = await sb.rpc('repondre_offre', { p_offer_id: offerId, p_reponse: 'contre', p_contre_montant: montant });
     if (error) throw error;
@@ -1687,7 +1752,7 @@ async function chargerOffresRecues() {
 
   container.innerHTML = offres.map(o => `
     <div class="player-row" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-      <div>Offre de <strong>${o.montant}</strong> pièces sur "${o.listing?.nom}" (prix affiché : ${o.listing?.prix})</div>
+      <div>Offre de <strong>${o.montant} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span> sur "${o.listing?.nom}" — <span style="color:var(--ink-dim);">${o.statut}</span></div>
       <div style="display:flex;gap:6px;">
         <button class="pull-btn dix" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'accepter')">Accepter</button>
         <button class="pull-btn simple" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'refuser')">Refuser</button>
@@ -1695,6 +1760,44 @@ async function chargerOffresRecues() {
       </div>
     </div>`).join('');
 }
+
+  // ============================================
+// MODAL DE SAISIE DE PRIX (remplace les prompt())
+// ============================================
+let priceModalResolveFn = null;
+let priceModalConstraints = {};
+
+function ouvrirModalPrix({ titre, hint, valeurDefaut, min, max }) {
+  document.getElementById('priceModalTitle').textContent = titre;
+  document.getElementById('priceModalHint').innerHTML = hint;
+  document.getElementById('priceModalInput').value = valeurDefaut ?? '';
+  document.getElementById('priceModalError').textContent = '';
+  priceModalConstraints = { min, max };
+  document.getElementById('priceModalOverlay').classList.add('active');
+  document.getElementById('priceModalInput').focus();
+
+  return new Promise((resolve) => { priceModalResolveFn = resolve; });
+}
+
+function fermerModalPrix(valeur) {
+  document.getElementById('priceModalOverlay').classList.remove('active');
+  if (priceModalResolveFn) { priceModalResolveFn(valeur); priceModalResolveFn = null; }
+}
+
+document.getElementById('priceModalConfirmBtn').addEventListener('click', () => {
+  const val = parseInt(document.getElementById('priceModalInput').value, 10);
+  const { min, max } = priceModalConstraints;
+  if (!val || val <= 0 || (min != null && val < min) || (max != null && val > max)) {
+    document.getElementById('priceModalError').textContent =
+      (min != null && max != null) ? `Entre une valeur entre ${min} et ${max}.` : 'Entre une valeur valide.';
+    return;
+  }
+  fermerModalPrix(val);
+});
+document.getElementById('priceModalCancelBtn').addEventListener('click', () => fermerModalPrix(null));
+document.getElementById('priceModalInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('priceModalConfirmBtn').click();
+});
 // ============================================
 // INIT
 // ============================================
