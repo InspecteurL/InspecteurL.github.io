@@ -1804,6 +1804,27 @@ async function chargerOffresRecues() {
     </div>`).join('');
 }
 
+  async function chargerMesOffres() {
+  const { data: { user } } = await sb.auth.getUser();
+  const { data: offres } = await sb
+    .from('market_offers')
+    .select('*, listing:market_listings(nom, prix, image_url, rarete, statut)')
+    .eq('proposeur_id', user.id)
+    .order('created_at', { ascending: false });
+
+  const container = document.getElementById('mesOffresList');
+  if (!offres || offres.length === 0) {
+    container.innerHTML = '<div class="empty-state">Tu n\'as envoyé aucune offre.</div>';
+    return;
+  }
+
+  container.innerHTML = offres.map(o => `
+    <div class="player-row" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div>Ton offre de <strong>${o.montant} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></strong> sur "${o.listing?.nom}" (prix affiché : ${o.listing?.prix} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span>) — <span style="color:var(--ink-dim);">${o.statut}</span></div>
+    </div>`).join('');
+}
+window.chargerMesOffres = chargerMesOffres;
+
   // ============================================
 // MODAL DE SAISIE DE PRIX (remplace les prompt())
 // ============================================
