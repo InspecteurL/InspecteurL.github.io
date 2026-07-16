@@ -1,236 +1,380 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roulette des Prix Fictifs - 32 Lots</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a26;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roulette des Lots — HorizonCiné</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=money_bag" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #e8b84b;
+    --accent2: #c0392b;
+    --text: #e8e8f0;
+    --muted: #7a7a9a;
+    --radius: 12px;
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --glass: rgba(232, 184, 75, 0.08);
+    --shadow-soft: 0 8px 24px -6px rgba(0, 0, 0, 0.6);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+}
+h1, h2, h3 { font-family: 'Bebas Neue', cursive; letter-spacing: 2px; text-transform: uppercase; }
 
-        h1 {
-            margin-bottom: 5px;
-            color: #00ffcc;
-            text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
-            font-size: 28px;
-        }
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  font-size: 1.05em;
+  line-height: 1;
+  color: var(--accent);
+}
 
-        p {
-            color: #888;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
+nav {
+    background: rgba(10,10,15,.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 60px;
+}
+.nav-logo { font-family: 'Bebas Neue', cursive; font-size: 1.5rem; color: var(--accent); letter-spacing: 2px; text-decoration: none; }
+nav a { color: var(--muted); text-decoration: none; font-size: .875rem; font-weight: 600; transition: color .2s; margin-right: 1.2rem; }
+nav a:last-child { margin-right: 0; }
+nav a:hover { color: var(--text); }
+nav a.active { color: var(--accent); }
 
-        .wheel-container {
-            position: relative;
-            width: 450px;
-            height: 450px;
-        }
+.nav-balance {
+    margin-left: auto;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.1rem;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.nav-balance span.amount { color: var(--accent); }
 
-        /* Le curseur pointeur en haut de la roue */
-        .pointer {
-            position: absolute;
-            top: -18px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 18px solid transparent;
-            border-right: 18px solid transparent;
-            border-top: 35px solid #ff3366;
-            z-index: 10;
-            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.6));
-        }
+.page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px 80px;
+    text-align: center;
+}
 
-        /* La roue elle-même */
-        .wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 10px solid #2b2b3d;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7), 0 0 50px rgba(0, 255, 204, 0.05);
-            /* Génération dynamique de l'arrière-plan de la roue par JavaScript */
-            transition: transform 5s cubic-bezier(0.15, 0.85, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
+.page-title { color: var(--accent); font-size: clamp(1.8rem, 5vw, 2.6rem); text-shadow: 0 0 20px rgba(232, 184, 75, 0.4); margin-bottom: 6px; }
+.page-sub { color: var(--muted); font-size: 0.85rem; letter-spacing: 1px; font-family: 'IBM Plex Mono', monospace; margin-bottom: 28px; }
 
-        /* Les textes à l'intérieur de la roue (orientés vers le centre) */
-        .slice-text {
-            position: absolute;
-            width: 50%;
-            height: 30px;
-            top: calc(50% - 15px);
-            left: 50%;
-            transform-origin: 0% 50%;
-            font-weight: bold;
-            font-size: 11px;
-            color: #fff;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.9);
-            display: flex;
-            align-items: center;
-            padding-left: 65px;
-            box-sizing: border-box;
-            z-index: 2;
-        }
+.wheel-container {
+    position: relative;
+    width: 420px;
+    height: 420px;
+    max-width: 90vw;
+    max-height: 90vw;
+}
 
-        /* Centre de la roue */
-        .center-circle {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: #fff;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            border: 4px solid #1a1a26;
-        }
+.pointer {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 16px solid transparent;
+    border-right: 16px solid transparent;
+    border-top: 30px solid var(--accent);
+    z-index: 10;
+    filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.7));
+}
 
-        button {
-            margin-top: 30px;
-            padding: 15px 45px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #1a1a26;
-            background-color: #00ffcc;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0, 255, 204, 0.4);
-            transition: all 0.2s ease;
-        }
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 10px solid var(--card);
+    box-shadow: var(--shadow-soft), 0 0 60px -10px rgba(232,184,75,0.15);
+    transition: transform 5s cubic-bezier(0.15, 0.85, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
 
-        button:hover {
-            background-color: #00e6b8;
-            transform: translateY(-2px);
-            box-shadow: 0 7px 20px rgba(0, 255, 204, 0.6);
-        }
+.slice-text {
+    position: absolute;
+    width: 50%;
+    height: 26px;
+    top: calc(50% - 13px);
+    left: 50%;
+    transform-origin: 0% 50%;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 10.5px;
+    color: #0a0a0f;
+    text-shadow: none;
+    display: flex;
+    align-items: center;
+    padding-left: 60px;
+    box-sizing: border-box;
+    z-index: 2;
+}
 
-        button:active {
-            transform: translateY(1px);
-        }
+.center-circle {
+    position: absolute;
+    width: 56px; height: 56px;
+    background: var(--card);
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    box-shadow: 0 0 15px rgba(0,0,0,0.6);
+    border: 4px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.center-circle .material-symbols-outlined { font-size: 24px; }
 
-        button:disabled {
-            background-color: #444;
-            color: #777;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
+button#spin-btn {
+    margin-top: 32px;
+    padding: 14px 40px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #0a0a0f;
+    background-color: var(--accent);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(232, 184, 75, 0.35);
+    transition: var(--transition);
+}
+button#spin-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(232, 184, 75, 0.5); }
+button#spin-btn:active:not(:disabled) { transform: translateY(1px); }
+button#spin-btn:disabled { background-color: var(--card); color: var(--muted); cursor: not-allowed; box-shadow: none; border: 1px solid var(--border); }
 
-        /* Pop-up du résultat */
-        #result-popup {
-            margin-top: 20px;
-            font-size: 26px;
-            font-weight: bold;
-            min-height: 38px;
-            color: #ffdd59;
-            text-align: center;
-            text-shadow: 0 0 8px rgba(255, 221, 89, 0.3);
-        }
-    </style>
+#result-popup {
+    margin-top: 20px;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 26px;
+    letter-spacing: 1px;
+    min-height: 34px;
+    color: var(--accent);
+    text-shadow: 0 0 12px rgba(232, 184, 75, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#cooldown-text {
+    margin-top: 16px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    display: none;
+}
+
+#auth-gate {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 40px;
+}
+</style>
 </head>
 <body>
 
-    <h1>La Roue des 32 Lots</h1>
-    <p>(Monnaie fictive - Faites vos jeux !)</p>
+<nav>
+  <a href="accueil.html" class="nav-logo">HorizonCiné</a>
+  <a href="accueil.html">Accueil</a>
+  <a href="https://inspecteurl.github.io/site/catalogue.html">Catalogue</a>
+  <a href="https://inspecteurl.github.io/site/communaute.html">Communauté</a>
+  <a href="forum.html">Forum</a>
+  <a href="profil.html">Profil</a>
+  <a href="https://inspecteurl.github.io/site/jeux.html">Jeux</a>
+  <div class="nav-balance">
+    <span class="material-symbols-outlined">money_bag</span>
+    <span class="amount" id="balanceDisplay">—</span>
+  </div>
+</nav>
 
+<div class="page">
+  <div class="page-title">La Roue des Lots</div>
+  <div class="page-sub">HorizonCiné — Monnaie 100% fictive · 1 tirage gratuit par jour</div>
+
+  <div id="auth-gate" style="display:none;">Connecte-toi sur HorizonCiné pour tourner la roue.</div>
+
+  <div id="game-zone">
     <div class="wheel-container">
-        <div class="pointer"></div>
-        <div class="wheel" id="wheel"></div>
-        <div class="center-circle"></div>
+      <div class="pointer"></div>
+      <div class="wheel" id="wheel"></div>
+      <div class="center-circle"><span class="material-symbols-outlined">money_bag</span></div>
     </div>
 
     <button id="spin-btn">Lancer la roue !</button>
-
     <div id="result-popup"></div>
+    <div id="cooldown-text"></div>
+  </div>
+</div>
 
-    <script>
-        // Génération des 32 valeurs de lots entre 10 et 1000
-        const prizeValues = [
-            10, 30, 50, 75, 100, 130, 160, 200, 
-            240, 280, 320, 360, 400, 440, 480, 520, 
-            560, 600, 640, 680, 720, 750, 780, 810, 
-            840, 870, 900, 920, 940, 960, 980, 1000
-        ];
+<script>
+const SUPABASE_URL = "https://wuagahavmbugmnuzsouf.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const totalSlices = prizeValues.length;
-        const degreesPerSlice = 360 / totalSlices; // 11.25 degrés par tranche
+const prizeValues = [
+  10, 30, 50, 75, 100, 130, 160, 200,
+  240, 280, 320, 360, 400, 440, 480, 520,
+  560, 600, 640, 680, 720, 750, 780, 810,
+  840, 870, 900, 920, 940, 960, 980, 1000
+];
+const totalSlices = prizeValues.length;
+const degreesPerSlice = 360 / totalSlices;
 
-        const wheel = document.getElementById('wheel');
-        const spinBtn = document.getElementById('spin-btn');
-        const resultPopup = document.getElementById('result-popup');
+const wheel = document.getElementById('wheel');
+const spinBtn = document.getElementById('spin-btn');
+const resultPopup = document.getElementById('result-popup');
+const cooldownText = document.getElementById('cooldown-text');
 
-        // Alternance de 4 couleurs distinctes pour que la roue à 32 segments reste lisible
-        const colors = ["#ff5e57", "#ffdd59", "#3ae374", "#3498db"];
+// palette dans les tons du site (or, rouge accent2, bleu, violet muté)
+const colors = ["#e8b84b", "#c0392b", "#4c8ce8", "#7a5ca8"];
 
-        // 1. Génération visuelle des parts et des textes
-        let conicGradientParts = [];
-        
-        prizeValues.forEach((prize, index) => {
-            const startAngle = index * degreesPerSlice;
-            const endAngle = (index + 1) * degreesPerSlice;
-            const color = colors[index % colors.length];
-            
-            // On prépare le conic-gradient CSS
-            conicGradientParts.push(`${color} ${startAngle}deg ${endAngle}deg`);
+let conicGradientParts = [];
+prizeValues.forEach((prize, index) => {
+  const startAngle = index * degreesPerSlice;
+  const endAngle = (index + 1) * degreesPerSlice;
+  const color = colors[index % colors.length];
+  conicGradientParts.push(`${color} ${startAngle}deg ${endAngle}deg`);
 
-            // Création de l'élément de texte
-            const textEl = document.createElement('div');
-            textEl.className = 'slice-text';
-            // Rotation pour aligner le texte au milieu de chaque tranche de 11.25 degrés
-            const midAngle = startAngle + (degreesPerSlice / 2);
-            textEl.style.transform = `rotate(${midAngle}deg)`;
-            textEl.textContent = `${prize} €`;
-            wheel.appendChild(textEl);
-        });
+  const textEl = document.createElement('div');
+  textEl.className = 'slice-text';
+  const midAngle = startAngle + (degreesPerSlice / 2);
+  textEl.style.transform = `rotate(${midAngle}deg)`;
+  textEl.textContent = `${prize}`;
+  wheel.appendChild(textEl);
+});
+wheel.style.background = `conic-gradient(${conicGradientParts.join(', ')})`;
 
-        // Appliquer le dégradé conique à l'arrière-plan de la roue
-        wheel.style.background = `conic-gradient(${conicGradientParts.join(', ')})`;
+let currentRotation = 0;
+let currentUser = null;
+let cooldownInterval = null;
 
-        let currentRotation = 0;
+async function refreshBalance() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const { data } = await sb.from('profiles').select('balance').eq('id', user.id).single();
+  if (data) document.getElementById('balanceDisplay').textContent = data.balance;
+}
 
-        // 2. Gestion du spin
-        spinBtn.addEventListener('click', () => {
-            spinBtn.disabled = true;
-            resultPopup.textContent = "";
+function lancerCountdown(prochainDispoISO) {
+  spinBtn.style.display = 'none';
+  cooldownText.style.display = 'block';
+  if (cooldownInterval) clearInterval(cooldownInterval);
+  const prochainDispo = new Date(prochainDispoISO).getTime();
 
-            // Au moins 5 tours complets (1800°) + un angle aléatoire
-            const extraDegrees = Math.floor(Math.random() * 360);
-            const totalSpin = 1800 + extraDegrees;
-            
-            currentRotation += totalSpin;
+  function tick() {
+    const diff = prochainDispo - Date.now();
+    if (diff <= 0) {
+      clearInterval(cooldownInterval);
+      cooldownText.style.display = 'none';
+      spinBtn.style.display = 'inline-block';
+      spinBtn.disabled = false;
+      return;
+    }
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    cooldownText.textContent = `Prochain tirage gratuit dans ${h}h ${m}m ${s}s`;
+  }
+  tick();
+  cooldownInterval = setInterval(tick, 1000);
+}
 
-            // Rotation fluide de la roue
-            wheel.style.transform = `rotate(${currentRotation}deg)`;
+async function verifierCooldownInitial() {
+  const { data } = await sb.from('profiles').select('last_roulette_at').eq('id', currentUser.id).single();
+  if (data?.last_roulette_at) {
+    const prochain = new Date(data.last_roulette_at).getTime() + 24 * 60 * 60 * 1000;
+    if (Date.now() < prochain) {
+      lancerCountdown(new Date(prochain).toISOString());
+    }
+  }
+}
 
-            // Calculer l'angle d'atterrissage final par rapport au pointeur (positionné à 270° sur le cercle)
-            const finalDegrees = currentRotation % 360;
-            const adjustedDegrees = (360 - finalDegrees + 270) % 360;
-            
-            // Trouver l'index du lot correspondant
-            const segmentIndex = Math.floor(adjustedDegrees / degreesPerSlice) % totalSlices;
+spinBtn.addEventListener('click', async () => {
+  spinBtn.disabled = true;
+  resultPopup.textContent = '';
 
-            // Attendre la fin de l'animation (5 secondes définies en CSS)
-            setTimeout(() => {
-                const finalPrize = prizeValues[segmentIndex];
-                resultPopup.textContent = `🎉 Gagné : ${finalPrize} € fictifs ! 🎉`;
-                spinBtn.disabled = false;
-            }, 5000);
-        });
-    </script>
+  try {
+    const { data, error } = await sb.rpc('tourner_roulette');
+    if (error) {
+      if (error.message.includes('deja_tourne')) {
+        // resynchronise le countdown exact depuis la base
+        await verifierCooldownInitial();
+        return;
+      }
+      resultPopup.textContent = 'Erreur : ' + error.message;
+      spinBtn.disabled = false;
+      return;
+    }
+
+    const resultat = data[0];
+    const segmentIndex = resultat.segment_index;
+    const prix = resultat.prix;
+
+    // calcule l'angle final pour atterrir précisément sur le bon segment
+    const jitter = 0.15 + Math.random() * 0.7; // évite de toujours tomber au même endroit du segment
+    const targetAdjusted = segmentIndex * degreesPerSlice + jitter * degreesPerSlice;
+    const desiredFinal = (((630 - targetAdjusted) % 360) + 360) % 360;
+    const currentMod = ((currentRotation % 360) + 360) % 360;
+    let delta = desiredFinal - currentMod;
+    if (delta <= 0) delta += 360;
+    currentRotation += 1800 + delta;
+
+    wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+    setTimeout(async () => {
+      resultPopup.innerHTML = `Gagné : ${prix} <span class="material-symbols-outlined">money_bag</span> !`;
+      document.getElementById('balanceDisplay').textContent = resultat.nouveau_solde;
+      const prochainDispo = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      lancerCountdown(prochainDispo);
+    }, 5000);
+  } catch (err) {
+    resultPopup.textContent = 'Erreur réseau, réessaie.';
+    spinBtn.disabled = false;
+  }
+});
+
+(async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    document.getElementById('game-zone').style.display = 'none';
+    document.getElementById('auth-gate').style.display = 'block';
+    return;
+  }
+  currentUser = session.user;
+  await refreshBalance();
+  await verifierCooldownInitial();
+})();
+</script>
 </body>
 </html>
