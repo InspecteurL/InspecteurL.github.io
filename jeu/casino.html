@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roulette des Prix Fictifs - 32 Lots</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a26;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            color: #00ffcc;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+            font-size: 28px;
+        }
+
+        p {
+            color: #888;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 450px;
+            height: 450px;
+        }
+
+        /* Le curseur pointeur en haut de la roue */
+        .pointer {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 35px solid #ff3366;
+            z-index: 10;
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.6));
+        }
+
+        /* La roue elle-même */
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 10px solid #2b2b3d;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7), 0 0 50px rgba(0, 255, 204, 0.05);
+            /* Génération dynamique de l'arrière-plan de la roue par JavaScript */
+            transition: transform 5s cubic-bezier(0.15, 0.85, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Les textes à l'intérieur de la roue (orientés vers le centre) */
+        .slice-text {
+            position: absolute;
+            width: 50%;
+            height: 30px;
+            top: calc(50% - 15px);
+            left: 50%;
+            transform-origin: 0% 50%;
+            font-weight: bold;
+            font-size: 11px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            padding-left: 65px;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+
+        /* Centre de la roue */
+        .center-circle {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #fff;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            border: 4px solid #1a1a26;
+        }
+
+        button {
+            margin-top: 30px;
+            padding: 15px 45px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a1a26;
+            background-color: #00ffcc;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 255, 204, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #00e6b8;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0, 255, 204, 0.6);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            background-color: #444;
+            color: #777;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Pop-up du résultat */
+        #result-popup {
+            margin-top: 20px;
+            font-size: 26px;
+            font-weight: bold;
+            min-height: 38px;
+            color: #ffdd59;
+            text-align: center;
+            text-shadow: 0 0 8px rgba(255, 221, 89, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>La Roue des 32 Lots</h1>
+    <p>(Monnaie fictive - Faites vos jeux !)</p>
+
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <div class="wheel" id="wheel"></div>
+        <div class="center-circle"></div>
+    </div>
+
+    <button id="spin-btn">Lancer la roue !</button>
+
+    <div id="result-popup"></div>
+
+    <script>
+        // Génération des 32 valeurs de lots entre 10 et 1000
+        const prizeValues = [
+            10, 30, 50, 75, 100, 130, 160, 200, 
+            240, 280, 320, 360, 400, 440, 480, 520, 
+            560, 600, 640, 680, 720, 750, 780, 810, 
+            840, 870, 900, 920, 940, 960, 980, 1000
+        ];
+
+        const totalSlices = prizeValues.length;
+        const degreesPerSlice = 360 / totalSlices; // 11.25 degrés par tranche
+
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spin-btn');
+        const resultPopup = document.getElementById('result-popup');
+
+        // Alternance de 4 couleurs distinctes pour que la roue à 32 segments reste lisible
+        const colors = ["#ff5e57", "#ffdd59", "#3ae374", "#3498db"];
+
+        // 1. Génération visuelle des parts et des textes
+        let conicGradientParts = [];
+        
+        prizeValues.forEach((prize, index) => {
+            const startAngle = index * degreesPerSlice;
+            const endAngle = (index + 1) * degreesPerSlice;
+            const color = colors[index % colors.length];
+            
+            // On prépare le conic-gradient CSS
+            conicGradientParts.push(`${color} ${startAngle}deg ${endAngle}deg`);
+
+            // Création de l'élément de texte
+            const textEl = document.createElement('div');
+            textEl.className = 'slice-text';
+            // Rotation pour aligner le texte au milieu de chaque tranche de 11.25 degrés
+            const midAngle = startAngle + (degreesPerSlice / 2);
+            textEl.style.transform = `rotate(${midAngle}deg)`;
+            textEl.textContent = `${prize} €`;
+            wheel.appendChild(textEl);
+        });
+
+        // Appliquer le dégradé conique à l'arrière-plan de la roue
+        wheel.style.background = `conic-gradient(${conicGradientParts.join(', ')})`;
+
+        let currentRotation = 0;
+
+        // 2. Gestion du spin
+        spinBtn.addEventListener('click', () => {
+            spinBtn.disabled = true;
+            resultPopup.textContent = "";
+
+            // Au moins 5 tours complets (1800°) + un angle aléatoire
+            const extraDegrees = Math.floor(Math.random() * 360);
+            const totalSpin = 1800 + extraDegrees;
+            
+            currentRotation += totalSpin;
+
+            // Rotation fluide de la roue
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+            // Calculer l'angle d'atterrissage final par rapport au pointeur (positionné à 270° sur le cercle)
+            const finalDegrees = currentRotation % 360;
+            const adjustedDegrees = (360 - finalDegrees + 270) % 360;
+            
+            // Trouver l'index du lot correspondant
+            const segmentIndex = Math.floor(adjustedDegrees / degreesPerSlice) % totalSlices;
+
+            // Attendre la fin de l'animation (5 secondes définies en CSS)
+            setTimeout(() => {
+                const finalPrize = prizeValues[segmentIndex];
+                resultPopup.textContent = `🎉 Gagné : ${finalPrize} € fictifs ! 🎉`;
+                spinBtn.disabled = false;
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
