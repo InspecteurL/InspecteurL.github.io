@@ -1491,9 +1491,7 @@ const PACK_DESCRIPTIONS = {
   'Death Note': 'Cartes Death Note uniquement.',
 };
 
-document.getElementById('banniereTabs').addEventListener('click', async (e) => {
-  const btn = e.target.closest('.tab-btn');
-  if (!btn) return;
+function appliquerBanniere(btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   activeBanniere = btn.dataset.banniere;
@@ -1515,7 +1513,12 @@ document.getElementById('banniereTabs').addEventListener('click', async (e) => {
   const cost10 = btn.dataset.cost10;
   document.getElementById('btnPull1').textContent = `Tirage x1 — ${cost1}`;
   document.getElementById('btnPull10').textContent = `Tirage x10 — ${cost10}`;
+}
 
+document.getElementById('banniereTabs').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  appliquerBanniere(btn);
   await refreshPity();
 });
 
@@ -1844,6 +1847,11 @@ document.getElementById('priceModalInput').addEventListener('keydown', (e) => {
 (async function init() {
   const session = await getSessionOrRedirect();
   if (!session) return;
+
+  // Applique immédiatement le pack actif par défaut (Standard), sans attendre un clic
+  const btnActifParDefaut = document.querySelector('#banniereTabs .tab-btn.active');
+  if (btnActifParDefaut) appliquerBanniere(btnActifParDefaut);
+
   await refreshBalance();
   await refreshPity();
   await refreshCollection();
