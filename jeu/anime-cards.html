@@ -740,6 +740,15 @@
   color: var(--rarity-color);
   padding-bottom: 6px;
 }
+
+  .main-tab-content { display: none; }
+.main-tab-content.active { display: block; }
+.sub-tab-marche {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase;
+  background: var(--bg-panel); border: 1px solid var(--border); color: var(--ink-dim);
+  padding: 8px 18px; border-radius: 4px; cursor: pointer; margin: 0 4px;
+}
+.sub-tab-marche.active { color: var(--bg-void); background: var(--ink); border-color: var(--ink); }
 </style>
 </head>
 <body>
@@ -753,6 +762,12 @@
   <div class="nav-balance">Solde : <span id="balanceDisplay">—</span></div>
 </div>
 
+<div class="banniere-tabs" id="mainTabs" style="padding-top:24px;">
+  <button class="tab-btn active" data-main-tab="tirages">Tirages</button>
+  <button class="tab-btn" data-main-tab="marche">Marché</button>
+</div>
+
+<div id="tab-tirages" class="main-tab-content active">
 <div class="banniere-tabs" id="banniereTabs">
   <button class="tab-btn active" data-banniere="standard" data-glow="rgba(140,150,180,0.4)" data-cost1="10" data-cost10="100">Pack Standard</button>
   <button class="tab-btn" data-banniere="Detective Conan" data-glow="rgba(76,140,232,0.5)" data-cost1="30" data-cost10="300">Pack Detective Conan</button>
@@ -812,7 +827,34 @@
     Aucune carte pour l'instant. Fais un tirage pour commencer ta collection.
   </div>
 </div>
+</div><!-- fin #tab-tirages -->
 
+<div id="tab-marche" class="main-tab-content">
+  <div class="banniere-tabs">
+    <button class="sub-tab-marche active" data-sub="vendre">Vendre</button>
+    <button class="sub-tab-marche" data-sub="annonces">Annonces</button>
+    <button class="sub-tab-marche" data-sub="offres-recues">Offres reçues</button>
+    <button class="sub-tab-marche" data-sub="mes-offres">Mes offres</button>
+  </div>
+  <div class="collection-section">
+    <div id="marcheVendre" class="marche-sub">
+      <div class="collection-title" style="margin-bottom:16px;">Mettre une carte en vente</div>
+      <div class="card-grid" id="vendreGrid"></div>
+    </div>
+    <div id="marcheAnnonces" class="marche-sub" style="display:none;">
+      <div class="collection-title" style="margin-bottom:16px;">Annonces actives</div>
+      <div class="card-grid" id="annoncesGrid"></div>
+    </div>
+    <div id="marcheOffresRecues" class="marche-sub" style="display:none;">
+      <div class="collection-title" style="margin-bottom:16px;">Offres reçues sur mes annonces</div>
+      <div id="offresRecuesList"></div>
+    </div>
+    <div id="marcheMesOffres" class="marche-sub" style="display:none;">
+      <div class="collection-title" style="margin-bottom:16px;">Mes offres envoyées</div>
+      <div id="mesOffresList"></div>
+    </div>
+  </div>
+</div>
 <div class="reveal-overlay" id="revealOverlay">
   <div class="reveal-mode-toggle">
   <button id="modeAutoBtn" class="mode-btn active">⏱ Auto</button>
@@ -1399,6 +1441,254 @@ document.getElementById('btnPull1').addEventListener('click', () => faireTirage(
 document.getElementById('btnPull10').addEventListener('click', () => faireTirage(10));
 document.getElementById('packArt').addEventListener('click', () => faireTirage(1));
 
+  // ============================================
+// MARCHÉ
+// ============================================
+let MARKET_PRICES = {};
+
+document.querySelectorAll('#mainTabs .tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#mainTabs .tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.main-tab-content').forEach(s => s.classList.remove('active'));
+    document.getElementById('tab-' + btn.dataset.mainTab).classList.add('active');
+    if (btn.dataset.mainTab === 'marche') {
+      chargerPrixMarche().then(chargerCartesVendables);
+    }
+  });
+});
+
+document.querySelectorAll('.sub-tab-marche').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sub-tab-marche').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.marche-sub').forEach(s => s.style.display = 'none');
+    const idMap = { vendre: 'marcheVendre', annonces: 'marcheAnnonces', 'offres-recues': 'marcheOffresRecues', 'mes-offres': 'marcheMesOffres' };
+    document.getElementById(idMap[btn.dataset.sub]).style.display = 'block';
+    if (btn.dataset.sub === 'vendre') chargerCartesVendables();
+    if (btn.dataset.sub === 'annonces') chargerAnnonces();
+    if (btn.dataset.sub === 'offres-recues') chargerOffresRecues();
+    if (btn.dataset.sub === 'mes-offres') chargerMesOffres();
+  });
+});
+
+async function chargerPrixMarche() {
+  const { data } = await sb.from('market_rarity_prices').select('*');
+  MARKET_PRICES = {};
+  (data || []).forEach(p => {
+    MARKET_PRICES[p.rarete] = { instant: p.prix_instant, min: p.prix_marche_min, max: p.prix_marche_max };
+  });
+}
+
+async function chargerCartesVendables() {
+  const { data: { user } } = await sb.auth.getUser();
+  const { data } = await sb
+    .from('user_cards')
+    .select('id, quantite, card:cards(id, nom, anime, rarete, image_url)')
+    .eq('user_id', user.id)
+    .gt('quantite', 0);
+
+  const grid = document.getElementById('vendreGrid');
+  if (!data || data.length === 0) {
+    grid.innerHTML = '<div class="empty-state">Aucune carte à vendre.</div>';
+    return;
+  }
+
+  grid.innerHTML = data.map(uc => {
+    const c = uc.card;
+    const prix = MARKET_PRICES[c.rarete] || {};
+    return `
+      <div class="card-item" style="--rarity-color:${RARITY_COLORS[c.rarete]};">
+        <div class="rarity-tag">${c.rarete}</div>
+        ${uc.quantite > 1 ? `<div class="card-qte">x${uc.quantite}</div>` : ''}
+        <img src="${c.image_url}" alt="${c.nom}">
+        <div class="card-info">
+          <div class="card-nom">${c.nom}</div>
+          <div class="card-anime">${c.anime}</div>
+          <div style="display:flex;gap:6px;margin-top:6px;">
+            <button class="pull-btn simple" style="flex:1;font-size:10px;padding:6px;" onclick="venteInstantanee('${uc.id}', ${prix.instant})">Vendre (${prix.instant})</button>
+            <button class="pull-btn dix" style="flex:1;font-size:10px;padding:6px;" onclick="venteMarche('${uc.id}', ${prix.min}, ${prix.max})">Marché</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function venteInstantanee(userCardId, prixAttendu) {
+  if (!confirm(`Vendre cette carte pour ${prixAttendu} pièces ?`)) return;
+  try {
+    const { data, error } = await sb.rpc('vendre_instant', { p_user_card_id: userCardId });
+    if (error) throw error;
+    alert(`Carte vendue pour ${data} pièces !`);
+    await refreshBalance();
+    await chargerCartesVendables();
+  } catch (err) { alert('Erreur : ' + err.message); }
+}
+
+async function venteMarche(userCardId, min, max) {
+  const prix = parseInt(prompt(`Prix de vente (entre ${min} et ${max} pièces) :`, min));
+  if (!prix || prix < min || prix > max) {
+    if (prix) alert(`Le prix doit être entre ${min} et ${max}.`);
+    return;
+  }
+  try {
+    const { error } = await sb.rpc('mettre_en_vente', { p_user_card_id: userCardId, p_prix: prix });
+    if (error) throw error;
+    alert('Carte mise en vente sur le marché !');
+    await chargerCartesVendables();
+  } catch (err) { alert('Erreur : ' + err.message); }
+}
+window.venteInstantanee = venteInstantanee;
+window.venteMarche = venteMarche;
+
+async function chargerAnnonces() {
+  const { data: { user } } = await sb.auth.getUser();
+  const { data } = await sb
+    .from('market_listings')
+    .select('*')
+    .eq('type', 'marche')
+    .eq('statut', 'active')
+    .order('created_at', { ascending: false });
+
+  const grid = document.getElementById('annoncesGrid');
+  if (!data || data.length === 0) {
+    grid.innerHTML = '<div class="empty-state">Aucune annonce active.</div>';
+    return;
+  }
+
+  grid.innerHTML = data.map(l => {
+    const estMoi = l.seller_id === user.id;
+    return `
+      <div class="card-item" style="--rarity-color:${RARITY_COLORS[l.rarete]};">
+        <div class="rarity-tag">${l.rarete}</div>
+        <img src="${l.image_url}" alt="${l.nom}">
+        <div class="card-info">
+          <div class="card-nom">${l.nom}</div>
+          <div class="card-anime">${l.prix} pièces</div>
+          ${estMoi
+            ? `<button class="pull-btn simple" style="width:100%;font-size:10px;margin-top:6px;" onclick="annulerAnnonce('${l.id}')">Annuler</button>`
+            : `<div style="display:flex;gap:6px;margin-top:6px;">
+                 <button class="pull-btn dix" style="flex:1;font-size:10px;padding:6px;" onclick="acheterAnnonce('${l.id}', ${l.prix})">Acheter</button>
+                 <button class="pull-btn simple" style="flex:1;font-size:10px;padding:6px;" onclick="fairreUneOffre('${l.id}')">Offre</button>
+               </div>`}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function acheterAnnonce(listingId, prix) {
+  if (!confirm(`Acheter cette carte pour ${prix} pièces ?`)) return;
+  try {
+    const { error } = await sb.rpc('acheter_direct', { p_listing_id: listingId });
+    if (error) throw error;
+    alert('Achat effectué !');
+    await refreshBalance();
+    await chargerAnnonces();
+  } catch (err) { alert('Erreur : ' + err.message); }
+}
+
+async function fairreUneOffre(listingId) {
+  const montant = parseInt(prompt('Montant de ton offre (pièces) :'));
+  if (!montant || montant <= 0) return;
+  try {
+    const { error } = await sb.rpc('faire_offre', { p_listing_id: listingId, p_montant: montant });
+    if (error) throw error;
+    alert('Offre envoyée !');
+  } catch (err) { alert('Erreur : ' + err.message); }
+}
+
+async function annulerAnnonce(listingId) {
+  if (!confirm('Annuler cette annonce et récupérer la carte ?')) return;
+  try {
+    const { error } = await sb.rpc('annuler_vente', { p_listing_id: listingId });
+    if (error) throw error;
+    await chargerAnnonces();
+    await chargerCartesVendables();
+  } catch (err) { alert('Erreur : ' + err.message); }
+}
+window.acheterAnnonce = acheterAnnonce;
+window.fairreUneOffre = fairreUneOffre;
+window.annulerAnnonce = annulerAnnonce;
+
+async function chargerOffresRecues() {
+  const { data: { user } } = await sb.auth.getUser();
+  const { data: mesAnnonces } = await sb
+    .from('market_listings')
+    .select('id')
+    .eq('seller_id', user.id)
+    .eq('statut', 'active');
+
+  const ids = (mesAnnonces || []).map(a => a.id);
+  const container = document.getElementById('offresRecuesList');
+  if (ids.length === 0) {
+    container.innerHTML = '<div class="empty-state">Tu n\'as aucune annonce active.</div>';
+    return;
+  }
+
+  const { data: offres } = await sb
+    .from('market_offers')
+    .select('*, listing:market_listings(nom, prix)')
+    .in('listing_id', ids)
+    .eq('statut', 'en_attente')
+    .order('created_at', { ascending: false });
+
+  if (!offres || offres.length === 0) {
+    container.innerHTML = '<div class="empty-state">Aucune offre en attente.</div>';
+    return;
+  }
+
+  container.innerHTML = offres.map(o => `
+    <div class="player-row" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div>Offre de <strong>${o.montant}</strong> pièces sur "${o.listing?.nom}" (prix affiché : ${o.listing?.prix})</div>
+      <div style="display:flex;gap:6px;">
+        <button class="pull-btn dix" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'accepter')">Accepter</button>
+        <button class="pull-btn simple" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'refuser')">Refuser</button>
+        <button class="pull-btn simple" style="font-size:10px;padding:6px 10px;" onclick="contreOffreMarche('${o.id}')">Contre-offre</button>
+      </div>
+    </div>`).join('');
+}
+
+async function repondreOffreMarche(offerId, reponse) {
+  try {
+    const { error } = await sb.rpc('repondre_offre', { p_offer_id: offerId, p_reponse: reponse });
+    if (error) throw error;
+    await refreshBalance();
+    await chargerOffresRecues();
+    await chargerAnnonces();
+  } catch (err) { alert('Erreur : ' + err.message); }
+}
+
+async function contreOffreMarche(offerId) {
+  const montant = parseInt(prompt('Montant de ta contre-offre :'));
+  if (!montant || montant <= 0) return;
+  try {
+    const { error } = await sb.rpc('repondre_offre', { p_offer_id: offerId, p_reponse: 'contre', p_contre_montant: montant });
+    if (error) throw error;
+    await chargerOffresRecues();
+  } catch (err) { alert('Erreur : ' + err.message); }
+}
+window.repondreOffreMarche = repondreOffreMarche;
+window.contreOffreMarche = contreOffreMarche;
+
+async function chargerMesOffres() {
+  const { data: { user } } = await sb.auth.getUser();
+  const { data } = await sb
+    .from('market_offers')
+    .select('*, listing:market_listings(nom, prix)')
+    .eq('proposeur_id', user.id)
+    .order('created_at', { ascending: false });
+
+  const container = document.getElementById('mesOffresList');
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div class="empty-state">Aucune offre envoyée.</div>';
+    return;
+  }
+
+  container.innerHTML = data.map(o => `
+    <div class="player-row" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px;">
+      ${o.montant} pièces sur "${o.listing?.nom}" — <span style="color:var(--ink-dim);">${o.statut}</span>
+    </div>`).join('');
+}
 // ============================================
 // INIT
 // ============================================
