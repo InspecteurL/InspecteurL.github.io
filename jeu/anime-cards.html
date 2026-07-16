@@ -1652,26 +1652,26 @@ async function chargerAnnonces() {
     return;
   }
 
-grid.innerHTML = data.map(l => {
-  const estMoi = l.seller_id === user.id;
-  return `
-    <div class="card-item" style="--rarity-color:${RARITY_COLORS[l.rarete]};">
-      <div class="rarity-tag">${l.rarete}</div>
-      <img src="${l.image_url}" alt="${l.nom}">
-      <div class="card-info">
-        <div class="card-nom">${l.nom}</div>
-       <div class="card-anime">${l.prix} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></div>
-        ${estMoi
-          ? `<button class="pull-btn simple" style="width:100%;font-size:10px;margin-top:6px;" onclick="annulerAnnonce('${l.id}')">Annuler</button>`
-          : `<div style="display:flex;gap:6px;margin-top:6px;">
-               <button class="pull-btn dix" style="flex:1;font-size:10px;padding:6px;" onclick="acheterAnnonce('${l.id}', ${l.prix}, event)">Acheter</button>
-               <button class="pull-btn simple" style="flex:1;font-size:10px;padding:6px;" onclick="fairreUneOffre('${l.id}')">Offre</button>
-             </div>`}
-      </div>
-    </div>`;
-}).join('');
+  grid.innerHTML = data.map(l => {
+    const estMoi = user && l.seller_id === user.id;
+    return `
+      <div class="card-item" style="--rarity-color:${RARITY_COLORS[l.rarete]};">
+        <div class="rarity-tag">${l.rarete}</div>
+        ${estMoi ? `<div class="card-qte" style="background:var(--c-legendaire);color:#1a1204;">TON ANNONCE</div>` : ''}
+        <img src="${l.image_url}" alt="${l.nom}">
+        <div class="card-info">
+          <div class="card-nom">${l.nom}</div>
+          <div class="card-anime">${l.prix} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></div>
+          ${estMoi
+            ? `<button class="pull-btn simple" style="width:100%;font-size:10px;margin-top:6px;" onclick="annulerAnnonce('${l.id}')">Annuler</button>`
+            : `<div style="display:flex;gap:6px;margin-top:6px;">
+                 <button class="pull-btn dix" style="flex:1;font-size:10px;padding:6px;" onclick="acheterAnnonce('${l.id}', ${l.prix}, event)">Acheter</button>
+                 <button class="pull-btn simple" style="flex:1;font-size:10px;padding:6px;" onclick="fairreUneOffre('${l.id}')">Offre</button>
+               </div>`}
+        </div>
+      </div>`;
+  }).join('');
 }
-
 async function acheterAnnonce(listingId, prix, event) {
   if (!confirm(`Acheter cette carte pour ${prix} pièces ?`)) return;
   const btn = event.target;
