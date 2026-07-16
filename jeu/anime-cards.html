@@ -1670,23 +1670,29 @@ async function contreOffreMarche(offerId) {
 window.repondreOffreMarche = repondreOffreMarche;
 window.contreOffreMarche = contreOffreMarche;
 
-async function chargerMesOffres() {
+async function chargerOffresRecues() {
   const { data: { user } } = await sb.auth.getUser();
-  const { data } = await sb
+  const { data: offres } = await sb
     .from('market_offers')
     .select('*, listing:market_listings(nom, prix)')
-    .eq('proposeur_id', user.id)
+    .eq('destinataire_id', user.id)
+    .eq('statut', 'en_attente')
     .order('created_at', { ascending: false });
 
-  const container = document.getElementById('mesOffresList');
-  if (!data || data.length === 0) {
-    container.innerHTML = '<div class="empty-state">Aucune offre envoyée.</div>';
+  const container = document.getElementById('offresRecuesList');
+  if (!offres || offres.length === 0) {
+    container.innerHTML = '<div class="empty-state">Aucune offre en attente.</div>';
     return;
   }
 
-  container.innerHTML = data.map(o => `
-    <div class="player-row" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px;">
-      ${o.montant} pièces sur "${o.listing?.nom}" — <span style="color:var(--ink-dim);">${o.statut}</span>
+  container.innerHTML = offres.map(o => `
+    <div class="player-row" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div>Offre de <strong>${o.montant}</strong> pièces sur "${o.listing?.nom}" (prix affiché : ${o.listing?.prix})</div>
+      <div style="display:flex;gap:6px;">
+        <button class="pull-btn dix" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'accepter')">Accepter</button>
+        <button class="pull-btn simple" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'refuser')">Refuser</button>
+        <button class="pull-btn simple" style="font-size:10px;padding:6px 10px;" onclick="contreOffreMarche('${o.id}')">Contre-offre</button>
+      </div>
     </div>`).join('');
 }
 // ============================================
