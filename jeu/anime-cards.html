@@ -1601,13 +1601,19 @@ async function chargerCartesVendables() {
 
 async function venteInstantanee(userCardId, prixAttendu) {
   if (!confirm(`Vendre cette carte pour ${prixAttendu} pièces ?`)) return;
+  const btn = event.target;
+  btn.disabled = true;
   try {
     const { data, error } = await sb.rpc('vendre_instant', { p_user_card_id: userCardId });
     if (error) throw error;
     alert(`Carte vendue pour ${data} pièces !`);
     await refreshBalance();
     await chargerCartesVendables();
-  } catch (err) { alert('Erreur : ' + err.message); }
+  } catch (err) {
+    alert('Erreur : ' + err.message);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 async function venteMarche(userCardId, min, max) {
@@ -1643,37 +1649,41 @@ async function chargerAnnonces() {
     return;
   }
 
-  grid.innerHTML = data.map(l => {
-    const estMoi = l.seller_id === user.id;
-    return `
-      <div class="card-item" style="--rarity-color:${RARITY_COLORS[l.rarete]};">
-        <div class="rarity-tag">${l.rarete}</div>
-        <img src="${l.image_url}" alt="${l.nom}">
-        <div class="card-info">
-          <div class="card-nom">${l.nom}</div>
-         <div class="card-anime">${l.prix} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></div>
-          ${estMoi
-            ? `<button class="pull-btn simple" style="width:100%;font-size:10px;margin-top:6px;" onclick="annulerAnnonce('${l.id}')">Annuler</button>`
-            : `<div style="display:flex;gap:6px;margin-top:6px;">
-                 <button class="pull-btn dix" style="flex:1;font-size:10px;padding:6px;" onclick="acheterAnnonce('${l.id}', ${l.prix})">Acheter</button>
-                 <button class="pull-btn simple" style="flex:1;font-size:10px;padding:6px;" onclick="fairreUneOffre('${l.id}')">Offre</button>
-               </div>`}
-        </div>
-      </div>`;
-  }).join('');
+grid.innerHTML = data.map(l => {
+  const estMoi = l.seller_id === user.id;
+  return `
+    <div class="card-item" style="--rarity-color:${RARITY_COLORS[l.rarete]};">
+      <div class="rarity-tag">${l.rarete}</div>
+      <img src="${l.image_url}" alt="${l.nom}">
+      <div class="card-info">
+        <div class="card-nom">${l.nom}</div>
+       <div class="card-anime">${l.prix} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></div>
+        ${estMoi
+          ? `<button class="pull-btn simple" style="width:100%;font-size:10px;margin-top:6px;" onclick="annulerAnnonce('${l.id}')">Annuler</button>`
+          : `<div style="display:flex;gap:6px;margin-top:6px;">
+               <button class="pull-btn dix" style="flex:1;font-size:10px;padding:6px;" onclick="acheterAnnonce('${l.id}', ${l.prix}, event)">Acheter</button>
+               <button class="pull-btn simple" style="flex:1;font-size:10px;padding:6px;" onclick="fairreUneOffre('${l.id}')">Offre</button>
+             </div>`}
+      </div>
+    </div>`;
+}).join('');
 }
 
-async function acheterAnnonce(listingId, prix) {
+async function acheterAnnonce(listingId, prix, event) {
   if (!confirm(`Acheter cette carte pour ${prix} pièces ?`)) return;
+  const btn = event.target;
+  btn.disabled = true;
   try {
     const { error } = await sb.rpc('acheter_direct', { p_listing_id: listingId });
     if (error) throw error;
     alert('Achat effectué !');
     await refreshBalance();
     await chargerAnnonces();
-  } catch (err) { alert('Erreur : ' + err.message); }
+  } catch (err) {
+    alert('Erreur : ' + err.message);
+    btn.disabled = false;
+  }
 }
-
 async function fairreUneOffre(listingId) {
   const montant = await ouvrirModalPrix({
     titre: 'Faire une offre',
