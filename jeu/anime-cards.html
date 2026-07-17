@@ -1808,6 +1808,7 @@ const animeFiltre = document.getElementById('marketFilterAnime').value;
     return;
   }
 
+  
  grid.innerHTML = cartesVendablesData
 .filter(uc =>
   (!rareteFiltre || uc.card.rarete === rareteFiltre) &&
@@ -1824,6 +1825,7 @@ const animeFiltre = document.getElementById('marketFilterAnime').value;
         <div class="rarity-tag">${c.rarete}</div>
         ${uc.quantite > 1 ? `<div class="card-qte">x${uc.quantite}</div>` : ''}
         <div class="select-checkbox"></div>
+        ${estSelectionnee && selectionVente.get(uc.id).quantite < uc.quantite ? `<div class="card-qte" style="top:auto;bottom:34px;background:var(--c-legendaire);color:#1a1204;">Vend x${selectionVente.get(uc.id).quantite}</div>` : ''}
         <img src="${c.image_url}" alt="${c.nom}">
         <div class="card-info">
           <div class="card-nom">${c.nom}</div>
@@ -1837,27 +1839,44 @@ const animeFiltre = document.getElementById('marketFilterAnime').value;
   }).join('');
 }
 
-// ---- Sélection multiple pour vente en masse ----
-function clicCarteVente(userCardId, event) {
+async function clicCarteVente(userCardId, event) {
   if (!selectionModeVente) return;
   const cardEl = event.currentTarget;
   const uc = cartesVendablesData.find(u => u.id === userCardId);
   if (!uc) return;
 
+  // Si déjà sélectionnée, un clic la désélectionne
   if (selectionVente.has(userCardId)) {
     selectionVente.delete(userCardId);
     cardEl.classList.remove('vente-selected');
-  } else {
-    const prix = MARKET_PRICES[uc.card.rarete] || {};
-    selectionVente.set(userCardId, {
-      nom: uc.card.nom,
-      rarete: uc.card.rarete,
-      quantite: uc.quantite,
-      prixUnitaire: prix.instant || 0,
-    });
-    cardEl.classList.add('vente-selected');
+    updateBulkSellBar();
+    chargerCartesVendables(); // pour rafraîchir le badge de quantité choisie
+    return;
   }
+
+  let quantiteAVendre = 1;
+  if (uc.quantite > 1) {
+    const q = await ouvrirModalPrix({
+      titre: 'Quantité à vendre',
+      hint: `Tu possèdes ${uc.quantite} exemplaires de "${uc.card.nom}". Combien veux-tu en vendre ?`,
+      valeurDefaut: uc.quantite,
+      min: 1,
+      max: uc.quantite,
+    });
+    if (!q) return; // annulé
+    quantiteAVendre = q;
+  }
+
+  const prix = MARKET_PRICES[uc.card.rarete] || {};
+  selectionVente.set(userCardId, {
+    nom: uc.card.nom,
+    rarete: uc.card.rarete,
+    quantite: quantiteAVendre,
+    prixUnitaire: prix.instant || 0,
+  });
+  cardEl.classList.add('vente-selected');
   updateBulkSellBar();
+  chargerCartesVendables(); // pour afficher le badge de quantité choisie
 }
 window.clicCarteVente = clicCarteVente;
 
@@ -1924,11 +1943,14 @@ document.getElementById('btnAnnulerRecapVente').addEventListener('click', () => 
 });
 
 document.getElementById('btnConfirmerVenteBulk').addEventListener('click', async () => {
-  const ids = Array.from(selectionVente.keys());
+  const ventes = Array.from(selectionVente.entries()).map(([id, item]) => ({
+    user_card_id: id,
+    quantite: item.quantite,
+  }));
   const btn = document.getElementById('btnConfirmerVenteBulk');
   btn.disabled = true;
   try {
-    const { data, error } = await sb.rpc('vendre_instant_bulk', { p_user_card_ids: ids });
+    const { data, error } = await sb.rpc('vendre_instant_bulk', { p_ventes: ventes });
     if (error) throw error;
     alert(`Vente réussie ! +${data.total_gagne} pièces`);
     document.getElementById('bulkRecapOverlay').classList.remove('active');
