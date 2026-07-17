@@ -811,6 +811,133 @@
 .price-modal-error { font-size: 12px; color: #f06060; min-height: 16px; margin-bottom: 12px; }
 .price-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 .price-modal-actions .pull-btn { padding: 10px 20px; font-size: 12px; }
+
+/* ---------------- VENTE EN MASSE ---------------- */
+.vendre-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.btn-select-mode {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-select-mode.active { background: var(--c-legendaire); color: #1a1204; border-color: var(--c-legendaire); }
+
+.card-item.select-mode { cursor: pointer; }
+.card-item.select-mode .vente-buttons { display: none; }
+.card-item .select-checkbox {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--ink-dim);
+  background: rgba(0,0,0,0.5);
+  z-index: 3;
+  display: none;
+}
+.card-item.select-mode .select-checkbox { display: block; }
+.card-item.vente-selected { outline: 2px solid var(--c-legendaire); outline-offset: -2px; }
+.card-item.vente-selected .select-checkbox {
+  background: var(--c-legendaire);
+  border-color: var(--c-legendaire);
+}
+.card-item.vente-selected .select-checkbox::after {
+  content: '✓';
+  display: block;
+  text-align: center;
+  line-height: 17px;
+  font-size: 12px;
+  color: #1a1204;
+  font-weight: 600;
+}
+
+.bulk-sell-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(19,24,38,0.97);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+  padding: 14px 24px;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  z-index: 90;
+  flex-wrap: wrap;
+}
+.bulk-sell-bar.active { display: flex; }
+.bulk-sell-count {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.03em;
+}
+.bulk-sell-actions { display: flex; gap: 10px; }
+
+.bulk-recap-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4,5,8,0.94);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 151;
+  padding: 20px;
+}
+.bulk-recap-overlay.active { display: flex; }
+.bulk-recap-box {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px;
+  max-width: 420px;
+  width: 100%;
+}
+.bulk-recap-box h3 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 17px;
+  margin-bottom: 18px;
+}
+.bulk-recap-lines { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.bulk-recap-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 8px 12px;
+  background: var(--bg-panel-2);
+  border-radius: 4px;
+  border-left: 3px solid var(--rarity-color);
+}
+.bulk-recap-total {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.03em;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+.bulk-recap-total span { color: var(--c-legendaire); }
+.bulk-recap-actions { display: flex; gap: 10px; justify-content: flex-end; }
 </style>
 </head>
 <body>
@@ -902,7 +1029,10 @@
   </div>
   <div class="collection-section">
     <div id="marcheVendre" class="marche-sub">
-      <div class="collection-title" style="margin-bottom:16px;">Mettre une carte en vente</div>
+      <div class="vendre-header">
+        <div class="collection-title">Mettre une carte en vente</div>
+        <button class="btn-select-mode" id="btnToggleSelectVente">Sélectionner plusieurs</button>
+      </div>
       <div class="card-grid" id="vendreGrid"></div>
     </div>
     <div id="marcheAnnonces" class="marche-sub" style="display:none;">
@@ -970,6 +1100,30 @@
     </div>
   </div>
 </div>
+
+<div class="bulk-sell-bar" id="bulkSellBar">
+  <div class="bulk-sell-count" id="bulkSellCount">0 carte(s) sélectionnée(s)</div>
+  <div class="bulk-sell-actions">
+    <button class="pull-btn dix" id="btnOuvrirRecapVente">Vendre la sélection</button>
+    <button class="pull-btn simple" id="btnAnnulerSelectionVente">Annuler</button>
+  </div>
+</div>
+
+<div class="bulk-recap-overlay" id="bulkRecapOverlay">
+  <div class="bulk-recap-box">
+    <h3>Récapitulatif de la vente</h3>
+    <div class="bulk-recap-lines" id="bulkRecapLines"></div>
+    <div class="bulk-recap-total">
+      <span>Total</span>
+      <span id="bulkRecapTotal">0 <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></span>
+    </div>
+    <div class="bulk-recap-actions">
+      <button class="pull-btn dix" id="btnConfirmerVenteBulk">Confirmer la vente</button>
+      <button class="pull-btn simple" id="btnAnnulerRecapVente">Annuler</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================
 // CONFIGURATION SUPABASE
@@ -1563,6 +1717,9 @@ document.getElementById('packArt').addEventListener('click', () => faireTirage(1
 // MARCHÉ
 // ============================================
 let MARKET_PRICES = {};
+let cartesVendablesData = [];
+let selectionModeVente = false;
+let selectionVente = new Map(); // user_card_id -> { nom, rarete, quantite, prixUnitaire }
 
 document.querySelectorAll('#mainTabs .tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1606,24 +1763,30 @@ async function chargerCartesVendables() {
     .eq('user_id', user.id)
     .gt('quantite', 0);
 
+  cartesVendablesData = data || [];
+
   const grid = document.getElementById('vendreGrid');
-  if (!data || data.length === 0) {
+  if (cartesVendablesData.length === 0) {
     grid.innerHTML = '<div class="empty-state">Aucune carte à vendre.</div>';
     return;
   }
 
-  grid.innerHTML = data.map(uc => {
+  grid.innerHTML = cartesVendablesData.map(uc => {
     const c = uc.card;
     const prix = MARKET_PRICES[c.rarete] || {};
+    const estSelectionnee = selectionVente.has(uc.id);
     return `
-      <div class="card-item" style="--rarity-color:${RARITY_COLORS[c.rarete]};">
+      <div class="card-item ${selectionModeVente ? 'select-mode' : ''} ${estSelectionnee ? 'vente-selected' : ''}"
+           style="--rarity-color:${RARITY_COLORS[c.rarete]};"
+           onclick="clicCarteVente('${uc.id}', event)">
         <div class="rarity-tag">${c.rarete}</div>
         ${uc.quantite > 1 ? `<div class="card-qte">x${uc.quantite}</div>` : ''}
+        <div class="select-checkbox"></div>
         <img src="${c.image_url}" alt="${c.nom}">
         <div class="card-info">
           <div class="card-nom">${c.nom}</div>
           <div class="card-anime">${c.anime}</div>
-          <div style="display:flex;gap:6px;margin-top:6px;">
+          <div class="vente-buttons" style="display:flex;gap:6px;margin-top:6px;">
             <button class="pull-btn simple" style="flex:1;font-size:10px;padding:6px;" onclick="venteInstantanee('${uc.id}', ${prix.instant})">Vendre (${prix.instant} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span>)</button>
             <button class="pull-btn dix" style="flex:1;font-size:10px;padding:6px;" onclick="venteMarche('${uc.id}', ${prix.min}, ${prix.max})">Marché</button>
           </div>
@@ -1632,7 +1795,114 @@ async function chargerCartesVendables() {
   }).join('');
 }
 
+// ---- Sélection multiple pour vente en masse ----
+function clicCarteVente(userCardId, event) {
+  if (!selectionModeVente) return;
+  const cardEl = event.currentTarget;
+  const uc = cartesVendablesData.find(u => u.id === userCardId);
+  if (!uc) return;
+
+  if (selectionVente.has(userCardId)) {
+    selectionVente.delete(userCardId);
+    cardEl.classList.remove('vente-selected');
+  } else {
+    const prix = MARKET_PRICES[uc.card.rarete] || {};
+    selectionVente.set(userCardId, {
+      nom: uc.card.nom,
+      rarete: uc.card.rarete,
+      quantite: uc.quantite,
+      prixUnitaire: prix.instant || 0,
+    });
+    cardEl.classList.add('vente-selected');
+  }
+  updateBulkSellBar();
+}
+window.clicCarteVente = clicCarteVente;
+
+function updateBulkSellBar() {
+  const bar = document.getElementById('bulkSellBar');
+  const count = selectionVente.size;
+  bar.classList.toggle('active', count > 0);
+  document.getElementById('bulkSellCount').textContent = `${count} carte${count > 1 ? 's' : ''} sélectionnée${count > 1 ? 's' : ''}`;
+}
+
+function annulerSelectionVente() {
+  selectionModeVente = false;
+  selectionVente.clear();
+  document.getElementById('btnToggleSelectVente').classList.remove('active');
+  document.getElementById('btnToggleSelectVente').textContent = 'Sélectionner plusieurs';
+  updateBulkSellBar();
+  chargerCartesVendables();
+}
+
+document.getElementById('btnToggleSelectVente').addEventListener('click', () => {
+  if (selectionModeVente) {
+    annulerSelectionVente();
+  } else {
+    selectionModeVente = true;
+    document.getElementById('btnToggleSelectVente').classList.add('active');
+    document.getElementById('btnToggleSelectVente').textContent = 'Annuler la sélection';
+    chargerCartesVendables();
+  }
+});
+
+document.getElementById('btnAnnulerSelectionVente').addEventListener('click', annulerSelectionVente);
+
+document.getElementById('btnOuvrirRecapVente').addEventListener('click', () => {
+  if (selectionVente.size === 0) return;
+
+  const groupes = {};
+  let total = 0;
+  selectionVente.forEach(item => {
+    const key = item.rarete;
+    groupes[key] = groupes[key] || { count: 0, prixUnitaire: item.prixUnitaire, total: 0 };
+    groupes[key].count += item.quantite;
+    groupes[key].total += item.quantite * item.prixUnitaire;
+    total += item.quantite * item.prixUnitaire;
+  });
+
+  const ordreRarete = ['mythique', 'legendaire', 'epique', 'rare', 'commune'];
+  const lignes = ordreRarete
+    .filter(r => groupes[r])
+    .map(r => {
+      const g = groupes[r];
+      return `<div class="bulk-recap-line" style="--rarity-color: var(--c-${r});">
+        <span>${g.count} ${r}${g.count > 1 ? 's' : ''} × ${g.prixUnitaire}</span>
+        <span>${g.total} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></span>
+      </div>`;
+    }).join('');
+
+  document.getElementById('bulkRecapLines').innerHTML = lignes;
+  document.getElementById('bulkRecapTotal').innerHTML = `${total} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span>`;
+  document.getElementById('bulkRecapOverlay').classList.add('active');
+});
+
+document.getElementById('btnAnnulerRecapVente').addEventListener('click', () => {
+  document.getElementById('bulkRecapOverlay').classList.remove('active');
+});
+
+document.getElementById('btnConfirmerVenteBulk').addEventListener('click', async () => {
+  const ids = Array.from(selectionVente.keys());
+  const btn = document.getElementById('btnConfirmerVenteBulk');
+  btn.disabled = true;
+  try {
+    const { data, error } = await sb.rpc('vendre_instant_bulk', { p_user_card_ids: ids });
+    if (error) throw error;
+    alert(`Vente réussie ! +${data.total_gagne} pièces`);
+    document.getElementById('bulkRecapOverlay').classList.remove('active');
+    annulerSelectionVente();
+    await refreshBalance();
+    await chargerCartesVendables();
+  } catch (err) {
+    alert('Erreur pendant la vente : ' + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 async function venteInstantanee(userCardId, prixAttendu) {
+  event.stopPropagation();
+  if (selectionModeVente) return;
   if (!confirm(`Vendre cette carte pour ${prixAttendu} pièces ?`)) return;
   const btn = event.target;
   btn.disabled = true;
@@ -1650,6 +1920,8 @@ async function venteInstantanee(userCardId, prixAttendu) {
 }
 
 async function venteMarche(userCardId, min, max) {
+  event.stopPropagation();
+  if (selectionModeVente) return;
   const prix = await ouvrirModalPrix({
     titre: 'Mettre en vente',
     hint: `Prix libre, entre ${min} et ${max} pièces.`,
@@ -1746,26 +2018,14 @@ window.annulerAnnonce = annulerAnnonce;
 
 async function chargerOffresRecues() {
   const { data: { user } } = await sb.auth.getUser();
-  const { data: mesAnnonces } = await sb
-    .from('market_listings')
-    .select('id')
-    .eq('seller_id', user.id)
-    .eq('statut', 'active');
-
-  const ids = (mesAnnonces || []).map(a => a.id);
-  const container = document.getElementById('offresRecuesList');
-  if (ids.length === 0) {
-    container.innerHTML = '<div class="empty-state">Tu n\'as aucune annonce active.</div>';
-    return;
-  }
-
   const { data: offres } = await sb
     .from('market_offers')
     .select('*, listing:market_listings(nom, prix)')
-    .in('listing_id', ids)
+    .eq('destinataire_id', user.id)
     .eq('statut', 'en_attente')
     .order('created_at', { ascending: false });
 
+  const container = document.getElementById('offresRecuesList');
   if (!offres || offres.length === 0) {
     container.innerHTML = '<div class="empty-state">Aucune offre en attente.</div>';
     return;
@@ -1773,7 +2033,7 @@ async function chargerOffresRecues() {
 
   container.innerHTML = offres.map(o => `
     <div class="player-row" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-      <div>Offre de <strong>${o.montant} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></strong> sur "${o.listing?.nom}" (prix affiché : ${o.listing?.prix} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span>)</div>
+      <div>Offre de <strong>${o.montant} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span> sur "${o.listing?.nom}" — <span style="color:var(--ink-dim);">${o.statut}</span></div>
       <div style="display:flex;gap:6px;">
         <button class="pull-btn dix" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'accepter')">Accepter</button>
         <button class="pull-btn simple" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'refuser')">Refuser</button>
@@ -1807,32 +2067,6 @@ async function contreOffreMarche(offerId) {
 }
 window.repondreOffreMarche = repondreOffreMarche;
 window.contreOffreMarche = contreOffreMarche;
-
-async function chargerOffresRecues() {
-  const { data: { user } } = await sb.auth.getUser();
-  const { data: offres } = await sb
-    .from('market_offers')
-    .select('*, listing:market_listings(nom, prix)')
-    .eq('destinataire_id', user.id)
-    .eq('statut', 'en_attente')
-    .order('created_at', { ascending: false });
-
-  const container = document.getElementById('offresRecuesList');
-  if (!offres || offres.length === 0) {
-    container.innerHTML = '<div class="empty-state">Aucune offre en attente.</div>';
-    return;
-  }
-
-  container.innerHTML = offres.map(o => `
-    <div class="player-row" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-      <div>Offre de <strong>${o.montant} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span> sur "${o.listing?.nom}" — <span style="color:var(--ink-dim);">${o.statut}</span></div>
-      <div style="display:flex;gap:6px;">
-        <button class="pull-btn dix" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'accepter')">Accepter</button>
-        <button class="pull-btn simple" style="font-size:10px;padding:6px 10px;" onclick="repondreOffreMarche('${o.id}', 'refuser')">Refuser</button>
-        <button class="pull-btn simple" style="font-size:10px;padding:6px 10px;" onclick="contreOffreMarche('${o.id}')">Contre-offre</button>
-      </div>
-    </div>`).join('');
-}
 
   async function chargerMesOffres() {
   const { data: { user } } = await sb.auth.getUser();
