@@ -938,6 +938,23 @@
 }
 .bulk-recap-total span { color: var(--c-legendaire); }
 .bulk-recap-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  .notif-badge {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  margin-left: 5px;
+  background: #f06060;
+  color: white;
+  font-size: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  border-radius: 8px;
+  vertical-align: middle;
+}
 </style>
 </head>
 <body>
@@ -1023,8 +1040,10 @@
 <div id="tab-marche" class="main-tab-content">
   <div class="banniere-tabs">
     <button class="sub-tab-marche active" data-sub="vendre">Vendre</button>
-    <button class="sub-tab-marche" data-sub="annonces">Annonces</button>
-    <button class="sub-tab-marche" data-sub="offres-recues">Offres reçues</button>
+    <button class="sub-tab-marche" data-sub="annonces">Annonces
+    <span class="notif-badge" id="badgeAnnonces" style="display:none;">0</span></button>
+    <button class="sub-tab-marche" data-sub="offres-recues">Offres reçues
+    <span class="notif-badge" id="badgeOffresRecues" style="display:none;">0</span></button>
     <button class="sub-tab-marche" data-sub="mes-offres">Mes offres</button>
   </div>
   <div class="collection-section">
@@ -1769,14 +1788,19 @@ document.querySelectorAll('#mainTabs .tab-btn').forEach(btn => {
 });
 
 document.querySelectorAll('.sub-tab-marche').forEach(btn => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', async () => {
     document.querySelectorAll('.sub-tab-marche').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.querySelectorAll('.marche-sub').forEach(s => s.style.display = 'none');
     const idMap = { vendre: 'marcheVendre', annonces: 'marcheAnnonces', 'offres-recues': 'marcheOffresRecues', 'mes-offres': 'marcheMesOffres' };
     document.getElementById(idMap[btn.dataset.sub]).style.display = 'block';
+
     if (btn.dataset.sub === 'vendre') chargerCartesVendables();
-    if (btn.dataset.sub === 'annonces') chargerAnnonces();
+    if (btn.dataset.sub === 'annonces') {
+      await chargerAnnonces();
+      await sb.rpc('marquer_ventes_vues'); // marque les ventes comme vues
+      await chargerCompteursNotifs(); // fait disparaître le badge
+    }
     if (btn.dataset.sub === 'offres-recues') chargerOffresRecues();
     if (btn.dataset.sub === 'mes-offres') chargerMesOffres();
   });
@@ -2198,6 +2222,38 @@ document.getElementById('priceModalCancelBtn').addEventListener('click', () => f
 document.getElementById('priceModalInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') document.getElementById('priceModalConfirmBtn').click();
 });
+
+  async function chargerCompteursNotifs() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+
+  const { count: countOffres } = await sb
+    .from('market_offers')
+    .select('*', { count: 'exact', head: true })
+    .eq('destinataire_id', user.id)
+    .eq('statut', 'en_attente');
+
+  const { count: countVentes } = await sb
+    .from('market_listings')
+    .select('*', { count: 'exact', head: true })
+    .eq('seller_id', user.id)
+    .eq('statut', 'vendu')
+    .eq('vendeur_notifie', false);
+
+  afficherBadge('badgeOffresRecues', countOffres || 0);
+  afficherBadge('badgeAnnonces', countVentes || 0);
+}
+
+function afficherBadge(id, count) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (count > 0) {
+    el.textContent = count > 99 ? '99+' : count;
+    el.style.display = 'inline-flex';
+  } else {
+    el.style.display = 'none';
+  }
+}
 // ============================================
 // INIT
 // ============================================
@@ -2205,7 +2261,6 @@ document.getElementById('priceModalInput').addEventListener('keydown', (e) => {
   const session = await getSessionOrRedirect();
   if (!session) return;
 
-  // Applique immédiatement le pack actif par défaut (Standard), sans attendre un clic
   const btnActifParDefaut = document.querySelector('#banniereTabs .tab-btn.active');
   if (btnActifParDefaut) appliquerBanniere(btnActifParDefaut);
 
@@ -2213,6 +2268,7 @@ document.getElementById('priceModalInput').addEventListener('keydown', (e) => {
   await refreshPity();
   await refreshCollection();
   await checkFreeDrawDispo();
+  await chargerCompteursNotifs(); // ← ajouté
 })();
     </script>
 </body>
