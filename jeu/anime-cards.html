@@ -1028,6 +1028,20 @@
     <button class="sub-tab-marche" data-sub="mes-offres">Mes offres</button>
   </div>
   <div class="collection-section">
+    <div class="filters" style="margin-bottom:18px;">
+  <select id="marketFilterRarete">
+    <option value="">Toutes raretés</option>
+    <option value="commune">Commune</option>
+    <option value="rare">Rare</option>
+    <option value="epique">Épique</option>
+    <option value="legendaire">Légendaire</option>
+    <option value="mythique">Mythique</option>
+  </select>
+
+  <select id="marketFilterAnime">
+    <option value="">Tous animes</option>
+  </select>
+</div>
     <div id="marcheVendre" class="marche-sub">
       <div class="vendre-header">
         <div class="collection-title">Mettre une carte en vente</div>
@@ -1604,6 +1618,14 @@ async function refreshCollection() {
   filterAnime.innerHTML = '<option value="">Tous animes</option>' +
     animesUniques.map(a => `<option value="${a}">${a}</option>`).join('');
   filterAnime.value = currentAnimeValue;
+  const marketFilterAnime = document.getElementById('marketFilterAnime');
+const currentMarketValue = marketFilterAnime.value;
+
+marketFilterAnime.innerHTML =
+  '<option value="">Tous animes</option>' +
+  animesUniques.map(a => `<option value="${a}">${a}</option>`).join('');
+
+marketFilterAnime.value = currentMarketValue;
 
   renderCollection();
 }
@@ -1657,6 +1679,19 @@ window.retirerBadgeNew = retirerBadgeNew;
 
 document.getElementById('filterRarete').addEventListener('change', renderCollection);
 document.getElementById('filterAnime').addEventListener('change', renderCollection);
+  document.getElementById('marketFilterRarete').addEventListener('change', () => {
+  const active = document.querySelector('.sub-tab-marche.active').dataset.sub;
+
+  if (active === 'vendre') chargerCartesVendables();
+  if (active === 'annonces') chargerAnnonces();
+});
+
+document.getElementById('marketFilterAnime').addEventListener('change', () => {
+  const active = document.querySelector('.sub-tab-marche.active').dataset.sub;
+
+  if (active === 'vendre') chargerCartesVendables();
+  if (active === 'annonces') chargerAnnonces();
+});
 
 // ============================================
 // BANNIÈRES
@@ -1764,6 +1799,8 @@ async function chargerCartesVendables() {
     .gt('quantite', 0);
 
   cartesVendablesData = data || [];
+  const rareteFiltre = document.getElementById('marketFilterRarete').value;
+const animeFiltre = document.getElementById('marketFilterAnime').value;
 
   const grid = document.getElementById('vendreGrid');
   if (cartesVendablesData.length === 0) {
@@ -1771,7 +1808,12 @@ async function chargerCartesVendables() {
     return;
   }
 
-  grid.innerHTML = cartesVendablesData.map(uc => {
+ grid.innerHTML = cartesVendablesData
+.filter(uc =>
+  (!rareteFiltre || uc.card.rarete === rareteFiltre) &&
+  (!animeFiltre || uc.card.anime === animeFiltre)
+)
+.map(uc => {
     const c = uc.card;
     const prix = MARKET_PRICES[c.rarete] || {};
     const estSelectionnee = selectionVente.has(uc.id);
@@ -1949,12 +1991,20 @@ async function chargerAnnonces() {
     .order('created_at', { ascending: false });
 
   const grid = document.getElementById('annoncesGrid');
+  const rareteFiltre = document.getElementById('marketFilterRarete').value;
+const animeFiltre = document.getElementById('marketFilterAnime').value;
   if (!data || data.length === 0) {
     grid.innerHTML = '<div class="empty-state">Aucune annonce active.</div>';
     return;
   }
+  
 
-  grid.innerHTML = data.map(l => {
+ grid.innerHTML = data
+.filter(l =>
+  (!rareteFiltre || l.rarete === rareteFiltre) &&
+  (!animeFiltre || l.anime === animeFiltre)
+)
+.map(l => {
     const estMoi = user && l.seller_id === user.id;
     return `
       <div class="card-item" style="--rarity-color:${RARITY_COLORS[l.rarete]};">
