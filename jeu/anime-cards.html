@@ -998,6 +998,19 @@
       <div class="collection-title">Ma collection</div>
       <div class="collection-count" id="collectionCount">0 carte obtenue</div>
     </div>
+    <div class="filters">
+      <select id="filterRarete">
+        <option value="">Toutes raretés</option>
+        <option value="commune">Commune</option>
+        <option value="rare">Rare</option>
+        <option value="epique">Épique</option>
+        <option value="legendaire">Légendaire</option>
+        <option value="mythique">Mythique</option>
+      </select>
+      <select id="filterAnime">
+        <option value="">Tous animes</option>
+      </select>
+    </div>
   </div>
 
   <div class="card-grid" id="cardGrid"></div>
@@ -1019,38 +1032,12 @@
       <div class="vendre-header">
         <div class="collection-title">Mettre une carte en vente</div>
         <button class="btn-select-mode" id="btnToggleSelectVente">Sélectionner plusieurs</button>
-        <div class="filters">
-      <select id="filterRarete">
-        <option value="">Toutes raretés</option>
-        <option value="commune">Commune</option>
-        <option value="rare">Rare</option>
-        <option value="epique">Épique</option>
-        <option value="legendaire">Légendaire</option>
-        <option value="mythique">Mythique</option>
-      </select>
-      <select id="filterAnime">
-        <option value="">Tous animes</option>
-      </select>
-    </div>
       </div>
       <div class="card-grid" id="vendreGrid"></div>
     </div>
     <div id="marcheAnnonces" class="marche-sub" style="display:none;">
       <div class="collection-title" style="margin-bottom:16px;">Annonces actives</div>
       <div class="card-grid" id="annoncesGrid"></div>
-      <div class="filters">
-      <select id="filterRarete">
-        <option value="">Toutes raretés</option>
-        <option value="commune">Commune</option>
-        <option value="rare">Rare</option>
-        <option value="epique">Épique</option>
-        <option value="legendaire">Légendaire</option>
-        <option value="mythique">Mythique</option>
-      </select>
-      <select id="filterAnime">
-        <option value="">Tous animes</option>
-      </select>
-    </div>
     </div>
     <div id="marcheOffresRecues" class="marche-sub" style="display:none;">
       <div class="collection-title" style="margin-bottom:16px;">Offres reçues sur mes annonces</div>
