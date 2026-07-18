@@ -1165,11 +1165,16 @@ rejoindreSalonBtn.addEventListener('click', async () => {
   salonErreur.textContent = '';
   const code = salonCodeInput.value.trim();
   if (!code) { salonErreur.textContent = 'Entre un code de salon.'; return; }
-  const { data, error } = await sb.rpc('rejoindre_salon_roulette', { p_code: code });
-  if (error) {
-    salonErreur.textContent = error.message.includes('salon_introuvable') ? 'Salon introuvable.' : 'Erreur : ' + error.message;
+const { data, error } = await sb.rpc('rejoindre_salon_roulette', {
+  p_code: code
+});
+
+console.log(JSON.stringify(error, null, 2));
+
+if (error) {
+    alert(JSON.stringify(error, null, 2));
     return;
-  }
+}
   const info = data[0];
   salonId = info.salon_id;
   salonCodeAffiche.textContent = code.toUpperCase();
