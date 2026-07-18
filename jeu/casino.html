@@ -380,6 +380,168 @@ button#parier-btn:disabled { background-color: var(--card); color: var(--muted);
     margin-top: 8px;
     min-height: 16px;
 }
+
+/* ---- sélecteur de mode + salon entre amis ---- */
+.mode-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 4px;
+}
+button.mode-btn {
+    padding: 8px 24px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    border: none;
+    border-radius: 50px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: var(--transition);
+}
+button.mode-btn.selected { background: var(--accent); color: #0a0a0f; }
+
+.salon-action-btn {
+    padding: 12px 32px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #0a0a0f;
+    background-color: var(--accent);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.salon-action-btn:hover { transform: translateY(-2px); }
+
+.salon-separateur {
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .8rem;
+    margin: 20px 0;
+}
+
+.salon-rejoindre-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+.salon-rejoindre-row input {
+    width: 140px;
+    padding: 12px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    text-align: center;
+}
+
+.salon-code-affichage {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    font-size: .9rem;
+    margin-bottom: 16px;
+}
+#salon-code-affiche {
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 3px;
+    font-size: 1.1rem;
+}
+
+.salon-joueurs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+    max-width: 380px;
+}
+.salon-joueur-tag {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .78rem;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.salon-joueur-tag.a-parie { color: #5cc27a; border-color: #5cc27a; }
+
+button.choix-btn-salon {
+    padding: 10px 28px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 2px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+}
+button.choix-btn-salon[data-couleur="noir"] { background: #0a0a0a; color: #e8e8f0; border-color: #0a0a0a; }
+button.choix-btn-salon[data-couleur="blanc"] { background: #f0f0f5; color: #0a0a0f; border-color: #f0f0f5; }
+button.choix-btn-salon.selected { box-shadow: 0 0 0 3px var(--accent); transform: translateY(-2px); }
+
+button#lancer-manche-btn, button#manche-suivante-btn {
+    margin-top: 20px;
+    padding: 14px 40px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #0a0a0f;
+    background-color: var(--accent);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+button#lancer-manche-btn:disabled { background-color: var(--card); color: var(--muted); cursor: not-allowed; border: 1px solid var(--border); }
+
+button#quitter-salon-btn {
+    margin-top: 16px;
+    padding: 8px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--muted);
+    cursor: pointer;
+}
+button#quitter-salon-btn:hover { color: var(--accent2); border-color: var(--accent2); }
+
+#result-popup-salon {
+    margin-top: 20px;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 22px;
+    letter-spacing: 1px;
+    min-height: 34px;
+}
+#result-popup-salon .ligne-joueur { font-size: 14px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0; margin-top: 4px; }
+#result-popup-salon .ligne-joueur.gain { color: #5cc27a; }
+#result-popup-salon .ligne-joueur.perte { color: #c0392b; }
 </style>
 </head>
 <body>
@@ -425,36 +587,89 @@ button#parier-btn:disabled { background-color: var(--card); color: var(--muted);
 
   <div id="couleur-auth-gate" style="display:none;">Connecte-toi sur HorizonCiné pour parier.</div>
 
-  <div id="couleur-game-zone">
-    <div class="wheel-container small">
-      <div class="rigole"></div>
-      <div class="wheel cylindre" id="wheel-couleur"></div>
-      <div class="bille-orbit" id="bille-orbit"><div class="bille"></div></div>
-      <div class="center-circle"><span class="material-symbols-outlined">casino</span></div>
+  <div id="couleur-content">
+    <div class="mode-toggle">
+      <button class="mode-btn selected" id="mode-solo-btn">Solo</button>
+      <button class="mode-btn" id="mode-salon-btn">Entre amis</button>
     </div>
 
-    <div class="mise-controls">
-      <div class="choix-couleur">
-        <button class="choix-btn" data-couleur="noir">Noir</button>
-        <button class="choix-btn" data-couleur="blanc">Blanc</button>
+    <div id="solo-mode-zone">
+      <div class="wheel-container small">
+        <div class="rigole"></div>
+        <div class="wheel cylindre" id="wheel-couleur"></div>
+        <div class="bille-orbit" id="bille-orbit"><div class="bille"></div></div>
+        <div class="center-circle"><span class="material-symbols-outlined">casino</span></div>
       </div>
 
-      <div class="mise-input-row">
-        <input type="number" id="mise-input" min="1" step="1" placeholder="Mise" value="50">
-        <span class="material-symbols-outlined">money_bag</span>
+      <div class="mise-controls">
+        <div class="choix-couleur">
+          <button class="choix-btn" data-couleur="noir">Noir</button>
+          <button class="choix-btn" data-couleur="blanc">Blanc</button>
+        </div>
+
+        <div class="mise-input-row">
+          <input type="number" id="mise-input" min="1" step="1" placeholder="Mise" value="50">
+          <span class="material-symbols-outlined">money_bag</span>
+        </div>
+
+        <div class="mise-rapide">
+          <button class="mise-rapide-btn" data-action="half">÷2</button>
+          <button class="mise-rapide-btn" data-action="double">×2</button>
+          <button class="mise-rapide-btn" data-action="max">Max</button>
+        </div>
+
+        <button id="parier-btn">Parier</button>
+        <div class="mise-erreur" id="mise-erreur"></div>
       </div>
 
-      <div class="mise-rapide">
-        <button class="mise-rapide-btn" data-action="half">÷2</button>
-        <button class="mise-rapide-btn" data-action="double">×2</button>
-        <button class="mise-rapide-btn" data-action="max">Max</button>
-      </div>
-
-      <button id="parier-btn">Parier</button>
-      <div class="mise-erreur" id="mise-erreur"></div>
+      <div id="result-popup-couleur"></div>
     </div>
 
-    <div id="result-popup-couleur"></div>
+    <div id="salon-mode-zone" style="display:none;">
+
+      <!-- écran 1 : pas encore dans un salon -->
+      <div id="salon-accueil">
+        <button id="creer-salon-btn" class="salon-action-btn">Créer un salon</button>
+        <div class="salon-separateur">ou</div>
+        <div class="salon-rejoindre-row">
+          <input type="text" id="salon-code-input" placeholder="Code du salon" maxlength="6">
+          <button id="rejoindre-salon-btn" class="salon-action-btn">Rejoindre</button>
+        </div>
+        <div class="mise-erreur" id="salon-erreur"></div>
+      </div>
+
+      <!-- écran 2 : dans un salon -->
+      <div id="salon-lobby" style="display:none;">
+        <div class="salon-code-affichage">Code du salon : <span id="salon-code-affiche"></span></div>
+        <div class="salon-joueurs" id="salon-joueurs-liste"></div>
+
+        <div class="wheel-container small">
+          <div class="rigole"></div>
+          <div class="wheel cylindre" id="wheel-couleur-salon"></div>
+          <div class="bille-orbit" id="bille-orbit-salon"><div class="bille"></div></div>
+          <div class="center-circle"><span class="material-symbols-outlined">casino</span></div>
+        </div>
+
+        <div class="mise-controls" id="salon-mise-controls">
+          <div class="choix-couleur">
+            <button class="choix-btn-salon" data-couleur="noir">Noir</button>
+            <button class="choix-btn-salon" data-couleur="blanc">Blanc</button>
+          </div>
+          <div class="mise-input-row">
+            <input type="number" id="salon-mise-input" min="1" step="1" placeholder="Mise" value="50">
+            <span class="material-symbols-outlined">money_bag</span>
+          </div>
+          <button id="salon-parier-btn">Parier</button>
+        </div>
+
+        <button id="lancer-manche-btn" style="display:none;">Lancer la manche</button>
+        <button id="manche-suivante-btn" style="display:none;">Manche suivante</button>
+        <button id="quitter-salon-btn">Quitter le salon</button>
+
+        <div id="result-popup-salon"></div>
+        <div class="mise-erreur" id="salon-erreur-lobby"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -760,6 +975,246 @@ parierBtn.addEventListener('click', async () => {
     miseErreur.textContent = 'Erreur réseau, réessaie.';
     parierBtn.disabled = false;
   }
+});
+
+/* ===================================================================
+   MODE SOLO / ENTRE AMIS — sélecteur
+   =================================================================== */
+
+const modeSoloBtn = document.getElementById('mode-solo-btn');
+const modeSalonBtn = document.getElementById('mode-salon-btn');
+const soloModeZone = document.getElementById('solo-mode-zone');
+const salonModeZone = document.getElementById('salon-mode-zone');
+
+modeSoloBtn.addEventListener('click', () => {
+  modeSoloBtn.classList.add('selected');
+  modeSalonBtn.classList.remove('selected');
+  soloModeZone.style.display = 'block';
+  salonModeZone.style.display = 'none';
+});
+modeSalonBtn.addEventListener('click', () => {
+  modeSalonBtn.classList.add('selected');
+  modeSoloBtn.classList.remove('selected');
+  soloModeZone.style.display = 'none';
+  salonModeZone.style.display = 'block';
+});
+
+/* ===================================================================
+   SALON ENTRE AMIS — roulette multijoueur (code de salle)
+   =================================================================== */
+
+const salonAccueil = document.getElementById('salon-accueil');
+const salonLobby = document.getElementById('salon-lobby');
+const creerSalonBtn = document.getElementById('creer-salon-btn');
+const rejoindreSalonBtn = document.getElementById('rejoindre-salon-btn');
+const salonCodeInput = document.getElementById('salon-code-input');
+const salonErreur = document.getElementById('salon-erreur');
+const salonErreurLobby = document.getElementById('salon-erreur-lobby');
+const salonCodeAffiche = document.getElementById('salon-code-affiche');
+const salonJoueursListe = document.getElementById('salon-joueurs-liste');
+const salonMiseControls = document.getElementById('salon-mise-controls');
+const salonMiseInput = document.getElementById('salon-mise-input');
+const salonParierBtn = document.getElementById('salon-parier-btn');
+const lancerMancheBtn = document.getElementById('lancer-manche-btn');
+const mancheSuivanteBtn = document.getElementById('manche-suivante-btn');
+const quitterSalonBtn = document.getElementById('quitter-salon-btn');
+const resultPopupSalon = document.getElementById('result-popup-salon');
+const choixBtnsSalon = document.querySelectorAll('.choix-btn-salon');
+
+const wheelCouleurSalon = document.getElementById('wheel-couleur-salon');
+const billeOrbitSalon = document.getElementById('bille-orbit-salon');
+
+let salonId = null;
+let salonCanal = null;
+let salonCouleurChoisie = null;
+let currentRotationWheelSalon = 0;
+let currentRotationBilleSalon = 0;
+let dernierStatutSalon = null; // pour détecter la transition attente -> terminee
+
+// dessine la roue du salon (mêmes 17 segments que la roue solo)
+(function buildWheelSalon() {
+  let parts = [];
+  segmentsCouleur.forEach((seg, index) => {
+    const startAngle = index * degreesPerSliceCouleur;
+    const endAngle = (index + 1) * degreesPerSliceCouleur;
+    let bgColor, textColor, label;
+    if (seg === 'noir') { bgColor = '#151518'; textColor = '#e8e8f0'; label = 'NOIR'; }
+    else if (seg === 'blanc') { bgColor = '#e8e8f0'; textColor = '#0a0a0f'; label = 'BLANC'; }
+    else { bgColor = 'var(--accent)'; textColor = '#0a0a0f'; label = 'BANQUE'; }
+    parts.push(`${bgColor} ${startAngle}deg ${endAngle}deg`);
+    const textEl = document.createElement('div');
+    textEl.className = 'slice-text-couleur';
+    const midAngle = startAngle + (degreesPerSliceCouleur / 2);
+    textEl.style.transform = `rotate(${midAngle}deg)`;
+    textEl.style.color = textColor;
+    textEl.textContent = label;
+    wheelCouleurSalon.appendChild(textEl);
+  });
+  wheelCouleurSalon.style.background = `conic-gradient(${parts.join(', ')})`;
+})();
+
+choixBtnsSalon.forEach(btn => {
+  btn.addEventListener('click', () => {
+    choixBtnsSalon.forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    salonCouleurChoisie = btn.dataset.couleur;
+  });
+});
+
+function afficherEcranAccueilSalon() {
+  salonAccueil.style.display = 'block';
+  salonLobby.style.display = 'none';
+  salonId = null;
+  if (salonCanal) { sb.removeChannel(salonCanal); salonCanal = null; }
+}
+
+function abonnerSalon(id) {
+  if (salonCanal) sb.removeChannel(salonCanal);
+  salonCanal = sb.channel(`salon-roulette-${id}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'roulette_salon_joueurs', filter: `salon_id=eq.${id}` },
+      () => rafraichirSalon(id))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'roulette_salons', filter: `id=eq.${id}` },
+      () => rafraichirSalon(id))
+    .subscribe();
+}
+
+async function rafraichirSalon(id) {
+  const { data: salon } = await sb.from('roulette_salons').select('*').eq('id', id).single();
+  const { data: joueurs } = await sb.from('roulette_salon_joueurs').select('*').eq('salon_id', id);
+  if (!salon || !joueurs) return;
+
+  const { data: { user } } = await sb.auth.getUser();
+  const moi = joueurs.find(j => j.user_id === user.id);
+
+  // liste des joueurs
+  salonJoueursListe.innerHTML = '';
+  joueurs.forEach(j => {
+    const tag = document.createElement('div');
+    tag.className = 'salon-joueur-tag' + (j.a_parie ? ' a-parie' : '');
+    const nom = j.user_id === user.id ? 'Toi' : `Joueur ${j.user_id.slice(0, 4)}`;
+    tag.textContent = `${nom} ${j.a_parie ? '✓' : '…'}`;
+    salonJoueursListe.appendChild(tag);
+  });
+
+  const tousOntParie = joueurs.every(j => j.a_parie);
+
+  if (salon.statut === 'attente') {
+    salonMiseControls.style.display = moi && moi.a_parie ? 'none' : 'flex';
+    lancerMancheBtn.style.display = tousOntParie ? 'inline-block' : 'none';
+    mancheSuivanteBtn.style.display = 'none';
+    if (dernierStatutSalon === 'terminee') {
+      resultPopupSalon.innerHTML = '';
+    }
+  } else if (salon.statut === 'terminee') {
+    salonMiseControls.style.display = 'none';
+    lancerMancheBtn.style.display = 'none';
+    mancheSuivanteBtn.style.display = 'inline-block';
+
+    // si on vient de passer à "terminee", on joue l'animation
+    if (dernierStatutSalon !== 'terminee') {
+      jouerAnimationSalon(salon.segment_index, salon.sens_cylindre, salon.resultat, joueurs, user.id);
+    }
+  }
+  dernierStatutSalon = salon.statut;
+
+  await refreshBalance();
+}
+
+function jouerAnimationSalon(segmentIndex, sensCylindre, resultatCouleur, joueurs, monId) {
+  const toursCylindre = 2 + Math.random();
+  currentRotationWheelSalon += sensCylindre * toursCylindre * 360;
+  wheelCouleurSalon.style.transform = `rotate(${currentRotationWheelSalon}deg)`;
+  const wheelFinalMod = ((currentRotationWheelSalon % 360) + 360) % 360;
+
+  const jitter = 0.2 + Math.random() * 0.6;
+  const angleSegment = segmentIndex * degreesPerSliceCouleur + jitter * degreesPerSliceCouleur;
+  const desiredBilleFinal = ((wheelFinalMod + angleSegment) % 360 + 360) % 360;
+  const billeDir = -sensCylindre;
+  const toursBille = 6 + Math.random() * 2;
+  currentRotationBilleSalon = prochaineRotation(currentRotationBilleSalon, billeDir, toursBille, desiredBilleFinal);
+  billeOrbitSalon.style.transform = `rotate(${currentRotationBilleSalon}deg)`;
+
+  setTimeout(() => {
+    const labelResultat = resultatCouleur === 'banque' ? 'Banque' : (resultatCouleur === 'noir' ? 'Noir' : 'Blanc');
+    let html = `Résultat : ${labelResultat}`;
+    joueurs.forEach(j => {
+      const nom = j.user_id === monId ? 'Toi' : `Joueur ${j.user_id.slice(0, 4)}`;
+      const cls = j.gagne ? 'gain' : 'perte';
+      const montant = j.gagne ? `+${j.gain}` : `-${j.mise}`;
+      html += `<div class="ligne-joueur ${cls}">${nom} : ${montant}</div>`;
+    });
+    resultPopupSalon.innerHTML = html;
+  }, 4500);
+}
+
+creerSalonBtn.addEventListener('click', async () => {
+  salonErreur.textContent = '';
+  const { data, error } = await sb.rpc('creer_salon_roulette');
+  if (error) { salonErreur.textContent = 'Erreur : ' + error.message; return; }
+  const info = data[0];
+  salonId = info.salon_id;
+  salonCodeAffiche.textContent = info.code;
+  salonAccueil.style.display = 'none';
+  salonLobby.style.display = 'block';
+  dernierStatutSalon = null;
+  abonnerSalon(salonId);
+  await rafraichirSalon(salonId);
+});
+
+rejoindreSalonBtn.addEventListener('click', async () => {
+  salonErreur.textContent = '';
+  const code = salonCodeInput.value.trim();
+  if (!code) { salonErreur.textContent = 'Entre un code de salon.'; return; }
+  const { data, error } = await sb.rpc('rejoindre_salon_roulette', { p_code: code });
+  if (error) {
+    salonErreur.textContent = error.message.includes('salon_introuvable') ? 'Salon introuvable.' : 'Erreur : ' + error.message;
+    return;
+  }
+  const info = data[0];
+  salonId = info.salon_id;
+  salonCodeAffiche.textContent = code.toUpperCase();
+  salonAccueil.style.display = 'none';
+  salonLobby.style.display = 'block';
+  dernierStatutSalon = null;
+  abonnerSalon(salonId);
+  await rafraichirSalon(salonId);
+});
+
+salonParierBtn.addEventListener('click', async () => {
+  salonErreurLobby.textContent = '';
+  if (!salonCouleurChoisie) { salonErreurLobby.textContent = 'Choisis une couleur.'; return; }
+  const mise = parseInt(salonMiseInput.value);
+  if (!mise || mise < 1) { salonErreurLobby.textContent = 'Mise invalide.'; return; }
+
+  salonParierBtn.disabled = true;
+  const { error } = await sb.rpc('parier_salon_roulette', {
+    p_salon_id: salonId, p_couleur: salonCouleurChoisie, p_mise: mise
+  });
+  salonParierBtn.disabled = false;
+  if (error) {
+    salonErreurLobby.textContent = error.message.includes('solde_insuffisant') ? 'Solde insuffisant.' : 'Erreur : ' + error.message;
+    return;
+  }
+});
+
+lancerMancheBtn.addEventListener('click', async () => {
+  lancerMancheBtn.disabled = true;
+  const { error } = await sb.rpc('lancer_manche_salon', { p_salon_id: salonId });
+  lancerMancheBtn.disabled = false;
+  if (error) salonErreurLobby.textContent = 'Erreur : ' + error.message;
+});
+
+mancheSuivanteBtn.addEventListener('click', async () => {
+  choixBtnsSalon.forEach(b => b.classList.remove('selected'));
+  salonCouleurChoisie = null;
+  resultPopupSalon.innerHTML = '';
+  const { error } = await sb.rpc('nouvelle_manche_salon', { p_salon_id: salonId });
+  if (error) salonErreurLobby.textContent = 'Erreur : ' + error.message;
+});
+
+quitterSalonBtn.addEventListener('click', async () => {
+  if (salonId) await sb.rpc('quitter_salon_roulette', { p_salon_id: salonId });
+  afficherEcranAccueilSalon();
 });
 </script>
 </body>
