@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=money_bag,casino" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -217,6 +217,31 @@ button#spin-btn:disabled { background-color: var(--card); color: var(--muted); c
     height: 320px;
 }
 
+.wheel.static {
+    transition: none;
+}
+
+.bille-orbit {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    transform-origin: 50% 50%;
+    transition: transform 5s cubic-bezier(0.15, 0.85, 0.2, 1);
+    z-index: 6;
+}
+
+.bille {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin-left: -8px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff, #cfcfd8 70%, #9a9aac);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.3);
+}
+
 .slice-text-couleur {
     position: absolute;
     width: 50%;
@@ -389,8 +414,8 @@ button#parier-btn:disabled { background-color: var(--card); color: var(--muted);
 
   <div id="couleur-game-zone">
     <div class="wheel-container small">
-      <div class="pointer"></div>
-      <div class="wheel" id="wheel-couleur"></div>
+      <div class="wheel static" id="wheel-couleur"></div>
+      <div class="bille-orbit" id="bille-orbit"><div class="bille"></div></div>
       <div class="center-circle"><span class="material-symbols-outlined">casino</span></div>
     </div>
 
@@ -575,6 +600,7 @@ const totalSlicesCouleur = segmentsCouleur.length;
 const degreesPerSliceCouleur = 360 / totalSlicesCouleur;
 
 const wheelCouleur = document.getElementById('wheel-couleur');
+const billeOrbit = document.getElementById('bille-orbit');
 const parierBtn = document.getElementById('parier-btn');
 const miseInput = document.getElementById('mise-input');
 const miseErreur = document.getElementById('mise-erreur');
@@ -582,7 +608,7 @@ const resultPopupCouleur = document.getElementById('result-popup-couleur');
 const choixBtns = document.querySelectorAll('.choix-btn');
 
 let couleurChoisie = null;
-let currentRotationCouleur = 0;
+let currentRotationBille = 0;
 
 let conicPartsCouleur = [];
 segmentsCouleur.forEach((seg, index) => {
@@ -662,15 +688,18 @@ parierBtn.addEventListener('click', async () => {
     const gagne = resultat.gagne;
     const gain = resultat.gain;
 
-    const jitter = 0.15 + Math.random() * 0.7;
-    const targetAdjusted = segmentIndex * degreesPerSliceCouleur + jitter * degreesPerSliceCouleur;
-    const desiredFinal = (((630 - targetAdjusted) % 360) + 360) % 360;
-    const currentMod = ((currentRotationCouleur % 360) + 360) % 360;
+    // angle cible = milieu du segment gagnant (+ un petit aléa pour ne pas
+    // toujours tomber pile au centre de la case)
+    const jitter = 0.2 + Math.random() * 0.6;
+    const targetAngle = segmentIndex * degreesPerSliceCouleur + jitter * degreesPerSliceCouleur;
+    const desiredFinal = ((targetAngle % 360) + 360) % 360;
+    const currentMod = ((currentRotationBille % 360) + 360) % 360;
     let delta = desiredFinal - currentMod;
     if (delta <= 0) delta += 360;
-    currentRotationCouleur += 1800 + delta;
+    // plusieurs tours complets pour l'effet "bille qui tourne avant de se poser"
+    currentRotationBille += 6 * 360 + delta;
 
-    wheelCouleur.style.transform = `rotate(${currentRotationCouleur}deg)`;
+    billeOrbit.style.transform = `rotate(${currentRotationBille}deg)`;
 
     setTimeout(() => {
       const labelResultat = resultat.resultat === 'banque' ? 'Banque' : (resultat.resultat === 'noir' ? 'Noir' : 'Blanc');
