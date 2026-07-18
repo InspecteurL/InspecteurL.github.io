@@ -217,8 +217,21 @@ button#spin-btn:disabled { background-color: var(--card); color: var(--muted); c
     height: 320px;
 }
 
-.wheel.static {
-    transition: none;
+.wheel-container.small .rigole {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: inset 0 0 0 2px var(--border), inset 0 6px 18px rgba(0,0,0,0.7);
+    z-index: 1;
+}
+
+.wheel-container.small .wheel.cylindre {
+    position: absolute;
+    top: 9%; left: 9%;
+    width: 82%; height: 82%;
+    z-index: 2;
+    transition: transform 4.5s cubic-bezier(0.22, 0.68, 0.35, 1);
 }
 
 .bille-orbit {
@@ -226,17 +239,17 @@ button#spin-btn:disabled { background-color: var(--card); color: var(--muted); c
     top: 0; left: 0;
     width: 100%; height: 100%;
     transform-origin: 50% 50%;
-    transition: transform 5s cubic-bezier(0.15, 0.85, 0.2, 1);
-    z-index: 6;
+    transition: transform 4.5s cubic-bezier(0.1, 0.6, 0.15, 1);
+    z-index: 4;
 }
 
 .bille {
     position: absolute;
-    top: 14px;
+    top: 9px;
     left: 50%;
-    width: 16px;
-    height: 16px;
-    margin-left: -8px;
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
     border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, #fff, #cfcfd8 70%, #9a9aac);
     box-shadow: 0 2px 6px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.3);
@@ -414,7 +427,8 @@ button#parier-btn:disabled { background-color: var(--card); color: var(--muted);
 
   <div id="couleur-game-zone">
     <div class="wheel-container small">
-      <div class="wheel static" id="wheel-couleur"></div>
+      <div class="rigole"></div>
+      <div class="wheel cylindre" id="wheel-couleur"></div>
       <div class="bille-orbit" id="bille-orbit"><div class="bille"></div></div>
       <div class="center-circle"><span class="material-symbols-outlined">casino</span></div>
     </div>
@@ -609,6 +623,25 @@ const choixBtns = document.querySelectorAll('.choix-btn');
 
 let couleurChoisie = null;
 let currentRotationBille = 0;
+let currentRotationWheel = 0;
+let wheelSpinDirection = 1; // 1 = horaire, -1 = antihoraire ; alterne à chaque manche
+
+// avance un accumulateur de rotation dans une direction donnée (1 ou -1),
+// en imposant un nombre minimum de tours complets, pour atterrir exactement
+// sur desiredFinalMod (0-360, mesuré depuis le haut, sens horaire)
+function prochaineRotation(current, direction, minTours, desiredFinalMod) {
+  const currentMod = ((current % 360) + 360) % 360;
+  let diff;
+  if (direction > 0) {
+    diff = desiredFinalMod - currentMod;
+    if (diff <= 0) diff += 360;
+    return current + minTours * 360 + diff;
+  } else {
+    diff = currentMod - desiredFinalMod;
+    if (diff <= 0) diff += 360;
+    return current - minTours * 360 - diff;
+  }
+}
 
 let conicPartsCouleur = [];
 segmentsCouleur.forEach((seg, index) => {
@@ -688,16 +721,26 @@ parierBtn.addEventListener('click', async () => {
     const gagne = resultat.gagne;
     const gain = resultat.gain;
 
-    // angle cible = milieu du segment gagnant (+ un petit aléa pour ne pas
-    // toujours tomber pile au centre de la case)
+    // le croupier alterne le sens du cylindre par rapport à la manche précédente
+    const wheelDir = wheelSpinDirection;
+    wheelSpinDirection = -wheelSpinDirection; // prêt pour la manche suivante
+
+    // le cylindre tourne d'environ 2 à 3 tours, sens wheelDir (sa rotation
+    // finale est purement cosmétique, la bille s'adapte à sa position d'arrêt)
+    const toursCylindre = 2 + Math.random();
+    currentRotationWheel += wheelDir * toursCylindre * 360;
+    wheelCouleur.style.transform = `rotate(${currentRotationWheel}deg)`;
+    const wheelFinalMod = ((currentRotationWheel % 360) + 360) % 360;
+
+    // la bille est lancée dans le sens opposé au cylindre, et doit faire au
+    // moins 3 tours de cylindre pour que le tirage soit valable (ici 6 à 8,
+    // largement au-dessus du minimum une fois combinés au sens opposé du cylindre)
     const jitter = 0.2 + Math.random() * 0.6;
-    const targetAngle = segmentIndex * degreesPerSliceCouleur + jitter * degreesPerSliceCouleur;
-    const desiredFinal = ((targetAngle % 360) + 360) % 360;
-    const currentMod = ((currentRotationBille % 360) + 360) % 360;
-    let delta = desiredFinal - currentMod;
-    if (delta <= 0) delta += 360;
-    // plusieurs tours complets pour l'effet "bille qui tourne avant de se poser"
-    currentRotationBille += 6 * 360 + delta;
+    const angleSegment = segmentIndex * degreesPerSliceCouleur + jitter * degreesPerSliceCouleur;
+    const desiredBilleFinal = ((wheelFinalMod + angleSegment) % 360 + 360) % 360;
+    const billeDir = -wheelDir;
+    const toursBille = 6 + Math.random() * 2;
+    currentRotationBille = prochaineRotation(currentRotationBille, billeDir, toursBille, desiredBilleFinal);
 
     billeOrbit.style.transform = `rotate(${currentRotationBille}deg)`;
 
@@ -712,7 +755,7 @@ parierBtn.addEventListener('click', async () => {
       }
       document.getElementById('balanceDisplay').textContent = resultat.nouveau_solde;
       parierBtn.disabled = false;
-    }, 5000);
+    }, 4500);
   } catch (err) {
     miseErreur.textContent = 'Erreur réseau, réessaie.';
     parierBtn.disabled = false;
