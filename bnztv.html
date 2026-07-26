@@ -162,6 +162,367 @@
   /* subtle entrance animations */
   .fade-up{ animation: fadeUp .6s ease both }
   @keyframes fadeUp{ from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none} }
+
+  ```css
+/* ==================== HERO SLIDER ==================== */
+
+.hero-wrap {
+  position:relative;
+  height:78vh;
+  min-height:480px;
+  overflow:hidden;
+  background:#030304;
+}
+
+/* ==================== BACKGROUNDS ==================== */
+
+.hero-bg {
+  position:absolute;
+  inset:-3%;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+
+  opacity:0;
+
+  transition:
+    opacity 1.2s ease,
+    transform 8s ease;
+
+  transform:scale(1.08);
+
+  will-change:
+    opacity,
+    transform;
+
+  pointer-events:none;
+}
+
+/* Background actif */
+
+.hero-bg.active {
+  opacity:1;
+  transform:scale(1.02);
+}
+
+/* Background éloigné */
+
+#bg-far {
+  filter:blur(1px);
+  transform:scale(1.15);
+}
+
+#bg-far.active {
+  transform:scale(1.08);
+}
+
+/* Background milieu */
+
+#bg-mid {
+  mix-blend-mode:screen;
+  opacity:0;
+}
+
+#bg-mid.active {
+  opacity:0.35;
+}
+
+/* Background principal */
+
+#bg-front {
+  filter:saturate(1.1);
+}
+
+/* ==================== OVERLAY ==================== */
+
+.hero-overlay {
+  position:absolute;
+  inset:0;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0,0,0,0.90) 0%,
+      rgba(0,0,0,0.70) 35%,
+      rgba(0,0,0,0.30) 70%,
+      rgba(0,0,0,0.55) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(0,0,0,0.15) 0%,
+      rgba(0,0,0,0.15) 50%,
+      rgba(0,0,0,0.85) 100%
+    );
+
+  z-index:2;
+  pointer-events:none;
+}
+
+/* ==================== HERO CONTENT ==================== */
+
+.hero-inner {
+  position:relative;
+  z-index:5;
+
+  height:100%;
+
+  display:flex;
+  align-items:flex-end;
+
+  padding:
+    40px
+    6%
+    80px;
+}
+
+.hero-card {
+  max-width:720px;
+
+  opacity:1;
+
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+
+/* Animation changement de slide */
+
+.hero-card.slide-out {
+  opacity:0;
+  transform:translateY(20px);
+}
+
+.hero-card.slide-in {
+  animation:
+    heroSlideIn 0.7s ease forwards;
+}
+
+@keyframes heroSlideIn {
+
+  from {
+    opacity:0;
+    transform:translateY(25px);
+  }
+
+  to {
+    opacity:1;
+    transform:translateY(0);
+  }
+
+}
+
+/* ==================== BADGE LIVE ==================== */
+
+.hero-badge {
+  display:inline-flex;
+
+  align-items:center;
+
+  margin-bottom:12px;
+
+  padding:
+    6px
+    10px;
+
+  border-radius:6px;
+
+  background:rgba(229,9,20,0.9);
+
+  color:#fff;
+
+  font-size:0.75rem;
+
+  font-weight:700;
+
+  letter-spacing:0.5px;
+}
+
+/* ==================== TITRE ==================== */
+
+.hero-title {
+  font-size:3.2rem;
+
+  margin:
+    0
+    0
+    8px;
+
+  font-weight:800;
+
+  letter-spacing:1px;
+
+  line-height:1.1;
+
+  text-shadow:
+    0
+    4px
+    20px
+    rgba(0,0,0,0.8);
+}
+
+/* ==================== SOUS TITRE ==================== */
+
+.hero-sub {
+  color:#d7d7d7;
+
+  margin:
+    8px
+    0
+    18px;
+
+  font-size:1.05rem;
+
+  text-shadow:
+    0
+    2px
+    10px
+    rgba(0,0,0,0.8);
+}
+
+/* ==================== BOUTONS ==================== */
+
+.hero-actions {
+  display:flex;
+  gap:12px;
+}
+
+.btn {
+  background:var(--accent);
+
+  color:white;
+
+  padding:
+    12px
+    18px;
+
+  border-radius:8px;
+
+  border:none;
+
+  cursor:pointer;
+
+  font-weight:700;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.btn:hover {
+  transform:translateY(-2px);
+  opacity:0.9;
+}
+
+.btn.secondary {
+  background:
+    rgba(255,255,255,0.10);
+
+  backdrop-filter:
+    blur(8px);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.15);
+
+  color:#fff;
+}
+
+/* ==================== DOTS ==================== */
+
+.hero-dots {
+
+  position:absolute;
+
+  bottom:25px;
+
+  left:50%;
+
+  transform:translateX(-50%);
+
+  z-index:20;
+
+  display:flex;
+
+  gap:8px;
+
+  padding:
+    8px
+    12px;
+
+  border-radius:20px;
+
+  background:
+    rgba(0,0,0,0.35);
+
+  backdrop-filter:
+    blur(8px);
+}
+
+.hero-dot {
+
+  width:8px;
+  height:8px;
+
+  border-radius:50%;
+
+  background:
+    rgba(255,255,255,0.35);
+
+  cursor:pointer;
+
+  transition:
+    width 0.3s ease,
+    background 0.3s ease;
+}
+
+.hero-dot.active {
+
+  width:24px;
+
+  border-radius:10px;
+
+  background:
+    var(--accent);
+}
+
+/* ==================== MOBILE ==================== */
+
+@media (max-width:900px) {
+
+  .hero-title {
+    font-size:2.1rem;
+  }
+
+  .hero-inner {
+    padding:
+      28px
+      28px
+      70px;
+  }
+
+}
+
+@media (max-width:520px) {
+
+  .hero-title {
+    font-size:1.6rem;
+  }
+
+  .hero-sub {
+    font-size:0.95rem;
+  }
+
+  .hero-card {
+    max-width:90%;
+  }
+
+  .hero-actions {
+    flex-wrap:wrap;
+  }
+
+}
+```
+
 </style>
 </head>
 <body>
@@ -177,27 +538,69 @@
   </div>
 </header>
 
-<!-- HERO with parallax layers -->
-<section class="hero-wrap" id="hero">
-  <!-- background layers; you can add more / change images -->
-  <div class="hero-bg layer" id="bg-far" style="background-image:url('https://wallpapers.com/images/hd/uefa-champions-league-star-football-logo-8dv90jbvwwhzp9c0.jpg'); transform: translateZ(-1px) scale(1.15)"></div>
-  <div class="hero-bg layer" id="bg-mid" style="background-image:url('https://w0.peakpx.com/wallpaper/959/729/HD-wallpaper-griezmann-striker-goal-atletico-madrid-fc-french-footballers-forward-la-liga-antoine-griezmann-neon-lights-soccer-laliga.jpg'); mix-blend-mode:screen; opacity:0.9; transform: translateZ(0) scale(1.08)"></div>
-  <div class="hero-bg layer" id="bg-front" style="background-image: url('https://w0.peakpx.com/wallpaper/400/898/HD-wallpaper-lee-kang-in-lee-paris-kang-psg.jpg'); transform: translateZ(0) scale(1.02); filter: saturate(1.05)"></div>
+```html
+<!-- ==================== HERO SLIDER API ==================== -->
 
+<section class="hero-wrap" id="hero">
+
+  <!-- Backgrounds -->
+  <div class="hero-bg layer" id="bg-far"></div>
+  <div class="hero-bg layer" id="bg-mid"></div>
+  <div class="hero-bg layer" id="bg-front"></div>
+
+  <!-- Effets -->
   <div class="hero-halo" aria-hidden="true"></div>
   <div class="hero-overlay"></div>
 
+  <!-- Contenu -->
   <div class="hero-inner">
-    <div class="hero-card fade-up" role="region" aria-label="Featured">
-      <h1 class="hero-title">Champions League — Soirée Finale</h1>
-      <p class="hero-sub">Match en direct • Commentaires exclusifs • Multi-caméra</p>
-      <div class="hero-actions">
-        <button class="btn" id="watch-now">Regarder</button>
-        <button class="btn secondary" id="trailer">Bande-annonce</button>
+
+    <div class="hero-card" role="region" aria-label="Événement à la une">
+
+      <!-- Chargement -->
+      <div id="hero-loading">
+        Chargement des événements...
       </div>
+
+      <!-- Contenu dynamique -->
+      <div id="hero-content" style="display:none;">
+
+        <div class="hero-badge">
+          🔴 EN DIRECT
+        </div>
+
+        <h1 class="hero-title" id="hero-title">
+          Événement en direct
+        </h1>
+
+        <p class="hero-sub" id="hero-sub">
+          Chargement...
+        </p>
+
+        <div class="hero-actions">
+
+          <button class="btn" id="watch-now">
+            ▶ Regarder
+          </button>
+
+          <button class="btn secondary" id="trailer">
+            ℹ Plus d'informations
+          </button>
+
+        </div>
+
+      </div>
+
     </div>
+
   </div>
+
+  <!-- Indicateurs du slider -->
+  <div class="hero-dots" id="hero-dots"></div>
+
 </section>
+```
+
 
 <!-- Carousels -->
 <main>
@@ -245,6 +648,527 @@
 <script>
 // ==================== API STREAMFREE.TOP ====================
 const API_BASE = "https://streamfree.top/api/v1";
+  ```javascript
+// ==================================================
+// HERO SLIDER DYNAMIQUE API
+// ==================================================
+
+let heroStreams = [];
+let currentHeroIndex = 0;
+let heroTimer = null;
+
+// Temps entre chaque slide
+const HERO_INTERVAL = 8000;
+
+// Stream actuellement affiché
+let heroStream = null;
+
+
+// ==================================================
+// RÉCUPÉRER LES ÉVÉNEMENTS DEPUIS L'API
+// ==================================================
+
+async function fetchHeroStreams(category = "soccer") {
+
+  const heroLoading =
+    document.getElementById('hero-loading');
+
+  const heroContent =
+    document.getElementById('hero-content');
+
+  try {
+
+    const res = await fetch(
+      `${API_BASE}/streams?category=${encodeURIComponent(category)}`
+    );
+
+    if (!res.ok) {
+      throw new Error(
+        `Erreur API : ${res.status}`
+      );
+    }
+
+    const data = await res.json();
+
+    // Récupérer les streams
+    heroStreams =
+      Array.isArray(data.streams)
+        ? data.streams
+        : [];
+
+
+    // Aucun événement
+    if (heroStreams.length === 0) {
+
+      heroLoading.textContent =
+        "Aucun événement en direct pour le moment.";
+
+      return;
+    }
+
+
+    // Afficher les indicateurs
+    createHeroDots();
+
+
+    // Afficher le premier événement
+    showHeroSlide(0);
+
+
+    // Démarrer le slider automatique
+    startHeroSlider();
+
+
+  } catch (err) {
+
+    console.error(
+      "Erreur Hero API :",
+      err
+    );
+
+    heroLoading.textContent =
+      "Impossible de charger les événements.";
+
+  }
+
+}
+
+
+// ==================================================
+// AFFICHER UN SLIDE
+// ==================================================
+
+function showHeroSlide(index) {
+
+  if (
+    !heroStreams.length
+  ) {
+    return;
+  }
+
+
+  // Boucle infinie
+  currentHeroIndex =
+    (index + heroStreams.length)
+    % heroStreams.length;
+
+
+  // Stream actuel
+  heroStream =
+    heroStreams[currentHeroIndex];
+
+
+  // Éléments DOM
+
+  const heroCard =
+    document.querySelector('.hero-card');
+
+  const heroLoading =
+    document.getElementById('hero-loading');
+
+  const heroContent =
+    document.getElementById('hero-content');
+
+  const heroTitle =
+    document.getElementById('hero-title');
+
+  const heroSub =
+    document.getElementById('hero-sub');
+
+
+  const bgFar =
+    document.getElementById('bg-far');
+
+  const bgMid =
+    document.getElementById('bg-mid');
+
+  const bgFront =
+    document.getElementById('bg-front');
+
+
+  // ================================
+  // ANIMATION DE SORTIE
+  // ================================
+
+  heroCard.classList.add(
+    'slide-out'
+  );
+
+
+  setTimeout(() => {
+
+    // ================================
+    // DONNÉES DU STREAM
+    // ================================
+
+    const title =
+      heroStream.name ||
+      "Événement en direct";
+
+
+    const league =
+      heroStream.league ||
+      heroStream.category ||
+      "Sport en direct";
+
+
+    const thumbnail =
+      heroStream.thumbnail_url ||
+      "";
+
+
+    // ================================
+    // MISE À JOUR DU TEXTE
+    // ================================
+
+    heroTitle.textContent =
+      title;
+
+
+    heroSub.textContent =
+      `${league} • En direct • Qualité HD`;
+
+
+    // ================================
+    // MISE À JOUR DES IMAGES
+    // ================================
+
+    if (thumbnail) {
+
+      bgFar.style.backgroundImage =
+        `url("${thumbnail}")`;
+
+      bgMid.style.backgroundImage =
+        `url("${thumbnail}")`;
+
+      bgFront.style.backgroundImage =
+        `url("${thumbnail}")`;
+
+    }
+
+
+    // ================================
+    // ACTIVER LES BACKGROUNDS
+    // ================================
+
+    bgFar.classList.add('active');
+
+    bgMid.classList.add('active');
+
+    bgFront.classList.add('active');
+
+
+    // ================================
+    // AFFICHER LE CONTENU
+    // ================================
+
+    heroLoading.style.display =
+      'none';
+
+    heroContent.style.display =
+      'block';
+
+
+    // ================================
+    // ANIMATION ENTRÉE
+    // ================================
+
+    heroCard.classList.remove(
+      'slide-out'
+    );
+
+    heroCard.classList.remove(
+      'slide-in'
+    );
+
+
+    // Force le navigateur à recalculer
+    void heroCard.offsetWidth;
+
+
+    heroCard.classList.add(
+      'slide-in'
+    );
+
+
+    // ================================
+    // METTRE À JOUR LES DOTS
+    // ================================
+
+    updateHeroDots();
+
+
+  }, 500);
+
+}
+
+
+// ==================================================
+// CRÉER LES INDICATEURS
+// ==================================================
+
+function createHeroDots() {
+
+  const dotsContainer =
+    document.getElementById('hero-dots');
+
+
+  dotsContainer.innerHTML =
+    '';
+
+
+  heroStreams.forEach(
+    (stream, index) => {
+
+      const dot =
+        document.createElement('div');
+
+
+      dot.className =
+        'hero-dot';
+
+
+      if (
+        index === currentHeroIndex
+      ) {
+
+        dot.classList.add(
+          'active'
+        );
+
+      }
+
+
+      dot.title =
+        stream.name ||
+        `Événement ${index + 1}`;
+
+
+      // Cliquer sur un événement
+      dot.addEventListener(
+        'click',
+        () => {
+
+          showHeroSlide(index);
+
+          // Redémarrer le timer
+          restartHeroSlider();
+
+        }
+      );
+
+
+      dotsContainer.appendChild(
+        dot
+      );
+
+    }
+  );
+
+}
+
+
+// ==================================================
+// METTRE À JOUR LES DOTS
+// ==================================================
+
+function updateHeroDots() {
+
+  const dots =
+    document.querySelectorAll(
+      '.hero-dot'
+    );
+
+
+  dots.forEach(
+    (dot, index) => {
+
+      dot.classList.toggle(
+        'active',
+        index === currentHeroIndex
+      );
+
+    }
+  );
+
+}
+
+
+// ==================================================
+// DÉMARRER LE SLIDER
+// ==================================================
+
+function startHeroSlider() {
+
+  stopHeroSlider();
+
+
+  // S'il n'y a qu'un seul événement,
+  // inutile de faire tourner le slider
+
+  if (
+    heroStreams.length <= 1
+  ) {
+    return;
+  }
+
+
+  heroTimer =
+    setInterval(
+      () => {
+
+        showHeroSlide(
+          currentHeroIndex + 1
+        );
+
+      },
+      HERO_INTERVAL
+    );
+
+}
+
+
+// ==================================================
+// ARRÊTER LE SLIDER
+// ==================================================
+
+function stopHeroSlider() {
+
+  if (heroTimer) {
+
+    clearInterval(
+      heroTimer
+    );
+
+    heroTimer = null;
+
+  }
+
+}
+
+
+// ==================================================
+// REDÉMARRER LE SLIDER
+// ==================================================
+
+function restartHeroSlider() {
+
+  startHeroSlider();
+
+}
+
+
+// ==================================================
+// PAUSE AU SURVOL
+// ==================================================
+
+const hero =
+  document.getElementById('hero');
+
+
+hero.addEventListener(
+  'mouseenter',
+  () => {
+
+    stopHeroSlider();
+
+  }
+);
+
+
+hero.addEventListener(
+  'mouseleave',
+  () => {
+
+    startHeroSlider();
+
+  }
+);
+
+
+// ==================================================
+// CLIC SUR "REGARDER"
+// ==================================================
+
+document
+  .getElementById('watch-now')
+  .addEventListener(
+    'click',
+    () => {
+
+      if (
+        !heroStream
+      ) {
+
+        return;
+
+      }
+
+
+      const title =
+        heroStream.name ||
+        "Événement en direct";
+
+
+      const embedUrl =
+        heroStream.embed_url ||
+        "";
+
+
+      if (!embedUrl) {
+
+        console.warn(
+          "Aucun embed_url disponible."
+        );
+
+        return;
+
+      }
+
+
+      openStream(
+        title,
+        embedUrl
+      );
+
+    }
+  );
+
+
+// ==================================================
+// BOUTON INFORMATIONS
+// ==================================================
+
+document
+  .getElementById('trailer')
+  .addEventListener(
+    'click',
+    () => {
+
+      if (
+        !heroStream
+      ) {
+
+        return;
+
+      }
+
+
+      // Pour le moment,
+      // on ouvre le stream directement.
+
+      openStream(
+        heroStream.name ||
+        "Événement en direct",
+
+        heroStream.embed_url ||
+        ""
+      );
+
+    }
+  );
+```
+
 
 async function fetchLiveStreams(category = "soccer") {
   const loadingEl = document.getElementById('live-loading');
@@ -371,6 +1295,69 @@ document.addEventListener('DOMContentLoaded', () => {
     openStream("Bande-annonce", "https://www.youtube.com/embed/dQw4w9wgxcq"); // exemple
   });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  // ==========================================
+  // HERO
+  // ==========================================
+
+  fetchHeroStreams('soccer');
+
+
+  // ==========================================
+  // CAROUSEL LIVE
+  // ==========================================
+
+  fetchLiveStreams('soccer');
+
+
+  // ==========================================
+  // FERMETURE MODAL
+  // ==========================================
+
+  document
+    .getElementById('closeModal')
+    .addEventListener(
+      'click',
+      closeModal
+    );
+
+
+  modal.addEventListener(
+    'click',
+    e => {
+
+      if (
+        e.target === modal
+      ) {
+
+        closeModal();
+
+      }
+
+    }
+  );
+
+
+  document.addEventListener(
+    'keydown',
+    e => {
+
+      if (
+        e.key === 'Escape'
+      ) {
+
+        closeModal();
+
+      }
+
+    }
+  );
+
+});
+```
+
 </script>
 </body>
 </html>
