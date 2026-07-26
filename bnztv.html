@@ -1296,67 +1296,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-document.addEventListener('DOMContentLoaded', () => {
 
-  // ==========================================
-  // HERO
-  // ==========================================
-
-  fetchHeroStreams('soccer');
-
-
-  // ==========================================
-  // CAROUSEL LIVE
-  // ==========================================
-
-  fetchLiveStreams('soccer');
-
-
-  // ==========================================
-  // FERMETURE MODAL
-  // ==========================================
-
-  document
-    .getElementById('closeModal')
-    .addEventListener(
-      'click',
-      closeModal
-    );
-
-
-  modal.addEventListener(
-    'click',
-    e => {
-
-      if (
-        e.target === modal
-      ) {
-
-        closeModal();
-
-      }
-
-    }
-  );
-
-
-  document.addEventListener(
-    'keydown',
-    e => {
-
-      if (
-        e.key === 'Escape'
-      ) {
-
-        closeModal();
-
-      }
-
-    }
-  );
-
-});
-```
 
 </script>
 </body>
