@@ -814,17 +814,19 @@ spinBtn.addEventListener('click', async () => {
   await verifierCooldownInitial();
 })();
 
+
 /* ===================================================================
    ROULETTE NOIR / BLANC — pari sur une couleur avec la balance
    =================================================================== */
 
-// ordre fixe des 17 segments : doit être IDENTIQUE à l'ordre utilisé
-// côté SQL dans la fonction parier_roulette_couleur (voir script Supabase)
+// Ordre EXACTEMENT identique à celui utilisé dans la fonction SQL
+// parier_roulette_couleur
 const segmentsCouleur = [
   'banque',
   'noir', 'blanc', 'noir', 'blanc', 'noir', 'blanc', 'noir', 'blanc',
   'noir', 'blanc', 'noir', 'blanc', 'noir', 'blanc', 'noir', 'blanc'
 ];
+
 const totalSlicesCouleur = segmentsCouleur.length;
 const degreesPerSliceCouleur = 360 / totalSlicesCouleur;
 
@@ -837,144 +839,487 @@ const resultPopupCouleur = document.getElementById('result-popup-couleur');
 const choixBtns = document.querySelectorAll('.choix-btn');
 
 let couleurChoisie = null;
-let currentRotationBille = 0;
-let currentRotationWheel = 0;
-let wheelSpinDirection = 1; // 1 = horaire, -1 = antihoraire ; alterne à chaque manche
 
-// avance un accumulateur de rotation dans une direction donnée (1 ou -1),
-// en imposant un nombre minimum de tours complets, pour atterrir exactement
-// sur desiredFinalMod (0-360, mesuré depuis le haut, sens horaire)
-function prochaineRotation(current, direction, minTours, desiredFinalMod) {
-  const currentMod = ((current % 360) + 360) % 360;
-  let diff;
-  if (direction > 0) {
-    diff = desiredFinalMod - currentMod;
-    if (diff <= 0) diff += 360;
-    return current + minTours * 360 + diff;
-  } else {
-    diff = currentMod - desiredFinalMod;
-    if (diff <= 0) diff += 360;
-    return current - minTours * 360 - diff;
-  }
-}
+// Rotation cumulée du cylindre et de la bille
+let currentRotationWheel = 0;
+let currentRotationBille = 0;
+
+// Alterne le sens de rotation du cylindre à chaque manche
+let wheelSpinDirection = 1;
+
+
+/* ===================================================================
+   CONSTRUCTION DE LA ROUE
+   =================================================================== */
 
 let conicPartsCouleur = [];
+
 segmentsCouleur.forEach((seg, index) => {
   const startAngle = index * degreesPerSliceCouleur;
   const endAngle = (index + 1) * degreesPerSliceCouleur;
-  let bgColor, textColor, label;
-  if (seg === 'noir') { bgColor = '#151518'; textColor = '#e8e8f0'; label = 'NOIR'; }
-  else if (seg === 'blanc') { bgColor = '#e8e8f0'; textColor = '#0a0a0f'; label = 'BLANC'; }
-  else { bgColor = 'var(--accent)'; textColor = '#0a0a0f'; label = 'BANQUE'; }
 
-  conicPartsCouleur.push(`${bgColor} ${startAngle}deg ${endAngle}deg`);
+  let bgColor;
+  let textColor;
+  let label;
+
+  if (seg === 'noir') {
+    bgColor = '#151518';
+    textColor = '#e8e8f0';
+    label = 'NOIR';
+  } else if (seg === 'blanc') {
+    bgColor = '#e8e8f0';
+    textColor = '#0a0a0f';
+    label = 'BLANC';
+  } else {
+    bgColor = 'var(--accent)';
+    textColor = '#0a0a0f';
+    label = 'BANQUE';
+  }
+
+  conicPartsCouleur.push(
+    `${bgColor} ${startAngle}deg ${endAngle}deg`
+  );
 
   const textEl = document.createElement('div');
   textEl.className = 'slice-text-couleur';
+
   const midAngle = startAngle + (degreesPerSliceCouleur / 2);
+
   textEl.style.transform = `rotate(${midAngle}deg)`;
   textEl.style.color = textColor;
   textEl.textContent = label;
+
   wheelCouleur.appendChild(textEl);
 });
-wheelCouleur.style.background = `conic-gradient(${conicPartsCouleur.join(', ')})`;
+
+wheelCouleur.style.background =
+  `conic-gradient(${conicPartsCouleur.join(', ')})`;
+
+
+/* ===================================================================
+   CHOIX DE LA COULEUR
+   =================================================================== */
 
 choixBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     choixBtns.forEach(b => b.classList.remove('selected'));
+
     btn.classList.add('selected');
+
     couleurChoisie = btn.dataset.couleur;
+
     miseErreur.textContent = '';
   });
 });
 
+
+/* ===================================================================
+   BOUTONS DE MISE RAPIDE
+   =================================================================== */
+
 document.querySelectorAll('.mise-rapide-btn').forEach(btn => {
+
   btn.addEventListener('click', () => {
-    const current = parseInt(miseInput.value) || 0;
-    const balanceActuelle = parseInt(document.getElementById('balanceDisplay').textContent) || 0;
-    if (btn.dataset.action === 'half') miseInput.value = Math.max(1, Math.floor(current / 2));
-    if (btn.dataset.action === 'double') miseInput.value = current * 2;
-    if (btn.dataset.action === 'max') miseInput.value = balanceActuelle;
+
+    const current =
+      parseInt(miseInput.value) || 0;
+
+    const balanceActuelle =
+      parseInt(
+        document.getElementById('balanceDisplay').textContent
+      ) || 0;
+
+    if (btn.dataset.action === 'half') {
+      miseInput.value =
+        Math.max(1, Math.floor(current / 2));
+    }
+
+    if (btn.dataset.action === 'double') {
+      miseInput.value =
+        current * 2;
+    }
+
+    if (btn.dataset.action === 'max') {
+      miseInput.value =
+        balanceActuelle;
+    }
   });
+
 });
 
+
+/* ===================================================================
+   CALCUL DE LA ROTATION
+   =================================================================== */
+
+/*
+ * Calcule une nouvelle rotation cumulée.
+ *
+ * IMPORTANT :
+ * - desiredFinal est une position entre 0 et 360°
+ * - direction = 1  -> sens horaire
+ * - direction = -1 -> sens antihoraire
+ *
+ * Le résultat final est toujours exactement sur l'angle demandé.
+ */
+function prochaineRotation(
+  current,
+  direction,
+  minTours,
+  desiredFinal
+) {
+
+  const currentMod =
+    ((current % 360) + 360) % 360;
+
+  let diff;
+
+  if (direction > 0) {
+
+    diff =
+      desiredFinal - currentMod;
+
+    if (diff < 0) {
+      diff += 360;
+    }
+
+    return (
+      current +
+      minTours * 360 +
+      diff
+    );
+
+  } else {
+
+    diff =
+      currentMod - desiredFinal;
+
+    if (diff < 0) {
+      diff += 360;
+    }
+
+    return (
+      current -
+      minTours * 360 -
+      diff
+    );
+  }
+}
+
+
+/* ===================================================================
+   PARI
+   =================================================================== */
+
 parierBtn.addEventListener('click', async () => {
+
   miseErreur.textContent = '';
   resultPopupCouleur.textContent = '';
   resultPopupCouleur.className = '';
 
+  // Vérification de la couleur
   if (!couleurChoisie) {
-    miseErreur.textContent = 'Choisis une couleur avant de parier.';
+
+    miseErreur.textContent =
+      'Choisis une couleur avant de parier.';
+
     return;
   }
-  const mise = parseInt(miseInput.value);
+
+  // Vérification de la mise
+  const mise =
+    parseInt(miseInput.value);
+
   if (!mise || mise < 1) {
-    miseErreur.textContent = 'Mise invalide.';
+
+    miseErreur.textContent =
+      'Mise invalide.';
+
     return;
   }
 
   parierBtn.disabled = true;
 
+
   try {
-    const { data, error } = await sb.rpc('parier_roulette_couleur', {
-      p_couleur: couleurChoisie,
-      p_mise: mise
-    });
+
+    /*
+     * Le SQL décide du résultat.
+     *
+     * resultat :
+     *   'banque'
+     *   'noir'
+     *   'blanc'
+     *
+     * segment_index :
+     *   0 à 16
+     */
+    const { data, error } =
+      await sb.rpc(
+        'parier_roulette_couleur',
+        {
+          p_couleur: couleurChoisie,
+          p_mise: mise
+        }
+      );
+
 
     if (error) {
-      if (error.message.includes('solde_insuffisant')) {
-        miseErreur.textContent = 'Solde insuffisant pour cette mise.';
+
+      if (
+        error.message.includes(
+          'solde_insuffisant'
+        )
+      ) {
+
+        miseErreur.textContent =
+          'Solde insuffisant pour cette mise.';
+
       } else {
-        miseErreur.textContent = 'Erreur : ' + error.message;
+
+        miseErreur.textContent =
+          'Erreur : ' +
+          error.message;
       }
+
       parierBtn.disabled = false;
+
       return;
     }
 
+
+    /*
+     * Récupération du résultat SQL
+     */
     const resultat = data[0];
-    const segmentIndex = resultat.segment_index;
-    const gagne = resultat.gagne;
-    const gain = resultat.gain;
 
-    // le croupier alterne le sens du cylindre par rapport à la manche précédente
-    const wheelDir = wheelSpinDirection;
-    wheelSpinDirection = -wheelSpinDirection; // prêt pour la manche suivante
+    const segmentIndex =
+      Number(resultat.segment_index);
 
-    // le cylindre tourne d'environ 2 à 3 tours, sens wheelDir (sa rotation
-    // finale est purement cosmétique, la bille s'adapte à sa position d'arrêt)
-    const toursCylindre = 2 + Math.random();
-    currentRotationWheel += wheelDir * toursCylindre * 360;
-    wheelCouleur.style.transform = `rotate(${currentRotationWheel}deg)`;
-    const wheelFinalMod = ((currentRotationWheel % 360) + 360) % 360;
+    const resultatCouleur =
+      resultat.resultat;
 
-    // la bille est lancée dans le sens opposé au cylindre, et doit faire au
-    // moins 3 tours de cylindre pour que le tirage soit valable (ici 6 à 8,
-    // largement au-dessus du minimum une fois combinés au sens opposé du cylindre)
-    const jitter = 0.2 + Math.random() * 0.6;
-    const angleSegment = segmentIndex * degreesPerSliceCouleur + jitter * degreesPerSliceCouleur;
-    const desiredBilleFinal = ((wheelFinalMod + angleSegment) % 360 + 360) % 360;
-    const billeDir = -wheelDir;
-    const toursBille = 6 + Math.random() * 2;
-    currentRotationBille = prochaineRotation(currentRotationBille, billeDir, toursBille, desiredBilleFinal);
+    const gagne =
+      resultat.gagne;
 
-    billeOrbit.style.transform = `rotate(${currentRotationBille}deg)`;
+    const gain =
+      resultat.gain;
+
+    const nouveauSolde =
+      resultat.nouveau_solde;
+
+
+    /*
+     * Vérification de sécurité.
+     *
+     * Cela permet de détecter immédiatement un éventuel
+     * décalage entre le SQL et le JavaScript.
+     */
+    const couleurSegment =
+      segmentsCouleur[segmentIndex];
+
+    console.log(
+      'Résultat SQL :',
+      resultatCouleur
+    );
+
+    console.log(
+      'Index SQL :',
+      segmentIndex
+    );
+
+    console.log(
+      'Couleur du segment JS :',
+      couleurSegment
+    );
+
+    if (
+      couleurSegment !== resultatCouleur
+    ) {
+
+      console.error(
+        'ERREUR : SQL et JavaScript ne correspondent pas !',
+        {
+          resultatSQL: resultatCouleur,
+          segmentIndex: segmentIndex,
+          segmentJS: couleurSegment
+        }
+      );
+    }
+
+
+    /* ===============================================================
+       ANIMATION
+       =============================================================== */
+
+    /*
+     * Le cylindre tourne dans un sens.
+     */
+    const wheelDir =
+      wheelSpinDirection;
+
+    /*
+     * On inverse le sens pour le prochain tour.
+     */
+    wheelSpinDirection =
+      -wheelSpinDirection;
+
+
+    /*
+     * Rotation du cylindre.
+     *
+     * On fait entre 2 et 3 tours complets.
+     */
+    const toursCylindre =
+      2 + Math.random();
+
+
+    currentRotationWheel =
+      currentRotationWheel +
+      wheelDir *
+      toursCylindre *
+      360;
+
+
+    wheelCouleur.style.transform =
+      `rotate(${currentRotationWheel}deg)`;
+
+
+    /*
+     * Position actuelle du cylindre après rotation.
+     */
+    const wheelFinalMod =
+      (
+        currentRotationWheel % 360 +
+        360
+      ) % 360;
+
+
+    /*
+     * On place la bille AU MILIEU du segment tiré.
+     *
+     * segmentIndex = 0 :
+     *   Banque
+     *
+     * segmentIndex = 1 :
+     *   Noir
+     *
+     * segmentIndex = 2 :
+     *   Blanc
+     *
+     * etc.
+     */
+    const angleSegment =
+      segmentIndex *
+      degreesPerSliceCouleur +
+      degreesPerSliceCouleur / 2;
+
+
+    /*
+     * La bille et le cylindre tournent en sens opposés.
+     *
+     * Pour que la bille finisse visuellement sur le segment
+     * sélectionné, on calcule l'angle absolu en fonction de
+     * la rotation finale du cylindre.
+     */
+    const desiredBilleFinal =
+      (
+        wheelFinalMod +
+        angleSegment
+      ) % 360;
+
+
+    const billeDir =
+      -wheelDir;
+
+
+    /*
+     * La bille fait entre 6 et 8 tours.
+     */
+    const toursBille =
+      6 + Math.random() * 2;
+
+
+    currentRotationBille =
+      prochaineRotation(
+        currentRotationBille,
+        billeDir,
+        toursBille,
+        desiredBilleFinal
+      );
+
+
+    billeOrbit.style.transform =
+      `rotate(${currentRotationBille}deg)`;
+
+
+    /* ===============================================================
+       AFFICHAGE DU RÉSULTAT
+       =============================================================== */
 
     setTimeout(() => {
-      const labelResultat = resultat.resultat === 'banque' ? 'Banque' : (resultat.resultat === 'noir' ? 'Noir' : 'Blanc');
+
+      const labelResultat =
+        resultatCouleur === 'banque'
+          ? 'Banque'
+          : resultatCouleur === 'noir'
+            ? 'Noir'
+            : 'Blanc';
+
+
       if (gagne) {
-        resultPopupCouleur.classList.add('gain');
-        resultPopupCouleur.innerHTML = `${labelResultat} — Gagné +${gain} <span class="material-symbols-outlined">money_bag</span>`;
+
+        resultPopupCouleur.classList.add(
+          'gain'
+        );
+
+        resultPopupCouleur.innerHTML =
+          `${labelResultat} — Gagné +${gain}
+          <span class="material-symbols-outlined">
+            money_bag
+          </span>`;
+
       } else {
-        resultPopupCouleur.classList.add('perte');
-        resultPopupCouleur.innerHTML = `${labelResultat} — Perdu -${mise} <span class="material-symbols-outlined">money_bag</span>`;
+
+        resultPopupCouleur.classList.add(
+          'perte'
+        );
+
+        resultPopupCouleur.innerHTML =
+          `${labelResultat} — Perdu -${mise}
+          <span class="material-symbols-outlined">
+            money_bag
+          </span>`;
       }
-      document.getElementById('balanceDisplay').textContent = resultat.nouveau_solde;
+
+
+      /*
+       * Synchronisation du solde avec le SQL.
+       */
+      document.getElementById(
+        'balanceDisplay'
+      ).textContent =
+        nouveauSolde;
+
+
       parierBtn.disabled = false;
+
     }, 4500);
+
+
   } catch (err) {
-    miseErreur.textContent = 'Erreur réseau, réessaie.';
+
+    console.error(
+      'Erreur roulette :',
+      err
+    );
+
+    miseErreur.textContent =
+      'Erreur réseau, réessaie.';
+
     parierBtn.disabled = false;
   }
+
 });
 
 /* ===================================================================
