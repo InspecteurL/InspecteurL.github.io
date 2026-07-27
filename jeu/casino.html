@@ -347,9 +347,11 @@ nav a.active { color: var(--accent); }
     flex: 1; height: 90px; background: var(--surface); border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     font-size: 2.6rem; overflow: hidden; border: 1px solid var(--border);
+    position: relative;
+    box-shadow: inset 0 8px 10px -8px rgba(0,0,0,.7), inset 0 -8px 10px -8px rgba(0,0,0,.7);
 }
-.reel.spinning { animation: reel-spin .15s linear infinite; }
-@keyframes reel-spin { 0% { transform: translateY(0); } 100% { transform: translateY(-14px); } }
+.reel-strip { display: flex; flex-direction: column; align-items: center; will-change: transform; }
+.reel-strip .sym { height: 90px; display: flex; align-items: center; justify-content: center; line-height: 1; }
 .paytable-toggle { text-align: center; margin-top: 14px; }
 .paytable-toggle button { background: none; border: none; color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: .75rem; cursor: pointer; text-decoration: underline; }
 .paytable { display: none; max-width: 340px; margin: 14px auto 0; font-family: 'IBM Plex Mono', monospace; font-size: .78rem; color: var(--muted); }
@@ -371,7 +373,8 @@ nav a.active { color: var(--accent); }
     font-family: 'IBM Plex Mono', monospace; font-weight: 700;
     box-shadow: 0 3px 8px rgba(0,0,0,.4);
     border: 1px solid rgba(0,0,0,.15);
-    animation: deal-in .35s ease-out;
+    animation: deal-in .4s cubic-bezier(0.2, 0.8, 0.3, 1);
+    animation-fill-mode: backwards;
     position: relative;
 }
 .carte.rouge { color: #b3251f; }
@@ -382,7 +385,11 @@ nav a.active { color: var(--accent); }
     background: repeating-linear-gradient(135deg, var(--accent2), var(--accent2) 6px, #8f2119 6px, #8f2119 12px);
     border: 2px solid var(--accent-bright);
 }
-@keyframes deal-in { from { opacity: 0; transform: translateY(-14px) rotate(-6deg); } to { opacity: 1; transform: translateY(0) rotate(0); } }
+.carte.sans-anim { animation: none; }
+.carte.reveal { animation: flip-reveal .5s ease-out; animation-fill-mode: backwards; }
+.cartes-row, .poker-cartes { perspective: 800px; }
+@keyframes deal-in { from { opacity: 0; transform: translateY(-40px) rotate(-8deg) scale(.9); } to { opacity: 1; transform: translateY(0) rotate(0) scale(1); } }
+@keyframes flip-reveal { from { opacity: .2; transform: rotateY(100deg); } to { opacity: 1; transform: rotateY(0deg); } }
 
 /* ---------- poker vidéo : cartes cliquables à garder ---------- */
 .poker-cartes { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 10px 0; }
@@ -410,9 +417,11 @@ nav a.active { color: var(--accent); }
     width: 70px; height: 70px; border-radius: 12px; background: #fdfaf0;
     display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
     padding: 10px; box-shadow: 0 4px 14px rgba(0,0,0,.4);
-    animation: de-roll .5s ease-out;
 }
-@keyframes de-roll { from { transform: rotate(-30deg) scale(.7); opacity: .3; } to { transform: rotate(0) scale(1); opacity: 1; } }
+.de.roulant { animation: de-secoue .12s linear infinite; }
+.de.pose { animation: de-roll .35s cubic-bezier(0.2, 0.8, 0.3, 1); }
+@keyframes de-secoue { 0% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } 100% { transform: rotate(-8deg); } }
+@keyframes de-roll { from { transform: rotate(-25deg) scale(.75); opacity: .5; } to { transform: rotate(0) scale(1); opacity: 1; } }
 .pip { width: 10px; height: 10px; border-radius: 50%; background: #16161c; align-self: center; justify-self: center; opacity: 0; }
 .pip.on { opacity: 1; }
 
@@ -836,31 +845,61 @@ document.getElementById('slot-paytable-toggle').addEventListener('click', () => 
   document.getElementById('slot-paytable').classList.toggle('show');
 });
 
+const emojisPossibles = ['🍒', '🍋', '🔔', '⭐', '💎', '7️⃣'];
+const HAUTEUR_SYM = 90;
+
+function lancerBandeReel(reelEl, symboleFinal, dureeMs) {
+  const nFiller = 18;
+  const strip = document.createElement('div');
+  strip.className = 'reel-strip';
+  for (let i = 0; i < nFiller; i++) {
+    const s = document.createElement('div');
+    s.className = 'sym';
+    s.textContent = emojisPossibles[Math.floor(Math.random() * emojisPossibles.length)];
+    strip.appendChild(s);
+  }
+  const finalEl = document.createElement('div');
+  finalEl.className = 'sym';
+  finalEl.textContent = symboleFinal;
+  strip.appendChild(finalEl);
+
+  reelEl.innerHTML = '';
+  strip.style.transition = 'none';
+  strip.style.transform = 'translateY(0)';
+  reelEl.appendChild(strip);
+  void strip.offsetHeight; // force le reflow avant de lancer la transition
+
+  strip.style.transition = `transform ${dureeMs}ms cubic-bezier(0.1, 0.7, 0.15, 1)`;
+  requestAnimationFrame(() => {
+    strip.style.transform = `translateY(-${nFiller * HAUTEUR_SYM}px)`;
+  });
+
+  return dureeMs;
+}
+
 slotSpinBtn.addEventListener('click', async () => {
   slotErreur.textContent = ''; slotResult.textContent = ''; slotResult.className = 'result-msg';
   const mise = parseInt(slotMiseInput.value);
   if (!mise || mise < 1) { slotErreur.textContent = 'Mise invalide.'; return; }
   slotSpinBtn.disabled = true;
-  reels.forEach(r => r.classList.add('spinning'));
   try {
     const { data, error } = await sb.rpc('jouer_machine_a_sous', { p_mise: mise });
     if (error) {
       slotErreur.textContent = error.message.includes('solde_insuffisant') ? 'Solde insuffisant.' : 'Erreur : ' + error.message;
-      reels.forEach(r => r.classList.remove('spinning'));
       slotSpinBtn.disabled = false;
       return;
     }
     const { symboles, gain, nouveau_solde } = data[0];
+    const durees = [900, 1250, 1650];
+    reels.forEach((r, i) => lancerBandeReel(r, symboleEmoji[symboles[i]] || '❓', durees[i]));
     setTimeout(() => {
-      reels.forEach((r, i) => { r.classList.remove('spinning'); r.textContent = symboleEmoji[symboles[i]] || '❓'; });
       if (gain > 0) { slotResult.classList.add('gain'); slotResult.textContent = `Gagné +${gain} !`; }
       else { slotResult.classList.add('perte'); slotResult.textContent = `Perdu -${mise}`; }
       document.getElementById('balanceDisplay').textContent = nouveau_solde;
       slotSpinBtn.disabled = false;
-    }, 700);
+    }, durees[2] + 150);
   } catch (err) {
     slotErreur.textContent = 'Erreur réseau, réessaie.';
-    reels.forEach(r => r.classList.remove('spinning'));
     slotSpinBtn.disabled = false;
   }
 });
@@ -875,15 +914,22 @@ function suiteAffiche(carte) {
 }
 function estRouge(carte) { const s = carte.slice(-1); return s === 'H' || s === 'D'; }
 
-function creerCarteEl(carte, cachee = false) {
+function creerCarteEl(carte, opts = {}) {
+  const { cachee = false, delai = 0, reveal = false, sansAnim = false } = opts;
   const el = document.createElement('div');
-  if (cachee) { el.className = 'carte dos'; return el; }
-  el.className = 'carte ' + (estRouge(carte) ? 'rouge' : 'noir');
+  if (cachee) {
+    el.className = 'carte dos';
+    el.style.animationDelay = `${delai}ms`;
+    return el;
+  }
+  el.className = 'carte ' + (estRouge(carte) ? 'rouge' : 'noir') + (reveal ? ' reveal' : '') + (sansAnim ? ' sans-anim' : '');
+  el.style.animationDelay = `${delai}ms`;
   const rang = document.createElement('div'); rang.className = 'rang'; rang.textContent = rangAffiche(carte);
   const suite = document.createElement('div'); suite.className = 'suite'; suite.textContent = suiteAffiche(carte);
   el.appendChild(rang); el.appendChild(suite);
   return el;
 }
+function delaiTotalCartes(n, ecart = 160, duree = 420) { return Math.max(0, n - 1) * ecart + duree; }
 
 /* ===================================================================
    BLACKJACK
@@ -915,24 +961,53 @@ function bjValeur(cartes) {
   return total;
 }
 
+let bjCroupierCartesActuelles = [];
+let bjNbCartesJoueurAffichees = 0;
+
+// n'anime QUE les cartes nouvellement ajoutées depuis le dernier rendu (delta),
+// et révèle la carte cachée du croupier en flip au moment précis où elle se découvre.
 function bjAfficherMains(cartesJoueur, cartesCroupier, cacherDeuxieme) {
+  const nouvellesJoueur = cartesJoueur.length - bjNbCartesJoueurAffichees;
   bjCartesJoueur.innerHTML = '';
-  cartesJoueur.forEach(c => bjCartesJoueur.appendChild(creerCarteEl(c)));
+  cartesJoueur.forEach((c, i) => {
+    const estNouvelle = i >= bjNbCartesJoueurAffichees;
+    bjCartesJoueur.appendChild(creerCarteEl(c, {
+      sansAnim: !estNouvelle,
+      delai: estNouvelle ? (i - bjNbCartesJoueurAffichees) * 150 : 0
+    }));
+  });
+  bjNbCartesJoueurAffichees = cartesJoueur.length;
+
+  const croupierEtaitCache = bjCroupierCartesActuelles.length > 0 && bjCroupierCartesActuelles.length < 2;
   bjCartesCroupier.innerHTML = '';
-  cartesCroupier.forEach((c, i) => bjCartesCroupier.appendChild(creerCarteEl(c, cacherDeuxieme && i === 1)));
+  cartesCroupier.forEach((c, i) => {
+    const estCachee = cacherDeuxieme && i === 1;
+    const vientDeSeReveler = i === 1 && !estCachee && (croupierEtaitCache || bjCroupierCartesActuelles[1] === undefined);
+    const estNouvelle = i >= bjCroupierCartesActuelles.length;
+    bjCartesCroupier.appendChild(creerCarteEl(c, {
+      cachee: estCachee,
+      reveal: vientDeSeReveler,
+      sansAnim: !estNouvelle && !vientDeSeReveler,
+      delai: estNouvelle ? i * 150 : 0
+    }));
+  });
+  bjCroupierCartesActuelles = cacherDeuxieme ? [cartesCroupier[0]] : cartesCroupier;
+
   bjTotalJoueur.textContent = bjValeur(cartesJoueur);
   bjTotalCroupier.textContent = cacherDeuxieme ? '?' : bjValeur(cartesCroupier);
 }
 
-function bjFinDeMain(resultat, gain, mise) {
+function bjFinDeMain(resultat, gain, mise, delaiMs = 0) {
   bjActionsZone.style.display = 'none';
-  bjMiseZone.style.display = 'block';
-  bjResult.className = 'result-msg';
-  const labels = { gagne: `Gagné +${gain} !`, blackjack: `Blackjack ! +${gain}`, perdu: `Perdu -${mise}`, egalite: `Égalité — mise remboursée` };
-  bjResult.textContent = labels[resultat] || '';
-  if (resultat === 'gagne' || resultat === 'blackjack') bjResult.classList.add('gain');
-  else if (resultat === 'perdu') bjResult.classList.add('perte');
-  bjPartieId = null;
+  setTimeout(() => {
+    bjMiseZone.style.display = 'block';
+    bjResult.className = 'result-msg';
+    const labels = { gagne: `Gagné +${gain} !`, blackjack: `Blackjack ! +${gain}`, perdu: `Perdu -${mise}`, egalite: `Égalité — mise remboursée` };
+    bjResult.textContent = labels[resultat] || '';
+    if (resultat === 'gagne' || resultat === 'blackjack') bjResult.classList.add('gain');
+    else if (resultat === 'perdu') bjResult.classList.add('perte');
+    bjPartieId = null;
+  }, delaiMs);
 }
 
 bjMiserBtn.addEventListener('click', async () => {
@@ -940,6 +1015,8 @@ bjMiserBtn.addEventListener('click', async () => {
   const mise = parseInt(bjMiseInput.value);
   if (!mise || mise < 1) { bjErreur.textContent = 'Mise invalide.'; return; }
   bjMiserBtn.disabled = true;
+  bjNbCartesJoueurAffichees = 0;
+  bjCroupierCartesActuelles = [];
   try {
     const { data, error } = await sb.rpc('blackjack_nouvelle_partie', { p_mise: mise });
     if (error) {
@@ -955,8 +1032,9 @@ bjMiserBtn.addEventListener('click', async () => {
     if (enCours) {
       bjMiseZone.style.display = 'none';
       bjActionsZone.style.display = 'flex';
+      bjDoublerBtn.style.display = 'inline-block';
     } else {
-      bjFinDeMain(r.resultat, r.gain, mise);
+      bjFinDeMain(r.resultat, r.gain, mise, delaiTotalCartes(2, 150));
     }
   } catch (err) {
     bjErreur.textContent = 'Erreur réseau, réessaie.';
@@ -970,12 +1048,12 @@ bjTirerBtn.addEventListener('click', async () => {
     const { data, error } = await sb.rpc('blackjack_tirer', { p_partie_id: bjPartieId });
     if (error) { bjErreur.textContent = 'Erreur : ' + error.message; return; }
     const r = data[0];
-    bjAfficherMains(r.cartes_joueur, [], true); // pas de cartes croupier tant que la main continue
-    bjCartesCroupier.innerHTML = ''; // remis via re-render ci-dessous si terminé
+    // le croupier garde sa carte visible + sa carte cachée pendant que le joueur tire
+    bjAfficherMains(r.cartes_joueur, [bjCroupierCartesActuelles[0], '??'], true);
+    bjDoublerBtn.style.display = 'none';
     if (r.statut === 'terminee') {
       bjFinDeMain(r.resultat, r.gain, parseInt(bjMiseInput.value));
     }
-    bjDoublerBtn.style.display = 'none';
   } catch (err) {
     bjErreur.textContent = 'Erreur réseau, réessaie.';
   }
@@ -989,7 +1067,7 @@ bjResterBtn.addEventListener('click', async () => {
     if (error) { bjErreur.textContent = 'Erreur : ' + error.message; return; }
     const r = data[0];
     bjAfficherMains(r.cartes_joueur, r.cartes_croupier, false);
-    bjFinDeMain(r.resultat, r.gain, parseInt(bjMiseInput.value));
+    bjFinDeMain(r.resultat, r.gain, parseInt(bjMiseInput.value), delaiTotalCartes(r.cartes_croupier.length, 150));
   } catch (err) {
     bjErreur.textContent = 'Erreur réseau, réessaie.';
   }
@@ -1006,7 +1084,7 @@ bjDoublerBtn.addEventListener('click', async () => {
     }
     const r = data[0];
     bjAfficherMains(r.cartes_joueur, r.cartes_croupier, false);
-    bjFinDeMain(r.resultat, r.gain, parseInt(bjMiseInput.value) * 2);
+    bjFinDeMain(r.resultat, r.gain, parseInt(bjMiseInput.value) * 2, delaiTotalCartes(r.cartes_croupier.length, 150));
     await refreshBalance();
   } catch (err) {
     bjErreur.textContent = 'Erreur réseau, réessaie.';
