@@ -360,6 +360,9 @@ nav a.active { color: var(--accent); }
 .paytable.show { display: block; }
 .paytable-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--border); }
 .paytable-row span:last-child { color: var(--accent); }
+    .paytable-row span:last-child { color: var(--accent); }
+.sym-icone { font-size: 46px !important; }
+.paytable-row .material-symbols-outlined { font-size: 1.1rem; }
 
 /* ---------- CARTES (blackjack, baccara, poker) ---------- */
 .mains-zone { display: flex; flex-direction: column; gap: 22px; align-items: center; margin: 10px 0 6px; }
@@ -516,15 +519,15 @@ nav a.active { color: var(--accent); }
       <div id="slot-result" class="result-msg"></div>
 
       <div class="paytable-toggle"><button id="slot-paytable-toggle">Voir le tableau des gains</button></div>
-      <div class="paytable" id="slot-paytable">
-        <div class="paytable-row"><span>🍒🍒🍒</span><span>×3</span></div>
-        <div class="paytable-row"><span>🍋🍋🍋</span><span>×4</span></div>
-        <div class="paytable-row"><span>🔔🔔🔔</span><span>×8</span></div>
-        <div class="paytable-row"><span>⭐⭐⭐</span><span>×15</span></div>
-        <div class="paytable-row"><span>💎💎💎</span><span>×40</span></div>
-        <div class="paytable-row"><span>7️⃣7️⃣7️⃣</span><span>×100</span></div>
-        <div class="paytable-row"><span>🍒🍒 (2 sur 3)</span><span>×1</span></div>
-      </div>
+     <div class="paytable" id="slot-paytable">
+  <div class="paytable-row"><span><span class="material-symbols-outlined" style="color:#e0453f">favorite</span><span class="material-symbols-outlined" style="color:#e0453f">favorite</span><span class="material-symbols-outlined" style="color:#e0453f">favorite</span></span><span>×3</span></div>
+  <div class="paytable-row"><span><span class="material-symbols-outlined" style="color:#e8d34b">egg</span><span class="material-symbols-outlined" style="color:#e8d34b">egg</span><span class="material-symbols-outlined" style="color:#e8d34b">egg</span></span><span>×4</span></div>
+  <div class="paytable-row"><span><span class="material-symbols-outlined" style="color:#e8b84b">notifications</span><span class="material-symbols-outlined" style="color:#e8b84b">notifications</span><span class="material-symbols-outlined" style="color:#e8b84b">notifications</span></span><span>×8</span></div>
+  <div class="paytable-row"><span><span class="material-symbols-outlined" style="color:#ffd873">star</span><span class="material-symbols-outlined" style="color:#ffd873">star</span><span class="material-symbols-outlined" style="color:#ffd873">star</span></span><span>×15</span></div>
+  <div class="paytable-row"><span><span class="material-symbols-outlined" style="color:#5ec8e0">diamond</span><span class="material-symbols-outlined" style="color:#5ec8e0">diamond</span><span class="material-symbols-outlined" style="color:#5ec8e0">diamond</span></span><span>×40</span></div>
+  <div class="paytable-row"><span><span class="material-symbols-outlined" style="color:#c0392b">filter_7</span><span class="material-symbols-outlined" style="color:#c0392b">filter_7</span><span class="material-symbols-outlined" style="color:#c0392b">filter_7</span></span><span>×100</span></div>
+  <div class="paytable-row"><span><span class="material-symbols-outlined" style="color:#e0453f">favorite</span><span class="material-symbols-outlined" style="color:#e0453f">favorite</span> (2 sur 3)</span><span>×1</span></div>
+</div>
     </div>
   </div>
 
@@ -834,9 +837,45 @@ spinBtn.addEventListener('click', async () => {
 });
 
 /* ===================================================================
+   SON — effets synthétisés en direct (Web Audio API, aucun fichier requis)
+   =================================================================== */
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function jouerTonalite({ freq, duree = 0.12, type = 'sine', volume = 0.15, freqFin = null, delai = 0 }) {
+  const ctx = getAudioCtx();
+  const t0 = ctx.currentTime + delai;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  if (freqFin) osc.frequency.exponentialRampToValueAtTime(freqFin, t0 + duree);
+  gain.gain.setValueAtTime(volume, t0);
+  gain.gain.exponentialRampToValueAtTime(0.001, t0 + duree);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0 + duree + 0.02);
+}
+function sonLancerRouleau() { jouerTonalite({ freq: 200, freqFin: 500, duree: 0.25, type: 'sawtooth', volume: 0.06 }); }
+function sonArretRouleau()  { jouerTonalite({ freq: 300, freqFin: 150, duree: 0.15, type: 'triangle', volume: 0.18 }); }
+function sonGain() { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => jouerTonalite({ freq: f, duree: 0.18, type: 'triangle', volume: 0.15, delai: i * 0.09 })); }
+function sonPerte() { jouerTonalite({ freq: 180, freqFin: 80, duree: 0.35, type: 'sawtooth', volume: 0.12 }); }
+
+/* ===================================================================
    MACHINE À SOUS
    =================================================================== */
-const symboleEmoji = { CERISE:'🍒', CITRON:'🍋', CLOCHE:'🔔', ETOILE:'⭐', DIAMANT:'💎', SEPT:'7️⃣' };
+const symboleIcone = {
+  CERISE:  { icon: 'favorite',      couleur: '#e0453f' },
+  CITRON:  { icon: 'egg',           couleur: '#e8d34b' },
+  CLOCHE:  { icon: 'notifications', couleur: '#e8b84b' },
+  ETOILE:  { icon: 'star',          couleur: '#ffd873' },
+  DIAMANT: { icon: 'diamond',       couleur: '#5ec8e0' },
+  SEPT:    { icon: 'filter_7',      couleur: '#c0392b' }
+};
+const symbolesPossibles = Object.keys(symboleIcone);
 const slotMiseInput = document.getElementById('slot-mise');
 const slotSpinBtn = document.getElementById('slot-spin-btn');
 const slotErreur = document.getElementById('slot-erreur');
@@ -847,23 +886,31 @@ document.getElementById('slot-paytable-toggle').addEventListener('click', () => 
   document.getElementById('slot-paytable').classList.toggle('show');
 });
 
-const emojisPossibles = ['🍒', '🍋', '🔔', '⭐', '💎', '7️⃣'];
 const HAUTEUR_SYM = 90;
 
-function lancerBandeReel(reelEl, symboleFinal, dureeMs) {
+function creerIconeSym(nomSymbole) {
+  const info = symboleIcone[nomSymbole] || { icon: 'help', couleur: 'var(--muted)' };
+  const span = document.createElement('span');
+  span.className = 'material-symbols-outlined sym-icone';
+  span.style.color = info.couleur;
+  span.textContent = info.icon;
+  return span;
+}
+
+function lancerBandeReel(reelEl, nomSymboleFinal, dureeMs) {
   const nFiller = 18;
   const strip = document.createElement('div');
   strip.className = 'reel-strip';
 
   const finalEl = document.createElement('div');
   finalEl.className = 'sym';
-  finalEl.textContent = symboleFinal;
+  finalEl.appendChild(creerIconeSym(nomSymboleFinal));
   strip.appendChild(finalEl);
 
   for (let i = 0; i < nFiller; i++) {
     const s = document.createElement('div');
     s.className = 'sym';
-    s.textContent = emojisPossibles[Math.floor(Math.random() * emojisPossibles.length)];
+    s.appendChild(creerIconeSym(symbolesPossibles[Math.floor(Math.random() * symbolesPossibles.length)]));
     strip.appendChild(s);
   }
 
@@ -871,10 +918,8 @@ function lancerBandeReel(reelEl, symboleFinal, dureeMs) {
   strip.style.transition = 'none';
   strip.style.transform = `translateY(-${nFiller * HAUTEUR_SYM}px)`;
   reelEl.appendChild(strip);
-  void strip.offsetHeight; // force le reflow avec l'état de départ
+  void strip.offsetHeight;
 
-  // double rAF : on attend une frame complète peinte AVANT de déclencher la transition,
-  // sinon le navigateur peut fusionner les deux changements de style et sauter direct à l'état final
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       strip.style.transition = `transform ${dureeMs}ms cubic-bezier(0.1, 0.7, 0.15, 1)`;
@@ -899,10 +944,12 @@ slotSpinBtn.addEventListener('click', async () => {
     }
     const { symboles, gain, nouveau_solde } = data[0];
     const durees = [900, 1250, 1650];
-    reels.forEach((r, i) => lancerBandeReel(r, symboleEmoji[symboles[i]] || '❓', durees[i]));
+    sonLancerRouleau();
+    reels.forEach((r, i) => lancerBandeReel(r, symboles[i], durees[i]));
+    durees.forEach(d => setTimeout(() => sonArretRouleau(), d));
     setTimeout(() => {
-      if (gain > 0) { slotResult.classList.add('gain'); slotResult.textContent = `Gagné +${gain} !`; }
-      else { slotResult.classList.add('perte'); slotResult.textContent = `Perdu -${mise}`; }
+      if (gain > 0) { slotResult.classList.add('gain'); slotResult.textContent = `Gagné +${gain} !`; sonGain(); }
+      else { slotResult.classList.add('perte'); slotResult.textContent = `Perdu -${mise}`; sonPerte(); }
       document.getElementById('balanceDisplay').textContent = nouveau_solde;
       slotSpinBtn.disabled = false;
     }, durees[2] + 150);
