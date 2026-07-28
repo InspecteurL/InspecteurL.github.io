@@ -853,8 +853,6 @@ function lancerBandeReel(reelEl, symboleFinal, dureeMs) {
   const strip = document.createElement('div');
   strip.className = 'reel-strip';
 
-  // le symbole final est en tête de bande : quand la bande redescend à 0,
-  // c'est lui qui se retrouve dans la fenêtre visible (en haut)
   const finalEl = document.createElement('div');
   finalEl.className = 'sym';
   finalEl.textContent = symboleFinal;
@@ -869,17 +867,17 @@ function lancerBandeReel(reelEl, symboleFinal, dureeMs) {
 
   reelEl.innerHTML = '';
   strip.style.transition = 'none';
-  // position de départ : la bande est remontée pour que le tout dernier symbole
-  // (le plus bas) soit visible en premier
   strip.style.transform = `translateY(-${nFiller * HAUTEUR_SYM}px)`;
   reelEl.appendChild(strip);
-  void strip.offsetHeight; // force le reflow avant de lancer la transition
+  void strip.offsetHeight; // force le reflow avec l'état de départ
 
-  strip.style.transition = `transform ${dureeMs}ms cubic-bezier(0.1, 0.7, 0.15, 1)`;
+  // double rAF : on attend une frame complète peinte AVANT de déclencher la transition,
+  // sinon le navigateur peut fusionner les deux changements de style et sauter direct à l'état final
   requestAnimationFrame(() => {
-    // la bande redescend jusqu'à 0 : les symboles défilent bien de haut en bas
-    // et le symbole final (en tête) atterrit pile dans la fenêtre
-    strip.style.transform = 'translateY(0px)';
+    requestAnimationFrame(() => {
+      strip.style.transition = `transform ${dureeMs}ms cubic-bezier(0.1, 0.7, 0.15, 1)`;
+      strip.style.transform = 'translateY(0px)';
+    });
   });
 
   return dureeMs;
