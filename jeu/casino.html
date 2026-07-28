@@ -49,7 +49,9 @@ h1, h2, h3 { font-family: 'Bebas Neue', cursive; letter-spacing: 2px; text-trans
   color: var(--accent);
 }
 @media (prefers-reduced-motion: reduce) {
-  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  /* on ne réduit que l'effet décoratif du cadre marquee : les animations de jeu
+     (roue, machine à sous, dés, cartes) transmettent un résultat, elles restent actives */
+  .marquee-frame::before { animation-duration: 0.001ms !important; }
 }
 
 /* ---------- nav (identité du site conservée) ---------- */
