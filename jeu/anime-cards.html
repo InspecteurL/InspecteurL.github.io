@@ -955,6 +955,103 @@
   border-radius: 8px;
   vertical-align: middle;
 }
+
+  /* ---------------- MODE CINÉMATIQUE (légendaire+/mythique) ---------------- */
+.reveal-overlay.cinematic-active {
+  background: rgba(2,2,4,0.98);
+}
+
+.cinematic-rays {
+  position: absolute;
+  inset: -20%;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--rarity-color, transparent) 8deg,
+    transparent 20deg,
+    transparent 40deg,
+    var(--rarity-color, transparent) 48deg,
+    transparent 60deg,
+    transparent 90deg,
+    var(--rarity-color, transparent) 98deg,
+    transparent 110deg,
+    transparent 140deg,
+    var(--rarity-color, transparent) 148deg,
+    transparent 160deg,
+    transparent 190deg,
+    var(--rarity-color, transparent) 198deg,
+    transparent 210deg,
+    transparent 240deg,
+    var(--rarity-color, transparent) 248deg,
+    transparent 260deg,
+    transparent 290deg,
+    var(--rarity-color, transparent) 298deg,
+    transparent 310deg,
+    transparent 340deg,
+    var(--rarity-color, transparent) 348deg,
+    transparent 360deg
+  );
+  filter: blur(1px);
+  mix-blend-mode: screen;
+}
+.cinematic-rays.spin-legendaire {
+  animation: raysSpinIn 2.6s ease-in-out forwards, raysRotate 6s linear infinite;
+}
+.cinematic-rays.spin-mythique {
+  animation: raysSpinIn 3.4s ease-in-out forwards, raysRotate 4s linear infinite;
+}
+@keyframes raysSpinIn {
+  0% { opacity: 0; transform: scale(0.5); }
+  60% { opacity: 0.7; }
+  100% { opacity: 0.5; transform: scale(1); }
+}
+@keyframes raysRotate {
+  from { transform: rotate(0deg) scale(1); }
+  to { transform: rotate(360deg) scale(1); }
+}
+
+.cinematic-title {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translate(-50%, -20px);
+  z-index: 3;
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rarity-color);
+  text-shadow: 0 0 20px var(--rarity-color), 0 0 40px var(--rarity-color);
+  opacity: 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.cinematic-title.show {
+  animation: titleSlam 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes titleSlam {
+  0% { opacity: 0; transform: translate(-50%, -20px) scale(1.8); letter-spacing: 0.4em; }
+  40% { opacity: 1; transform: translate(-50%, -20px) scale(1); letter-spacing: 0.12em; }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -20px) scale(0.95); }
+}
+
+/* impact renforcé pour le mode cinématique, en plus du flip-flash existant */
+.reveal-overlay.mega-shake {
+  animation: megaScreenShake 0.6s ease-in-out;
+}
+@keyframes megaScreenShake {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-10px, 6px) rotate(-0.5deg); }
+  25% { transform: translate(10px, -6px) rotate(0.5deg); }
+  40% { transform: translate(-8px, 4px) rotate(-0.3deg); }
+  55% { transform: translate(8px, -4px) rotate(0.3deg); }
+  70% { transform: translate(-5px, 2px); }
+  85% { transform: translate(5px, -2px); }
+}
 </style>
 </head>
 <body>
@@ -1093,6 +1190,8 @@
 </div>
 <div class="reveal-tap-hint" id="revealTapHint">Touche l'écran pour continuer</div>
   <div class="reveal-glow-bg" id="revealGlowBg"></div>
+  <div class="cinematic-rays" id="cinematicRays"></div>
+<div class="cinematic-title" id="cinematicTitle"></div>
   <div class="reveal-progress" id="revealProgress"></div>
 
   <div class="reveal-stage">
@@ -1451,6 +1550,8 @@ async function afficherReveal(cartes) {
   const btnClose = document.getElementById('revealClose');
   const btnSkipAll = document.getElementById('revealSkipAll');
   const suspenseMark = document.getElementById('suspenseMark');
+  const cinematicRays = document.getElementById('cinematicRays');
+  const cinematicTitle = document.getElementById('cinematicTitle');
 
   skipAllDemande = false;
   strip.innerHTML = '';
@@ -1499,6 +1600,19 @@ async function afficherReveal(cartes) {
         suspenseMark.classList.add(`show-${carte.rarete}`);
       }
 
+      if (isBigReveal) {
+        overlay.classList.add('cinematic-active');
+        cinematicRays.className = `cinematic-rays spin-${carte.rarete}`;
+        cinematicRays.style.setProperty('--rarity-color', rarityVar);
+        cinematicTitle.textContent = carte.anime || carte.rarete;
+        cinematicTitle.style.setProperty('--rarity-color', rarityVar);
+        cinematicTitle.className = 'cinematic-title show';
+      } else {
+        overlay.classList.remove('cinematic-active');
+        cinematicRays.className = 'cinematic-rays';
+        cinematicTitle.className = 'cinematic-title';
+      }
+
       if (modeAuto) {
         await Promise.race([
           attendre(duree),
@@ -1521,14 +1635,14 @@ async function afficherReveal(cartes) {
       </div>
     `;
 
-    if (isBigReveal && !skipAllDemande) {
+  if (isBigReveal && !skipAllDemande) {
       flash.style.setProperty('--rarity-color', rarityVar);
       flash.classList.remove('active');
       void flash.offsetWidth;
       flash.classList.add('active');
-      overlay.classList.remove('shake');
+      overlay.classList.remove('shake', 'mega-shake');
       void overlay.offsetWidth;
-      overlay.classList.add('shake');
+      overlay.classList.add('mega-shake');
     }
 
     card3d.classList.add('flipped');
