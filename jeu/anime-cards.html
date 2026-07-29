@@ -955,95 +955,122 @@
   border-radius: 8px;
   vertical-align: middle;
 }
-
-/* ---------------- MODE CINÉMATIQUE (légendaire+/mythique) ---------------- */
-.cinematic-blackout {
+  /* ---------------- OUVERTURE DU PACK ---------------- */
+.pack-open-overlay {
   position: fixed;
   inset: 0;
-  background: #000;
-  z-index: 3;
-  opacity: 0;
-  pointer-events: none;
+  background: rgba(4,5,8,0.97);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 110;
+  overflow: hidden;
 }
-.cinematic-blackout.show {
-  animation: blackoutIn 0.6s ease-out forwards;
-}
-.cinematic-blackout.fading-out {
-  animation: blackoutOut 0.3s ease-in forwards;
-}
-@keyframes blackoutIn {
-  0% { opacity: 0; }
-  15% { opacity: 0.9; }
-  30% { opacity: 0.25; }
-  45% { opacity: 1; }
-  100% { opacity: 1; }
-}
-@keyframes blackoutOut { to { opacity: 0; } }
+.pack-open-overlay.active { display: flex; }
 
-.cinematic-rings {
-  position: fixed;
-  inset: 0;
-  z-index: 4;
+.pack-open-stage {
+  position: relative;
+  width: 200px;
+  height: 280px;
+}
+.pack-open-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  display: none;
+}
+.pack-open-symbol {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
-  opacity: 0;
-}
-.cinematic-rings.show { opacity: 1; }
-.cinematic-rings.fading-out {
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-.cinematic-rings .ring {
-  position: absolute;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: 3px solid var(--rarity-color, transparent);
-  opacity: 0;
-}
-.cinematic-rings.show .ring {
-  animation: ringExpand 1.8s ease-out infinite;
-}
-.cinematic-rings.show .r2 { animation-delay: 0.5s; }
-.cinematic-rings.show .r3 { animation-delay: 1s; }
-@keyframes ringExpand {
-  0% { transform: scale(0.5); opacity: 0.8; }
-  70% { opacity: 0.2; }
-  100% { transform: scale(7); opacity: 0; }
-}
-
-.cinematic-title {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(1.6);
-  z-index: 5;
+  background: linear-gradient(160deg, var(--bg-panel-2), var(--bg-panel));
+  border: 1px solid var(--border);
+  border-radius: 12px;
   font-family: var(--font-display);
-  font-size: 42px;
-  font-weight: 600;
+  font-size: 15px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--rarity-color);
-  text-shadow: 0 0 30px var(--rarity-color), 0 0 60px var(--rarity-color);
+  color: var(--ink-dim);
+}
+
+.pack-open-stage.shaking {
+  animation: packShake var(--shake-duration, 1s) ease-in-out;
+}
+@keyframes packShake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-4px, 2px) rotate(-1deg); }
+  20% { transform: translate(4px, -2px) rotate(1deg); }
+  30% { transform: translate(-6px, 3px) rotate(-1.5deg); }
+  40% { transform: translate(6px, -3px) rotate(1.5deg); }
+  50% { transform: translate(-8px, 4px) rotate(-2deg); }
+  60% { transform: translate(8px, -4px) rotate(2deg); }
+  70% { transform: translate(-10px, 5px) rotate(-2.5deg); }
+  80% { transform: translate(10px, -5px) rotate(2.5deg); }
+  90% { transform: translate(-6px, 3px) rotate(-1deg); }
+}
+
+.pack-open-cracks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   opacity: 0;
-  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.pack-open-cracks.show { opacity: 1; }
+.pack-open-cracks::before,
+.pack-open-cracks::after {
+  content: '';
+  position: absolute;
+  background: var(--rarity-color, #fff);
+  box-shadow: 0 0 10px var(--rarity-color, #fff);
+}
+.pack-open-cracks::before {
+  width: 2px;
+  height: 75%;
+  top: 8%;
+  left: 35%;
+  transform: rotate(16deg);
+}
+.pack-open-cracks::after {
+  width: 2px;
+  height: 65%;
+  top: 18%;
+  left: 62%;
+  transform: rotate(-20deg);
+}
+
+.pack-open-stage.exploding {
+  animation: packExplodeOut 0.4s ease-in forwards;
+}
+@keyframes packExplodeOut {
+  to { transform: scale(1.3); opacity: 0; }
+}
+
+.pack-open-particles {
+  position: absolute;
+  inset: 0;
   pointer-events: none;
 }
-.cinematic-title.show {
-  animation: titleAppear 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.pack-open-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rarity-color, #fff);
+  box-shadow: 0 0 10px var(--rarity-color, #fff);
+  opacity: 0;
 }
-@keyframes titleAppear {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
-  50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.pack-open-particle.burst {
+  animation: particleBurst 0.9s ease-out forwards;
 }
-.cinematic-title.fading-out {
-  animation: titleFadeOut 0.3s ease-in forwards;
-}
-@keyframes titleFadeOut {
-  to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+@keyframes particleBurst {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--px)), calc(-50% + var(--py))) scale(0.3); }
 }
 </style>
 </head>
@@ -1176,6 +1203,14 @@
     </div>
   </div>
 </div>
+  <div class="pack-open-overlay" id="packOpenOverlay">
+  <div class="pack-open-stage" id="packOpenStage">
+    <img class="pack-open-art" id="packOpenArt" src="" alt="">
+    <div class="pack-open-symbol" id="packOpenSymbol">Pack</div>
+    <div class="pack-open-cracks" id="packOpenCracks"></div>
+  </div>
+  <div class="pack-open-particles" id="packOpenParticles"></div>
+</div>
 <div class="reveal-overlay" id="revealOverlay">
   <div class="reveal-mode-toggle">
   <button id="modeAutoBtn" class="mode-btn active">⏱ Auto</button>
@@ -1183,13 +1218,6 @@
 </div>
 <div class="reveal-tap-hint" id="revealTapHint">Touche l'écran pour continuer</div>
   <div class="reveal-glow-bg" id="revealGlowBg"></div>
- <div class="cinematic-blackout" id="cinematicBlackout"></div>
-<div class="cinematic-rings" id="cinematicRings">
-  <span class="ring r1"></span>
-  <span class="ring r2"></span>
-  <span class="ring r3"></span>
-</div>
-<div class="cinematic-title" id="cinematicTitle"></div>
   <div class="reveal-progress" id="revealProgress"></div>
 
   <div class="reveal-stage">
@@ -1352,9 +1380,10 @@ async function faireTirage(nombre) {
 
   const statusMsg = document.getElementById('statusMsg');
   statusMsg.classList.remove('error');
-  statusMsg.textContent = 'Ouverture du pack...';
-  document.getElementById('btnPull1').disabled = true;
-  document.getElementById('btnPull10').disabled = true;
+ statusMsg.textContent = '';
+    await afficherOuverturePack(result.cartes);
+    afficherReveal(result.cartes);
+    document.getElementById('balanceDisplay').textContent = result.nouveau_solde;
 
   try {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/gacha-pull`, {
@@ -1375,10 +1404,12 @@ async function faireTirage(nombre) {
     }
 
     statusMsg.textContent = '';
+    await afficherOuverturePack(result.cartes);
     afficherReveal(result.cartes);
-    document.getElementById('balanceDisplay').textContent = result.nouveau_solde;
     await refreshPity();
     await refreshCollection();
+
+    // Le tirage vient d'être réclamé, cooldown de 24h qui démarre maintenant
   } catch (err) {
     statusMsg.textContent = 'Erreur réseau, réessaie.';
     statusMsg.classList.add('error');
@@ -1537,6 +1568,76 @@ function attendre(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+  const RARITY_ORDER = ['mythique', 'legendaire', 'epique', 'rare', 'commune'];
+
+function meilleureRarete(cartes) {
+  return cartes.reduce((best, c) =>
+    RARITY_ORDER.indexOf(c.rarete) < RARITY_ORDER.indexOf(best.rarete) ? c : best
+  , cartes[0]).rarete;
+}
+
+function creerParticules(container, rarityVar, nombre) {
+  container.innerHTML = '';
+  for (let i = 0; i < nombre; i++) {
+    const p = document.createElement('div');
+    p.className = 'pack-open-particle';
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 120 + Math.random() * 160;
+    p.style.setProperty('--px', `${Math.cos(angle) * distance}px`);
+    p.style.setProperty('--py', `${Math.sin(angle) * distance}px`);
+    p.style.setProperty('--rarity-color', rarityVar);
+    p.style.animationDelay = `${Math.random() * 0.15}s`;
+    container.appendChild(p);
+  }
+}
+
+async function afficherOuverturePack(cartes) {
+  const overlay = document.getElementById('packOpenOverlay');
+  const stage = document.getElementById('packOpenStage');
+  const art = document.getElementById('packOpenArt');
+  const symbol = document.getElementById('packOpenSymbol');
+  const cracks = document.getElementById('packOpenCracks');
+  const particles = document.getElementById('packOpenParticles');
+
+  const rarete = meilleureRarete(cartes);
+  const rarityVar = `var(--c-${rarete})`;
+  const shakeDurations = { commune: 600, rare: 800, epique: 1100, legendaire: 1500, mythique: 1900 };
+  const duree = shakeDurations[rarete] || 800;
+
+  const packImage = PACK_IMAGES[activeBanniere];
+  if (packImage && packImage.trim() !== '') {
+    art.src = packImage;
+    art.style.display = 'block';
+    symbol.style.display = 'none';
+  } else {
+    art.style.display = 'none';
+    symbol.style.display = 'flex';
+  }
+
+  stage.className = 'pack-open-stage';
+  cracks.className = 'pack-open-cracks';
+  cracks.style.setProperty('--rarity-color', rarityVar);
+  particles.innerHTML = '';
+  overlay.classList.add('active');
+
+  void stage.offsetWidth;
+  stage.style.setProperty('--shake-duration', `${duree}ms`);
+  stage.classList.add('shaking');
+
+  await attendre(duree * 0.55);
+  cracks.classList.add('show');
+
+  await attendre(duree * 0.45);
+
+  const nbParticules = rarete === 'mythique' ? 40 : rarete === 'legendaire' ? 30 : 18;
+  creerParticules(particles, rarityVar, nbParticules);
+  particles.querySelectorAll('.pack-open-particle').forEach(p => p.classList.add('burst'));
+  stage.classList.add('exploding');
+
+  await attendre(500);
+
+  overlay.classList.remove('active');
+}
 
 async function afficherReveal(cartes) {
   const overlay = document.getElementById('revealOverlay');
@@ -1549,9 +1650,6 @@ async function afficherReveal(cartes) {
   const btnClose = document.getElementById('revealClose');
   const btnSkipAll = document.getElementById('revealSkipAll');
   const suspenseMark = document.getElementById('suspenseMark');
-  const cinematicBlackout = document.getElementById('cinematicBlackout');
-  const cinematicRings = document.getElementById('cinematicRings');
-  const cinematicTitle = document.getElementById('cinematicTitle');
 
   skipAllDemande = false;
   strip.innerHTML = '';
@@ -1559,6 +1657,7 @@ async function afficherReveal(cartes) {
   btnSkipAll.style.display = cartes.length > 1 ? 'inline-block' : 'none';
   overlay.classList.add('active');
 
+  // ↓ Nouveau bloc à ajouter ici : applique l'image du pack au dos de la carte
   const revealCardBack = document.getElementById('revealCardBack');
   const revealBackImage = document.getElementById('revealBackImage');
   const packImage = PACK_IMAGES[activeBanniere];
@@ -1599,19 +1698,6 @@ async function afficherReveal(cartes) {
         suspenseMark.classList.add(`show-${carte.rarete}`);
       }
 
-      if (isBigReveal) {
-        cinematicBlackout.className = 'cinematic-blackout show';
-        cinematicRings.className = 'cinematic-rings show';
-        cinematicRings.style.setProperty('--rarity-color', rarityVar);
-        cinematicTitle.textContent = carte.rarete;
-        cinematicTitle.style.setProperty('--rarity-color', rarityVar);
-        cinematicTitle.className = 'cinematic-title show';
-      } else {
-        cinematicBlackout.className = 'cinematic-blackout';
-        cinematicRings.className = 'cinematic-rings';
-        cinematicTitle.className = 'cinematic-title';
-      }
-
       if (modeAuto) {
         await Promise.race([
           attendre(duree),
@@ -1639,19 +1725,13 @@ async function afficherReveal(cartes) {
       flash.classList.remove('active');
       void flash.offsetWidth;
       flash.classList.add('active');
-      overlay.classList.remove('shake', 'mega-shake');
+      overlay.classList.remove('shake');
       void overlay.offsetWidth;
-      overlay.classList.add('mega-shake');
+      overlay.classList.add('shake');
     }
 
     card3d.classList.add('flipped');
     jouerSonReveal(carte.rarete);
-
-    if (isBigReveal) {
-      cinematicBlackout.className = 'cinematic-blackout fading-out';
-      cinematicRings.className = 'cinematic-rings fading-out';
-      cinematicTitle.className = 'cinematic-title fading-out';
-    }
 
     const thumb = document.createElement('div');
     thumb.className = 'strip-thumb';
