@@ -957,100 +957,40 @@
 }
 
   /* ---------------- MODE CINÉMATIQUE (légendaire+/mythique) ---------------- */
-.reveal-overlay.cinematic-active {
-  background: rgba(2,2,4,0.98);
-}
-
-.cinematic-rays {
+.cinematic-character {
   position: absolute;
-  inset: -20%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.15);
+  width: 340px;
+  height: 480px;
   z-index: 1;
   opacity: 0;
   pointer-events: none;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    var(--rarity-color, transparent) 8deg,
-    transparent 20deg,
-    transparent 40deg,
-    var(--rarity-color, transparent) 48deg,
-    transparent 60deg,
-    transparent 90deg,
-    var(--rarity-color, transparent) 98deg,
-    transparent 110deg,
-    transparent 140deg,
-    var(--rarity-color, transparent) 148deg,
-    transparent 160deg,
-    transparent 190deg,
-    var(--rarity-color, transparent) 198deg,
-    transparent 210deg,
-    transparent 240deg,
-    var(--rarity-color, transparent) 248deg,
-    transparent 260deg,
-    transparent 290deg,
-    var(--rarity-color, transparent) 298deg,
-    transparent 310deg,
-    transparent 340deg,
-    var(--rarity-color, transparent) 348deg,
-    transparent 360deg
-  );
-  filter: blur(1px);
-  mix-blend-mode: screen;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 90px 10px var(--rarity-color, transparent);
 }
-.cinematic-rays.spin-legendaire {
-  animation: raysSpinIn 2.6s ease-in-out forwards, raysRotate 6s linear infinite;
+.cinematic-character.reveal-legendaire { animation: charAppear 2.6s ease-in-out forwards; }
+.cinematic-character.reveal-mythique { animation: charAppear 3.4s ease-in-out forwards; }
+@keyframes charAppear {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.3); }
+  20% { opacity: 0.85; }
+  100% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.15); }
 }
-.cinematic-rays.spin-mythique {
-  animation: raysSpinIn 3.4s ease-in-out forwards, raysRotate 4s linear infinite;
+.cinematic-character img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.08) saturate(0.2) contrast(1.5);
+  transition: filter 1.1s ease-in-out;
 }
-@keyframes raysSpinIn {
-  0% { opacity: 0; transform: scale(0.5); }
-  60% { opacity: 0.7; }
-  100% { opacity: 0.5; transform: scale(1); }
+.cinematic-character img.lit {
+  filter: brightness(1) saturate(1) contrast(1.05);
 }
-@keyframes raysRotate {
-  from { transform: rotate(0deg) scale(1); }
-  to { transform: rotate(360deg) scale(1); }
-}
-
-.cinematic-title {
-  position: absolute;
-  top: 18%;
-  left: 50%;
-  transform: translate(-50%, -20px);
-  z-index: 3;
-  font-family: var(--font-display);
-  font-size: 26px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--rarity-color);
-  text-shadow: 0 0 20px var(--rarity-color), 0 0 40px var(--rarity-color);
-  opacity: 0;
-  white-space: nowrap;
-  pointer-events: none;
-}
-.cinematic-title.show {
-  animation: titleSlam 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-@keyframes titleSlam {
-  0% { opacity: 0; transform: translate(-50%, -20px) scale(1.8); letter-spacing: 0.4em; }
-  40% { opacity: 1; transform: translate(-50%, -20px) scale(1); letter-spacing: 0.12em; }
-  75% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -20px) scale(0.95); }
-}
-
-/* impact renforcé pour le mode cinématique, en plus du flip-flash existant */
-.reveal-overlay.mega-shake {
-  animation: megaScreenShake 0.6s ease-in-out;
-}
-@keyframes megaScreenShake {
-  0%, 100% { transform: translate(0, 0); }
-  10% { transform: translate(-10px, 6px) rotate(-0.5deg); }
-  25% { transform: translate(10px, -6px) rotate(0.5deg); }
-  40% { transform: translate(-8px, 4px) rotate(-0.3deg); }
-  55% { transform: translate(8px, -4px) rotate(0.3deg); }
-  70% { transform: translate(-5px, 2px); }
-  85% { transform: translate(5px, -2px); }
+.cinematic-character.fading-out {
+  opacity: 0 !important;
+  transition: opacity 0.4s;
 }
 </style>
 </head>
@@ -1190,7 +1130,9 @@
 </div>
 <div class="reveal-tap-hint" id="revealTapHint">Touche l'écran pour continuer</div>
   <div class="reveal-glow-bg" id="revealGlowBg"></div>
-  <div class="cinematic-rays" id="cinematicRays"></div>
+  <div class="cinematic-character" id="cinematicCharacter">
+  <img id="cinematicCharacterImg" src="" alt="">
+</div>
 <div class="cinematic-title" id="cinematicTitle"></div>
   <div class="reveal-progress" id="revealProgress"></div>
 
@@ -1550,7 +1492,8 @@ async function afficherReveal(cartes) {
   const btnClose = document.getElementById('revealClose');
   const btnSkipAll = document.getElementById('revealSkipAll');
   const suspenseMark = document.getElementById('suspenseMark');
-  const cinematicRays = document.getElementById('cinematicRays');
+const cinematicCharacter = document.getElementById('cinematicCharacter');
+  const cinematicCharacterImg = document.getElementById('cinematicCharacterImg');
   const cinematicTitle = document.getElementById('cinematicTitle');
 
   skipAllDemande = false;
@@ -1600,16 +1543,23 @@ async function afficherReveal(cartes) {
         suspenseMark.classList.add(`show-${carte.rarete}`);
       }
 
-      if (isBigReveal) {
+     if (isBigReveal) {
         overlay.classList.add('cinematic-active');
-        cinematicRays.className = `cinematic-rays spin-${carte.rarete}`;
-        cinematicRays.style.setProperty('--rarity-color', rarityVar);
+        cinematicCharacterImg.src = carte.image_url;
+        cinematicCharacterImg.classList.remove('lit');
+        cinematicCharacter.className = `cinematic-character reveal-${carte.rarete}`;
+        cinematicCharacter.style.setProperty('--rarity-color', rarityVar);
         cinematicTitle.textContent = carte.anime || carte.rarete;
         cinematicTitle.style.setProperty('--rarity-color', rarityVar);
         cinematicTitle.className = 'cinematic-title show';
+
+        setTimeout(() => {
+          cinematicCharacterImg.classList.add('lit');
+        }, duree * 0.7);
       } else {
         overlay.classList.remove('cinematic-active');
-        cinematicRays.className = 'cinematic-rays';
+        cinematicCharacter.className = 'cinematic-character';
+        cinematicCharacterImg.classList.remove('lit');
         cinematicTitle.className = 'cinematic-title';
       }
 
@@ -1647,6 +1597,10 @@ async function afficherReveal(cartes) {
 
     card3d.classList.add('flipped');
     jouerSonReveal(carte.rarete);
+
+    if (isBigReveal) {
+      cinematicCharacter.classList.add('fading-out');
+    });
 
     const thumb = document.createElement('div');
     thumb.className = 'strip-thumb';
