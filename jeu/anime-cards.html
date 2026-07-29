@@ -1380,10 +1380,9 @@ async function faireTirage(nombre) {
 
   const statusMsg = document.getElementById('statusMsg');
   statusMsg.classList.remove('error');
- statusMsg.textContent = '';
-    await afficherOuverturePack(result.cartes);
-    afficherReveal(result.cartes);
-    document.getElementById('balanceDisplay').textContent = result.nouveau_solde;
+  statusMsg.textContent = 'Ouverture du pack...';
+  document.getElementById('btnPull1').disabled = true;
+  document.getElementById('btnPull10').disabled = true;
 
   try {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/gacha-pull`, {
@@ -1406,10 +1405,9 @@ async function faireTirage(nombre) {
     statusMsg.textContent = '';
     await afficherOuverturePack(result.cartes);
     afficherReveal(result.cartes);
+    document.getElementById('balanceDisplay').textContent = result.nouveau_solde;
     await refreshPity();
     await refreshCollection();
-
-    // Le tirage vient d'être réclamé, cooldown de 24h qui démarre maintenant
   } catch (err) {
     statusMsg.textContent = 'Erreur réseau, réessaie.';
     statusMsg.classList.add('error');
@@ -1458,10 +1456,13 @@ async function faireTirageGratuit() {
       return;
     }
 
-    statusMsg.textContent = '';
+   statusMsg.textContent = '';
+    await afficherOuverturePack(result.cartes);
     afficherReveal(result.cartes);
     await refreshPity();
     await refreshCollection();
+
+    // Le tirage vient d'être réclamé, cooldown de 24h qui démarre maintenant
 
     // Le tirage vient d'être réclamé, cooldown de 24h qui démarre maintenant
     const prochainDispo = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
