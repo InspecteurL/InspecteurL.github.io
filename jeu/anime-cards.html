@@ -1558,10 +1558,10 @@ const cinematicBlackout = document.getElementById('cinematicBlackout');
         cinematicTitle.textContent = carte.rarete;
         cinematicTitle.style.setProperty('--rarity-color', rarityVar);
         cinematicTitle.className = 'cinematic-title show';
-      } else {
+      }} else {
         cinematicBlackout.className = 'cinematic-blackout';
         cinematicTitle.className = 'cinematic-title';
-      }}
+      }
 
       if (modeAuto) {
         await Promise.race([
