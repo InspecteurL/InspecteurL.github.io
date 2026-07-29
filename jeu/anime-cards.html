@@ -961,25 +961,65 @@
   position: fixed;
   inset: 0;
   background: #000;
-  z-index: 1;
+  z-index: 3;
   opacity: 0;
   pointer-events: none;
 }
 .cinematic-blackout.show {
-  animation: blackoutIn 0.4s ease-out forwards;
+  animation: blackoutIn 0.6s ease-out forwards;
 }
 .cinematic-blackout.fading-out {
   animation: blackoutOut 0.3s ease-in forwards;
 }
-@keyframes blackoutIn { to { opacity: 1; } }
+@keyframes blackoutIn {
+  0% { opacity: 0; }
+  15% { opacity: 0.9; }
+  30% { opacity: 0.25; }
+  45% { opacity: 1; }
+  100% { opacity: 1; }
+}
 @keyframes blackoutOut { to { opacity: 0; } }
 
-.cinematic-title {
+.cinematic-rings {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+}
+.cinematic-rings.show { opacity: 1; }
+.cinematic-rings.fading-out {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.cinematic-rings .ring {
   position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid var(--rarity-color, transparent);
+  opacity: 0;
+}
+.cinematic-rings.show .ring {
+  animation: ringExpand 1.8s ease-out infinite;
+}
+.cinematic-rings.show .r2 { animation-delay: 0.5s; }
+.cinematic-rings.show .r3 { animation-delay: 1s; }
+@keyframes ringExpand {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  70% { opacity: 0.2; }
+  100% { transform: scale(7); opacity: 0; }
+}
+
+.cinematic-title {
+  position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(1.6);
-  z-index: 2;
+  z-index: 5;
   font-family: var(--font-display);
   font-size: 42px;
   font-weight: 600;
@@ -1144,6 +1184,11 @@
 <div class="reveal-tap-hint" id="revealTapHint">Touche l'écran pour continuer</div>
   <div class="reveal-glow-bg" id="revealGlowBg"></div>
  <div class="cinematic-blackout" id="cinematicBlackout"></div>
+<div class="cinematic-rings" id="cinematicRings">
+  <span class="ring r1"></span>
+  <span class="ring r2"></span>
+  <span class="ring r3"></span>
+</div>
 <div class="cinematic-title" id="cinematicTitle"></div>
   <div class="reveal-progress" id="revealProgress"></div>
 
@@ -1492,6 +1537,7 @@ function attendre(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+
 async function afficherReveal(cartes) {
   const overlay = document.getElementById('revealOverlay');
   const card3d = document.getElementById('revealCard3d');
@@ -1503,16 +1549,16 @@ async function afficherReveal(cartes) {
   const btnClose = document.getElementById('revealClose');
   const btnSkipAll = document.getElementById('revealSkipAll');
   const suspenseMark = document.getElementById('suspenseMark');
-const cinematicBlackout = document.getElementById('cinematicBlackout');
+  const cinematicBlackout = document.getElementById('cinematicBlackout');
+  const cinematicRings = document.getElementById('cinematicRings');
   const cinematicTitle = document.getElementById('cinematicTitle');
-  
+
   skipAllDemande = false;
   strip.innerHTML = '';
   btnClose.style.display = 'none';
   btnSkipAll.style.display = cartes.length > 1 ? 'inline-block' : 'none';
   overlay.classList.add('active');
 
-  // ↓ Nouveau bloc à ajouter ici : applique l'image du pack au dos de la carte
   const revealCardBack = document.getElementById('revealCardBack');
   const revealBackImage = document.getElementById('revealBackImage');
   const packImage = PACK_IMAGES[activeBanniere];
@@ -1553,13 +1599,16 @@ const cinematicBlackout = document.getElementById('cinematicBlackout');
         suspenseMark.classList.add(`show-${carte.rarete}`);
       }
 
-     if (isBigReveal) {
+      if (isBigReveal) {
         cinematicBlackout.className = 'cinematic-blackout show';
+        cinematicRings.className = 'cinematic-rings show';
+        cinematicRings.style.setProperty('--rarity-color', rarityVar);
         cinematicTitle.textContent = carte.rarete;
         cinematicTitle.style.setProperty('--rarity-color', rarityVar);
         cinematicTitle.className = 'cinematic-title show';
       } else {
         cinematicBlackout.className = 'cinematic-blackout';
+        cinematicRings.className = 'cinematic-rings';
         cinematicTitle.className = 'cinematic-title';
       }
 
@@ -1585,7 +1634,7 @@ const cinematicBlackout = document.getElementById('cinematicBlackout');
       </div>
     `;
 
-  if (isBigReveal && !skipAllDemande) {
+    if (isBigReveal && !skipAllDemande) {
       flash.style.setProperty('--rarity-color', rarityVar);
       flash.classList.remove('active');
       void flash.offsetWidth;
@@ -1598,8 +1647,9 @@ const cinematicBlackout = document.getElementById('cinematicBlackout');
     card3d.classList.add('flipped');
     jouerSonReveal(carte.rarete);
 
-   if (isBigReveal) {
+    if (isBigReveal) {
       cinematicBlackout.className = 'cinematic-blackout fading-out';
+      cinematicRings.className = 'cinematic-rings fading-out';
       cinematicTitle.className = 'cinematic-title fading-out';
     }
 
