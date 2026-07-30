@@ -181,6 +181,116 @@
     border-color: var(--ink);
   }
 
+  /* ---------------- CARROUSEL DE PACKS ---------------- */
+  .pack-carousel-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 28px 14px 0;
+  }
+  .pack-carousel-track {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding: 12px 40vw 18px;
+    flex: 1;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .pack-carousel-track::-webkit-scrollbar { display: none; }
+  .pack-carousel-item {
+    flex: 0 0 auto;
+    width: 128px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    scroll-snap-align: center;
+    cursor: pointer;
+    opacity: 0.45;
+    transform: scale(0.84);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .pack-carousel-item:hover { opacity: 0.75; }
+  .pack-carousel-item.active {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .pack-carousel-art {
+    position: relative;
+    width: 108px;
+    height: 148px;
+    border-radius: 10px;
+    background: linear-gradient(160deg, var(--bg-panel-2), var(--bg-panel));
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 0 0 transparent;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .pack-carousel-item.active .pack-carousel-art {
+    border-color: var(--item-glow, var(--c-legendaire));
+    box-shadow: 0 0 34px -8px var(--item-glow, rgba(232,169,76,0.6));
+  }
+  .pack-carousel-art img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .pack-carousel-symbol {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    font-family: var(--font-display);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .pack-carousel-name {
+    font-family: var(--font-display);
+    font-size: 11.5px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.25;
+    color: var(--ink-dim);
+    transition: color 0.25s ease;
+  }
+  .pack-carousel-item.active .pack-carousel-name { color: var(--ink); }
+  .pack-carousel-arrow {
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .pack-carousel-arrow:hover { background: var(--bg-panel-2); }
+  .pack-carousel-arrow:active { transform: scale(0.92); }
+  @media (max-width: 600px) {
+    .pack-carousel-track { padding: 12px 20vw 18px; gap: 12px; }
+    .pack-carousel-item { width: 104px; }
+    .pack-carousel-art { width: 92px; height: 128px; }
+  }
+
   /* ---------------- PACK ZONE ---------------- */
   .pack-zone {
     display: flex;
@@ -1091,20 +1201,63 @@
 </div>
 
 <div id="tab-tirages" class="main-tab-content active">
-<div class="banniere-tabs" id="banniereTabs">
-  <button class="tab-btn active" data-banniere="standard" data-glow="rgba(140,150,180,0.4)" data-cost1="10" data-cost10="100" data-image="standardpack.png">Pack Standard</button>
-  <button class="tab-btn" data-banniere="Detective Conan" data-glow="rgba(76,140,232,0.5)" data-cost1="30" data-cost10="300" data-image="conanpack.png">Pack Detective Conan</button>
-  <button class="tab-btn" data-banniere="Dragon Ball" data-glow="rgba(232,169,76,0.5)" data-cost1="30" data-cost10="300" data-image="dragonballpack.jpg">Pack Dragon Ball</button>
-  <button class="tab-btn" data-banniere="Attack on Titan" data-glow="rgba(168,60,60,0.5)" data-cost1="30" data-cost10="300" data-image="snkpack.jpg">Pack Attack on Titan</button>
-  <button class="tab-btn" data-banniere="Blue Lock" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="bluelockpack.jpg">Pack Blue Lock</button>
-  <button class="tab-btn" data-banniere="Death Note" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="deathnotepack.jpg">Pack Death Note</button>
-  <button class="tab-btn" data-banniere="Kuroko no Basket" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="kurokopack.png">Pack Kuroko no Basket</button>
-  <button class="tab-btn" data-banniere="Naruto" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="narutopack.png">Pack Naruto</button>
-  <button class="tab-btn" data-banniere="JoJo" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="jojopack.png">Pack Jojo's Bizarre Adventure</button>
-  <button class="tab-btn" data-banniere="Jujutsu Kaisen" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="jjkpack.png">Pack Jujutsu Kaisen</button>
-  <button class="tab-btn" data-banniere="My Hero Academia" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="mhapack.png">Pack My Hero Academia</button>
-  <button class="tab-btn" data-banniere="Fate" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="fatepack.png">Pack Fate</button>
-  <button class="tab-btn" data-banniere="GTO" data-glow="rgba(80,200,140,0.5)" data-cost1="120" data-cost10="1200" data-image="gtopack.png">Pack GTO</button>
+<div class="pack-carousel-wrap">
+  <button class="pack-carousel-arrow" id="carouselPrev" aria-label="Pack précédent">‹</button>
+  <div class="pack-carousel-track" id="banniereTabs">
+    <div class="pack-carousel-item active" data-banniere="standard" data-glow="rgba(140,150,180,0.4)" data-cost1="10" data-cost10="100" data-image="standardpack.png">
+      <div class="pack-carousel-art"><img src="standardpack.png" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">Standard</div></div>
+      <div class="pack-carousel-name">Pack Standard</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="Detective Conan" data-glow="rgba(76,140,232,0.5)" data-cost1="30" data-cost10="300" data-image="conanpack.png">
+      <div class="pack-carousel-art"><img src="conanpack.png" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">Detective Conan</div></div>
+      <div class="pack-carousel-name">Detective Conan</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="Dragon Ball" data-glow="rgba(232,169,76,0.5)" data-cost1="30" data-cost10="300" data-image="dragonballpack.jpg">
+      <div class="pack-carousel-art"><img src="dragonballpack.jpg" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">Dragon Ball</div></div>
+      <div class="pack-carousel-name">Dragon Ball</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="Attack on Titan" data-glow="rgba(168,60,60,0.5)" data-cost1="30" data-cost10="300" data-image="snkpack.jpg">
+      <div class="pack-carousel-art"><img src="snkpack.jpg" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">Attack on Titan</div></div>
+      <div class="pack-carousel-name">Attack on Titan</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="Blue Lock" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="bluelockpack.jpg">
+      <div class="pack-carousel-art"><img src="bluelockpack.jpg" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">Blue Lock</div></div>
+      <div class="pack-carousel-name">Blue Lock</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="Death Note" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="deathnotepack.jpg">
+      <div class="pack-carousel-art"><img src="deathnotepack.jpg" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">Death Note</div></div>
+      <div class="pack-carousel-name">Death Note</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="Kuroko no Basket" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="kurokopack.png">
+      <div class="pack-carousel-art"><img src="kurokopack.png" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">Kuroko no Basket</div></div>
+      <div class="pack-carousel-name">Kuroko no Basket</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="Naruto" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="narutopack.png">
+      <div class="pack-carousel-art"><img src="narutopack.png" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">Naruto</div></div>
+      <div class="pack-carousel-name">Naruto</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="JoJo" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="jojopack.png">
+      <div class="pack-carousel-art"><img src="jojopack.png" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">JoJo's Bizarre Adventure</div></div>
+      <div class="pack-carousel-name">JoJo's Bizarre Adventure</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="Jujutsu Kaisen" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="jjkpack.png">
+      <div class="pack-carousel-art"><img src="jjkpack.png" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">Jujutsu Kaisen</div></div>
+      <div class="pack-carousel-name">Jujutsu Kaisen</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="My Hero Academia" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="mhapack.png">
+      <div class="pack-carousel-art"><img src="mhapack.png" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">My Hero Academia</div></div>
+      <div class="pack-carousel-name">My Hero Academia</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="Fate" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="fatepack.png">
+      <div class="pack-carousel-art"><img src="fatepack.png" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">Fate</div></div>
+      <div class="pack-carousel-name">Fate</div>
+    </div>
+    <div class="pack-carousel-item" data-banniere="GTO" data-glow="rgba(80,200,140,0.5)" data-cost1="120" data-cost10="1200" data-image="gtopack.png">
+      <div class="pack-carousel-art"><img src="gtopack.png" alt="" onerror="this.remove()"><div class="pack-carousel-symbol">GTO</div></div>
+      <div class="pack-carousel-name">GTO</div>
+    </div>
+  </div>
+  <button class="pack-carousel-arrow" id="carouselNext" aria-label="Pack suivant">›</button>
 </div>
 
 <div class="pack-zone">
@@ -1936,7 +2089,7 @@ const PACK_DESCRIPTIONS = {
 };
 
 function appliquerBanniere(btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#banniereTabs .pack-carousel-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   activeBanniere = btn.dataset.banniere;
   document.getElementById('packArt').style.setProperty('--pack-glow', btn.dataset.glow);
@@ -1961,11 +2114,58 @@ function appliquerBanniere(btn) {
   PACK_IMAGES[activeBanniere] = image; // ← nouvelle ligne à ajouter
 }
 
-document.getElementById('banniereTabs').addEventListener('click', async (e) => {
-  const btn = e.target.closest('.tab-btn');
-  if (!btn) return;
-  appliquerBanniere(btn);
-  await refreshPity();
+// Applique le glow propre à chaque pack sur sa vignette du carrousel
+document.querySelectorAll('#banniereTabs .pack-carousel-item').forEach(item => {
+  item.style.setProperty('--item-glow', item.dataset.glow);
+});
+
+async function selectionnerPack(item, { scroll = true } = {}) {
+  if (!item) return;
+  const dejaActif = item.classList.contains('active');
+  if (!dejaActif) {
+    appliquerBanniere(item);
+    await refreshPity();
+  }
+  if (scroll) item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+document.getElementById('banniereTabs').addEventListener('click', (e) => {
+  const item = e.target.closest('.pack-carousel-item');
+  if (!item) return;
+  selectionnerPack(item);
+});
+
+document.getElementById('carouselPrev').addEventListener('click', () => {
+  const items = Array.from(document.querySelectorAll('#banniereTabs .pack-carousel-item'));
+  const idx = items.findIndex(i => i.classList.contains('active'));
+  if (idx > 0) selectionnerPack(items[idx - 1]);
+});
+
+document.getElementById('carouselNext').addEventListener('click', () => {
+  const items = Array.from(document.querySelectorAll('#banniereTabs .pack-carousel-item'));
+  const idx = items.findIndex(i => i.classList.contains('active'));
+  if (idx < items.length - 1) selectionnerPack(items[idx + 1]);
+});
+
+// Détecte le pack centré quand on glisse/swipe le carrousel à la main
+let swipeSettleTimeout = null;
+document.getElementById('banniereTabs').addEventListener('scroll', () => {
+  clearTimeout(swipeSettleTimeout);
+  swipeSettleTimeout = setTimeout(() => {
+    const track = document.getElementById('banniereTabs');
+    const trackRect = track.getBoundingClientRect();
+    const centerX = trackRect.left + trackRect.width / 2;
+    let plusProche = null;
+    let distanceMin = Infinity;
+    track.querySelectorAll('.pack-carousel-item').forEach(item => {
+      const r = item.getBoundingClientRect();
+      const distance = Math.abs((r.left + r.width / 2) - centerX);
+      if (distance < distanceMin) { distanceMin = distance; plusProche = item; }
+    });
+    if (plusProche && !plusProche.classList.contains('active')) {
+      selectionnerPack(plusProche, { scroll: false });
+    }
+  }, 120);
 });
 
 // ============================================
@@ -2469,8 +2669,11 @@ function afficherBadge(id, count) {
   const session = await getSessionOrRedirect();
   if (!session) return;
 
-  const btnActifParDefaut = document.querySelector('#banniereTabs .tab-btn.active');
-  if (btnActifParDefaut) appliquerBanniere(btnActifParDefaut);
+  const btnActifParDefaut = document.querySelector('#banniereTabs .pack-carousel-item.active');
+  if (btnActifParDefaut) {
+    appliquerBanniere(btnActifParDefaut);
+    btnActifParDefaut.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
+  }
 
   await refreshBalance();
   await refreshPity();
