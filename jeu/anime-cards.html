@@ -1072,174 +1072,6 @@
   0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   100% { opacity: 0; transform: translate(calc(-50% + var(--px)), calc(-50% + var(--py))) scale(0.3); }
 }
-
-/* ---------------- EFFETS SPÉCIAUX CARTES LÉGENDAIRES / MYTHIQUES (collection) ---------------- */
-.card-item.fx-legendaire,
-.card-item.fx-mythique {
-  cursor: pointer;
-}
-.card-item.fx-legendaire::after,
-.card-item.fx-mythique::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,0.5) 48%, rgba(255,255,255,0.12) 54%, transparent 68%);
-  background-size: 250% 250%;
-}
-.card-item.fx-legendaire::after { animation: fxShine 3.4s ease-in-out infinite; }
-.card-item.fx-mythique::after {
-  animation: fxShine 2.1s ease-in-out infinite;
-  background: linear-gradient(115deg, transparent 28%, rgba(255,255,255,0.6) 45%, rgba(255,111,216,0.4) 53%, transparent 70%);
-}
-@keyframes fxShine {
-  0% { background-position: 220% 220%; }
-  100% { background-position: -60% -60%; }
-}
-
-.card-item.fx-legendaire {
-  animation: fxGlowLeg 2.8s ease-in-out infinite;
-}
-@keyframes fxGlowLeg {
-  0%, 100% { box-shadow: 0 0 0 1px var(--rarity-color), 0 0 10px -3px var(--rarity-color); }
-  50% { box-shadow: 0 0 0 1px var(--rarity-color), 0 0 20px 0px var(--rarity-color); }
-}
-
-.card-item.fx-mythique {
-  animation: fxGlowMyth 1.9s ease-in-out infinite;
-}
-@keyframes fxGlowMyth {
-  0%, 100% { box-shadow: 0 0 0 1px var(--rarity-color), 0 0 12px -2px var(--rarity-color), 0 0 26px -6px rgba(255,111,216,0.6); }
-  50% { box-shadow: 0 0 0 1.5px var(--rarity-color), 0 0 24px 1px var(--rarity-color), 0 0 42px 0px rgba(255,111,216,0.65); }
-}
-
-/* étincelles flottantes, réservées aux mythiques */
-.card-item.fx-mythique::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle, #fff 1px, transparent 1.6px),
-    radial-gradient(circle, #fff 1px, transparent 1.6px),
-    radial-gradient(circle, #fff 1px, transparent 1.6px);
-  background-size: 42px 42px, 58px 58px, 32px 32px;
-  background-position: 12% 22%, 72% 58%, 40% 84%;
-  opacity: 0;
-  animation: fxSparkle 3.1s ease-in-out infinite;
-}
-@keyframes fxSparkle {
-  0%, 100% { opacity: 0; }
-  15% { opacity: 0.9; }
-  30% { opacity: 0.15; }
-  50% { opacity: 0.8; }
-  70% { opacity: 0.1; }
-  85% { opacity: 0.7; }
-}
-
-/* ---------------- MODALE DE DÉTAIL D'UNE CARTE (zoom collection) ---------------- */
-.card-detail-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(4,5,8,0.94);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 160;
-  padding: 20px;
-}
-.card-detail-overlay.active { display: flex; }
-
-.card-detail-box {
-  position: relative;
-  width: 300px;
-  max-width: 100%;
-  background: var(--bg-panel);
-  border: 2px solid var(--rarity-color, var(--border));
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 0 60px -12px var(--rarity-color, transparent);
-}
-.card-detail-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 6;
-  background: rgba(0,0,0,0.6);
-  border: none;
-  color: var(--ink);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 15px;
-  line-height: 1;
-}
-.card-detail-visual {
-  position: relative;
-  width: 100%;
-  height: 360px;
-  overflow: hidden;
-}
-.card-detail-visual img { width: 100%; height: 100%; object-fit: cover; }
-.card-detail-info { padding: 16px 18px 22px; }
-.card-detail-rarete {
-  font-family: var(--font-display);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--rarity-color);
-  margin-bottom: 6px;
-}
-.card-detail-nom { font-family: var(--font-display); font-size: 21px; margin-bottom: 4px; }
-.card-detail-anime {
-  font-size: 12px;
-  color: var(--ink-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-bottom: 12px;
-}
-.card-detail-qte { font-size: 12.5px; color: var(--ink-dim); }
-
-/* effets renforcés dans la modale de détail (légendaire / mythique) */
-.card-detail-box.fx-legendaire,
-.card-detail-box.fx-mythique {
-  animation: fxGlowLeg 2.8s ease-in-out infinite;
-}
-.card-detail-box.fx-mythique { animation: fxGlowMyth 1.9s ease-in-out infinite; }
-
-.card-detail-box.fx-legendaire .card-detail-visual::after,
-.card-detail-box.fx-mythique .card-detail-visual::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(115deg, transparent 28%, rgba(255,255,255,0.55) 46%, transparent 66%);
-  background-size: 250% 250%;
-}
-.card-detail-box.fx-legendaire .card-detail-visual::after { animation: fxShine 3.4s ease-in-out infinite; }
-.card-detail-box.fx-mythique .card-detail-visual::after {
-  animation: fxShine 2s ease-in-out infinite;
-  background: linear-gradient(115deg, transparent 26%, rgba(255,255,255,0.6) 44%, rgba(255,111,216,0.42) 53%, transparent 70%);
-}
-
-.card-detail-box.fx-mythique .card-detail-visual::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle, #fff 1.4px, transparent 2px),
-    radial-gradient(circle, #fff 1.4px, transparent 2px),
-    radial-gradient(circle, #fff 1.4px, transparent 2px),
-    radial-gradient(circle, #fff 1.4px, transparent 2px);
-  background-size: 60px 60px, 82px 82px, 46px 46px, 70px 70px;
-  background-position: 15% 25%, 76% 55%, 40% 82%, 84% 15%;
-  opacity: 0;
-  animation: fxSparkle 3.1s ease-in-out infinite;
-}
 </style>
 </head>
 <body>
@@ -1450,21 +1282,6 @@
     <div class="bulk-recap-actions">
       <button class="pull-btn dix" id="btnConfirmerVenteBulk">Confirmer la vente</button>
       <button class="pull-btn simple" id="btnAnnulerRecapVente">Annuler</button>
-    </div>
-  </div>
-</div>
-
-<div class="card-detail-overlay" id="cardDetailOverlay">
-  <div class="card-detail-box" id="cardDetailBox">
-    <button class="card-detail-close" id="cardDetailClose">✕</button>
-    <div class="card-detail-visual">
-      <img id="cardDetailImage" src="" alt="">
-    </div>
-    <div class="card-detail-info">
-      <div class="card-detail-rarete" id="cardDetailRarete"></div>
-      <div class="card-detail-nom" id="cardDetailNom"></div>
-      <div class="card-detail-anime" id="cardDetailAnime"></div>
-      <div class="card-detail-qte" id="cardDetailQte"></div>
     </div>
   </div>
 </div>
@@ -2059,10 +1876,8 @@ function renderCollection() {
   }
   empty.style.display = 'none';
 
-  grid.innerHTML = cartesAffichees.map(c => {
-    const estSpeciale = c.quantite > 0 && (c.rarete === 'legendaire' || c.rarete === 'mythique');
-    return `
-    <div class="card-item ${c.quantite === 0 ? 'locked' : ''} ${estSpeciale ? 'fx-' + c.rarete : ''}" style="--rarity-color: ${RARITY_COLORS[c.rarete]};" ${c.quantite > 0 ? `onclick="ouvrirDetailCarte('${c.id}')"` : ''}>
+  grid.innerHTML = cartesAffichees.map(c => `
+    <div class="card-item ${c.quantite === 0 ? 'locked' : ''}" style="--rarity-color: ${RARITY_COLORS[c.rarete]};">
       <div class="rarity-tag">${c.rarete}</div>
       ${c.quantite > 1 ? `<div class="card-qte">x${c.quantite}</div>` : ''}
       ${c.estNouvelle ? `<div class="new-badge" onclick="retirerBadgeNew('${c.userCardId}', event)">NEW</div>` : ''}
@@ -2072,43 +1887,8 @@ function renderCollection() {
         <div class="card-anime">${c.quantite > 0 ? c.anime : ''}</div>
       </div>
     </div>
-  `;
-  }).join('');
+  `).join('');
 }
-
-// ============================================
-// DÉTAIL / ZOOM D'UNE CARTE DE LA COLLECTION
-// ============================================
-function ouvrirDetailCarte(cardId) {
-  const c = allCards.find(x => String(x.id) === String(cardId));
-  if (!c || c.quantite === 0) return;
-
-  document.getElementById('cardDetailImage').src = c.image_url;
-  document.getElementById('cardDetailImage').alt = c.nom;
-  document.getElementById('cardDetailNom').textContent = c.nom;
-  document.getElementById('cardDetailAnime').textContent = c.anime;
-  document.getElementById('cardDetailRarete').textContent = c.rarete;
-  document.getElementById('cardDetailQte').textContent = c.quantite > 1 ? `x${c.quantite} exemplaires` : '1 exemplaire';
-
-  const box = document.getElementById('cardDetailBox');
-  box.className = 'card-detail-box';
-  if (c.rarete === 'legendaire' || c.rarete === 'mythique') {
-    box.classList.add(`fx-${c.rarete}`);
-  }
-  box.style.setProperty('--rarity-color', RARITY_COLORS[c.rarete]);
-
-  document.getElementById('cardDetailOverlay').classList.add('active');
-}
-window.ouvrirDetailCarte = ouvrirDetailCarte;
-
-document.getElementById('cardDetailClose').addEventListener('click', () => {
-  document.getElementById('cardDetailOverlay').classList.remove('active');
-});
-document.getElementById('cardDetailOverlay').addEventListener('click', (e) => {
-  if (e.target.id === 'cardDetailOverlay') {
-    document.getElementById('cardDetailOverlay').classList.remove('active');
-  }
-});
 
 async function retirerBadgeNew(userCardId, event) {
   if (event) event.stopPropagation();
