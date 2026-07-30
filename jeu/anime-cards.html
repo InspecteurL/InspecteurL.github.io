@@ -2101,7 +2101,7 @@ async function selectionnerPack(item) {
     appliquerBanniere(item);
     await refreshPity();
     // Amène la zone de tirage bien en vue quand on choisit un pack
-    document.querySelector('.pack-zone').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('packArt').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
 
