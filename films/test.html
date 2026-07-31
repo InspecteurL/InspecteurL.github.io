@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecteur vidéo</title>
+</head>
+<body>
+
+<video id="video" controls width="100%" height="500"></video>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script>
+    const video = document.getElementById('video');
+    const videoSrc = 'https://free.finepulfe.xyz/movies/429617-wus82/720p/playlist.m3u8';
+
+    if (Hls.isSupported()) {
+        const hls = new Hls({
+            enableWorker: true
+        });
+
+        hls.loadSource(videoSrc);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+            console.log('Vidéo prête');
+        });
+
+        hls.on(Hls.Events.ERROR, function (event, data) {
+            console.error('Erreur HLS:', data);
+        });
+
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = videoSrc;
+    }
+</script>
+
+</body>
+</html>
