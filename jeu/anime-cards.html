@@ -153,6 +153,20 @@
   }
   .nav-balance span { color: var(--c-legendaire); }
 
+  .music-toggle-btn {
+    font-size: 17px;
+    line-height: 1;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    color: var(--ink-dim);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .music-toggle-btn:hover { color: var(--ink); border-color: var(--ink-dim); }
+  .music-toggle-btn.active { color: var(--c-legendaire); border-color: var(--c-legendaire); }
+
   /* ---------------- BANNIÈRES ---------------- */
   .banniere-tabs {
     display: flex;
@@ -202,7 +216,11 @@
     transform: scale(0.96);
     transition: opacity 0.2s ease, transform 0.2s ease;
   }
-  .pack-grid-item:hover { opacity: 0.85; }
+  .pack-grid-item:hover { opacity: 0.9; transform: scale(1.02); }
+  .pack-grid-item:hover .pack-grid-art {
+    border-color: var(--item-glow, var(--c-legendaire));
+    box-shadow: 0 0 24px -10px var(--item-glow, rgba(232,169,76,0.5));
+  }
   .pack-grid-item.active {
     opacity: 1;
     transform: scale(1);
@@ -1162,7 +1180,10 @@
     <div class="nav-title">Anime-Cards</div>
      <a href="social.html"><div class="nav-title">Social</div></a>
   </div>
-  <div class="nav-balance">Solde : <span id="balanceDisplay">—</span></div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div class="nav-balance">Solde : <span id="balanceDisplay">—</span></div>
+    <button class="music-toggle-btn" id="btnMusicToggle" aria-label="Activer ou désactiver la musique de fond" title="Musique de fond">🔇</button>
+  </div>
 </div>
 
 <div class="banniere-tabs" id="mainTabs" style="padding-top:24px;">
@@ -1453,6 +1474,51 @@ function jouerSonReveal(rarete) {
     s.currentTime = 0;
     s.play().catch(() => {});
   } catch (e) {}
+}
+
+// ============================================
+// MUSIQUE DE FOND
+// ============================================
+const musiqueFond = new Audio('musique_fond.mp3');
+musiqueFond.loop = true;
+musiqueFond.volume = 0.35;
+
+function setIconeMusique(active) {
+  const btn = document.getElementById('btnMusicToggle');
+  btn.textContent = active ? '🔊' : '🔇';
+  btn.classList.toggle('active', active);
+}
+
+function basculerMusique() {
+  if (musiqueFond.paused) {
+    musiqueFond.play().catch(() => {});
+    localStorage.setItem('horizoncine_musique', 'on');
+    setIconeMusique(true);
+  } else {
+    musiqueFond.pause();
+    localStorage.setItem('horizoncine_musique', 'off');
+    setIconeMusique(false);
+  }
+}
+
+document.getElementById('btnMusicToggle').addEventListener('click', basculerMusique);
+
+// Restaure la préférence sauvegardée. Les navigateurs bloquent souvent la lecture
+// automatique tant qu'il n'y a pas eu d'interaction : si la lecture est refusée,
+// on démarre dès le premier clic sur la page.
+if (localStorage.getItem('horizoncine_musique') === 'on') {
+  setIconeMusique(true);
+  musiqueFond.play().catch(() => {
+    const demarrerAuPremierClic = () => {
+      if (localStorage.getItem('horizoncine_musique') === 'on') {
+        musiqueFond.play().catch(() => {});
+      }
+      document.removeEventListener('click', demarrerAuPremierClic);
+    };
+    document.addEventListener('click', demarrerAuPremierClic);
+  });
+} else {
+  setIconeMusique(false);
 }
 
 // ============================================
