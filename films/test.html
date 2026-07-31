@@ -3,36 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lecteur vidéo</title>
+    <title>Lecteur HLS</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+    </style>
 </head>
+
 <body>
 
-<video id="video" controls width="100%" height="500"></video>
+<video id="video" controls playsinline></video>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
 <script>
-    const video = document.getElementById('video');
-    const videoSrc = 'https://free.finepulfe.xyz/movies/429617-wus82/720p/playlist.m3u8';
+const video = document.getElementById('video');
 
-    if (Hls.isSupported()) {
-        const hls = new Hls({
-            enableWorker: true
-        });
+const videoSrc = 'https://free.finepulfe.xyz/movies/429617-wus82/720p/playlist.m3u8';
 
-        hls.loadSource(videoSrc);
-        hls.attachMedia(video);
+if (Hls.isSupported()) {
 
-        hls.on(Hls.Events.MANIFEST_PARSED, function () {
-            console.log('Vidéo prête');
-        });
+    const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false
+    });
 
-        hls.on(Hls.Events.ERROR, function (event, data) {
-            console.error('Erreur HLS:', data);
-        });
+    hls.loadSource(videoSrc);
+    hls.attachMedia(video);
 
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = videoSrc;
-    }
+    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        console.log('Flux chargé avec succès');
+    });
+
+    hls.on(Hls.Events.ERROR, function (event, data) {
+        console.error('Erreur HLS :', data);
+
+        if (data.fatal) {
+            switch (data.type) {
+
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                    console.log('Erreur réseau, tentative de reconnexion...');
+                    hls.startLoad();
+                    break;
+
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                    console.log('Erreur média, tentative de récupération...');
+                    hls.recoverMediaError();
+                    break;
+
+                default:
+                    hls.destroy();
+                    break;
+            }
+        }
+    });
+
+} else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+
+    video.src = videoSrc;
+
+    video.addEventListener('loadedmetadata', function () {
+        console.log('Flux chargé avec succès');
+    });
+
+} else {
+
+    alert('Votre navigateur ne supporte pas le format HLS.');
+}
 </script>
 
 </body>
