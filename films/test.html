@@ -4,53 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lecteur HLS</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
     <style>
-        
         body {
             margin: 0;
             background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
         }
+
         video {
             width: 100%;
-            max-width: 1280px;
             height: auto;
             display: block;
         }
     </style>
 </head>
+
 <body>
-    <video id="video" controls autoplay></video>
 
-    <script>
-        const video = document.getElementById('video');
-        const src = 'https://www.m3u8player.online/embed/m3u8?url=https%3A%2F%2Ffree.finepulfe.xyz%2Fmovies%2F429617-wus82%2F720p%2Fplaylist.m3u8';
+<iframe
+    src="https://www.m3u8player.online/embed/m3u8?url=https%3A%2F%2Ffree.finepulfe.xyz%2Fmovies%2F429617-wus82%2F720p%2Fplaylist.m3u8"
+    width="100%"
+    height="500"
+    style="border:none;"
+    allow="autoplay; fullscreen"
+    allowfullscreen>
+</iframe>
 
-        if (Hls.isSupported()) {
-            const hls = new Hls({
-                // Options qui aident parfois sur l'audio
-                enableWorker: true,
-                lowLatencyMode: false,
-                backBufferLength: 90
-            });
-            hls.loadSource(src);
-            hls.attachMedia(video);
-            
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                video.play().catch(e => console.log('Autoplay bloqué:', e));
-            });
-        } 
-        // Safari natif
-        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = src;
-            video.addEventListener('loadedmetadata', () => {
-                video.play().catch(e => console.log('Autoplay bloqué:', e));
-            });
-        }
-    </script>
+
 </body>
 </html>
