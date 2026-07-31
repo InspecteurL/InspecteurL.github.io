@@ -278,10 +278,11 @@
     justify-content: center;
     position: relative;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s, opacity 0.22s ease;
     box-shadow: 0 0 60px -20px var(--pack-glow, rgba(232,169,76,0.35));
   }
   .pack-art:hover { transform: translateY(-4px); }
+  .pack-art.pack-switching { opacity: 0; transform: scale(0.92); }
   .pack-art::before {
     content: '';
     position: absolute;
@@ -303,7 +304,9 @@
     font-size: 12.5px;
     color: var(--ink-dim);
     max-width: 320px;
+    transition: opacity 0.2s ease;
   }
+  .pack-description.pack-switching { opacity: 0; }
 
   .pity-info {
     margin-top: 16px;
@@ -2094,14 +2097,58 @@ document.querySelectorAll('#banniereTabs .pack-grid-item').forEach(item => {
   item.style.setProperty('--item-glow', item.dataset.glow);
 });
 
+// Fait défiler la page en douceur jusqu'à ce que l'élément soit centré à l'écran,
+// avec une animation maison (plus fiable que scrollIntoView, qui peut sauter
+// instantanément selon le navigateur ou les réglages d'accessibilité du système).
+function scrollFluideVers(el, duree = 650) {
+  const rect = el.getBoundingClientRect();
+  const departY = window.pageYOffset;
+  const cibleY = departY + rect.top + rect.height / 2 - window.innerHeight / 2;
+  const distance = cibleY - departY;
+  let debut = null;
+
+  function easeInOutQuad(t) {
+    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  }
+
+  function step(horodatage) {
+    if (debut === null) debut = horodatage;
+    const progression = Math.min((horodatage - debut) / duree, 1);
+    window.scrollTo(0, departY + distance * easeInOutQuad(progression));
+    if (progression < 1) requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+}
+
+// Fait un fondu enchaîné sur le visuel du pack (image + description) pendant
+// qu'on bascule vers le pack choisi, plutôt qu'un changement brutal.
+function transitionerVersPack(btn) {
+  return new Promise(resolve => {
+    const packArt = document.getElementById('packArt');
+    const packDescription = document.getElementById('packDescription');
+
+    packArt.classList.add('pack-switching');
+    packDescription.classList.add('pack-switching');
+
+    setTimeout(() => {
+      appliquerBanniere(btn);
+      void packArt.offsetWidth; // force le recalcul avant de relancer la transition inverse
+      packArt.classList.remove('pack-switching');
+      packDescription.classList.remove('pack-switching');
+      resolve();
+    }, 190);
+  });
+}
+
 async function selectionnerPack(item) {
   if (!item) return;
   const dejaActif = item.classList.contains('active');
   if (!dejaActif) {
-    appliquerBanniere(item);
+    await transitionerVersPack(item);
     await refreshPity();
-    // Amène la zone de tirage bien en vue quand on choisit un pack
-    document.getElementById('packArt').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Amène la zone de tirage bien en vue, en douceur, quand on choisit un pack
+    scrollFluideVers(document.getElementById('packArt'), 650);
   }
 }
 
