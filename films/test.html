@@ -11,30 +11,30 @@
     body {
       margin: 0;
       background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-
-    #message {
-      height: 500px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    #countdown {
-      font-size: 24px;
-      font-weight: bold;
+      overflow: hidden;
     }
 
     #player {
-      display: none;
       width: 100%;
       height: 500px;
       border: none;
+    }
+
+    #message {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+
+      display: none;
     }
   </style>
 
@@ -42,24 +42,23 @@
 
 <body>
 
-  <div id="message">
-    <div>Préparation du lecteur...</div>
-    <div id="countdown">03:00</div>
-  </div>
+  <div id="message"></div>
 
   <iframe
     id="player"
     src="https://www.m3u8player.online/embed/m3u8?url=https%3A%2F%2Ffree.finepulfe.xyz%2Fmovies%2F429617-wus82%2F720p%2Fplaylist.m3u8"
+    width="100%"
+    height="500"
+    style="border:none;"
     allow="fullscreen"
     allowfullscreen>
   </iframe>
 
   <script>
+    const iframe = document.getElementById("player");
     const message = document.getElementById("message");
-    const countdown = document.getElementById("countdown");
-    const player = document.getElementById("player");
 
-    // Détection approximative de Chrome sur ordinateur
+    // Détection de Chrome Desktop
     const isChromePC =
       /Chrome/.test(navigator.userAgent) &&
       !/Edg/.test(navigator.userAgent) &&
@@ -67,40 +66,62 @@
       !/Android/.test(navigator.userAgent) &&
       !/Mobile/.test(navigator.userAgent);
 
+    function showMessage(text) {
+      message.textContent = text;
+      message.style.display = "block";
+    }
+
+    function hideMessage() {
+      message.style.display = "none";
+    }
+
     if (isChromePC) {
 
-      let seconds = 180;
+      iframe.addEventListener("load", function () {
 
-      const timer = setInterval(() => {
+        console.log("Iframe chargée.");
 
-        seconds--;
+        // Petite attente pour laisser le lecteur initialiser la vidéo
+        setTimeout(function () {
 
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
+          console.log("Tentative de mise en pause...");
 
-        countdown.textContent =
-          String(minutes).padStart(2, "0") +
-          ":" +
-          String(remainingSeconds).padStart(2, "0");
+          iframe.contentWindow.postMessage(
+            {
+              type: "pause"
+            },
+            "https://www.m3u8player.online"
+          );
 
-        if (seconds <= 0) {
+          showMessage(
+            "Initialisation audio... Reprise dans 3 minutes."
+          );
 
-          clearInterval(timer);
+          // Attendre 3 minutes
+          setTimeout(function () {
 
-          message.style.display = "none";
-          player.style.display = "block";
+            console.log("Tentative de reprise...");
 
-        }
+            iframe.contentWindow.postMessage(
+              {
+                type: "play"
+              },
+              "https://www.m3u8player.online"
+            );
 
-      }, 1000);
+            hideMessage();
+
+          }, 180000);
+
+        }, 3000);
+
+      });
 
     } else {
 
-      // Sur les autres navigateurs,
-      // le lecteur est affiché immédiatement.
-
-      message.style.display = "none";
-      player.style.display = "block";
+      console.log(
+        "Navigateur non concerné : lecture normale."
+      );
 
     }
   </script>
