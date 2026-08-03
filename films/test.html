@@ -1,132 +1,124 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Lecteur vidéo</title>
-
+  <title>Lecteur vidéo – Pause 3 min</title>
   <style>
     body {
       margin: 0;
       background: #000;
       overflow: hidden;
+      font-family: Arial, sans-serif;
     }
-
     #player {
       width: 100%;
-      height: 500px;
+      height: 100vh;
       border: none;
     }
-
     #message {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 9999;
-
-      padding: 10px 20px;
+      padding: 12px 24px;
       background: rgba(0, 0, 0, 0.85);
-      color: white;
-
-      font-family: Arial, sans-serif;
-      font-size: 16px;
-
+      color: #fff;
+      font-size: 18px;
+      border-radius: 8px;
       display: none;
+      text-align: center;
+      min-width: 220px;
     }
   </style>
-
 </head>
-
 <body>
-
   <div id="message"></div>
 
   <iframe
     id="player"
     src="https://www.m3u8player.online/embed/m3u8?url=https%3A%2F%2Ffree.finepulfe.xyz%2Fmovies%2F429617-wus82%2F720p%2Fplaylist.m3u8"
-    width="100%"
-    height="500"
-    style="border:none;"
-    allow="fullscreen"
+    allow="fullscreen; autoplay"
     allowfullscreen>
   </iframe>
 
 <script>
   const iframe = document.getElementById("player");
+  const messageEl = document.getElementById("message");
 
-  function sendPauseCommands() {
-
+  // ——— Envoi des commandes pause / play ———
+  function sendCommands(type) {
     const messages = [
-      { type: "pause" },
-      { action: "pause" },
-      { command: "pause" },
-      { event: "pause" },
-      { method: "pause" },
-      { type: "video", action: "pause" },
-      { command: "player", action: "pause" }
+      { type },
+      { action: type },
+      { command: type },
+      { event: type },
+      { method: type },
+      { type: "video", action: type },
+      { command: "player", action: type },
+      { name: type },
+      { player: type }
     ];
 
-    messages.forEach(function(message) {
-
-      console.log(
-        "Envoi au lecteur :",
-        JSON.stringify(message)
-      );
-
-      iframe.contentWindow.postMessage(
-        message,
-        "https://www.m3u8player.online"
-      );
-
+    messages.forEach(msg => {
+      try {
+        iframe.contentWindow.postMessage(msg, "https://www.m3u8player.online");
+      } catch (e) {}
     });
   }
 
-  function sendPlayCommands() {
-
-    const messages = [
-      { type: "play" },
-      { action: "play" },
-      { command: "play" },
-      { event: "play" },
-      { method: "play" },
-      { type: "video", action: "play" },
-      { command: "player", action: "play" }
-    ];
-
-    messages.forEach(function(message) {
-
-      console.log(
-        "Envoi au lecteur :",
-        JSON.stringify(message)
-      );
-
-      iframe.contentWindow.postMessage(
-        message,
-        "https://www.m3u8player.online"
-      );
-
-    });
+  function pauseVideo() {
+    sendCommands("pause");
   }
 
-  // Test après 5 secondes
-  setTimeout(function() {
+  function playVideo() {
+    sendCommands("play");
+  }
 
-    console.log("Tentative de pause...");
-    sendPauseCommands();
+  // ——— Compteur de 3 minutes ———
+  let remaining = 180; // 3 minutes en secondes
+  let countdownInterval = null;
 
-  }, 5000);
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }
 
-  // Test de reprise après 3 minutes
-  setTimeout(function() {
+  function startCountdown() {
+    messageEl.style.display = "block";
+    messageEl.textContent = `Lecture dans ${formatTime(remaining)}`;
 
-    console.log("Tentative de lecture...");
-    sendPlayCommands();
+    countdownInterval = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(countdownInterval);
+        messageEl.textContent = "Lecture en cours…";
+        playVideo();
 
-  }, 185000);
+        // On cache le message après 2 secondes
+        setTimeout(() => {
+          messageEl.style.display = "none";
+        }, 2000);
+      } else {
+        messageEl.textContent = `Lecture dans ${formatTime(remaining)}`;
+      }
+    }, 1000);
+  }
+
+  // ——— Lancement ———
+  iframe.addEventListener("load", () => {
+    // On essaie de mettre en pause plusieurs fois (le player peut prendre un peu de temps)
+    const pauseAttempts = [300, 800, 1500, 2500, 4000];
+
+    pauseAttempts.forEach(delay => {
+      setTimeout(pauseVideo, delay);
+    });
+
+    // On démarre le compteur après la première tentative de pause
+    setTimeout(startCountdown, 1000);
+  });
 </script>
-
 </body>
 </html>
