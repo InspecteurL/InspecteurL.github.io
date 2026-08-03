@@ -1,153 +1,35 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test HLS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecteur HLS</title>
 
-  <style>
-    body {
-      margin: 0;
-      padding: 20px;
-      background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+        }
 
-    video {
-      width: 100%;
-      max-width: 900px;
-      background: #111;
-    }
-
-    #status {
-      max-width: 900px;
-      margin: 15px auto;
-      padding: 10px;
-      background: #222;
-      text-align: left;
-      font-family: monospace;
-      font-size: 13px;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-  </style>
-
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+    </style>
 </head>
 
 <body>
 
-  <h2>Test HLS</h2>
+<iframe
+    src="https://www.m3u8player.online/embed/m3u8?url=https%3A%2F%2Ffree.finepulfe.xyz%2Fmovies%2F429617-wus82%2F720p%2Fplaylist.m3u8"
+    width="100%"
+    height="500"
+    style="border:none;"
+    allow="autoplay; fullscreen"
+    allowfullscreen>
+</iframe>
 
-<video id="video" controls playsinline></video>
-
-  <div id="status">Initialisation...</div>
-
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-  <script>
-    const video = document.getElementById("video");
-    const status = document.getElementById("status");
-
-    const videoSrc =
-      "https://free.finepulfe.xyz/movies/429617-wus82/720p/playlist.m3u8";
-
-    function log(message) {
-      console.log(message);
-      status.textContent += "\n" + message;
-    }
-
-    log("Navigateur : " + navigator.userAgent);
-    log("HLS.js supporté : " + Hls.isSupported());
-
-    if (Hls.isSupported()) {
-
-      const hls = new Hls({
-        enableWorker: true
-      });
-
-      hls.on(Hls.Events.MEDIA_ATTACHED, function () {
-        log("✓ Média vidéo attaché");
-      });
-
-      hls.on(Hls.Events.MANIFEST_LOADING, function (event, data) {
-        log("→ Chargement du manifest : " + data.url);
-      });
-
-      hls.on(Hls.Events.MANIFEST_LOADED, function () {
-        log("✓ Manifest chargé");
-      });
-
-      hls.on(Hls.Events.MANIFEST_PARSED, function () {
-        log("✓ Manifest analysé");
-        log("→ Lecture disponible");
-
-        video.play().catch(function (error) {
-          log("Lecture automatique bloquée : " + error.message);
-        });
-      });
-
-      hls.on(Hls.Events.ERROR, function (event, data) {
-
-        console.error("Erreur HLS :", data);
-
-        log(
-          "❌ ERREUR HLS\n" +
-          "Type : " + data.type + "\n" +
-          "Détails : " + data.details + "\n" +
-          "Fatal : " + data.fatal + "\n" +
-          "URL : " + (data.url || "inconnue")
-        );
-
-        if (data.fatal) {
-
-          switch (data.type) {
-
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              log("→ Erreur réseau : le serveur refuse probablement la requête.");
-              break;
-
-            case Hls.ErrorTypes.MEDIA_ERROR:
-              log("→ Erreur de décodage média.");
-              break;
-
-            default:
-              log("→ Erreur fatale HLS.");
-              break;
-          }
-        }
-      });
-
-      hls.attachMedia(video);
-
-      hls.loadSource(videoSrc);
-
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-
-      log("HLS natif détecté.");
-
-      video.src = videoSrc;
-
-      video.addEventListener("loadedmetadata", function () {
-        log("✓ Métadonnées chargées.");
-
-        video.play().catch(function (error) {
-          log("Lecture automatique bloquée : " + error.message);
-        });
-      });
-
-      video.addEventListener("error", function () {
-        log("❌ Erreur vidéo : " + video.error.code);
-      });
-
-    } else {
-
-      log("❌ HLS non supporté par ce navigateur.");
-
-    }
-  </script>
 
 </body>
 </html>
