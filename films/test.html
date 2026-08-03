@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lecteur vidéo – Pause 3 min</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <title>Lecteur – Pause 3 min</title>
   <style>
     body {
       margin: 0;
@@ -12,99 +11,126 @@
       overflow: hidden;
       font-family: Arial, sans-serif;
     }
-    #video {
+    #player {
       width: 100%;
       height: 100vh;
-      background: #000;
-      object-fit: contain;
+      border: none;
     }
-    #message {
+    #overlay {
       position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      padding: 12px 24px;
-      background: rgba(0, 0, 0, 0.85);
-      color: #fff;
-      font-size: 18px;
-      border-radius: 8px;
-      display: none;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 9998;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
       text-align: center;
-      min-width: 220px;
-      pointer-events: none;
+    }
+    #countdown {
+      font-size: 64px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+    #status {
+      font-size: 20px;
+      opacity: 0.8;
     }
   </style>
 </head>
 <body>
-  <div id="message"></div>
 
-  <video id="video" controls playsinline></video>
+  <div id="overlay">
+    <div id="countdown">3:00</div>
+    <div id="status">La vidéo reprendra automatiquement…</div>
+  </div>
+
+  <iframe
+    id="player"
+    src="https://www.m3u8player.online/embed/m3u8?url=https%3A%2F%2Ffree.finepulfe.xyz%2Fmovies%2F429617-wus82%2F720p%2Fplaylist.m3u8&autoplay=false&muted=false&controls=true"
+    allow="fullscreen; autoplay"
+    allowfullscreen>
+  </iframe>
 
 <script>
-  const video = document.getElementById("video");
-  const messageEl = document.getElementById("message");
-  const streamUrl = "https://free.finepulfe.xyz/movies/429617-wus82/720p/playlist.m3u8";
+  const iframe = document.getElementById("player");
+  const overlay = document.getElementById("overlay");
+  const countdownEl = document.getElementById("countdown");
+  const statusEl = document.getElementById("status");
 
-  // ——— Chargement du flux m3u8 ———
-  if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(streamUrl);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      // On laisse un tout petit peu jouer puis on met en pause
-      video.play().then(() => {
-        setTimeout(() => {
-          video.pause();
-          startCountdown();
-        }, 400); // 0,4 seconde de lecture puis pause
-      }).catch(() => {
-        // Si l'autoplay est bloqué, on met quand même le compteur
-        startCountdown();
-      });
-    });
-  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-    // Safari natif
-    video.src = streamUrl;
-    video.addEventListener("loadedmetadata", () => {
-      video.play().then(() => {
-        setTimeout(() => {
-          video.pause();
-          startCountdown();
-        }, 400);
-      }).catch(() => startCountdown());
+  let remaining = 180; // 3 minutes
+  let playerReady = false;
+
+  // ——— Envoi des commandes (plusieurs formats) ———
+  function sendCommand(action) {
+    if (!iframe.contentWindow) return;
+
+    const messages = [
+      { type: action },
+      { action: action },
+      { command: action },
+      { type: "player", action: action },
+      { name: action }
+    ];
+
+    messages.forEach(msg => {
+      try {
+        iframe.contentWindow.postMessage(msg, "https://www.m3u8player.online");
+      } catch (e) {}
     });
   }
 
-  // ——— Compteur de 3 minutes ———
-  let remaining = 180; // 3 minutes
-  let countdownInterval = null;
+  // ——— Écoute du signal "playerReady" ———
+  window.addEventListener("message", (event) => {
+    if (event.origin !== "https://www.m3u8player.online") return;
 
+    if (event.data && event.data.type === "playerReady") {
+      playerReady = true;
+      console.log("Player prêt !");
+      // On essaie immédiatement de mettre en pause
+      sendCommand("pause");
+    }
+  });
+
+  // ——— Compteur ———
   function formatTime(sec) {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
     return `${m}:${s.toString().padStart(2, "0")}`;
   }
 
-  function startCountdown() {
-    messageEl.style.display = "block";
-    messageEl.textContent = `Lecture dans ${formatTime(remaining)}`;
+  const timer = setInterval(() => {
+    remaining--;
+    countdownEl.textContent = formatTime(remaining);
 
-    countdownInterval = setInterval(() => {
-      remaining--;
-      if (remaining <= 0) {
-        clearInterval(countdownInterval);
-        messageEl.textContent = "Lecture en cours…";
-        video.play();
+    if (remaining <= 0) {
+      clearInterval(timer);
 
-        setTimeout(() => {
-          messageEl.style.display = "none";
-        }, 2000);
-      } else {
-        messageEl.textContent = `Lecture dans ${formatTime(remaining)}`;
-      }
-    }, 1000);
-  }
+      // On enlève le voile
+      overlay.style.display = "none";
+
+      // On force la lecture
+      sendCommand("play");
+      // On renvoie plusieurs fois au cas où
+      setTimeout(() => sendCommand("play"), 500);
+      setTimeout(() => sendCommand("play"), 1500);
+    }
+  }, 1000);
+
+  // Tentatives de pause régulières pendant les 3 minutes
+  // (au cas où le player démarre quand même)
+  const pauseInterval = setInterval(() => {
+    if (remaining > 0) {
+      sendCommand("pause");
+    } else {
+      clearInterval(pauseInterval);
+    }
+  }, 2000);
 </script>
 </body>
 </html>
