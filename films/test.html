@@ -1,35 +1,109 @@
 <!DOCTYPE html>
+
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lecteur HLS</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        body {
-            margin: 0;
-            background: #000;
-        }
+  <title>Lecteur vidéo</title>
 
-        video {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-    </style>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    #message {
+      height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    #countdown {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    #player {
+      display: none;
+      width: 100%;
+      height: 500px;
+      border: none;
+    }
+  </style>
+
 </head>
 
 <body>
 
-<iframe
+  <div id="message">
+    <div>Préparation du lecteur...</div>
+    <div id="countdown">03:00</div>
+  </div>
+
+  <iframe
+    id="player"
     src="https://www.m3u8player.online/embed/m3u8?url=https%3A%2F%2Ffree.finepulfe.xyz%2Fmovies%2F429617-wus82%2F720p%2Fplaylist.m3u8"
-    width="100%"
-    height="500"
-    style="border:none;"
-    allow="fullscreen">
-</iframe>
+    allow="fullscreen"
+    allowfullscreen>
+  </iframe>
 
+  <script>
+    const message = document.getElementById("message");
+    const countdown = document.getElementById("countdown");
+    const player = document.getElementById("player");
 
+    // Détection approximative de Chrome sur ordinateur
+    const isChromePC =
+      /Chrome/.test(navigator.userAgent) &&
+      !/Edg/.test(navigator.userAgent) &&
+      !/OPR/.test(navigator.userAgent) &&
+      !/Android/.test(navigator.userAgent) &&
+      !/Mobile/.test(navigator.userAgent);
+
+    if (isChromePC) {
+
+      let seconds = 180;
+
+      const timer = setInterval(() => {
+
+        seconds--;
+
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+
+        countdown.textContent =
+          String(minutes).padStart(2, "0") +
+          ":" +
+          String(remainingSeconds).padStart(2, "0");
+
+        if (seconds <= 0) {
+
+          clearInterval(timer);
+
+          message.style.display = "none";
+          player.style.display = "block";
+
+        }
+
+      }, 1000);
+
+    } else {
+
+      // Sur les autres navigateurs,
+      // le lecteur est affiché immédiatement.
+
+      message.style.display = "none";
+      player.style.display = "block";
+
+    }
+  </script>
 
 </body>
 </html>
