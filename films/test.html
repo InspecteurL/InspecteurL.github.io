@@ -54,77 +54,79 @@
     allowfullscreen>
   </iframe>
 
-  <script>
-    const iframe = document.getElementById("player");
-    const message = document.getElementById("message");
+<script>
+  const iframe = document.getElementById("player");
 
-    // Détection de Chrome Desktop
-    const isChromePC =
-      /Chrome/.test(navigator.userAgent) &&
-      !/Edg/.test(navigator.userAgent) &&
-      !/OPR/.test(navigator.userAgent) &&
-      !/Android/.test(navigator.userAgent) &&
-      !/Mobile/.test(navigator.userAgent);
+  function sendPauseCommands() {
 
-    function showMessage(text) {
-      message.textContent = text;
-      message.style.display = "block";
-    }
+    const messages = [
+      { type: "pause" },
+      { action: "pause" },
+      { command: "pause" },
+      { event: "pause" },
+      { method: "pause" },
+      { type: "video", action: "pause" },
+      { command: "player", action: "pause" }
+    ];
 
-    function hideMessage() {
-      message.style.display = "none";
-    }
-
-    if (isChromePC) {
-
-      iframe.addEventListener("load", function () {
-
-        console.log("Iframe chargée.");
-
-        // Petite attente pour laisser le lecteur initialiser la vidéo
-        setTimeout(function () {
-
-          console.log("Tentative de mise en pause...");
-
-          iframe.contentWindow.postMessage(
-            {
-              type: "pause"
-            },
-            "https://www.m3u8player.online"
-          );
-
-          showMessage(
-            "Initialisation audio... Reprise dans 3 minutes."
-          );
-
-          // Attendre 3 minutes
-          setTimeout(function () {
-
-            console.log("Tentative de reprise...");
-
-            iframe.contentWindow.postMessage(
-              {
-                type: "play"
-              },
-              "https://www.m3u8player.online"
-            );
-
-            hideMessage();
-
-          }, 180000);
-
-        }, 3000);
-
-      });
-
-    } else {
+    messages.forEach(function(message) {
 
       console.log(
-        "Navigateur non concerné : lecture normale."
+        "Envoi au lecteur :",
+        JSON.stringify(message)
       );
 
-    }
-  </script>
+      iframe.contentWindow.postMessage(
+        message,
+        "https://www.m3u8player.online"
+      );
+
+    });
+  }
+
+  function sendPlayCommands() {
+
+    const messages = [
+      { type: "play" },
+      { action: "play" },
+      { command: "play" },
+      { event: "play" },
+      { method: "play" },
+      { type: "video", action: "play" },
+      { command: "player", action: "play" }
+    ];
+
+    messages.forEach(function(message) {
+
+      console.log(
+        "Envoi au lecteur :",
+        JSON.stringify(message)
+      );
+
+      iframe.contentWindow.postMessage(
+        message,
+        "https://www.m3u8player.online"
+      );
+
+    });
+  }
+
+  // Test après 5 secondes
+  setTimeout(function() {
+
+    console.log("Tentative de pause...");
+    sendPauseCommands();
+
+  }, 5000);
+
+  // Test de reprise après 3 minutes
+  setTimeout(function() {
+
+    console.log("Tentative de lecture...");
+    sendPlayCommands();
+
+  }, 185000);
+</script>
 
 </body>
 </html>
