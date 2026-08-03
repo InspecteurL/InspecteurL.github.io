@@ -1,35 +1,51 @@
 <!DOCTYPE html>
+
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lecteur HLS</title>
-
-    <style>
-        body {
-            margin: 0;
-            background: #000;
-        }
-
-        video {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Test HLS sans iframe</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    video {
+      width: 80%;
+      max-width: 900px;
+      background: black;
+    }
+  </style>
 </head>
-
 <body>
 
-<iframe
-    src="https://www.m3u8player.online/embed/m3u8?url=https%3A%2F%2Ffree.finepulfe.xyz%2Fmovies%2F429617-wus82%2F720p%2Fplaylist.m3u8"
-    width="100%"
-    height="500"
-    style="border:none;"
-    allow="autoplay; fullscreen"
-    allowfullscreen>
-</iframe>
+<video id="video" controls></video>
 
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<script>
+  const video = document.getElementById('video');
+  const videoSrc = "https://free.finepulfe.xyz/movies/429617-wus82/720p/playlist.m3u8";
+
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(videoSrc);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+      video.play();
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = videoSrc;
+    video.addEventListener('loadedmetadata', function () {
+      video.play();
+    });
+  } else {
+    alert("HLS non supporté sur ce navigateur.");
+  }
+</script>
 
 </body>
 </html>
