@@ -1,35 +1,191 @@
 <!DOCTYPE html>
+
 <html lang="fr">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lecteur HLS</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        body {
-            margin: 0;
-            background: #000;
-        }
+  <title>Test lecteur HLS</title>
 
-        video {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-    </style>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    video {
+      width: 90%;
+      max-width: 1000px;
+      background: #000;
+    }
+
+    #status {
+      width: 90%;
+      max-width: 1000px;
+      margin-top: 15px;
+      padding: 10px;
+      box-sizing: border-box;
+
+      color: #fff;
+      background: #111;
+
+      font-family: monospace;
+      font-size: 14px;
+    }
+  </style>
+
 </head>
 
 <body>
 
-<iframe
-    src="https://livepush.io/hlsplayer/index.html?src=https%3A%2F%2Ffree.finepulfe.xyz%2Fmovies%2F429617-wus82%2F720p%2Fplaylist.m3u8"
-    width="100%"
-    height="500"
-    style="border:none;"
-    allow="autoplay; fullscreen"
-    allowfullscreen>
-</iframe>
+<video
+ id="video"
+ controls
+ playsinline> </video>
 
+  <div id="status">
+    Initialisation...
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <script>
+
+    const videoEl = document.getElementById("video");
+    const status = document.getElementById("status");
+
+    const streamUrl =
+      "https://free.finepulfe.xyz/movies/429617-wus82/720p/playlist.m3u8";
+
+
+    function log(message) {
+
+      console.log(message);
+
+      status.textContent =
+        message;
+
+    }
+
+
+    if (Hls.isSupported()) {
+
+      log("HLS.js détecté. Chargement du flux...");
+
+      const hls = new Hls();
+
+      hls.loadSource(streamUrl);
+
+      hls.attachMedia(videoEl);
+
+
+      hls.on(
+        Hls.Events.MEDIA_ATTACHED,
+        function () {
+
+          log(
+            "Lecteur vidéo initialisé."
+          );
+
+        }
+      );
+
+
+      hls.on(
+        Hls.Events.MANIFEST_PARSED,
+        function () {
+
+          log(
+            "Manifest chargé. Lecture..."
+          );
+
+          videoEl.play()
+            .then(function () {
+
+              log(
+                "Lecture démarrée."
+              );
+
+            })
+            .catch(function (error) {
+
+              log(
+                "Lecture automatique bloquée : " +
+                error.message
+              );
+
+            });
+
+        }
+      );
+
+
+      hls.on(
+        Hls.Events.ERROR,
+        function (event, data) {
+
+          console.error(
+            "Erreur HLS :",
+            data
+          );
+
+          log(
+            "Erreur HLS : " +
+            data.type +
+            " / " +
+            data.details
+          );
+
+        }
+      );
+
+
+    } else if (
+      videoEl.canPlayType(
+        "application/vnd.apple.mpegurl"
+      )
+    ) {
+
+      log(
+        "HLS natif détecté."
+      );
+
+      videoEl.src =
+        streamUrl;
+
+
+      videoEl.addEventListener(
+        "loadedmetadata",
+        function () {
+
+          videoEl.play();
+
+        }
+      );
+
+
+    } else {
+
+      log(
+        "HLS non supporté."
+      );
+
+    }
+
+  </script>
 
 </body>
+
 </html>
