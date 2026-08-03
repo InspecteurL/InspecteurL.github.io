@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lecteur vidéo – Pause 3 min</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     body {
       margin: 0;
@@ -11,10 +12,11 @@
       overflow: hidden;
       font-family: Arial, sans-serif;
     }
-    #player {
+    #video {
       width: 100%;
       height: 100vh;
-      border: none;
+      background: #000;
+      object-fit: contain;
     }
     #message {
       position: fixed;
@@ -30,54 +32,52 @@
       display: none;
       text-align: center;
       min-width: 220px;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
   <div id="message"></div>
 
-  <iframe
-    id="player"
-    src="https://www.m3u8player.online/embed/m3u8?url=https%3A%2F%2Ffree.finepulfe.xyz%2Fmovies%2F429617-wus82%2F720p%2Fplaylist.m3u8"
-    allow="fullscreen; autoplay"
-    allowfullscreen>
-  </iframe>
+  <video id="video" controls playsinline></video>
 
 <script>
-  const iframe = document.getElementById("player");
+  const video = document.getElementById("video");
   const messageEl = document.getElementById("message");
+  const streamUrl = "https://free.finepulfe.xyz/movies/429617-wus82/720p/playlist.m3u8";
 
-  // ——— Envoi des commandes pause / play ———
-  function sendCommands(type) {
-    const messages = [
-      { type },
-      { action: type },
-      { command: type },
-      { event: type },
-      { method: type },
-      { type: "video", action: type },
-      { command: "player", action: type },
-      { name: type },
-      { player: type }
-    ];
-
-    messages.forEach(msg => {
-      try {
-        iframe.contentWindow.postMessage(msg, "https://www.m3u8player.online");
-      } catch (e) {}
+  // ——— Chargement du flux m3u8 ———
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(streamUrl);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      // On laisse un tout petit peu jouer puis on met en pause
+      video.play().then(() => {
+        setTimeout(() => {
+          video.pause();
+          startCountdown();
+        }, 400); // 0,4 seconde de lecture puis pause
+      }).catch(() => {
+        // Si l'autoplay est bloqué, on met quand même le compteur
+        startCountdown();
+      });
+    });
+  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    // Safari natif
+    video.src = streamUrl;
+    video.addEventListener("loadedmetadata", () => {
+      video.play().then(() => {
+        setTimeout(() => {
+          video.pause();
+          startCountdown();
+        }, 400);
+      }).catch(() => startCountdown());
     });
   }
 
-  function pauseVideo() {
-    sendCommands("pause");
-  }
-
-  function playVideo() {
-    sendCommands("play");
-  }
-
   // ——— Compteur de 3 minutes ———
-  let remaining = 180; // 3 minutes en secondes
+  let remaining = 180; // 3 minutes
   let countdownInterval = null;
 
   function formatTime(sec) {
@@ -95,9 +95,8 @@
       if (remaining <= 0) {
         clearInterval(countdownInterval);
         messageEl.textContent = "Lecture en cours…";
-        playVideo();
+        video.play();
 
-        // On cache le message après 2 secondes
         setTimeout(() => {
           messageEl.style.display = "none";
         }, 2000);
@@ -106,19 +105,6 @@
       }
     }, 1000);
   }
-
-  // ——— Lancement ———
-  iframe.addEventListener("load", () => {
-    // On essaie de mettre en pause plusieurs fois (le player peut prendre un peu de temps)
-    const pauseAttempts = [300, 800, 1500, 2500, 4000];
-
-    pauseAttempts.forEach(delay => {
-      setTimeout(pauseVideo, delay);
-    });
-
-    // On démarre le compteur après la première tentative de pause
-    setTimeout(startCountdown, 1000);
-  });
 </script>
 </body>
 </html>
