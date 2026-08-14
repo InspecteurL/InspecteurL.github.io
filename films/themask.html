@@ -167,6 +167,18 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
   box-shadow: 0 10px 30px rgba(0,0,0,.45);
 }
 .episode-info.visible { opacity: 1; }
+#fallbackFrame {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: none; background: #000;
+  display: none; z-index: 1050;
+}
+.fallback-banner {
+  position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.75); color: #ffb74d;
+  padding: 8px 18px; border-radius: 10px; font-size: 13px;
+  z-index: 1100; display: none;
+}
 @media (max-width: 992px) {
   .fiche { flex-direction: column; align-items: center; text-align: center; }
   .fiche img { width: 80%; max-width: 250px; }
@@ -231,6 +243,8 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
     <div id="statusText">Chargement...</div>
   </div>
   <video id="video"></video>
+  <iframe id="fallbackFrame" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  <div class="fallback-banner" id="fallbackBanner">⚠️ Lecture via serveur alternatif</div>
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
   <div class="progress-wrapper" id="progressWrapper">
     <span id="currentTime">0:00</span>
@@ -270,8 +284,20 @@ const MOVIE_ID     = 'the-mask';
 const SUPABASE_URL = 'https://wuagahavmbugmnuzsouf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
 
+// Lecteur de secours : si hls.js n'arrive pas à lire le flux, on bascule
+// sur ce lecteur embarqué tiers, en lui passant le MÊME lien m3u8.
+// Si tu as un lien de secours spécifique pour ce film (autre hébergeur),
+// remplace simplement la valeur de FALLBACK_SOURCE_URL par ce lien.
+const FALLBACK_SOURCE_URL = M3U8_URL;
+const FALLBACK_EMBED_URL  = 'https://www.m3u8player.online/embed/m3u8?url=' + encodeURIComponent(FALLBACK_SOURCE_URL);
+const MAX_HLS_RETRIES = 2;
+let hlsRetryCount = 0;
+let usingFallback = false;
+
 const videoContainer = document.getElementById('videoContainer');
 const video          = document.getElementById('video');
+const fallbackFrame  = document.getElementById('fallbackFrame');
+const fallbackBanner = document.getElementById('fallbackBanner');
 const backButton     = document.getElementById('backButton');
 const statusOverlay  = document.getElementById('statusOverlay');
 const statusText     = document.getElementById('statusText');
@@ -317,6 +343,8 @@ btnWatch.addEventListener('click', () => {
   videoContainer.classList.add('cinema-zoom');
   videoContainer.style.display = 'flex';
   nav.style.display = 'none';
+  hlsRetryCount = 0;
+  usingFallback = false;
   showStatus('Chargement du film...');
   initHLS();
   setTimeout(() => {
@@ -332,6 +360,11 @@ backButton.addEventListener('click', () => {
     video.pause();
     if (hls) { hls.destroy(); hls = null; }
     video.src = '';
+    fallbackFrame.src = '';
+    fallbackFrame.style.display = 'none';
+    fallbackBanner.style.display = 'none';
+    video.style.display = '';
+    usingFallback = false;
     videoContainer.style.display = 'none';
     nav.style.display = 'flex';
     if (document.fullscreenElement) document.exitFullscreen();
@@ -343,6 +376,27 @@ backButton.addEventListener('click', () => {
   }, 900);
 });
 
+function switchToFallbackPlayer(reason) {
+  if (usingFallback) return;
+  usingFallback = true;
+  console.warn('Bascule sur le lecteur de secours :', reason);
+  if (hls) { hls.destroy(); hls = null; }
+  video.pause();
+  video.src = '';
+  video.style.display = 'none';
+  // Les contrôles custom ne pilotent pas l'iframe tierce : on les masque
+  // et on laisse le lecteur embarqué gérer play/pause/volume/plein écran.
+  controls.classList.add('hide');
+  progressWrapper.classList.add('hide');
+  centerPlay.classList.add('hide');
+  hideStatus();
+  fallbackFrame.src = FALLBACK_EMBED_URL;
+  fallbackFrame.style.display = 'block';
+  fallbackBanner.style.display = 'block';
+  setTimeout(() => { fallbackBanner.style.display = 'none'; }, 4000);
+  showEpisodeInfo();
+}
+
 function initHLS() {
   if (hls) { hls.destroy(); hls = null; }
   if (Hls.isSupported()) {
@@ -353,17 +407,22 @@ function initHLS() {
       hideStatus(); showControls(); video.play().catch(console.error); showEpisodeInfo();
     });
     hls.on(Hls.Events.ERROR, (event, data) => {
-      if (data.fatal) {
-        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) { showStatus('❌ Erreur réseau...'); hls.startLoad(); }
-        else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { showStatus('❌ Erreur média...'); hls.recoverMediaError(); }
-        else showStatus('❌ Erreur : ' + data.details);
+      if (!data.fatal) return;
+      hlsRetryCount++;
+      if (hlsRetryCount > MAX_HLS_RETRIES) {
+        switchToFallbackPlayer(data.details);
+        return;
       }
+      if (data.type === Hls.ErrorTypes.NETWORK_ERROR) { showStatus('❌ Erreur réseau...'); hls.startLoad(); }
+      else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { showStatus('❌ Erreur média...'); hls.recoverMediaError(); }
+      else switchToFallbackPlayer(data.details);
     });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = M3U8_URL;
     video.addEventListener('loadedmetadata', () => { hideStatus(); showControls(); video.play().catch(console.error); showEpisodeInfo(); }, { once: true });
+    video.addEventListener('error', () => switchToFallbackPlayer('native-hls-error'), { once: true });
   } else {
-    showStatus('❌ HLS non supporté par ce navigateur.');
+    switchToFallbackPlayer('hls-not-supported');
   }
 }
 
@@ -389,12 +448,14 @@ function hideStatus()    { statusOverlay.style.display = 'none'; }
 let hideTimeout;
 video.controls = false;
 function showControls() {
+  if (usingFallback) return;
   controls.classList.remove('hide'); progressWrapper.classList.remove('hide'); backButton.classList.remove('hide');
   if (video.paused) centerPlay.classList.remove('hide'); else centerPlay.classList.add('hide');
   document.body.style.cursor = 'default';
   clearTimeout(hideTimeout); hideTimeout = setTimeout(hideControls, 3000);
 }
 function hideControls() {
+  if (usingFallback) return;
   if (!video.paused) centerPlay.classList.add('hide');
   controls.classList.add('hide'); progressWrapper.classList.add('hide'); backButton.classList.add('hide');
   document.body.style.cursor = 'none'; settingsMenu.style.display = 'none';
@@ -463,7 +524,7 @@ settingsMenu.querySelectorAll('button[data-speed]').forEach(btn => {
 });
 
 document.addEventListener('keydown', e => {
-  if (videoContainer.style.display !== 'flex') return;
+  if (videoContainer.style.display !== 'flex' || usingFallback) return;
   if (e.code === 'Space')      { e.preventDefault(); togglePlay(); }
   if (e.code === 'ArrowRight') video.currentTime += 10;
   if (e.code === 'ArrowLeft')  video.currentTime -= 10;
