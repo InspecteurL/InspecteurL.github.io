@@ -173,6 +173,11 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
   border: none; background: #000;
   display: none; z-index: 1050;
 }
+#fallbackHoverZone {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 90px;
+  z-index: 1090; display: none;
+}
 .fallback-banner {
   position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
   background: rgba(0,0,0,0.75); color: #ffb74d;
@@ -238,6 +243,7 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
 
 <div class="video-container" id="videoContainer">
   <button class="back-button" id="backButton">← Retour à la fiche</button>
+  <div id="fallbackHoverZone"></div>
   <div id="statusOverlay">
     <div class="spin"></div>
     <div id="statusText">Chargement...</div>
@@ -310,6 +316,7 @@ const videoContainer = document.getElementById('videoContainer');
 const video          = document.getElementById('video');
 const fallbackFrame  = document.getElementById('fallbackFrame');
 const fallbackBanner = document.getElementById('fallbackBanner');
+const fallbackHoverZone = document.getElementById('fallbackHoverZone');
 const backButton     = document.getElementById('backButton');
 const statusOverlay  = document.getElementById('statusOverlay');
 const statusText     = document.getElementById('statusText');
@@ -375,6 +382,8 @@ backButton.addEventListener('click', () => {
     video.src = '';
     fallbackFrame.src = '';
     fallbackFrame.style.display = 'none';
+    fallbackHoverZone.style.display = 'none';
+    clearTimeout(fallbackBtnHideTimeout);
     fallbackBanner.style.display = 'none';
     video.style.display = '';
     usingFallback = false;
@@ -388,6 +397,15 @@ backButton.addEventListener('click', () => {
     videoContainer.classList.remove('cinema-zoom');
   }, 900);
 });
+
+let fallbackBtnHideTimeout;
+function showFallbackBackButton() {
+  backButton.classList.remove('hide');
+  clearTimeout(fallbackBtnHideTimeout);
+  fallbackBtnHideTimeout = setTimeout(() => backButton.classList.add('hide'), 3000);
+}
+fallbackHoverZone.addEventListener('mousemove', showFallbackBackButton);
+fallbackHoverZone.addEventListener('mouseenter', showFallbackBackButton);
 
 function switchToFallbackPlayer(reason) {
   if (usingFallback) return;
@@ -406,9 +424,11 @@ function switchToFallbackPlayer(reason) {
   hideStatus();
   fallbackFrame.src = FALLBACK_EMBED_URL;
   fallbackFrame.style.display = 'block';
+  fallbackHoverZone.style.display = 'block';
   fallbackBanner.style.display = 'block';
   setTimeout(() => { fallbackBanner.style.display = 'none'; }, 4000);
   showEpisodeInfo();
+  showFallbackBackButton();
 }
 
 function initHLS() {
