@@ -339,7 +339,7 @@ const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/429617-wus82/720p
 const FALLBACK_EMBED_URL  = 'https://www.m3u8player.online/embed/m3u8?url=' + encodeURIComponent(FALLBACK_SOURCE_URL);
 const MAX_HLS_RETRIES = 2;
 const LOAD_TIMEOUT_MS = 8000; // si rien ne se passe après 8s, on bascule quand même
-const FALLBACK_GUARD_SECONDS = 40; // durée du chrono avant de pouvoir recliquer sur l'iframe de secours
+const FALLBACK_GUARD_SECONDS = 120; // durée du chrono avant de pouvoir recliquer sur l'iframe de secours
 let hlsRetryCount = 0;
 let usingFallback = false;
 let loadTimeoutId = null;
