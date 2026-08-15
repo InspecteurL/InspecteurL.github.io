@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
 <style>
-  
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -294,8 +293,18 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/429617-wus82/720p/playlist.m3u8'; // <- à remplacer par le lien alternatif du bon film
 const FALLBACK_EMBED_URL  = 'https://www.m3u8player.online/embed/m3u8?url=' + encodeURIComponent(FALLBACK_SOURCE_URL);
 const MAX_HLS_RETRIES = 2;
+const LOAD_TIMEOUT_MS = 8000; // si rien ne se passe après 8s, on bascule quand même
 let hlsRetryCount = 0;
 let usingFallback = false;
+let loadTimeoutId = null;
+
+function armLoadTimeout() {
+  clearTimeout(loadTimeoutId);
+  loadTimeoutId = setTimeout(() => {
+    if (!usingFallback) switchToFallbackPlayer('load-timeout');
+  }, LOAD_TIMEOUT_MS);
+}
+function disarmLoadTimeout() { clearTimeout(loadTimeoutId); }
 
 const videoContainer = document.getElementById('videoContainer');
 const video          = document.getElementById('video');
@@ -349,6 +358,7 @@ btnWatch.addEventListener('click', () => {
   hlsRetryCount = 0;
   usingFallback = false;
   showStatus('Chargement du film...');
+  armLoadTimeout();
   initHLS();
   setTimeout(() => {
     fullscreenBtn.click();
@@ -382,6 +392,7 @@ backButton.addEventListener('click', () => {
 function switchToFallbackPlayer(reason) {
   if (usingFallback) return;
   usingFallback = true;
+  disarmLoadTimeout();
   console.warn('Bascule sur le lecteur de secours :', reason);
   if (hls) { hls.destroy(); hls = null; }
   video.pause();
@@ -407,10 +418,18 @@ function initHLS() {
     hls.loadSource(M3U8_URL);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      disarmLoadTimeout();
       hideStatus(); showControls(); video.play().catch(console.error); showEpisodeInfo();
     });
     hls.on(Hls.Events.ERROR, (event, data) => {
       if (!data.fatal) return;
+      // Un échec de chargement du MANIFESTE (ex: 403, lien mort, hotlink
+      // protection) est permanent : réessayer le même lien ne sert à rien,
+      // on bascule tout de suite sur le lecteur de secours.
+      if (data.details === 'manifestLoadError' || data.details === 'manifestLoadTimeOut' || data.details === 'manifestParsingError') {
+        switchToFallbackPlayer(data.details);
+        return;
+      }
       hlsRetryCount++;
       if (hlsRetryCount > MAX_HLS_RETRIES) {
         switchToFallbackPlayer(data.details);
@@ -422,7 +441,7 @@ function initHLS() {
     });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = M3U8_URL;
-    video.addEventListener('loadedmetadata', () => { hideStatus(); showControls(); video.play().catch(console.error); showEpisodeInfo(); }, { once: true });
+    video.addEventListener('loadedmetadata', () => { disarmLoadTimeout(); hideStatus(); showControls(); video.play().catch(console.error); showEpisodeInfo(); }, { once: true });
     video.addEventListener('error', () => switchToFallbackPlayer('native-hls-error'), { once: true });
   } else {
     switchToFallbackPlayer('hls-not-supported');
