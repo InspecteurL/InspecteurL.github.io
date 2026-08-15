@@ -184,6 +184,35 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
   padding: 8px 18px; border-radius: 10px; font-size: 13px;
   z-index: 1100; display: none;
 }
+#fallbackClickGuard {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1085; display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; text-align: center;
+  background: rgba(0,0,0,0.45);
+  color: #fff; font-family: monospace;
+  cursor: not-allowed;
+}
+#fallbackClickGuard .guard-ring {
+  position: relative;
+  width: 56px; height: 56px;
+  display: flex; align-items: center; justify-content: center;
+}
+#fallbackClickGuard .guard-ring svg { width: 56px; height: 56px; transform: rotate(-90deg); }
+#fallbackClickGuard .guard-ring circle {
+  fill: none; stroke-width: 4;
+}
+#fallbackClickGuard .guard-ring circle.bg { stroke: rgba(255,255,255,0.2); }
+#fallbackClickGuard .guard-ring circle.fg {
+  stroke: #ff416c;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+#fallbackClickGuard .guard-count {
+  position: absolute; font-size: 15px; font-weight: bold;
+}
+#fallbackClickGuard .guard-label { font-size: 13px; color: #ddd; max-width: 240px; }
 @media (max-width: 992px) {
   .fiche { flex-direction: column; align-items: center; text-align: center; }
   .fiche img { width: 80%; max-width: 250px; }
@@ -250,6 +279,16 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
   </div>
   <video id="video"></video>
   <iframe id="fallbackFrame" allow="autoplay; fullscreen"></iframe>
+  <div id="fallbackClickGuard">
+    <div class="guard-ring">
+      <svg viewBox="0 0 56 56">
+        <circle class="bg" cx="28" cy="28" r="24"></circle>
+        <circle class="fg" id="guardRingFg" cx="28" cy="28" r="24"></circle>
+      </svg>
+      <span class="guard-count" id="fallbackGuardCount">40</span>
+    </div>
+    <div class="guard-label">Un instant avant de pouvoir recliquer sur le lecteur…</div>
+  </div>
   <div class="fallback-banner" id="fallbackBanner">⚠️ Lecture via serveur alternatif</div>
   <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
   <div class="progress-wrapper" id="progressWrapper">
@@ -300,6 +339,7 @@ const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/429617-wus82/720p
 const FALLBACK_EMBED_URL  = 'https://www.m3u8player.online/embed/m3u8?url=' + encodeURIComponent(FALLBACK_SOURCE_URL);
 const MAX_HLS_RETRIES = 2;
 const LOAD_TIMEOUT_MS = 8000; // si rien ne se passe après 8s, on bascule quand même
+const FALLBACK_GUARD_SECONDS = 40; // durée du chrono avant de pouvoir recliquer sur l'iframe de secours
 let hlsRetryCount = 0;
 let usingFallback = false;
 let loadTimeoutId = null;
@@ -317,6 +357,9 @@ const video          = document.getElementById('video');
 const fallbackFrame  = document.getElementById('fallbackFrame');
 const fallbackBanner = document.getElementById('fallbackBanner');
 const fallbackHoverZone = document.getElementById('fallbackHoverZone');
+const fallbackClickGuard = document.getElementById('fallbackClickGuard');
+const fallbackGuardCount = document.getElementById('fallbackGuardCount');
+const guardRingFg    = document.getElementById('guardRingFg');
 const backButton     = document.getElementById('backButton');
 const statusOverlay  = document.getElementById('statusOverlay');
 const statusText     = document.getElementById('statusText');
@@ -336,6 +379,63 @@ const btnWatch       = document.getElementById('btnWatch');
 const fullscreenBtn  = document.getElementById('fullscreen');
 
 let hls = null;
+
+// ---- Chrono de garde sur l'iframe de secours ----
+// L'iframe est tierce (cross-origin) : on ne peut pas écouter ses clics
+// directement. On utilise l'astuce classique du "window blur" : quand la
+// souris est sur l'iframe et que la fenêtre perd le focus, c'est qu'un clic
+// vient d'atteindre l'iframe. On laisse ce premier clic passer, puis on
+// affiche un chrono de 40s pendant lequel un calque bloque les clics
+// suivants sur l'iframe (pour éviter le spam de pop-under publicitaires).
+const GUARD_RING_RADIUS = 24;
+const GUARD_RING_CIRCUMFERENCE = 2 * Math.PI * GUARD_RING_RADIUS;
+guardRingFg.style.strokeDasharray = GUARD_RING_CIRCUMFERENCE;
+guardRingFg.style.strokeDashoffset = 0;
+
+let fallbackGuardActive = false;
+let fallbackGuardInterval = null;
+let mouseOverFallbackFrame = false;
+
+fallbackFrame.addEventListener('mouseenter', () => { mouseOverFallbackFrame = true; });
+fallbackFrame.addEventListener('mouseleave', () => { mouseOverFallbackFrame = false; });
+
+window.addEventListener('blur', () => {
+  if (!usingFallback || fallbackGuardActive) return;
+  if (!mouseOverFallbackFrame) return;
+  // Petit délai pour laisser le focus se poser réellement sur l'iframe
+  setTimeout(() => {
+    if (document.activeElement === fallbackFrame) startFallbackGuard();
+  }, 50);
+});
+
+function startFallbackGuard() {
+  fallbackGuardActive = true;
+  let remaining = FALLBACK_GUARD_SECONDS;
+  fallbackGuardCount.textContent = remaining;
+  guardRingFg.style.transition = 'none';
+  guardRingFg.style.strokeDashoffset = 0;
+  // force reflow pour réactiver la transition proprement
+  void guardRingFg.offsetWidth;
+  guardRingFg.style.transition = 'stroke-dashoffset 1s linear';
+  fallbackClickGuard.style.display = 'flex';
+
+  clearInterval(fallbackGuardInterval);
+  fallbackGuardInterval = setInterval(() => {
+    remaining--;
+    fallbackGuardCount.textContent = Math.max(remaining, 0);
+    const progress = 1 - (remaining / FALLBACK_GUARD_SECONDS);
+    guardRingFg.style.strokeDashoffset = GUARD_RING_CIRCUMFERENCE * progress;
+    if (remaining <= 0) stopFallbackGuard();
+  }, 1000);
+}
+
+function stopFallbackGuard() {
+  clearInterval(fallbackGuardInterval);
+  fallbackGuardInterval = null;
+  fallbackGuardActive = false;
+  fallbackClickGuard.style.display = 'none';
+}
+// ---- fin chrono de garde ----
 
 // Navbar premium
 const nav = document.createElement('nav');
@@ -385,6 +485,7 @@ backButton.addEventListener('click', () => {
     fallbackHoverZone.style.display = 'none';
     clearTimeout(fallbackBtnHideTimeout);
     fallbackBanner.style.display = 'none';
+    stopFallbackGuard();
     video.style.display = '';
     usingFallback = false;
     videoContainer.style.display = 'none';
@@ -422,6 +523,7 @@ function switchToFallbackPlayer(reason) {
   progressWrapper.classList.add('hide');
   centerPlay.classList.add('hide');
   hideStatus();
+  stopFallbackGuard();
   fallbackFrame.src = FALLBACK_EMBED_URL;
   fallbackFrame.style.display = 'block';
   fallbackHoverZone.style.display = 'block';
