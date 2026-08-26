@@ -1713,10 +1713,41 @@ details.admin-template textarea {
       </div>
 
       <div class="admin-field">
-        <label>Nom du fichier (sans .html — sert aussi au lien)</label>
-        <input type="text" id="fSlug" placeholder="ex: doubtfire">
-      </div>
-      <p class="admin-hint">Le fichier sera téléchargé sous ce nom et devra être placé dans le dossier <code>films/</code> (ou <code>séries/</code> / <code>animes/</code> selon le type) du dépôt GitHub.</p>
+  <label>Nom du fichier (sans .html — sert aussi au lien)</label>
+  <input type="text" id="fSlug" placeholder="ex: doubtfire">
+</div>
+
+<p class="admin-hint">
+  Le fichier sera téléchargé sous ce nom et devra être placé dans le dossier
+  <code>films/</code> (ou <code>séries/</code> / <code>animes/</code> selon le type)
+  du dépôt GitHub.
+</p>
+
+<div class="admin-row">
+  <div class="admin-field">
+    <label>Movie ID</label>
+    <input
+      type="text"
+      id="fMovieId"
+      placeholder="ex: doubtfire"
+    >
+    <p class="admin-hint">
+      Identifiant utilisé pour les likes / dislikes dans <code>movie_likes</code>.
+    </p>
+  </div>
+
+  <div class="admin-field">
+    <label>URL source fallback</label>
+    <input
+      type="url"
+      id="fFallbackSource"
+      placeholder="https://.../master.m3u8"
+    >
+    <p class="admin-hint">
+      Source M3U8 utilisée automatiquement si la source principale ne fonctionne pas.
+    </p>
+  </div>
+</div>
 
       <label class="admin-check">
         <input type="checkbox" id="fProvisoire"> Marquer comme "Provisoire" sur le catalogue
@@ -2930,6 +2961,15 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
       return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
     }
 
+    function escapeJsString(str) {
+  return String(str || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n');
+}
+
     function escapeHtml(str) {
       return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
@@ -2959,13 +2999,26 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
       const synopsis = document.getElementById('fSynopsis').value.trim();
       const bgUrl = document.getElementById('fBackground').value.trim();
       const posterUrl = document.getElementById('fPoster').value.trim();
-      let slug = document.getElementById('fSlug').value.trim();
-      const provisoire = document.getElementById('fProvisoire').checked;
+let slug = document.getElementById('fSlug').value.trim();
 
-      if (!h1 || !slug || !bgUrl || !posterUrl) {
-        alert("Merci de remplir au minimum : titre, image de fond, affiche et nom de fichier.");
-        return;
-      }
+const movieId = document.getElementById('fMovieId').value.trim();
+const fallbackSourceUrl = document.getElementById('fFallbackSource').value.trim();
+
+const provisoire = document.getElementById('fProvisoire').checked;
+
+      if (
+  !h1 ||
+  !slug ||
+  !bgUrl ||
+  !posterUrl ||
+  !movieId ||
+  !fallbackSourceUrl
+) {
+  alert(
+    "Merci de remplir au minimum : titre, image de fond, affiche, nom de fichier, Movie ID et URL source fallback."
+  );
+  return;
+}
       slug = slugify(slug);
 
       const pageTitle = h1.replace(/\s*\(\d{4}\)\s*$/, '') + ' - BNZ';
@@ -3004,6 +3057,16 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
         "<p><strong>Synopsis:</strong> Privé, à la suite de son divorce, de ses trois enfants qu'il adore, Daniel Hillard, doubleur de dessins animés, met en œuvre tous ses talents d'acteur et d'imitateur et se transforme en respectable gouvernante irlandaise. Lorsque Mme Doubtfire se présente dans la famille Hillard, elle est acceptée à l'unanimité.</p>",
         `<p><strong>Synopsis:</strong> ${escapeHtml(synopsis)}</p>`
       );
+
+      page = page.replace(
+  "const MOVIE_ID      = 'doubtfire';",
+  `const MOVIE_ID      = '${escapeJsString(movieId)}';`
+);
+
+page = page.replace(
+  "const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/788-0xgdv/master.m3u8';",
+  `const FALLBACK_SOURCE_URL = '${escapeJsString(fallbackSourceUrl)}';`
+);
 
       // Téléchargement du fichier
       const blob = new Blob([page], { type: 'text/html' });
