@@ -2566,23 +2566,16 @@ function initHLS() {
   }
 }
 
-const oldNavbar = document.querySelector('#navbar');
-
+// Navbar premium (remplace l'ancienne liste ul#navbar)
 const nav = document.createElement('nav');
-nav.id = 'navbar';
-
-nav.innerHTML = `
+nav.innerHTML = \`
+  <a href="https://inspecteurl.github.io/site/accueil.html" class="nav-logo">HorizonCiné</a>
   <a href="https://inspecteurl.github.io/site/accueil.html">Accueil</a>
   <a href="https://inspecteurl.github.io/site/catalogue.html">Catalogue</a>
   <a href="https://inspecteurl.github.io/site/communaute.html">Communauté</a>
   <a href="https://inspecteurl.github.io/site/forum.html">Forum</a>
   <a href="https://inspecteurl.github.io/site/profil.html">Profil</a>
-`;
-
-if (oldNavbar) {
-  oldNavbar.replaceWith(nav);
-}
-
+\`;
 document.getElementById('navbar').replaceWith(nav);
 
 // Overlays d'effet "cinéma"
