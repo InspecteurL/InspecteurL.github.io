@@ -2566,8 +2566,11 @@ function initHLS() {
   }
 }
 
-// Navbar premium (remplace l'ancienne liste ul#navbar)
+const oldNavbar = document.querySelector('#navbar');
+
 const nav = document.createElement('nav');
+nav.id = 'navbar';
+
 nav.innerHTML = `
   <a href="https://inspecteurl.github.io/site/accueil.html">Accueil</a>
   <a href="https://inspecteurl.github.io/site/catalogue.html">Catalogue</a>
@@ -2575,6 +2578,11 @@ nav.innerHTML = `
   <a href="https://inspecteurl.github.io/site/forum.html">Forum</a>
   <a href="https://inspecteurl.github.io/site/profil.html">Profil</a>
 `;
+
+if (oldNavbar) {
+  oldNavbar.replaceWith(nav);
+}
+
 document.getElementById('navbar').replaceWith(nav);
 
 // Overlays d'effet "cinéma"
