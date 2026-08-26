@@ -157,6 +157,441 @@ li a:hover { background-color: red; border-radius: 5px; }
   <div id="subtitleMenu" class="menu">
   </div>
 </div>
+<script>
+const video = document.getElementById('video');
+const videoContainer = document.getElementById('videoContainer');
+const controls = document.getElementById('controls');
+const progressWrapper = document.getElementById('progressWrapper');
+const progress = document.getElementById('progress');
+const progressBar = document.getElementById('progress-bar');
+const progressBuffer = document.getElementById('progress-buffer');
+const currentTimeEl = document.getElementById('currentTime');
+const totalTimeEl = document.getElementById('totalTime');
+const playBtn = document.getElementById('play');
+const centerPlay = document.getElementById('centerPlay');
+const volumeSlider = document.getElementById('volume-slider');
+const volumeIcon = document.getElementById('volume-icon');
+const settingsBtn = document.getElementById('settings');
+const settingsMenu = document.getElementById('settingsMenu');
+const sourceBtn = document.getElementById('source');
+const sourceMenu = document.getElementById('sourceMenu');
+const subtitleBtn = document.getElementById('subtitles');
+const subtitleMenu = document.getElementById('subtitleMenu');
+const btnWatch = document.getElementById('btnWatch');
+const backButton = document.getElementById('backButton');
+const statusOverlay = document.getElementById('statusOverlay');
+const statusText = document.getElementById('statusText');
+const fallbackFrame = document.getElementById('fallbackFrame');
+const fallbackBanner = document.getElementById('fallbackBanner');
+const fallbackHoverZone = document.getElementById('fallbackHoverZone');
 
+// ⚠️ À vérifier/ajuster : chemin du fichier m3u8 de Titanic sur Supabase Storage
+const M3U8_URL     = 'https://wuagahavmbugmnuzsouf.supabase.co/storage/v1/object/public/titanic/playlist-titanic.m3u8';
+const MOVIE_ID      = 'la-haine';
+const SUPABASE_URL  = 'https://wuagahavmbugmnuzsouf.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+
+// Utilise le mp4 existant comme lecteur de secours
+const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/788-0xgdv/master.m3u8';
+const FALLBACK_EMBED_URL  = 'https://www.m3u8player.online/embed/m3u8?url=' + encodeURIComponent(FALLBACK_SOURCE_URL);
+const MAX_HLS_RETRIES = 2;
+const LOAD_TIMEOUT_MS = 8000;
+let hlsRetryCount = 0;
+let usingFallback = false;
+let loadTimeoutId = null;
+let hls = null;
+
+function showStatus(msg) { statusText.textContent = msg; statusOverlay.style.display = 'block'; }
+function hideStatus()    { statusOverlay.style.display = 'none'; }
+
+function armLoadTimeout() {
+  clearTimeout(loadTimeoutId);
+  loadTimeoutId = setTimeout(() => {
+    if (!usingFallback) switchToFallbackPlayer('load-timeout');
+  }, LOAD_TIMEOUT_MS);
+}
+function disarmLoadTimeout() { clearTimeout(loadTimeoutId); }
+
+let fallbackBtnHideTimeout;
+function showFallbackBackButton() {
+  backButton.classList.remove('hide');
+  clearTimeout(fallbackBtnHideTimeout);
+  fallbackBtnHideTimeout = setTimeout(() => backButton.classList.add('hide'), 3000);
+}
+fallbackHoverZone.addEventListener('mousemove', showFallbackBackButton);
+fallbackHoverZone.addEventListener('mouseenter', showFallbackBackButton);
+
+function switchToFallbackPlayer(reason) {
+  if (usingFallback) return;
+  usingFallback = true;
+  disarmLoadTimeout();
+  console.warn('Bascule sur le lecteur de secours :', reason);
+  if (hls) { hls.destroy(); hls = null; }
+  video.pause();
+  video.src = '';
+  video.style.display = 'none';
+  controls.classList.add('hide');
+  progressWrapper.classList.add('hide');
+  centerPlay.classList.add('hide');
+  hideStatus();
+  fallbackFrame.src = FALLBACK_EMBED_URL;
+  fallbackFrame.style.display = 'block';
+  fallbackHoverZone.style.display = 'block';
+  fallbackBanner.style.display = 'block';
+  setTimeout(() => { fallbackBanner.style.display = 'none'; }, 4000);
+  showEpisodeInfo();
+  showFallbackBackButton();
+}
+
+function initHLS() {
+  if (hls) { hls.destroy(); hls = null; }
+  if (Hls.isSupported()) {
+    hls = new Hls({ maxBufferLength: 60, maxMaxBufferLength: 120, enableWorker: true });
+    hls.loadSource(M3U8_URL);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      disarmLoadTimeout();
+      hideStatus(); showControls(); video.play().catch(console.error); showEpisodeInfo();
+    });
+    hls.on(Hls.Events.ERROR, (event, data) => {
+      if (!data.fatal) return;
+      if (data.details === 'manifestLoadError' || data.details === 'manifestLoadTimeOut' || data.details === 'manifestParsingError') {
+        switchToFallbackPlayer(data.details);
+        return;
+      }
+      hlsRetryCount++;
+      if (hlsRetryCount > MAX_HLS_RETRIES) {
+        switchToFallbackPlayer(data.details);
+        return;
+      }
+      if (data.type === Hls.ErrorTypes.NETWORK_ERROR) { showStatus('❌ Erreur réseau...'); hls.startLoad(); }
+      else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { showStatus('❌ Erreur média...'); hls.recoverMediaError(); }
+      else switchToFallbackPlayer(data.details);
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = M3U8_URL;
+    video.addEventListener('loadedmetadata', () => { disarmLoadTimeout(); hideStatus(); showControls(); video.play().catch(console.error); showEpisodeInfo(); }, { once: true });
+    video.addEventListener('error', () => switchToFallbackPlayer('native-hls-error'), { once: true });
+  } else {
+    switchToFallbackPlayer('hls-not-supported');
+  }
+}
+
+// Navbar premium (remplace l'ancienne liste ul#navbar)
+const nav = document.createElement('nav');
+nav.innerHTML = `
+  <a href="https://inspecteurl.github.io/site/accueil.html" class="nav-logo">HorizonCiné</a>
+  <a href="https://inspecteurl.github.io/site/accueil.html">Accueil</a>
+  <a href="https://inspecteurl.github.io/site/catalogue.html">Catalogue</a>
+  <a href="https://inspecteurl.github.io/site/communaute.html">Communauté</a>
+  <a href="https://inspecteurl.github.io/site/forum.html">Forum</a>
+  <a href="https://inspecteurl.github.io/site/profil.html">Profil</a>
+`;
+document.getElementById('navbar').replaceWith(nav);
+
+// Overlays d'effet "cinéma"
+const cinemaOverlay = document.createElement('div');
+cinemaOverlay.className = 'cinema-overlay';
+document.body.appendChild(cinemaOverlay);
+
+const cinemaBackOverlay = document.createElement('div');
+cinemaBackOverlay.className = 'cinema-back-overlay';
+document.body.appendChild(cinemaBackOverlay);
+
+// Overlay du titre du film
+const episodeInfo = document.createElement('div');
+episodeInfo.className = 'episode-info';
+videoContainer.appendChild(episodeInfo);
+let infoTimer;
+function showEpisodeInfo() {
+  episodeInfo.textContent = document.querySelector('.fiche-info h1')?.textContent?.trim() || 'Titanic';
+  episodeInfo.classList.add('visible');
+  clearTimeout(infoTimer);
+  infoTimer = setTimeout(() => episodeInfo.classList.remove('visible'), 4000);
+}
+videoContainer.addEventListener('mousemove', () => {
+  episodeInfo.classList.add('visible');
+  clearTimeout(infoTimer);
+  infoTimer = setTimeout(() => episodeInfo.classList.remove('visible'), 3000);
+});
+
+// Quand on clique sur "Lire le film"
+btnWatch.addEventListener('click', () => {
+  cinemaOverlay.classList.add('active');
+  videoContainer.classList.add('cinema-zoom');
+  videoContainer.style.display = 'flex';
+  nav.style.display = 'none';
+  hlsRetryCount = 0;
+  usingFallback = false;
+  showStatus('Chargement du film...');
+  armLoadTimeout();
+  initHLS();
+  showControls();
+  setTimeout(() => cinemaOverlay.classList.remove('active'), 800);
+});
+
+// Quand on clique sur "Retour à la fiche"
+backButton.addEventListener('click', () => {
+  cinemaBackOverlay.classList.add('active');
+  videoContainer.classList.add('cinema-back-exit');
+  setTimeout(() => {
+    disarmLoadTimeout();
+    video.pause();
+    if (hls) { hls.destroy(); hls = null; }
+    video.src = '';
+    video.style.display = '';
+    fallbackFrame.src = '';
+    fallbackFrame.style.display = 'none';
+    fallbackHoverZone.style.display = 'none';
+    clearTimeout(fallbackBtnHideTimeout);
+    fallbackBanner.style.display = 'none';
+    usingFallback = false;
+    videoContainer.style.display = 'none';
+    videoContainer.classList.remove('cinema-back-exit');
+    videoContainer.classList.remove('cinema-zoom');
+    nav.style.display = 'flex';
+    if (document.fullscreenElement) document.exitFullscreen();
+    hideStatus();
+    cinemaBackOverlay.classList.remove('active');
+  }, 900);
+});
+
+let hideTimeout;
+video.controls = false;
+
+// ---------------------
+// Show / hide controls
+// ---------------------
+function showControls() {
+  if (usingFallback) return;
+  controls.classList.remove('hide');
+  progressWrapper.classList.remove('hide');
+  if (video.paused) centerPlay.classList.remove('hide'); else centerPlay.classList.add('hide');
+  backButton.classList.remove('hide');
+  document.body.style.cursor = 'default';
+
+  clearTimeout(hideTimeout);
+  hideTimeout = setTimeout(hideControls, 3000);
+}
+
+function hideControls() {
+  if (usingFallback) return;
+  if (!video.paused) {
+    centerPlay.classList.add('hide');
+  }
+  controls.classList.add('hide');
+  progressWrapper.classList.add('hide');
+  backButton.classList.add('hide');
+  document.body.style.cursor = 'none';
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
+}
+
+document.addEventListener('mousemove', showControls);
+document.addEventListener('keydown', showControls);
+video.addEventListener('click', showControls);
+
+showControls();
+
+// ---------------------
+// Format time
+// ---------------------
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+// ---------------------
+// Update progress, buffer & time
+// ---------------------
+video.addEventListener('timeupdate', () => {
+  const percent = (video.currentTime / video.duration) * 100;
+  progressBar.style.width = percent + '%';
+  currentTimeEl.textContent = formatTime(video.currentTime);
+  totalTimeEl.textContent = formatTime(video.duration);
+  if (video.buffered.length > 0) {
+    progressBuffer.style.width = (video.buffered.end(video.buffered.length - 1) / video.duration * 100) + '%';
+  }
+});
+video.addEventListener('waiting', () => showStatus('Chargement...'));
+video.addEventListener('playing', () => hideStatus());
+
+// ---------------------
+// Play / pause
+// ---------------------
+function togglePlay() {
+  if (video.paused) video.play();
+  else video.pause();
+}
+
+playBtn.addEventListener('click', togglePlay);
+centerPlay.addEventListener('click', togglePlay);
+
+video.addEventListener('play', () => {
+  playBtn.textContent = 'pause';
+  centerPlay.textContent = 'pause';
+  showControls();
+});
+
+video.addEventListener('pause', () => {
+  playBtn.textContent = 'play_arrow';
+  centerPlay.textContent = 'play_arrow';
+  centerPlay.classList.remove('hide');
+  showControls();
+});
+
+// ---------------------
+// Seek
+// ---------------------
+progressWrapper.addEventListener('click', e => {
+  const rect = progress.getBoundingClientRect();
+  const pos = (e.clientX - rect.left) / rect.width;
+  video.currentTime = pos * video.duration;
+});
+
+// ---------------------
+// Volume
+// ---------------------
+volumeSlider.addEventListener('input', () => {
+  video.volume = volumeSlider.value;
+  updateVolumeIcon();
+});
+volumeIcon.addEventListener('click', () => {
+  if(video.volume > 0){ video.volume = 0; volumeSlider.value = 0; }
+  else { video.volume = 1; volumeSlider.value = 1; }
+  updateVolumeIcon();
+});
+
+function updateVolumeIcon() {
+  if(video.volume === 0) volumeIcon.textContent = 'volume_off';
+  else if(video.volume < 0.5) volumeIcon.textContent = 'volume_down';
+  else volumeIcon.textContent = 'volume_up';
+}
+
+// ---------------------
+// Settings menu
+// ---------------------
+settingsBtn.addEventListener('click', () => toggleMenu(settingsMenu));
+settingsMenu.querySelectorAll('button[data-speed]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    video.playbackRate = parseFloat(btn.dataset.speed);
+    settingsMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    settingsMenu.style.display = 'none';
+  });
+});
+
+// ---------------------
+// Source menu
+// ---------------------
+sourceBtn.addEventListener('click', () => toggleMenu(sourceMenu));
+sourceMenu.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    video.src = btn.dataset.src;
+    video.play();
+    sourceMenu.style.display = 'none';
+  });
+});
+
+// ---------------------
+// Subtitles menu
+// ---------------------
+subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
+subtitleMenu.addEventListener('click', e => {
+  if(e.target.tagName === 'BUTTON'){
+    const subUrl = e.target.dataset.sub;
+    video.querySelectorAll('track').forEach(t => t.remove());
+    if(subUrl){
+      const track = document.createElement('track');
+      track.src = subUrl;
+      track.kind = 'subtitles';
+      track.default = true;
+      video.appendChild(track);
+    }
+    subtitleMenu.style.display = 'none';
+  }
+});
+
+// ---------------------
+// Fullscreen
+// ---------------------
+document.getElementById('fullscreen').addEventListener('click', () => {
+  if(!document.fullscreenElement) videoContainer.requestFullscreen();
+  else document.exitFullscreen();
+});
+
+// ---------------------
+// Backward / Forward
+// ---------------------
+document.getElementById('backward').addEventListener('click', () => { video.currentTime -= 10; });
+document.getElementById('forward').addEventListener('click', () => { video.currentTime += 10; });
+
+// ---------------------
+// Raccourcis clavier
+// ---------------------
+document.addEventListener('keydown', e => {
+  if (videoContainer.style.display !== 'flex' || usingFallback) return;
+  if (e.code === 'Space')      { e.preventDefault(); togglePlay(); }
+  if (e.code === 'ArrowRight') video.currentTime += 10;
+  if (e.code === 'ArrowLeft')  video.currentTime -= 10;
+  if (e.code === 'ArrowUp')    { video.volume = Math.min(1, video.volume + 0.1); volumeSlider.value = video.volume; updateVolumeIcon(); }
+  if (e.code === 'ArrowDown')  { video.volume = Math.max(0, video.volume - 0.1); volumeSlider.value = video.volume; updateVolumeIcon(); }
+  if (e.code === 'KeyF')       { if (!document.fullscreenElement) videoContainer.requestFullscreen(); else document.exitFullscreen(); }
+});
+
+// ---------------------
+// Toggle menu helper
+// ---------------------
+function toggleMenu(menu){
+  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
+  menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+}
+
+// ---------------------
+// Like / Dislike (Supabase)
+// ---------------------
+import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
+  const supabase     = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const likeBtn      = document.getElementById('likeBtn');
+  const dislikeBtn   = document.getElementById('dislikeBtn');
+  const likeCount    = document.getElementById('likeCount');
+  const dislikeCount = document.getElementById('dislikeCount');
+  let userId = null, currentVote = null;
+
+  async function initUser() {
+    const { data } = await supabase.auth.getUser();
+    userId = data?.user?.id || null;
+  }
+  async function loadVotes() {
+    const { data } = await supabase.from('movie_likes').select('user_id, liked').eq('movie_id', MOVIE_ID);
+    if (!data) { likeCount.textContent = 0; dislikeCount.textContent = 0; return; }
+    likeCount.textContent    = data.filter(v => v.liked).length;
+    dislikeCount.textContent = data.filter(v => !v.liked).length;
+    currentVote = userId
+      ? (data.find(v => v.user_id === userId)?.liked === true ? 'like'
+       : data.find(v => v.user_id === userId)?.liked === false ? 'dislike' : null)
+      : null;
+    likeBtn.classList.toggle('active-like', currentVote === 'like');
+    dislikeBtn.classList.toggle('active-dislike', currentVote === 'dislike');
+  }
+  async function vote(liked) {
+    if (!userId) { alert('Connecte-toi pour voter !'); return; }
+    await supabase.from('movie_likes').delete().eq('movie_id', MOVIE_ID).eq('user_id', userId);
+    if (currentVote !== (liked ? 'like' : 'dislike')) {
+      await supabase.from('movie_likes').insert({ movie_id: MOVIE_ID, user_id: userId, liked });
+      currentVote = liked ? 'like' : 'dislike';
+    } else { currentVote = null; }
+    loadVotes();
+  }
+  likeBtn.onclick    = () => vote(true);
+  dislikeBtn.onclick = () => vote(false);
+  supabase.channel('movie_likes_lahaine')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'movie_likes' }, p => {
+      if (p.new?.movie_id === MOVIE_ID || p.old?.movie_id === MOVIE_ID) loadVotes();
+    }).subscribe();
+  initUser().then(loadVotes);
+});
+</script>
+<script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
 </html>
