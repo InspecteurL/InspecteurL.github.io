@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catalogue </title>
@@ -8,7 +9,12 @@
  /* ============================= */
 /*        DESIGN TOKENS          */
 /* ============================= */
-
+.type-filters button .material-symbols-outlined {
+  font-size: 20px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+    
 :root {
   --card-w: clamp(160px, 20vw, 200px);
 
@@ -470,12 +476,11 @@ details.admin-template textarea {
     <input type="text" id="searchInput" placeholder="Rechercher un titre..." onkeyup="searchMovies()">
   </div>
 
-  <!-- Filtres par TYPE -->
-  <div class="type-filters">
-    <button class="active" onclick="filterType('Tous')">Tous</button>
-    <button onclick="filterType('Film')">Films 🎥</button>
-    <button onclick="filterType('Série')">Séries 📺</button>
-  </div>
+ <div class="type-filters">
+  <button class="active" onclick="filterType('Tous')">Tous</button>
+  <button onclick="filterType('Film')">Films <span class="material-symbols-outlined">movie</span></button>
+  <button onclick="filterType('Série')">Séries <span class="material-symbols-outlined">tv</span></button>
+</div>
 
   
 
