@@ -461,6 +461,7 @@ details.admin-template textarea {
       <li><a href="https://inspecteurl.github.io/site/jeux.html">Jeux</a></li>
     </ul>
     <h1>Catalogue Horizoncine </h1>
+    <div id="catalogueCounter" style="text-align:center; margin: 10px 0 20px; font-weight:600;"></div>
     <p>Découvrez nos derniers films et séries selon vos envies</p>
   </header>
 
@@ -475,6 +476,8 @@ details.admin-template textarea {
     <button onclick="filterType('Film')">Films 🎥</button>
     <button onclick="filterType('Série')">Séries 📺</button>
   </div>
+
+  
 
   <!-- Filtres par GENRE -->
   <div class="filters">
@@ -3202,6 +3205,38 @@ page = page.replace(
     });
   })();
   </script>
+<script>
+function updateCatalogueCounter() {
+  const grid = document.getElementById('movieGrid');
+  if (!grid) return;
 
+  const links = grid.querySelectorAll('a[href*="/films/"], a[href*="/séries/"], a[href*="/s%C3%A9ries/"], a[href*="/animes/"]');
+
+  let films = 0, series = 0, animes = 0;
+
+  links.forEach(link => {
+    const href = decodeURIComponent(link.getAttribute('href') || '');
+    if (href.includes('/films/')) films++;
+    else if (href.includes('/séries/')) series++;
+    else if (href.includes('/animes/')) animes++;
+  });
+
+  const total = films + series + animes;
+  const counterEl = document.getElementById('catalogueCounter');
+  if (counterEl) {
+    counterEl.textContent = `${total} titres au catalogue — ${films} films · ${series} séries · ${animes} animes`;
+  }
+}
+
+// Compte au chargement
+document.addEventListener('DOMContentLoaded', updateCatalogueCounter);
+
+// Recalcule automatiquement si des fiches sont ajoutées/retirées de la grille
+const catalogueObserver = new MutationObserver(updateCatalogueCounter);
+document.addEventListener('DOMContentLoaded', () => {
+  const grid = document.getElementById('movieGrid');
+  if (grid) catalogueObserver.observe(grid, { childList: true });
+});
+</script>
 </body>
 </html>
