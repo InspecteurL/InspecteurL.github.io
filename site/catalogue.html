@@ -3421,24 +3421,35 @@ let currentOriginalHTML='';
 
 templateInput.value=DEFAULT_TEMPLATE;
 
+// =====================================================
+// OUVERTURE AJOUT
+// =====================================================
+
 openBtn.addEventListener('click',()=>{
   const pass=prompt("Mot de passe admin :");
   if(pass!==ADMIN_PASSWORD){
     if(pass!==null)alert("Mot de passe incorrect.");
     return;
   }
+
   editMode=false;
   currentEditUrl='';
   currentEditFileName='';
   currentOriginalHTML='';
+
   modalTitle.textContent="Ajouter un film / une série";
   generateBtn.textContent="Générer la page du film";
   editSelector.style.display="none";
   templateDetails.style.display="block";
   adminForm.style.display="block";
+
   clearForm();
   overlay.classList.add('open');
 });
+
+// =====================================================
+// OUVERTURE MODIFICATION
+// =====================================================
 
 editBtn.addEventListener('click',()=>{
   const pass=prompt("Mot de passe admin :");
@@ -3446,19 +3457,26 @@ editBtn.addEventListener('click',()=>{
     if(pass!==null)alert("Mot de passe incorrect.");
     return;
   }
+
   editMode=true;
   currentEditUrl='';
   currentEditFileName='';
   currentOriginalHTML='';
+
   modalTitle.textContent="Modifier une fiche existante";
   generateBtn.textContent="Générer la fiche modifiée";
   editSelector.style.display="block";
   templateDetails.style.display="none";
   adminForm.style.display="block";
+
   clearForm();
   buildEditMovieList();
   overlay.classList.add('open');
 });
+
+// =====================================================
+// FERMETURE
+// =====================================================
 
 closeBtn.addEventListener('click',()=>{
   overlay.classList.remove('open');
@@ -3468,11 +3486,23 @@ overlay.addEventListener('click',e=>{
   if(e.target===overlay)overlay.classList.remove('open');
 });
 
+// =====================================================
+// RECHERCHE
+// =====================================================
+
 editSearchInput.addEventListener('input',buildEditMovieList);
+
+// =====================================================
+// GENRE ANIME
+// =====================================================
 
 genreSelect.addEventListener('change',()=>{
   subgenreField.style.display=genreSelect.value==='Anime'?'block':'none';
 });
+
+// =====================================================
+// NETTOYER FORMULAIRE
+// =====================================================
 
 function clearForm(){
   document.getElementById('fTitreAffiche').value='';
@@ -3486,14 +3516,20 @@ function clearForm(){
   document.getElementById('fMovieId').value='';
   document.getElementById('fFallbackSource').value='';
   document.getElementById('fProvisoire').checked=false;
+
   typeSelect.value='Film';
   genreSelect.value='Romance';
   document.getElementById('fSubgenre').value='Shonen';
+
   subgenreField.style.display='none';
   output.classList.remove('show');
   snippetBox.value='';
   outputMessage.textContent='';
 }
+
+// =====================================================
+// UTILITAIRES
+// =====================================================
 
 function slugify(str){
   return String(str||'')
@@ -3531,17 +3567,9 @@ function folderFor(type,genre){
   return type==='Série'?'séries':'films';
 }
 
-function getSlugFromHref(href){
-  if(!href)return'';
-  try{
-    const url=new URL(href,window.location.href);
-    const parts=url.pathname.split('/').filter(Boolean);
-    const filename=parts[parts.length-1]||'';
-    return filename.replace(/\.html?$/i,'');
-  }catch{
-    return'';
-  }
-}
+// =====================================================
+// TYPE DEPUIS URL
+// =====================================================
 
 function getTypeFromHref(href){
   const decoded=decodeURIComponent(href||'');
@@ -3550,10 +3578,14 @@ function getTypeFromHref(href){
   return'Film';
 }
 
+// =====================================================
+// LISTE DES FICHES
+// =====================================================
+
 function buildEditMovieList(){
   if(!editMovieList)return;
 
-  const query=editSearchInput.value
+  const query=(editSearchInput.value||'')
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g,'');
@@ -3570,7 +3602,10 @@ function buildEditMovieList(){
     if(!link)return;
 
     const href=link.getAttribute('href');
-    const title=movie.dataset.title||movie.querySelector('h2')?.textContent||'Sans titre';
+    const title=movie.dataset.title||
+      movie.querySelector('h2')?.textContent||
+      'Sans titre';
+
     const poster=movie.querySelector('img')?.src||'';
     const type=movie.dataset.type||getTypeFromHref(href);
     const genre=movie.dataset.genre||'';
@@ -3607,9 +3642,10 @@ function buildEditMovieList(){
       <button type="button" class="edit-movie-btn">✏️ Modifier</button>
     `;
 
-    item.querySelector('.edit-movie-btn').addEventListener('click',()=>{
-      loadMovieForEditing(href,title);
-    });
+    item.querySelector('.edit-movie-btn')
+      .addEventListener('click',()=>{
+        loadMovieForEditing(href,title);
+      });
 
     editMovieList.appendChild(item);
   });
@@ -3623,6 +3659,10 @@ function buildEditMovieList(){
     ' disponible'+(count>1?'s':'')+
     ' à modifier.';
 }
+
+// =====================================================
+// RÉCUPÉRER UNE FICHE
+// =====================================================
 
 async function loadMovieForEditing(href,displayedTitle){
   try{
@@ -3638,7 +3678,7 @@ async function loadMovieForEditing(href,displayedTitle){
     const urlObject=new URL(absoluteUrl);
 
     currentEditFileName=
-      urlObject.pathname.split('/').pop();
+      urlObject.pathname.split('/').pop()||'';
 
     const response=await fetch(
       absoluteUrl,
@@ -3668,10 +3708,9 @@ async function loadMovieForEditing(href,displayedTitle){
     editMovieList
       .querySelectorAll('.edit-movie-item')
       .forEach(item=>{
-        const title=item
-          .querySelector('.edit-movie-title')
-          ?.textContent
-          ?.trim();
+        const title=item.querySelector(
+          '.edit-movie-title'
+        )?.textContent?.trim();
 
         if(title===displayedTitle){
           item.classList.add('edit-selected');
@@ -3680,6 +3719,7 @@ async function loadMovieForEditing(href,displayedTitle){
 
     editLoadingMessage.textContent=
       "Fiche chargée. Tu peux maintenant modifier les champs.";
+
   }catch(error){
     console.error("Erreur récupération fiche :",error);
 
@@ -3692,6 +3732,10 @@ async function loadMovieForEditing(href,displayedTitle){
       "Erreur lors de la récupération de la fiche.";
   }
 }
+
+// =====================================================
+// EXTRAIRE PARAGRAPHE
+// =====================================================
 
 function extractLabeledParagraph(doc,label){
   const paragraphs=doc.querySelectorAll('.fiche-info p');
@@ -3720,19 +3764,33 @@ function extractLabeledParagraph(doc,label){
   return'';
 }
 
+// =====================================================
+// EXTRAIRE MOVIE ID
+// =====================================================
+
 function extractMovieId(html){
   const match=html.match(
     /const\s+MOVIE_ID\s*=\s*['"]([^'"]+)['"]/
   );
+
   return match?match[1]:'';
 }
+
+// =====================================================
+// EXTRAIRE FALLBACK
+// =====================================================
 
 function extractFallbackSource(html){
   const match=html.match(
     /const\s+FALLBACK_SOURCE_URL\s*=\s*['"]([^'"]+)['"]/
   );
+
   return match?match[1]:'';
 }
+
+// =====================================================
+// EXTRAIRE BACKGROUND
+// =====================================================
 
 function extractBackground(doc){
   const body=doc.querySelector('body');
@@ -3761,14 +3819,26 @@ function extractBackground(doc){
   return'';
 }
 
+// =====================================================
+// EXTRAIRE POSTER
+// =====================================================
+
 function extractPoster(doc){
   const poster=doc.querySelector('.fiche img');
   return poster?poster.getAttribute('src')||'':'';
 }
 
+// =====================================================
+// EXTRAIRE DONNÉES
+// =====================================================
+
 function extractMovieData(html,pageUrl){
   const parser=new DOMParser();
-  const doc=parser.parseFromString(html,'text/html');
+
+  const doc=parser.parseFromString(
+    html,
+    'text/html'
+  );
 
   const h1=doc.querySelector('.fiche-info h1');
 
@@ -3807,22 +3877,21 @@ function extractMovieData(html,pageUrl){
       .filter(Boolean)
       .pop()||'';
 
-  const slug=filename.replace(/\.html?$/i,'');
+  document.getElementById('fSlug').value=
+    slugify(filename.replace(/\.html?$/i,''));
 
-  document.getElementById('fSlug').value=slugify(slug);
+  const decodedPath=
+    decodeURIComponent(urlObject.pathname);
 
-  const decodedPath=decodeURIComponent(urlObject.pathname);
-
-  if(decodedPath.includes('/séries/')){
-    typeSelect.value='Série';
-  }else if(decodedPath.includes('/animes/')){
-    typeSelect.value='Film';
-  }else{
-    typeSelect.value='Film';
-  }
+  typeSelect.value=
+    decodedPath.includes('/séries/')
+      ? 'Série'
+      : 'Film';
 
   const genreText=
-    document.getElementById('fGenreTexte').value.toLowerCase();
+    document.getElementById('fGenreTexte')
+      .value
+      .toLowerCase();
 
   const knownGenres=[
     'Romance',
@@ -3842,12 +3911,13 @@ function extractMovieData(html,pageUrl){
   ];
 
   let detectedGenre=knownGenres.find(
-    genre=>genreText.includes(genre.toLowerCase())
+    genre=>genreText.includes(
+      genre.toLowerCase()
+    )
   );
 
   if(decodedPath.includes('/animes/')){
     detectedGenre='Anime';
-    typeSelect.value='Film';
   }
 
   if(detectedGenre){
@@ -3867,14 +3937,15 @@ function extractMovieData(html,pageUrl){
     subgenreField.style.display='none';
   }
 
-  const provisoireBadge=
-    doc.querySelector('.badge-provisoire');
-
   document.getElementById('fProvisoire').checked=
-    !!provisoireBadge;
+    !!doc.querySelector('.badge-provisoire');
 
   output.classList.remove('show');
 }
+
+// =====================================================
+// MODIFIER HTML EXISTANT
+// =====================================================
 
 function updateExistingHTML(){
   const parser=new DOMParser();
@@ -3884,30 +3955,64 @@ function updateExistingHTML(){
     'text/html'
   );
 
-  const h1=document.getElementById('fTitreAffiche').value.trim();
-  const genreTexte=document.getElementById('fGenreTexte').value.trim();
-  const realisateur=document.getElementById('fRealisateur').value.trim();
-  const acteurs=document.getElementById('fActeurs').value.trim();
-  const synopsis=document.getElementById('fSynopsis').value.trim();
-  const bgUrl=document.getElementById('fBackground').value.trim();
-  const posterUrl=document.getElementById('fPoster').value.trim();
-  const movieId=document.getElementById('fMovieId').value.trim();
-  const fallback=document.getElementById('fFallbackSource').value.trim();
+  const h1=document.getElementById(
+    'fTitreAffiche'
+  ).value.trim();
 
+  const genreTexte=document.getElementById(
+    'fGenreTexte'
+  ).value.trim();
+
+  const realisateur=document.getElementById(
+    'fRealisateur'
+  ).value.trim();
+
+  const acteurs=document.getElementById(
+    'fActeurs'
+  ).value.trim();
+
+  const synopsis=document.getElementById(
+    'fSynopsis'
+  ).value.trim();
+
+  const bgUrl=document.getElementById(
+    'fBackground'
+  ).value.trim();
+
+  const posterUrl=document.getElementById(
+    'fPoster'
+  ).value.trim();
+
+  const movieId=document.getElementById(
+    'fMovieId'
+  ).value.trim();
+
+  const fallback=document.getElementById(
+    'fFallbackSource'
+  ).value.trim();
+
+  // TITLE
   const title=doc.querySelector('title');
 
   if(title){
     title.textContent=
-      h1.replace(/\s*\(\d{4}\)\s*$/,'')+' - BNZ';
+      h1.replace(/\s*\(\d{4}\)\s*$/,'')+
+      ' - BNZ';
   }
 
-  const h1Element=doc.querySelector('.fiche-info h1');
+  // H1
+  const h1Element=doc.querySelector(
+    '.fiche-info h1'
+  );
 
   if(h1Element){
     h1Element.textContent=h1;
   }
 
-  const paragraphs=doc.querySelectorAll('.fiche-info p');
+  // PARAGRAPHES
+  const paragraphs=doc.querySelectorAll(
+    '.fiche-info p'
+  );
 
   paragraphs.forEach(p=>{
     const strong=p.querySelector('strong');
@@ -3939,6 +4044,7 @@ function updateExistingHTML(){
     }
   });
 
+  // POSTER
   const poster=doc.querySelector('.fiche img');
 
   if(poster){
@@ -3946,7 +4052,10 @@ function updateExistingHTML(){
     poster.setAttribute('alt',h1);
   }
 
-  const styles=Array.from(doc.querySelectorAll('style'));
+  // BACKGROUND
+  const styles=Array.from(
+    doc.querySelectorAll('style')
+  );
 
   styles.forEach(styleElement=>{
     let css=styleElement.textContent||'';
@@ -3959,12 +4068,20 @@ function updateExistingHTML(){
     styleElement.textContent=css;
   });
 
+  // CONSTANTES
   replaceConstant(doc,'MOVIE_ID',movieId);
   replaceConstant(doc,'FALLBACK_SOURCE_URL',fallback);
 
+  // IMPORTANT :
+  // On retourne tout le HTML existant.
+  // Le lecteur vidéo, scripts, CSS, etc. sont conservés.
   return '<!DOCTYPE html>\n'+
     doc.documentElement.outerHTML;
 }
+
+// =====================================================
+// REMPLACER UNE CONSTANTE JS
+// =====================================================
 
 function replaceConstant(doc,constantName,value){
   const scripts=doc.querySelectorAll('script');
@@ -3986,21 +4103,61 @@ function replaceConstant(doc,constantName,value){
   });
 }
 
+// =====================================================
+// NOUVELLE FICHE
+// =====================================================
+
 function generateNewPage(){
-  const h1=document.getElementById('fTitreAffiche').value.trim();
+  const h1=document.getElementById(
+    'fTitreAffiche'
+  ).value.trim();
+
   const type=typeSelect.value;
   const genre=genreSelect.value;
-  const subgenre=document.getElementById('fSubgenre').value;
-  const genreTexte=document.getElementById('fGenreTexte').value.trim();
-  const realisateur=document.getElementById('fRealisateur').value.trim();
-  const acteurs=document.getElementById('fActeurs').value.trim();
-  const synopsis=document.getElementById('fSynopsis').value.trim();
-  const bgUrl=document.getElementById('fBackground').value.trim();
-  const posterUrl=document.getElementById('fPoster').value.trim();
-  let slug=document.getElementById('fSlug').value.trim();
-  const movieId=document.getElementById('fMovieId').value.trim();
-  const fallbackSourceUrl=document.getElementById('fFallbackSource').value.trim();
-  const provisoire=document.getElementById('fProvisoire').checked;
+
+  const subgenre=document.getElementById(
+    'fSubgenre'
+  ).value;
+
+  const genreTexte=document.getElementById(
+    'fGenreTexte'
+  ).value.trim();
+
+  const realisateur=document.getElementById(
+    'fRealisateur'
+  ).value.trim();
+
+  const acteurs=document.getElementById(
+    'fActeurs'
+  ).value.trim();
+
+  const synopsis=document.getElementById(
+    'fSynopsis'
+  ).value.trim();
+
+  const bgUrl=document.getElementById(
+    'fBackground'
+  ).value.trim();
+
+  const posterUrl=document.getElementById(
+    'fPoster'
+  ).value.trim();
+
+  let slug=document.getElementById(
+    'fSlug'
+  ).value.trim();
+
+  const movieId=document.getElementById(
+    'fMovieId'
+  ).value.trim();
+
+  const fallbackSourceUrl=document.getElementById(
+    'fFallbackSource'
+  ).value.trim();
+
+  const provisoire=document.getElementById(
+    'fProvisoire'
+  ).checked;
 
   if(
     !h1||
@@ -4021,7 +4178,8 @@ function generateNewPage(){
   let page=templateInput.value;
 
   const pageTitle=
-    h1.replace(/\s*\(\d{4}\)\s*$/,'')+' - BNZ';
+    h1.replace(/\s*\(\d{4}\)\s*$/,'')+
+    ' - BNZ';
 
   page=page.replace(
     /<title>[\s\S]*?<\/title>/i,
@@ -4085,38 +4243,49 @@ function generateNewPage(){
   };
 }
 
+// =====================================================
+// SNIPPET CATALOGUE
+// =====================================================
+
 function generateCatalogueSnippet(data){
-  const folder=folderFor(data.type,data.genre);
+  const folder=folderFor(
+    data.type,
+    data.genre
+  );
 
   const href=
     `https://inspecteurl.github.io/${folder}/${data.slug}.html`;
 
   const dataTypeAttr=
     data.genre==='Anime'
-      ?''
-      :` data-type="${escapeAttr(data.type)}"`;
+      ? ''
+      : ` data-type="${escapeAttr(data.type)}"`;
 
   const subgenreAttr=
     data.genre==='Anime'
-      ?` data-subgenre="${escapeAttr(data.subgenre)}"`
-      :'';
+      ? ` data-subgenre="${escapeAttr(data.subgenre)}"`
+      : '';
 
   const spanText=
     data.genre==='Anime'
-      ?`Anime — ${escapeHtml(data.subgenre)}`
-      :escapeHtml(data.genre);
+      ? `Anime — ${escapeHtml(data.subgenre)}`
+      : escapeHtml(data.genre);
 
   const badge=
     data.provisoire
-      ?`\n  <span class="badge-provisoire">Provisoire</span>`
-      :'';
+      ? `\n  <span class="badge-provisoire">Provisoire</span>`
+      : '';
 
-  return`<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(data.h1)}" data-genre="${escapeAttr(data.genre)}"${subgenreAttr}>
+  return `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(data.h1)}" data-genre="${escapeAttr(data.genre)}"${subgenreAttr}>
   <a href="${href}"><img src="${escapeAttr(data.posterUrl)}" alt="${escapeAttr(data.h1)}"></a>
   <h2>${escapeHtml(data.h1)}</h2>
   <span>${spanText}</span>${badge}
 </div>`;
 }
+
+// =====================================================
+// TÉLÉCHARGEMENT
+// =====================================================
 
 function downloadHTML(html,filename){
   const blob=new Blob(
@@ -4140,17 +4309,26 @@ function downloadHTML(html,filename){
   );
 }
 
+// =====================================================
+// BOUTON GÉNÉRER
+// =====================================================
+
 generateBtn.addEventListener('click',()=>{
+  // ===================================================
+  // MODE MODIFICATION
+  // ===================================================
+
   if(editMode){
     if(!currentOriginalHTML){
-      alert("Sélectionne d'abord une fiche à modifier.");
+      alert(
+        "Sélectionne d'abord une fiche à modifier."
+      );
       return;
     }
 
-    const h1=document
-      .getElementById('fTitreAffiche')
-      .value
-      .trim();
+    const h1=document.getElementById(
+      'fTitreAffiche'
+    ).value.trim();
 
     const slug=slugify(
       document.getElementById('fSlug').value.trim()
@@ -4167,7 +4345,8 @@ generateBtn.addEventListener('click',()=>{
       const modifiedHTML=updateExistingHTML();
 
       const filename=
-        currentEditFileName||`${slug}.html`;
+        currentEditFileName||
+        `${slug}.html`;
 
       downloadHTML(
         modifiedHTML,
@@ -4190,7 +4369,8 @@ generateBtn.addEventListener('click',()=>{
       output.classList.add('show');
 
       outputMessage.textContent=
-        "✅ La fiche modifiée a été téléchargée avec le même nom de fichier. Remplace l'ancien fichier dans GitHub, puis remplace également l'ancien bloc du catalogue par le code ci-dessus.";
+        "✅ La fiche modifiée a été téléchargée avec le même nom de fichier. Remplace l'ancien fichier dans GitHub, puis remplace l'ancien bloc du catalogue par le code ci-dessus.";
+
     }catch(error){
       console.error(error);
 
@@ -4202,6 +4382,10 @@ generateBtn.addEventListener('click',()=>{
     return;
   }
 
+  // ===================================================
+  // MODE AJOUT
+  // ===================================================
+
   try{
     const data=generateNewPage();
 
@@ -4212,26 +4396,34 @@ generateBtn.addEventListener('click',()=>{
       data.slug+'.html'
     );
 
-    snippetBox.value=
+    const snippet=
       generateCatalogueSnippet(data);
+
+    snippetBox.value=snippet;
 
     output.classList.add('show');
 
     outputMessage.textContent=
       "✅ La page du film a été téléchargée automatiquement. Place-la dans le bon dossier de ton dépôt GitHub, puis colle le code ci-dessus dans catalogue.html.";
 
-    const grid=document.getElementById('movieGrid');
+    const grid=document.getElementById(
+      'movieGrid'
+    );
 
     if(grid){
       const wrapper=document.createElement('div');
 
-      wrapper.innerHTML=snippetBox.value;
+      wrapper.innerHTML=snippet;
 
       if(wrapper.firstElementChild){
-        grid.appendChild(wrapper.firstElementChild);
+        grid.appendChild(
+          wrapper.firstElementChild
+        );
+
         applyFilters();
       }
     }
+
   }catch(error){
     console.error(error);
 
@@ -4240,6 +4432,10 @@ generateBtn.addEventListener('click',()=>{
     );
   }
 });
+
+// =====================================================
+// COPIER SNIPPET
+// =====================================================
 
 copyBtn.addEventListener('click',()=>{
   snippetBox.select();
