@@ -6,111 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catalogue </title>
   <style>
-
-    /* =====================================================
-   ADMIN - MODIFICATION DES FICHES
-   ===================================================== */
-
-.edit-movie-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 320px;
-  overflow-y: auto;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  padding-right: 4px;
-}
-
-.edit-movie-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.edit-movie-item:hover {
-  background: rgba(255,255,255,0.12);
-  transform: translateY(-1px);
-}
-
-.edit-movie-item img {
-  width: 50px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-
-.edit-movie-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.edit-movie-title {
-  color: white;
-  font-weight: bold;
-  margin-bottom: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.edit-movie-type {
-  color: #aaa;
-  font-size: 13px;
-}
-
-.edit-movie-btn {
-  border: none;
-  background: #e50914;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 7px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s, transform 0.2s;
-  flex-shrink: 0;
-}
-
-.edit-movie-btn:hover {
-  background: #ff1b26;
-  transform: scale(1.04);
-}
-
-.edit-empty {
-  text-align: center;
-  color: #aaa;
-  padding: 20px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 10px;
-}
-
-.edit-selected {
-  border: 1px solid #e50914;
-  box-shadow: 0 0 12px rgba(229,9,20,0.2);
-}
-
-@media (max-width: 600px) {
-
-  .edit-movie-item {
-    flex-wrap: wrap;
-  }
-
-  .edit-movie-info {
-    min-width: calc(100% - 70px);
-  }
-
-  .edit-movie-btn {
-    width: 100%;
-  }
-
-}
-
  /* ============================= */
 /*        DESIGN TOKENS          */
 /* ============================= */
@@ -611,10 +506,6 @@ details.admin-template textarea {
   <div class="admin-bar">
     <button class="admin-btn" id="adminOpenBtn">➕ Ajouter un film (Admin)</button>
   </div>
-
-  <button id="adminEditBtn" class="admin-submit" style="background:#444;">
-  Modifier
-</button>
 
   <div id="noResults">Aucun résultat trouvé.</div>
 
@@ -1890,98 +1781,33 @@ details.admin-template textarea {
 
   </div>
 
-  <!-- ===== MODALE ADMIN : AJOUT / MODIFICATION ===== -->
-<div class="admin-overlay" id="adminOverlay">
-  <div class="admin-modal">
+  <!-- ===== MODALE ADMIN : AJOUT DE FILM ===== -->
+  <div class="admin-overlay" id="adminOverlay">
+    <div class="admin-modal">
+      <button class="close-x" id="adminCloseBtn">&times;</button>
+      <h2>Ajouter un film / une série</h2>
 
-    <button class="close-x" id="adminCloseBtn">&times;</button>
-
-    <h2 id="adminModalTitle">Ajouter un film / une série</h2>
-
-    <!-- ========================= -->
-    <!-- SÉLECTION POUR MODIFICATION -->
-    <!-- ========================= -->
-
-    <div id="editSelector" style="display:none;">
+      <details class="admin-template">
+        <summary>Modèle de page HTML utilisé (colle ici le code COMPLET d'une fiche film existante — une fois par session, pour avoir le lecteur vidéo)</summary>
+        <textarea id="templateInput"></textarea>
+      </details>
 
       <div class="admin-field">
-        <label>Rechercher une fiche</label>
-        <input
-          type="text"
-          id="editSearchInput"
-          placeholder="Ex: Titanic, Doubtfire..."
-        >
+        <label>Titre affiché sur la fiche (ex: Madame Doubtfire (1993))</label>
+        <input type="text" id="fTitreAffiche" placeholder="Titre (Année)">
       </div>
-
-      <div id="editMovieList" class="edit-movie-list"></div>
-
-      <p class="admin-hint" id="editLoadingMessage">
-        Sélectionne une fiche à modifier.
-      </p>
-
-    </div>
-
-    <!-- ========================= -->
-    <!-- TEMPLATE AJOUT -->
-    <!-- ========================= -->
-
-    <details class="admin-template" id="templateDetails">
-      <summary>
-        Modèle de page HTML utilisé
-        (colle ici le code COMPLET d'une fiche film existante — une fois par session, pour avoir le lecteur vidéo)
-      </summary>
-
-      <textarea id="templateInput"></textarea>
-    </details>
-
-
-    <!-- ========================= -->
-    <!-- FORMULAIRE -->
-    <!-- ========================= -->
-
-    <div id="adminForm">
-
-      <div class="admin-field">
-        <label>
-          Titre affiché sur la fiche
-          (ex: Madame Doubtfire (1993))
-        </label>
-
-        <input
-          type="text"
-          id="fTitreAffiche"
-          placeholder="Titre (Année)"
-        >
-      </div>
-
 
       <div class="admin-row">
-
         <div class="admin-field">
-
           <label>Type</label>
-
           <select id="fType">
-
-            <option value="Film">
-              Film
-            </option>
-
-            <option value="Série">
-              Série
-            </option>
-
+            <option value="Film">Film</option>
+            <option value="Série">Série</option>
           </select>
-
         </div>
-
-
         <div class="admin-field">
-
           <label>Genre catalogue (filtre)</label>
-
           <select id="fGenre">
-
             <option>Romance</option>
             <option>Science-Fiction</option>
             <option>Animation</option>
@@ -1996,249 +1822,100 @@ details.admin-template textarea {
             <option>Horreur</option>
             <option>Western</option>
             <option>Crime</option>
-
           </select>
-
         </div>
-
       </div>
 
-
-      <div
-        class="admin-field"
-        id="subgenreField"
-        style="display:none;"
-      >
-
-        <label>
-          Sous-genre (Anime uniquement)
-        </label>
-
+      <div class="admin-field" id="subgenreField" style="display:none;">
+        <label>Sous-genre (Anime uniquement)</label>
         <select id="fSubgenre">
-
           <option>Shonen</option>
           <option>Seinen</option>
-
         </select>
-
       </div>
 
-
       <div class="admin-field">
-
-        <label>
-          Genre(s) affiché(s) sur la fiche
-          (ex: Comédie, Drame et Familial)
-        </label>
-
-        <input
-          type="text"
-          id="fGenreTexte"
-          placeholder="Comédie, Drame et Familial"
-        >
-
+        <label>Genre(s) affiché(s) sur la fiche (texte libre, ex: Comédie, Drame et Familial)</label>
+        <input type="text" id="fGenreTexte" placeholder="Comédie, Drame et Familial">
       </div>
 
-
       <div class="admin-field">
-
         <label>Réalisateur</label>
-
-        <input
-          type="text"
-          id="fRealisateur"
-        >
-
+        <input type="text" id="fRealisateur">
       </div>
 
-
       <div class="admin-field">
-
         <label>Acteurs</label>
-
-        <input
-          type="text"
-          id="fActeurs"
-          placeholder="Séparés par des virgules"
-        >
-
+        <input type="text" id="fActeurs" placeholder="Séparés par des virgules">
       </div>
 
-
       <div class="admin-field">
-
         <label>Synopsis</label>
-
-        <textarea
-          id="fSynopsis"
-          rows="4"
-        ></textarea>
-
+        <textarea id="fSynopsis" rows="4"></textarea>
       </div>
-
 
       <div class="admin-row">
-
         <div class="admin-field">
-
-          <label>
-            URL de l'image de fond (background)
-          </label>
-
-          <input
-            type="url"
-            id="fBackground"
-            placeholder="https://..."
-          >
-
+          <label>URL de l'image de fond (background)</label>
+          <input type="url" id="fBackground" placeholder="https://...">
         </div>
-
-
         <div class="admin-field">
-
-          <label>
-            URL de l'affiche (poster)
-          </label>
-
-          <input
-            type="url"
-            id="fPoster"
-            placeholder="https://..."
-          >
-
+          <label>URL de l'affiche (poster)</label>
+          <input type="url" id="fPoster" placeholder="https://...">
         </div>
-
       </div>
-
 
       <div class="admin-field">
+  <label>Nom du fichier (sans .html — sert aussi au lien)</label>
+  <input type="text" id="fSlug" placeholder="ex: doubtfire">
+</div>
 
-        <label>
-          Nom du fichier
-          (sans .html — sert aussi au lien)
-        </label>
+<p class="admin-hint">
+  Le fichier sera téléchargé sous ce nom et devra être placé dans le dossier
+  <code>films/</code> (ou <code>séries/</code> / <code>animes/</code> selon le type)
+  du dépôt GitHub.
+</p>
 
-        <input
-          type="text"
-          id="fSlug"
-          placeholder="ex: doubtfire"
-        >
+<div class="admin-row">
+  <div class="admin-field">
+    <label>Movie ID</label>
+    <input
+      type="text"
+      id="fMovieId"
+      placeholder="ex: doubtfire"
+    >
+    <p class="admin-hint">
+      Identifiant utilisé pour les likes / dislikes dans <code>movie_likes</code>.
+    </p>
+  </div>
 
-      </div>
-
-
-      <p class="admin-hint">
-
-        Le fichier sera téléchargé sous ce nom et devra être placé
-        dans le dossier <code>films/</code>
-        (ou <code>séries/</code> / <code>animes/</code>)
-        du dépôt GitHub.
-
-      </p>
-
-
-      <div class="admin-row">
-
-        <div class="admin-field">
-
-          <label>Movie ID</label>
-
-          <input
-            type="text"
-            id="fMovieId"
-            placeholder="ex: doubtfire"
-          >
-
-          <p class="admin-hint">
-            Identifiant utilisé pour les likes / dislikes
-            dans <code>movie_likes</code>.
-          </p>
-
-        </div>
-
-
-        <div class="admin-field">
-
-          <label>
-            URL source fallback
-          </label>
-
-          <input
-            type="url"
-            id="fFallbackSource"
-            placeholder="https://.../master.m3u8"
-          >
-
-          <p class="admin-hint">
-            Source M3U8 utilisée automatiquement
-            si la source principale ne fonctionne pas.
-          </p>
-
-        </div>
-
-      </div>
-
-
-      <label class="admin-check">
-
-        <input
-          type="checkbox"
-          id="fProvisoire"
-        >
-
-        Marquer comme "Provisoire" sur le catalogue
-
-      </label>
-
-
-      <button
-        class="admin-submit"
-        id="adminGenerateBtn"
-      >
-        Générer la page du film
-      </button>
-
-
-      <!-- ========================= -->
-      <!-- SORTIE -->
-      <!-- ========================= -->
-
-      <div
-        class="admin-output"
-        id="adminOutput"
-      >
-
-        <label>
-          Code à coller dans
-          <code>catalogue.html</code>
-          (dans la grille <code>#movieGrid</code>) :
-        </label>
-
-        <textarea
-          id="catalogSnippet"
-          readonly
-        ></textarea>
-
-        <button
-          class="copy-btn"
-          id="copySnippetBtn"
-        >
-          Copier le code
-        </button>
-
-        <p
-          class="admin-hint"
-          style="margin-top:.6rem;"
-          id="adminOutputMessage"
-        ></p>
-
-      </div>
-
-    </div>
-
+  <div class="admin-field">
+    <label>URL source fallback</label>
+    <input
+      type="url"
+      id="fFallbackSource"
+      placeholder="https://.../master.m3u8"
+    >
+    <p class="admin-hint">
+      Source M3U8 utilisée automatiquement si la source principale ne fonctionne pas.
+    </p>
   </div>
 </div>
 
+      <label class="admin-check">
+        <input type="checkbox" id="fProvisoire"> Marquer comme "Provisoire" sur le catalogue
+      </label>
+
+      <button class="admin-submit" id="adminGenerateBtn">Générer la page du film</button>
+
+      <div class="admin-output" id="adminOutput">
+        <label>Code à coller dans <code>catalogue.html</code> (dans la grille <code>#movieGrid</code>) :</label>
+        <textarea id="catalogSnippet" readonly></textarea>
+        <button class="copy-btn" id="copySnippetBtn">Copier le code</button>
+        <p class="admin-hint" style="margin-top:.6rem;">La page du film a été téléchargée automatiquement — place-la dans le bon dossier de ton dépôt GitHub, puis colle le code ci-dessus dans <code>catalogue.html</code> et pousse (push) les deux fichiers.</p>
+      </div>
+    </div>
+  </div>
 
   <script>
   let activeType = 'Tous';
@@ -3393,1064 +3070,200 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
 </body>
 </html>`;
 
-const templateInput=document.getElementById('templateInput');
-const overlay=document.getElementById('adminOverlay');
-const openBtn=document.getElementById('adminOpenBtn');
-const editBtn=document.getElementById('adminEditBtn');
-const closeBtn=document.getElementById('adminCloseBtn');
-const genreSelect=document.getElementById('fGenre');
-const typeSelect=document.getElementById('fType');
-const subgenreField=document.getElementById('subgenreField');
-const generateBtn=document.getElementById('adminGenerateBtn');
-const output=document.getElementById('adminOutput');
-const snippetBox=document.getElementById('catalogSnippet');
-const copyBtn=document.getElementById('copySnippetBtn');
-const modalTitle=document.getElementById('adminModalTitle');
-const editSelector=document.getElementById('editSelector');
-const editSearchInput=document.getElementById('editSearchInput');
-const editMovieList=document.getElementById('editMovieList');
-const editLoadingMessage=document.getElementById('editLoadingMessage');
-const templateDetails=document.getElementById('templateDetails');
-const adminForm=document.getElementById('adminForm');
-const outputMessage=document.getElementById('adminOutputMessage');
-
-let editMode=false;
-let currentEditUrl='';
-let currentEditFileName='';
-let currentOriginalHTML='';
-
-templateInput.value=DEFAULT_TEMPLATE;
-
-// =====================================================
-// OUVERTURE AJOUT
-// =====================================================
-
-openBtn.addEventListener('click',()=>{
-  const pass=prompt("Mot de passe admin :");
-  if(pass!==ADMIN_PASSWORD){
-    if(pass!==null)alert("Mot de passe incorrect.");
-    return;
-  }
-
-  editMode=false;
-  currentEditUrl='';
-  currentEditFileName='';
-  currentOriginalHTML='';
-
-  modalTitle.textContent="Ajouter un film / une série";
-  generateBtn.textContent="Générer la page du film";
-  editSelector.style.display="none";
-  templateDetails.style.display="block";
-  adminForm.style.display="block";
-
-  clearForm();
-  overlay.classList.add('open');
-});
-
-// =====================================================
-// OUVERTURE MODIFICATION
-// =====================================================
-
-editBtn.addEventListener('click',()=>{
-  const pass=prompt("Mot de passe admin :");
-  if(pass!==ADMIN_PASSWORD){
-    if(pass!==null)alert("Mot de passe incorrect.");
-    return;
-  }
-
-  editMode=true;
-  currentEditUrl='';
-  currentEditFileName='';
-  currentOriginalHTML='';
-
-  modalTitle.textContent="Modifier une fiche existante";
-  generateBtn.textContent="Générer la fiche modifiée";
-  editSelector.style.display="block";
-  templateDetails.style.display="none";
-  adminForm.style.display="block";
-
-  clearForm();
-  buildEditMovieList();
-  overlay.classList.add('open');
-});
-
-// =====================================================
-// FERMETURE
-// =====================================================
-
-closeBtn.addEventListener('click',()=>{
-  overlay.classList.remove('open');
-});
-
-overlay.addEventListener('click',e=>{
-  if(e.target===overlay)overlay.classList.remove('open');
-});
-
-// =====================================================
-// RECHERCHE
-// =====================================================
-
-editSearchInput.addEventListener('input',buildEditMovieList);
-
-// =====================================================
-// GENRE ANIME
-// =====================================================
-
-genreSelect.addEventListener('change',()=>{
-  subgenreField.style.display=genreSelect.value==='Anime'?'block':'none';
-});
-
-// =====================================================
-// NETTOYER FORMULAIRE
-// =====================================================
-
-function clearForm(){
-  document.getElementById('fTitreAffiche').value='';
-  document.getElementById('fGenreTexte').value='';
-  document.getElementById('fRealisateur').value='';
-  document.getElementById('fActeurs').value='';
-  document.getElementById('fSynopsis').value='';
-  document.getElementById('fBackground').value='';
-  document.getElementById('fPoster').value='';
-  document.getElementById('fSlug').value='';
-  document.getElementById('fMovieId').value='';
-  document.getElementById('fFallbackSource').value='';
-  document.getElementById('fProvisoire').checked=false;
-
-  typeSelect.value='Film';
-  genreSelect.value='Romance';
-  document.getElementById('fSubgenre').value='Shonen';
-
-  subgenreField.style.display='none';
-  output.classList.remove('show');
-  snippetBox.value='';
-  outputMessage.textContent='';
-}
-
-// =====================================================
-// UTILITAIRES
-// =====================================================
-
-function slugify(str){
-  return String(str||'')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9]+/g,'')
-    .trim();
-}
-
-function escapeAttr(str){
-  return String(str||'')
-    .replace(/&/g,'&amp;')
-    .replace(/"/g,'&quot;');
-}
-
-function escapeJsString(str){
-  return String(str||'')
-    .replace(/\\/g,'\\\\')
-    .replace(/'/g,"\\'")
-    .replace(/"/g,'\\"')
-    .replace(/\r/g,'\\r')
-    .replace(/\n/g,'\\n');
-}
-
-function escapeHtml(str){
-  return String(str||'')
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;');
-}
-
-function folderFor(type,genre){
-  if(genre==='Anime')return'animes';
-  return type==='Série'?'séries':'films';
-}
-
-// =====================================================
-// TYPE DEPUIS URL
-// =====================================================
-
-function getTypeFromHref(href){
-  const decoded=decodeURIComponent(href||'');
-  if(decoded.includes('/séries/'))return'Série';
-  if(decoded.includes('/animes/'))return'Anime';
-  return'Film';
-}
-
-// =====================================================
-// LISTE DES FICHES
-// =====================================================
-
-function buildEditMovieList(){
-  if(!editMovieList)return;
-
-  const query=(editSearchInput.value||'')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g,'');
-
-  const movies=Array.from(
-    document.querySelectorAll('#movieGrid .movieimg')
-  );
-
-  editMovieList.innerHTML='';
-  let count=0;
-
-  movies.forEach(movie=>{
-    const link=movie.querySelector('a[href]');
-    if(!link)return;
-
-    const href=link.getAttribute('href');
-    const title=movie.dataset.title||
-      movie.querySelector('h2')?.textContent||
-      'Sans titre';
-
-    const poster=movie.querySelector('img')?.src||'';
-    const type=movie.dataset.type||getTypeFromHref(href);
-    const genre=movie.dataset.genre||'';
-
-    const normalizedTitle=title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g,'');
-
-    const normalizedGenre=genre
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g,'');
-
-    if(
-      query &&
-      !normalizedTitle.includes(query) &&
-      !normalizedGenre.includes(query)
-    )return;
-
-    count++;
-
-    const item=document.createElement('div');
-    item.className='edit-movie-item';
-
-    item.innerHTML=`
-      <img src="${escapeAttr(poster)}" alt="${escapeAttr(title)}">
-      <div class="edit-movie-info">
-        <div class="edit-movie-title">${escapeHtml(title)}</div>
-        <div class="edit-movie-type">
-          ${escapeHtml(type)}${genre?' · '+escapeHtml(genre):''}
-        </div>
-      </div>
-      <button type="button" class="edit-movie-btn">✏️ Modifier</button>
-    `;
-
-    item.querySelector('.edit-movie-btn')
-      .addEventListener('click',()=>{
-        loadMovieForEditing(href,title);
-      });
-
-    editMovieList.appendChild(item);
-  });
-
-  if(count===0){
-    editMovieList.innerHTML='<div class="edit-empty">Aucune fiche trouvée.</div>';
-  }
-
-  editLoadingMessage.textContent=
-    count+' fiche'+(count>1?'s':'')+
-    ' disponible'+(count>1?'s':'')+
-    ' à modifier.';
-}
-
-// =====================================================
-// RÉCUPÉRER UNE FICHE
-// =====================================================
-
-async function loadMovieForEditing(href,displayedTitle){
-  try{
-    editLoadingMessage.textContent="Récupération de la fiche...";
-
-    const absoluteUrl=new URL(
-      href,
-      window.location.href
-    ).href;
-
-    currentEditUrl=absoluteUrl;
-
-    const urlObject=new URL(absoluteUrl);
-
-    currentEditFileName=
-      urlObject.pathname.split('/').pop()||'';
-
-    const response=await fetch(
-      absoluteUrl,
-      {cache:'no-store'}
-    );
-
-    if(!response.ok){
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const html=await response.text();
-
-    if(!html||html.length<100){
-      throw new Error('HTML vide ou invalide');
-    }
-
-    currentOriginalHTML=html;
-
-    extractMovieData(html,absoluteUrl);
-
-    editMovieList
-      .querySelectorAll('.edit-movie-item')
-      .forEach(item=>{
-        item.classList.remove('edit-selected');
-      });
-
-    editMovieList
-      .querySelectorAll('.edit-movie-item')
-      .forEach(item=>{
-        const title=item.querySelector(
-          '.edit-movie-title'
-        )?.textContent?.trim();
-
-        if(title===displayedTitle){
-          item.classList.add('edit-selected');
-        }
-      });
-
-    editLoadingMessage.textContent=
-      "Fiche chargée. Tu peux maintenant modifier les champs.";
-
-  }catch(error){
-    console.error("Erreur récupération fiche :",error);
-
-    alert(
-      "Impossible de récupérer cette fiche depuis GitHub Pages.\n\n"+
-      "Vérifie que l'URL est correcte et que la page est accessible."
-    );
-
-    editLoadingMessage.textContent=
-      "Erreur lors de la récupération de la fiche.";
-  }
-}
-
-// =====================================================
-// EXTRAIRE PARAGRAPHE
-// =====================================================
-
-function extractLabeledParagraph(doc,label){
-  const paragraphs=doc.querySelectorAll('.fiche-info p');
-
-  for(const p of paragraphs){
-    const strong=p.querySelector('strong');
-    if(!strong)continue;
-
-    const strongText=strong.textContent
-      .trim()
-      .replace(/:$/,'')
-      .toLowerCase();
-
-    if(strongText===label.toLowerCase()){
-      const clone=p.cloneNode(true);
-      const strongClone=clone.querySelector('strong');
-
-      if(strongClone)strongClone.remove();
-
-      return clone.textContent
-        .replace(/^:\s*/,'')
+    const templateInput = document.getElementById('templateInput');
+    templateInput.value = DEFAULT_TEMPLATE;
+
+    const overlay = document.getElementById('adminOverlay');
+    const openBtn = document.getElementById('adminOpenBtn');
+    const closeBtn = document.getElementById('adminCloseBtn');
+    const genreSelect = document.getElementById('fGenre');
+    const typeSelect = document.getElementById('fType');
+    const subgenreField = document.getElementById('subgenreField');
+    const generateBtn = document.getElementById('adminGenerateBtn');
+    const output = document.getElementById('adminOutput');
+    const snippetBox = document.getElementById('catalogSnippet');
+    const copyBtn = document.getElementById('copySnippetBtn');
+
+    openBtn.addEventListener('click', () => {
+      const pass = prompt("Mot de passe admin :");
+      if (pass !== ADMIN_PASSWORD) {
+        if (pass !== null) alert("Mot de passe incorrect.");
+        return;
+      }
+      overlay.classList.add('open');
+    });
+
+    closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+
+    genreSelect.addEventListener('change', () => {
+      subgenreField.style.display = genreSelect.value === 'Anime' ? 'block' : 'none';
+    });
+
+    function slugify(str) {
+      return str
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '')
         .trim();
     }
-  }
 
-  return'';
-}
-
-// =====================================================
-// EXTRAIRE MOVIE ID
-// =====================================================
-
-function extractMovieId(html){
-  const match=html.match(
-    /const\s+MOVIE_ID\s*=\s*['"]([^'"]+)['"]/
-  );
-
-  return match?match[1]:'';
-}
-
-// =====================================================
-// EXTRAIRE FALLBACK
-// =====================================================
-
-function extractFallbackSource(html){
-  const match=html.match(
-    /const\s+FALLBACK_SOURCE_URL\s*=\s*['"]([^'"]+)['"]/
-  );
-
-  return match?match[1]:'';
-}
-
-// =====================================================
-// EXTRAIRE BACKGROUND
-// =====================================================
-
-function extractBackground(doc){
-  const body=doc.querySelector('body');
-  if(!body)return'';
-
-  const style=body.getAttribute('style')||'';
-
-  let match=style.match(
-    /background\s*:\s*url\(\s*['"]?([^'")]+)['"]?\s*\)/i
-  );
-
-  if(match)return match[1];
-
-  const styles=Array.from(doc.querySelectorAll('style'));
-
-  for(const styleElement of styles){
-    const css=styleElement.textContent||'';
-
-    match=css.match(
-      /body\s*\{[\s\S]*?background\s*:\s*url\(\s*['"]?([^'")]+)['"]?\s*\)/i
-    );
-
-    if(match)return match[1];
-  }
-
-  return'';
-}
-
-// =====================================================
-// EXTRAIRE POSTER
-// =====================================================
-
-function extractPoster(doc){
-  const poster=doc.querySelector('.fiche img');
-  return poster?poster.getAttribute('src')||'':'';
-}
-
-// =====================================================
-// EXTRAIRE DONNÉES
-// =====================================================
-
-function extractMovieData(html,pageUrl){
-  const parser=new DOMParser();
-
-  const doc=parser.parseFromString(
-    html,
-    'text/html'
-  );
-
-  const h1=doc.querySelector('.fiche-info h1');
-
-  document.getElementById('fTitreAffiche').value=
-    h1?h1.textContent.trim():'';
-
-  document.getElementById('fGenreTexte').value=
-    extractLabeledParagraph(doc,'Genre');
-
-  document.getElementById('fRealisateur').value=
-    extractLabeledParagraph(doc,'Réalisateur');
-
-  document.getElementById('fActeurs').value=
-    extractLabeledParagraph(doc,'Acteurs');
-
-  document.getElementById('fSynopsis').value=
-    extractLabeledParagraph(doc,'Synopsis');
-
-  document.getElementById('fPoster').value=
-    extractPoster(doc);
-
-  document.getElementById('fBackground').value=
-    extractBackground(doc);
-
-  document.getElementById('fMovieId').value=
-    extractMovieId(html);
-
-  document.getElementById('fFallbackSource').value=
-    extractFallbackSource(html);
-
-  const urlObject=new URL(pageUrl);
-
-  const filename=
-    urlObject.pathname
-      .split('/')
-      .filter(Boolean)
-      .pop()||'';
-
-  document.getElementById('fSlug').value=
-    slugify(filename.replace(/\.html?$/i,''));
-
-  const decodedPath=
-    decodeURIComponent(urlObject.pathname);
-
-  typeSelect.value=
-    decodedPath.includes('/séries/')
-      ? 'Série'
-      : 'Film';
-
-  const genreText=
-    document.getElementById('fGenreTexte')
-      .value
-      .toLowerCase();
-
-  const knownGenres=[
-    'Romance',
-    'Science-Fiction',
-    'Animation',
-    'Action',
-    'Thriller',
-    'Drame',
-    'Aventure',
-    'Comédie',
-    'Fantastique',
-    'Anime',
-    'Documentaire',
-    'Horreur',
-    'Western',
-    'Crime'
-  ];
-
-  let detectedGenre=knownGenres.find(
-    genre=>genreText.includes(
-      genre.toLowerCase()
-    )
-  );
-
-  if(decodedPath.includes('/animes/')){
-    detectedGenre='Anime';
-  }
-
-  if(detectedGenre){
-    genreSelect.value=detectedGenre;
-  }
-
-  if(genreSelect.value==='Anime'){
-    subgenreField.style.display='block';
-
-    const subgenre=doc.querySelector('[data-subgenre]');
-
-    if(subgenre){
-      document.getElementById('fSubgenre').value=
-        subgenre.dataset.subgenre||'Shonen';
-    }
-  }else{
-    subgenreField.style.display='none';
-  }
-
-  document.getElementById('fProvisoire').checked=
-    !!doc.querySelector('.badge-provisoire');
-
-  output.classList.remove('show');
-}
-
-// =====================================================
-// MODIFIER HTML EXISTANT
-// =====================================================
-
-function updateExistingHTML(){
-  const parser=new DOMParser();
-
-  const doc=parser.parseFromString(
-    currentOriginalHTML,
-    'text/html'
-  );
-
-  const h1=document.getElementById(
-    'fTitreAffiche'
-  ).value.trim();
-
-  const genreTexte=document.getElementById(
-    'fGenreTexte'
-  ).value.trim();
-
-  const realisateur=document.getElementById(
-    'fRealisateur'
-  ).value.trim();
-
-  const acteurs=document.getElementById(
-    'fActeurs'
-  ).value.trim();
-
-  const synopsis=document.getElementById(
-    'fSynopsis'
-  ).value.trim();
-
-  const bgUrl=document.getElementById(
-    'fBackground'
-  ).value.trim();
-
-  const posterUrl=document.getElementById(
-    'fPoster'
-  ).value.trim();
-
-  const movieId=document.getElementById(
-    'fMovieId'
-  ).value.trim();
-
-  const fallback=document.getElementById(
-    'fFallbackSource'
-  ).value.trim();
-
-  // TITLE
-  const title=doc.querySelector('title');
-
-  if(title){
-    title.textContent=
-      h1.replace(/\s*\(\d{4}\)\s*$/,'')+
-      ' - BNZ';
-  }
-
-  // H1
-  const h1Element=doc.querySelector(
-    '.fiche-info h1'
-  );
-
-  if(h1Element){
-    h1Element.textContent=h1;
-  }
-
-  // PARAGRAPHES
-  const paragraphs=doc.querySelectorAll(
-    '.fiche-info p'
-  );
-
-  paragraphs.forEach(p=>{
-    const strong=p.querySelector('strong');
-    if(!strong)return;
-
-    const label=strong.textContent
-      .trim()
-      .replace(/:$/,'')
-      .toLowerCase();
-
-    if(label==='genre'){
-      p.innerHTML=
-        `<strong>Genre:</strong> ${escapeHtml(genreTexte)}`;
+    function escapeAttr(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
     }
 
-    if(label==='réalisateur'){
-      p.innerHTML=
-        `<strong>Réalisateur:</strong> ${escapeHtml(realisateur)}`;
-    }
-
-    if(label==='acteurs'){
-      p.innerHTML=
-        `<strong>Acteurs:</strong> ${escapeHtml(acteurs)}`;
-    }
-
-    if(label==='synopsis'){
-      p.innerHTML=
-        `<strong>Synopsis:</strong> ${escapeHtml(synopsis)}`;
-    }
-  });
-
-  // POSTER
-  const poster=doc.querySelector('.fiche img');
-
-  if(poster){
-    poster.setAttribute('src',posterUrl);
-    poster.setAttribute('alt',h1);
-  }
-
-  // BACKGROUND
-  const styles=Array.from(
-    doc.querySelectorAll('style')
-  );
-
-  styles.forEach(styleElement=>{
-    let css=styleElement.textContent||'';
-
-    css=css.replace(
-      /(body\s*\{[\s\S]*?background\s*:\s*url\(\s*['"]?)([^'")]+)(['"]?\s*\))/i,
-      `$1${bgUrl}$3`
-    );
-
-    styleElement.textContent=css;
-  });
-
-  // CONSTANTES
-  replaceConstant(doc,'MOVIE_ID',movieId);
-  replaceConstant(doc,'FALLBACK_SOURCE_URL',fallback);
-
-  // IMPORTANT :
-  // On retourne tout le HTML existant.
-  // Le lecteur vidéo, scripts, CSS, etc. sont conservés.
-  return '<!DOCTYPE html>\n'+
-    doc.documentElement.outerHTML;
+    function escapeJsString(str) {
+  return String(str || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n');
 }
 
-// =====================================================
-// REMPLACER UNE CONSTANTE JS
-// =====================================================
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
 
-function replaceConstant(doc,constantName,value){
-  const scripts=doc.querySelectorAll('script');
+    function folderFor(type, genre) {
+      if (genre === 'Anime') return 'animes';
+      return type === 'Série' ? 'séries' : 'films';
+    }
 
-  scripts.forEach(script=>{
-    let content=script.textContent||'';
+    // Auto-suggestion du nom de fichier à partir du titre
+    document.getElementById('fTitreAffiche').addEventListener('blur', () => {
+      const slugField = document.getElementById('fSlug');
+      if (!slugField.value) {
+        const raw = document.getElementById('fTitreAffiche').value.replace(/\(\d{4}\)/, '');
+        slugField.value = slugify(raw);
+      }
+    });
 
-    const regex=new RegExp(
-      `(const\\s+${constantName}\\s*=\\s*)['"][^'"]*['"]`,
-      'g'
-    );
+    generateBtn.addEventListener('click', () => {
+      const h1 = document.getElementById('fTitreAffiche').value.trim();
+      const type = typeSelect.value;
+      const genre = genreSelect.value;
+      const subgenre = document.getElementById('fSubgenre').value;
+      const genreTexte = document.getElementById('fGenreTexte').value.trim();
+      const realisateur = document.getElementById('fRealisateur').value.trim();
+      const acteurs = document.getElementById('fActeurs').value.trim();
+      const synopsis = document.getElementById('fSynopsis').value.trim();
+      const bgUrl = document.getElementById('fBackground').value.trim();
+      const posterUrl = document.getElementById('fPoster').value.trim();
+let slug = document.getElementById('fSlug').value.trim();
 
-    content=content.replace(
-      regex,
-      `$1'${escapeJsString(value)}'`
-    );
+const movieId = document.getElementById('fMovieId').value.trim();
+const fallbackSourceUrl = document.getElementById('fFallbackSource').value.trim();
 
-    script.textContent=content;
-  });
+const provisoire = document.getElementById('fProvisoire').checked;
+
+      if (
+  !h1 ||
+  !slug ||
+  !bgUrl ||
+  !posterUrl ||
+  !movieId ||
+  !fallbackSourceUrl
+) {
+  alert(
+    "Merci de remplir au minimum : titre, image de fond, affiche, nom de fichier, Movie ID et URL source fallback."
+  );
+  return;
 }
+      slug = slugify(slug);
 
-// =====================================================
-// NOUVELLE FICHE
-// =====================================================
+      const pageTitle = h1.replace(/\s*\(\d{4}\)\s*$/, '') + ' - BNZ';
 
-function generateNewPage(){
-  const h1=document.getElementById(
-    'fTitreAffiche'
-  ).value.trim();
+      let page = templateInput.value;
 
-  const type=typeSelect.value;
-  const genre=genreSelect.value;
+      page = page.replace(
+        '<title>Madame Doubtfire - BNZ</title>',
+        `<title>${escapeHtml(pageTitle)}</title>`
+      );
+      page = page.replace(
+        "url('https://media.themoviedb.org/t/p/w1000_and_h563_face/kGTh0zOTBRqmKr3UfpLlsGFvSDT.jpg')",
+        `url('${bgUrl}')`
+      );
+      page = page.replace(
+        'src="https://media.themoviedb.org/t/p/w440_and_h660_face/60qcTr0iIZvcYfWrLDUbWxO7nPS.jpg" alt="Titanic Poster"',
+        `src="${posterUrl}" alt="${escapeAttr(h1)}"`
+      );
+      page = page.replace(
+        '<h1>Madame Doubtfire (1993)</h1>',
+        `<h1>${escapeHtml(h1)}</h1>`
+      );
+      page = page.replace(
+        '<p><strong>Genre:</strong> Comédie, Drame et Familial</p>',
+        `<p><strong>Genre:</strong> ${escapeHtml(genreTexte)}</p>`
+      );
+      page = page.replace(
+        '<p><strong>Réalisateur:</strong> Chris Columbus</p>',
+        `<p><strong>Réalisateur:</strong> ${escapeHtml(realisateur)}</p>`
+      );
+      page = page.replace(
+        '<p><strong>Acteurs:</strong> Robin Williams, Sally Field, Lisa Jakub</p>',
+        `<p><strong>Acteurs:</strong> ${escapeHtml(acteurs)}</p>`
+      );
+      page = page.replace(
+        "<p><strong>Synopsis:</strong> Privé, à la suite de son divorce, de ses trois enfants qu'il adore, Daniel Hillard, doubleur de dessins animés, met en œuvre tous ses talents d'acteur et d'imitateur et se transforme en respectable gouvernante irlandaise. Lorsque Mme Doubtfire se présente dans la famille Hillard, elle est acceptée à l'unanimité.</p>",
+        `<p><strong>Synopsis:</strong> ${escapeHtml(synopsis)}</p>`
+      );
 
-  const subgenre=document.getElementById(
-    'fSubgenre'
-  ).value;
+      page = page.replace(
+  "const MOVIE_ID      = 'doubtfire';",
+  `const MOVIE_ID      = '${escapeJsString(movieId)}';`
+);
 
-  const genreTexte=document.getElementById(
-    'fGenreTexte'
-  ).value.trim();
+page = page.replace(
+  "const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/788-0xgdv/master.m3u8';",
+  `const FALLBACK_SOURCE_URL = '${escapeJsString(fallbackSourceUrl)}';`
+);
 
-  const realisateur=document.getElementById(
-    'fRealisateur'
-  ).value.trim();
+      // Téléchargement du fichier
+      const blob = new Blob([page], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = slug + '.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-  const acteurs=document.getElementById(
-    'fActeurs'
-  ).value.trim();
+      // Construction du snippet catalogue
+      const folder = folderFor(type, genre);
+      const href = `https://inspecteurl.github.io/${folder}/${slug}.html`;
+      const dataTypeAttr = genre === 'Anime' ? '' : ` data-type="${escapeAttr(type)}"`;
+      const subgenreAttr = genre === 'Anime' ? ` data-subgenre="${escapeAttr(subgenre)}"` : '';
+      const spanText = genre === 'Anime' ? `Anime — ${escapeHtml(subgenre)}` : escapeHtml(genre);
+      const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
 
-  const synopsis=document.getElementById(
-    'fSynopsis'
-  ).value.trim();
-
-  const bgUrl=document.getElementById(
-    'fBackground'
-  ).value.trim();
-
-  const posterUrl=document.getElementById(
-    'fPoster'
-  ).value.trim();
-
-  let slug=document.getElementById(
-    'fSlug'
-  ).value.trim();
-
-  const movieId=document.getElementById(
-    'fMovieId'
-  ).value.trim();
-
-  const fallbackSourceUrl=document.getElementById(
-    'fFallbackSource'
-  ).value.trim();
-
-  const provisoire=document.getElementById(
-    'fProvisoire'
-  ).checked;
-
-  if(
-    !h1||
-    !slug||
-    !bgUrl||
-    !posterUrl||
-    !movieId||
-    !fallbackSourceUrl
-  ){
-    alert(
-      "Merci de remplir au minimum : titre, image de fond, affiche, nom de fichier, Movie ID et URL source fallback."
-    );
-    return;
-  }
-
-  slug=slugify(slug);
-
-  let page=templateInput.value;
-
-  const pageTitle=
-    h1.replace(/\s*\(\d{4}\)\s*$/,'')+
-    ' - BNZ';
-
-  page=page.replace(
-    /<title>[\s\S]*?<\/title>/i,
-    `<title>${escapeHtml(pageTitle)}</title>`
-  );
-
-  page=page.replace(
-    /(body\s*\{[\s\S]*?background\s*:\s*url\(['"]?)([^'")]+)(['"]?\s*\))/i,
-    `$1${bgUrl}$3`
-  );
-
-  page=page.replace(
-    /<img\s+src="[^"]+"\s+alt="[^"]*">/i,
-    `<img src="${escapeAttr(posterUrl)}" alt="${escapeAttr(h1)}">`
-  );
-
-  page=page.replace(
-    /<h1>[\s\S]*?<\/h1>/i,
-    `<h1>${escapeHtml(h1)}</h1>`
-  );
-
-  page=page.replace(
-    /<p><strong>Genre:<\/strong>[\s\S]*?<\/p>/i,
-    `<p><strong>Genre:</strong> ${escapeHtml(genreTexte)}</p>`
-  );
-
-  page=page.replace(
-    /<p><strong>Réalisateur:<\/strong>[\s\S]*?<\/p>/i,
-    `<p><strong>Réalisateur:</strong> ${escapeHtml(realisateur)}</p>`
-  );
-
-  page=page.replace(
-    /<p><strong>Acteurs:<\/strong>[\s\S]*?<\/p>/i,
-    `<p><strong>Acteurs:</strong> ${escapeHtml(acteurs)}</p>`
-  );
-
-  page=page.replace(
-    /<p><strong>Synopsis:<\/strong>[\s\S]*?<\/p>/i,
-    `<p><strong>Synopsis:</strong> ${escapeHtml(synopsis)}</p>`
-  );
-
-  page=page.replace(
-    /const\s+MOVIE_ID\s*=\s*['"][^'"]*['"];/,
-    `const MOVIE_ID = '${escapeJsString(movieId)}';`
-  );
-
-  page=page.replace(
-    /const\s+FALLBACK_SOURCE_URL\s*=\s*['"][^'"]*['"];/,
-    `const FALLBACK_SOURCE_URL = '${escapeJsString(fallbackSourceUrl)}';`
-  );
-
-  return{
-    page,
-    slug,
-    type,
-    genre,
-    subgenre,
-    posterUrl,
-    h1,
-    provisoire
-  };
-}
-
-// =====================================================
-// SNIPPET CATALOGUE
-// =====================================================
-
-function generateCatalogueSnippet(data){
-  const folder=folderFor(
-    data.type,
-    data.genre
-  );
-
-  const href=
-    `https://inspecteurl.github.io/${folder}/${data.slug}.html`;
-
-  const dataTypeAttr=
-    data.genre==='Anime'
-      ? ''
-      : ` data-type="${escapeAttr(data.type)}"`;
-
-  const subgenreAttr=
-    data.genre==='Anime'
-      ? ` data-subgenre="${escapeAttr(data.subgenre)}"`
-      : '';
-
-  const spanText=
-    data.genre==='Anime'
-      ? `Anime — ${escapeHtml(data.subgenre)}`
-      : escapeHtml(data.genre);
-
-  const badge=
-    data.provisoire
-      ? `\n  <span class="badge-provisoire">Provisoire</span>`
-      : '';
-
-  return `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(data.h1)}" data-genre="${escapeAttr(data.genre)}"${subgenreAttr}>
-  <a href="${href}"><img src="${escapeAttr(data.posterUrl)}" alt="${escapeAttr(data.h1)}"></a>
-  <h2>${escapeHtml(data.h1)}</h2>
+      const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
+  <a href="${href}"><img src="${posterUrl}" alt="${escapeAttr(h1)}"></a>
+  <h2>${escapeHtml(h1)}</h2>
   <span>${spanText}</span>${badge}
 </div>`;
-}
 
-// =====================================================
-// TÉLÉCHARGEMENT
-// =====================================================
-
-function downloadHTML(html,filename){
-  const blob=new Blob(
-    [html],
-    {type:'text/html;charset=utf-8'}
-  );
-
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-
-  a.href=url;
-  a.download=filename;
-
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  setTimeout(
-    ()=>URL.revokeObjectURL(url),
-    1000
-  );
-}
-
-// =====================================================
-// BOUTON GÉNÉRER
-// =====================================================
-
-generateBtn.addEventListener('click',()=>{
-  // ===================================================
-  // MODE MODIFICATION
-  // ===================================================
-
-  if(editMode){
-    if(!currentOriginalHTML){
-      alert(
-        "Sélectionne d'abord une fiche à modifier."
-      );
-      return;
-    }
-
-    const h1=document.getElementById(
-      'fTitreAffiche'
-    ).value.trim();
-
-    const slug=slugify(
-      document.getElementById('fSlug').value.trim()
-    );
-
-    if(!h1||!slug){
-      alert(
-        "Merci de remplir au minimum le titre et le nom du fichier."
-      );
-      return;
-    }
-
-    try{
-      const modifiedHTML=updateExistingHTML();
-
-      const filename=
-        currentEditFileName||
-        `${slug}.html`;
-
-      downloadHTML(
-        modifiedHTML,
-        filename
-      );
-
-      const data={
-        h1,
-        slug,
-        type:typeSelect.value,
-        genre:genreSelect.value,
-        subgenre:document.getElementById('fSubgenre').value,
-        posterUrl:document.getElementById('fPoster').value.trim(),
-        provisoire:document.getElementById('fProvisoire').checked
-      };
-
-      snippetBox.value=
-        generateCatalogueSnippet(data);
-
+      snippetBox.value = snippet;
       output.classList.add('show');
 
-      outputMessage.textContent=
-        "✅ La fiche modifiée a été téléchargée avec le même nom de fichier. Remplace l'ancien fichier dans GitHub, puis remplace l'ancien bloc du catalogue par le code ci-dessus.";
-
-    }catch(error){
-      console.error(error);
-
-      alert(
-        "Une erreur est survenue pendant la modification de la fiche."
-      );
-    }
-
-    return;
-  }
-
-  // ===================================================
-  // MODE AJOUT
-  // ===================================================
-
-  try{
-    const data=generateNewPage();
-
-    if(!data)return;
-
-    downloadHTML(
-      data.page,
-      data.slug+'.html'
-    );
-
-    const snippet=
-      generateCatalogueSnippet(data);
-
-    snippetBox.value=snippet;
-
-    output.classList.add('show');
-
-    outputMessage.textContent=
-      "✅ La page du film a été téléchargée automatiquement. Place-la dans le bon dossier de ton dépôt GitHub, puis colle le code ci-dessus dans catalogue.html.";
-
-    const grid=document.getElementById(
-      'movieGrid'
-    );
-
-    if(grid){
-      const wrapper=document.createElement('div');
-
-      wrapper.innerHTML=snippet;
-
-      if(wrapper.firstElementChild){
-        grid.appendChild(
-          wrapper.firstElementChild
-        );
-
-        applyFilters();
-      }
-    }
-
-  }catch(error){
-    console.error(error);
-
-    alert(
-      "Une erreur est survenue pendant la génération de la fiche."
-    );
-  }
-});
-
-// =====================================================
-// COPIER SNIPPET
-// =====================================================
-
-copyBtn.addEventListener('click',()=>{
-  snippetBox.select();
-
-  navigator.clipboard
-    .writeText(snippetBox.value)
-    .then(()=>{
-      copyBtn.textContent='Copié !';
-
-      setTimeout(()=>{
-        copyBtn.textContent='Copier le code';
-      },1500);
+      // Aperçu live immédiat dans la grille (non persistant, juste pour visualiser)
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = snippet;
+      document.getElementById('movieGrid').appendChild(wrapper.firstElementChild);
+      applyFilters();
     });
-});
 
+    copyBtn.addEventListener('click', () => {
+      snippetBox.select();
+      navigator.clipboard.writeText(snippetBox.value).then(() => {
+        copyBtn.textContent = 'Copié !';
+        setTimeout(() => (copyBtn.textContent = 'Copier le code'), 1500);
+      });
+    });
+  })();
   </script>
 <script>
 function updateCatalogueCounter() {
