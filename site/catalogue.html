@@ -1799,6 +1799,12 @@ details.admin-template textarea {
 
   </div>
 
+    <!-- Admin -->
+  <div class="admin-bar">
+    <button class="admin-btn" id="adminOpenBtn">➕ Ajouter un film (Admin)</button>
+    <button class="admin-btn" id="adminEditOpenBtn">✏️ Modifier une fiche (Admin)</button>
+  </div>
+
   <!-- ===== MODALE ADMIN : AJOUT DE FILM ===== -->
   <div class="admin-overlay" id="adminOverlay">
     <div class="admin-modal">
@@ -1884,41 +1890,33 @@ details.admin-template textarea {
       </div>
 
       <div class="admin-field">
-  <label>Nom du fichier (sans .html — sert aussi au lien)</label>
-  <input type="text" id="fSlug" placeholder="ex: doubtfire">
-</div>
+        <label>Nom du fichier (sans .html — sert aussi au lien)</label>
+        <input type="text" id="fSlug" placeholder="ex: doubtfire">
+      </div>
 
-<p class="admin-hint">
-  Le fichier sera téléchargé sous ce nom et devra être placé dans le dossier
-  <code>films/</code> (ou <code>séries/</code> / <code>animes/</code> selon le type)
-  du dépôt GitHub.
-</p>
+      <p class="admin-hint">
+        Le fichier sera téléchargé sous ce nom et devra être placé dans le dossier
+        <code>films/</code> (ou <code>séries/</code> / <code>animes/</code> selon le type)
+        du dépôt GitHub.
+      </p>
 
-<div class="admin-row">
-  <div class="admin-field">
-    <label>Movie ID</label>
-    <input
-      type="text"
-      id="fMovieId"
-      placeholder="ex: doubtfire"
-    >
-    <p class="admin-hint">
-      Identifiant utilisé pour les likes / dislikes dans <code>movie_likes</code>.
-    </p>
-  </div>
+      <div class="admin-row">
+        <div class="admin-field">
+          <label>Movie ID</label>
+          <input type="text" id="fMovieId" placeholder="ex: doubtfire">
+          <p class="admin-hint">
+            Identifiant utilisé pour les likes / dislikes dans <code>movie_likes</code>.
+          </p>
+        </div>
 
-  <div class="admin-field">
-    <label>URL source fallback</label>
-    <input
-      type="url"
-      id="fFallbackSource"
-      placeholder="https://.../master.m3u8"
-    >
-    <p class="admin-hint">
-      Source M3U8 utilisée automatiquement si la source principale ne fonctionne pas.
-    </p>
-  </div>
-</div>
+        <div class="admin-field">
+          <label>URL source fallback</label>
+          <input type="url" id="fFallbackSource" placeholder="https://.../master.m3u8">
+          <p class="admin-hint">
+            Source M3U8 utilisée automatiquement si la source principale ne fonctionne pas.
+          </p>
+        </div>
+      </div>
 
       <label class="admin-check">
         <input type="checkbox" id="fProvisoire"> Marquer comme "Provisoire" sur le catalogue
@@ -1934,6 +1932,129 @@ details.admin-template textarea {
       </div>
     </div>
   </div>
+
+  <!-- ===== MODALE ADMIN : MODIFICATION DE FICHE ===== -->
+  <div class="admin-overlay" id="adminEditOverlay">
+    <div class="admin-modal">
+      <button class="close-x" id="adminEditCloseBtn">&times;</button>
+      <h2>Modifier une fiche existante</h2>
+
+      <div class="admin-field">
+        <label>Fiche à modifier</label>
+        <select id="eSelectMovie">
+          <option value="">-- Choisir une fiche du catalogue --</option>
+        </select>
+      </div>
+      <p class="admin-hint" id="eLoadStatus"></p>
+
+      <div class="admin-field">
+        <label>Titre affiché sur la fiche (ex: Madame Doubtfire (1993))</label>
+        <input type="text" id="eTitreAffiche" placeholder="Titre (Année)">
+      </div>
+
+      <div class="admin-row">
+        <div class="admin-field">
+          <label>Type</label>
+          <select id="eType">
+            <option value="Film">Film</option>
+            <option value="Série">Série</option>
+          </select>
+        </div>
+        <div class="admin-field">
+          <label>Genre catalogue (filtre)</label>
+          <select id="eGenre">
+            <option>Romance</option>
+            <option>Science-Fiction</option>
+            <option>Animation</option>
+            <option>Action</option>
+            <option>Thriller</option>
+            <option>Drame</option>
+            <option>Aventure</option>
+            <option>Comédie</option>
+            <option>Fantastique</option>
+            <option>Anime</option>
+            <option>Documentaire</option>
+            <option>Horreur</option>
+            <option>Western</option>
+            <option>Crime</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="admin-field" id="eSubgenreField" style="display:none;">
+        <label>Sous-genre (Anime uniquement)</label>
+        <select id="eSubgenre">
+          <option>Shonen</option>
+          <option>Seinen</option>
+        </select>
+      </div>
+
+      <div class="admin-field">
+        <label>Genre(s) affiché(s) sur la fiche (texte libre)</label>
+        <input type="text" id="eGenreTexte" placeholder="Comédie, Drame et Familial">
+      </div>
+
+      <div class="admin-field">
+        <label>Réalisateur</label>
+        <input type="text" id="eRealisateur">
+      </div>
+
+      <div class="admin-field">
+        <label>Acteurs</label>
+        <input type="text" id="eActeurs" placeholder="Séparés par des virgules">
+      </div>
+
+      <div class="admin-field">
+        <label>Synopsis</label>
+        <textarea id="eSynopsis" rows="4"></textarea>
+      </div>
+
+      <div class="admin-row">
+        <div class="admin-field">
+          <label>URL de l'image de fond (background)</label>
+          <input type="url" id="eBackground" placeholder="https://...">
+        </div>
+        <div class="admin-field">
+          <label>URL de l'affiche (poster)</label>
+          <input type="url" id="ePoster" placeholder="https://...">
+        </div>
+      </div>
+
+      <div class="admin-field">
+        <label>Nom du fichier (sans .html)</label>
+        <input type="text" id="eSlug" placeholder="ex: doubtfire">
+      </div>
+
+      <div class="admin-row">
+        <div class="admin-field">
+          <label>Movie ID</label>
+          <input type="text" id="eMovieId">
+        </div>
+        <div class="admin-field">
+          <label>URL source fallback</label>
+          <input type="url" id="eFallbackSource" placeholder="https://.../master.m3u8">
+        </div>
+      </div>
+
+      <label class="admin-check">
+        <input type="checkbox" id="eProvisoire"> Marquer comme "Provisoire" sur le catalogue
+      </label>
+
+      <button class="admin-submit" id="adminEditGenerateBtn">Générer le nouveau code</button>
+
+      <div class="admin-output" id="eOutput">
+        <label>Nouveau code complet de la page (à coller dans le fichier existant) :</label>
+        <textarea id="ePageCode" readonly style="height:220px;"></textarea>
+        <button class="copy-btn" id="eCopyPageBtn">Copier le code de la page</button>
+
+        <label style="margin-top:1rem;display:block;">Code à coller dans <code>catalogue.html</code> (remplace l'ancienne carte) :</label>
+        <textarea id="eCatalogSnippet" readonly></textarea>
+        <button class="copy-btn" id="eCopySnippetBtn">Copier le code catalogue</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="noResults">Aucun résultat trouvé.</div>
 
   <script>
   let activeType = 'Tous';
@@ -3283,6 +3404,230 @@ page = page.replace(
     });
   })();
   </script>
+
+  <script>
+(function () {
+  const ADMIN_PASSWORD = "horizon2026"; // même mot de passe
+
+  const overlay = document.getElementById('adminEditOverlay');
+  const openBtn = document.getElementById('adminEditOpenBtn');
+  const closeBtn = document.getElementById('adminEditCloseBtn');
+  const genreSelect = document.getElementById('eGenre');
+  const subgenreField = document.getElementById('eSubgenreField');
+  const selectMovie = document.getElementById('eSelectMovie');
+  const loadStatus = document.getElementById('eLoadStatus');
+  const generateBtn = document.getElementById('adminEditGenerateBtn');
+  const output = document.getElementById('eOutput');
+  const pageCodeBox = document.getElementById('ePageCode');
+  const snippetBox = document.getElementById('eCatalogSnippet');
+
+  let currentHref = '';
+
+  function escapeAttr(str) { return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;'); }
+  function escapeHtml(str) { return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function escapeJsString(str) {
+    return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\r/g, '\\r').replace(/\n/g, '\\n');
+  }
+  function folderFor(type, genre) {
+    if (genre === 'Anime') return 'animes';
+    return type === 'Série' ? 'séries' : 'films';
+  }
+
+  function populateSelect() {
+    selectMovie.innerHTML = '<option value="">-- Choisir une fiche du catalogue --</option>';
+    document.querySelectorAll('#movieGrid .movieimg').forEach(card => {
+      const a = card.querySelector('a');
+      const title = card.dataset.title;
+      if (!a || !title) return;
+      const opt = document.createElement('option');
+      opt.value = a.getAttribute('href');
+      opt.textContent = title;
+      selectMovie.appendChild(opt);
+    });
+  }
+
+  openBtn.addEventListener('click', () => {
+    const pass = prompt("Mot de passe admin :");
+    if (pass !== ADMIN_PASSWORD) {
+      if (pass !== null) alert("Mot de passe incorrect.");
+      return;
+    }
+    populateSelect();
+    overlay.classList.add('open');
+  });
+  closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+  genreSelect.addEventListener('change', () => {
+    subgenreField.style.display = genreSelect.value === 'Anime' ? 'block' : 'none';
+  });
+
+  selectMovie.addEventListener('change', async () => {
+    const href = selectMovie.value;
+    currentHref = href;
+    if (!href) return;
+
+    const cardEl = document.querySelector(`#movieGrid a[href="${href}"]`)?.closest('.movieimg');
+
+    if (cardEl) {
+      document.getElementById('eTitreAffiche').value = cardEl.dataset.title || '';
+      document.getElementById('eType').value = cardEl.dataset.type || 'Film';
+      document.getElementById('eGenre').value = cardEl.dataset.genre || 'Action';
+      document.getElementById('eSubgenre').value = cardEl.dataset.subgenre || 'Shonen';
+      subgenreField.style.display = cardEl.dataset.genre === 'Anime' ? 'block' : 'none';
+      document.getElementById('eGenreTexte').value = cardEl.dataset.genre || '';
+      document.getElementById('eProvisoire').checked = !!cardEl.querySelector('.badge-provisoire');
+      const img = cardEl.querySelector('img');
+      document.getElementById('ePoster').value = img ? (img.getAttribute('src') || '') : '';
+    }
+    const filename = href.split('/').pop().replace(/\.html$/, '');
+    document.getElementById('eSlug').value = filename;
+    document.getElementById('eMovieId').value = filename;
+
+    loadStatus.textContent = 'Récupération des infos de la fiche...';
+    try {
+      const res = await fetch(href);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+
+      doc.querySelectorAll('.fiche-info p').forEach(p => {
+        const strong = p.querySelector('strong');
+        if (!strong) return;
+        const label = strong.textContent.trim().toLowerCase();
+        const value = p.textContent.replace(strong.textContent, '').trim();
+        if (label.startsWith('genre')) document.getElementById('eGenreTexte').value = value;
+        else if (label.startsWith('réalisateur')) document.getElementById('eRealisateur').value = value;
+        else if (label.startsWith('acteurs')) document.getElementById('eActeurs').value = value;
+        else if (label.startsWith('synopsis')) document.getElementById('eSynopsis').value = value;
+      });
+
+      const bgMatch = html.match(/background:\s*url\('([^']+)'\)\s*no-repeat/);
+      if (bgMatch) document.getElementById('eBackground').value = bgMatch[1];
+
+      const idMatch = html.match(/const\s+MOVIE_ID\s*=\s*'([^']*)'/);
+      if (idMatch) document.getElementById('eMovieId').value = idMatch[1];
+
+      const fbMatch = html.match(/const\s+FALLBACK_SOURCE_URL\s*=\s*'([^']*)'/);
+      if (fbMatch) document.getElementById('eFallbackSource').value = fbMatch[1];
+
+      const posterImg = doc.querySelector('.fiche img');
+      if (posterImg) document.getElementById('ePoster').value = posterImg.getAttribute('src') || '';
+
+      loadStatus.textContent = 'Fiche chargée ✔️ Modifie les champs voulus puis clique sur "Générer".';
+    } catch (err) {
+      console.error(err);
+      loadStatus.textContent = "⚠️ Réalisateur/acteurs/synopsis/... non récupérés automatiquement (fiche pas encore en ligne ?) — complète-les à la main.";
+    }
+  });
+
+  generateBtn.addEventListener('click', () => {
+    const templateInput = document.getElementById('templateInput');
+    if (!templateInput) { alert("Le modèle de page (onglet 'Ajouter un film') est introuvable."); return; }
+
+    const h1 = document.getElementById('eTitreAffiche').value.trim();
+    const type = document.getElementById('eType').value;
+    const genre = document.getElementById('eGenre').value;
+    const subgenre = document.getElementById('eSubgenre').value;
+    const genreTexte = document.getElementById('eGenreTexte').value.trim();
+    const realisateur = document.getElementById('eRealisateur').value.trim();
+    const acteurs = document.getElementById('eActeurs').value.trim();
+    const synopsis = document.getElementById('eSynopsis').value.trim();
+    const bgUrl = document.getElementById('eBackground').value.trim();
+    const posterUrl = document.getElementById('ePoster').value.trim();
+    const slug = document.getElementById('eSlug').value.trim();
+    const movieId = document.getElementById('eMovieId').value.trim();
+    const fallbackSourceUrl = document.getElementById('eFallbackSource').value.trim();
+    const provisoire = document.getElementById('eProvisoire').checked;
+
+    if (!h1 || !slug || !bgUrl || !posterUrl || !movieId || !fallbackSourceUrl) {
+      alert('Merci de remplir au minimum : titre, image de fond, affiche, nom de fichier, Movie ID et URL source fallback.');
+      return;
+    }
+
+    const pageTitle = h1.replace(/\s*\(\d{4}\)\s*$/, '') + ' - BNZ';
+    let page = templateInput.value;
+
+    page = page.replace('<title>Madame Doubtfire - BNZ</title>', `<title>${escapeHtml(pageTitle)}</title>`);
+    page = page.replace(
+      "url('https://media.themoviedb.org/t/p/w1000_and_h563_face/kGTh0zOTBRqmKr3UfpLlsGFvSDT.jpg')",
+      `url('${bgUrl}')`
+    );
+    page = page.replace(
+      'src="https://media.themoviedb.org/t/p/w440_and_h660_face/60qcTr0iIZvcYfWrLDUbWxO7nPS.jpg" alt="Titanic Poster"',
+      `src="${posterUrl}" alt="${escapeAttr(h1)}"`
+    );
+    page = page.replace('<h1>Madame Doubtfire (1993)</h1>', `<h1>${escapeHtml(h1)}</h1>`);
+    page = page.replace(
+      '<p><strong>Genre:</strong> Comédie, Drame et Familial</p>',
+      `<p><strong>Genre:</strong> ${escapeHtml(genreTexte)}</p>`
+    );
+    page = page.replace(
+      '<p><strong>Réalisateur:</strong> Chris Columbus</p>',
+      `<p><strong>Réalisateur:</strong> ${escapeHtml(realisateur)}</p>`
+    );
+    page = page.replace(
+      '<p><strong>Acteurs:</strong> Robin Williams, Sally Field, Lisa Jakub</p>',
+      `<p><strong>Acteurs:</strong> ${escapeHtml(acteurs)}</p>`
+    );
+    page = page.replace(
+      "<p><strong>Synopsis:</strong> Privé, à la suite de son divorce, de ses trois enfants qu'il adore, Daniel Hillard, doubleur de dessins animés, met en œuvre tous ses talents d'acteur et d'imitateur et se transforme en respectable gouvernante irlandaise. Lorsque Mme Doubtfire se présente dans la famille Hillard, elle est acceptée à l'unanimité.</p>",
+      `<p><strong>Synopsis:</strong> ${escapeHtml(synopsis)}</p>`
+    );
+    page = page.replace("const MOVIE_ID      = 'doubtfire';", `const MOVIE_ID      = '${escapeJsString(movieId)}';`);
+    page = page.replace(
+      "const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/788-0xgdv/master.m3u8';",
+      `const FALLBACK_SOURCE_URL = '${escapeJsString(fallbackSourceUrl)}';`
+    );
+
+    pageCodeBox.value = page;
+
+    const folder = folderFor(type, genre);
+    const href = `https://inspecteurl.github.io/${folder}/${slug}.html`;
+    const dataTypeAttr = genre === 'Anime' ? '' : ` data-type="${escapeAttr(type)}"`;
+    const subgenreAttr = genre === 'Anime' ? ` data-subgenre="${escapeAttr(subgenre)}"` : '';
+    const spanText = genre === 'Anime' ? `Anime — ${escapeHtml(subgenre)}` : escapeHtml(genre);
+    const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
+
+    const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
+  <a href="${href}"><img src="${posterUrl}" alt="${escapeAttr(h1)}"></a>
+  <h2>${escapeHtml(h1)}</h2>
+  <span>${spanText}</span>${badge}
+</div>`;
+
+    snippetBox.value = snippet;
+    output.classList.add('show');
+
+    const oldA = currentHref ? document.querySelector(`#movieGrid a[href="${currentHref}"]`) : null;
+    const oldCard = oldA ? oldA.closest('.movieimg') : null;
+    if (oldCard) {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = snippet;
+      oldCard.replaceWith(wrapper.firstElementChild);
+      applyFilters();
+      if (typeof updateCatalogueCounter === 'function') updateCatalogueCounter();
+    }
+  });
+
+  document.getElementById('eCopyPageBtn').addEventListener('click', () => {
+    pageCodeBox.select();
+    navigator.clipboard.writeText(pageCodeBox.value).then(() => {
+      const btn = document.getElementById('eCopyPageBtn');
+      btn.textContent = 'Copié !';
+      setTimeout(() => (btn.textContent = 'Copier le code de la page'), 1500);
+    });
+  });
+
+  document.getElementById('eCopySnippetBtn').addEventListener('click', () => {
+    snippetBox.select();
+    navigator.clipboard.writeText(snippetBox.value).then(() => {
+      const btn = document.getElementById('eCopySnippetBtn');
+      btn.textContent = 'Copié !';
+      setTimeout(() => (btn.textContent = 'Copier le code catalogue'), 1500);
+    });
+  });
+})();
+</script>
 <script>
 function updateCatalogueCounter() {
   const grid = document.getElementById('movieGrid');
