@@ -4259,11 +4259,7 @@ const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h
  
  Important : contrairement au modèle "film" (qui remplace des chaînes littérales
  comme "Madame Doubtfire"), le modèle "série" utilise deux marqueurs
- <!--__SEASON_SELECTOR__--> et <!--__EPISODES_CARDS__--> pour insérer un nombre
- variable d'épisodes/saisons. Si tu remplaces plus tard #templateInputSeries
- par le code d'une autre fiche série existante, garde bien ces deux marqueurs
- à la place du bloc d'épisodes codé en dur.
--->
+ <!--__SEASON_SELECTOR__--> 
  
 <!-- ===================================================================
      1) MODALE AJOUT — à coller après le champ Acteurs (fActeurs)
@@ -4298,10 +4294,7 @@ const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h
      3) MODÈLE DE PAGE SÉRIE — à coller juste après le <details> existant
         qui contient #templateInput (modèle film), dans adminOverlay.
      =================================================================== -->
-<details class="admin-template">
-  <summary>Modèle de page HTML utilisé pour les SÉRIES (colle ici le code COMPLET d'une fiche série existante — garde les marqueurs &lt;!--__SEASON_SELECTOR__--&gt; et &lt;!--__EPISODES_CARDS__--&gt; à la place du bloc de cartes d'épisodes)</summary>
-  <textarea id="templateInputSeries"></textarea>
-</details>
+
  
 <!-- ===================================================================
      4) SCRIPT — à coller en fin de page (après les scripts admin existants)
