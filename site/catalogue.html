@@ -2510,7 +2510,7 @@ details.admin-template textarea {
 
   <script>
   // ⚠️ Mets ta clé OMDb ici (celle que tu as déjà créée sur omdbapi.com)
-  const OMDB_API_KEY = "COLLE_TA_CLE_OMDB_ICI";
+  const OMDB_API_KEY = "e35ff862";
 
   // Récupère la durée d'un film/série via OMDb.
   // title : titre du film (sans l'année)
@@ -2518,7 +2518,7 @@ details.admin-template textarea {
   // isSeries : true si c'est une série/anime en épisodes, false si film
   // Retourne une chaîne du type "2h49" ou "24min", ou null si introuvable.
   async function fetchDureeOMDb(title, year, isSeries) {
-    if (!OMDB_API_KEY || OMDB_API_KEY === "COLLE_TA_CLE_OMDB_ICI") {
+    if (!OMDB_API_KEY || OMDB_API_KEY === "e35ff862") {
       alert("Pense à coller ta clé OMDb dans le script (OMDB_API_KEY).");
       return null;
     }
