@@ -2218,6 +2218,16 @@ details.admin-template textarea {
         <input type="text" id="fRealisateur">
       </div>
 
+      <!-- À coller dans le modal "Ajouter un film / une série" (adminOverlay), par exemple juste après le champ Réalisateur (fRealisateur) -->
+<div class="admin-field">
+  <label for="fDuree">Durée</label>
+  <div style="display:flex; gap:8px;">
+    <input type="text" id="fDuree" placeholder="ex: 2h05">
+    <button type="button" id="fDureeAuto" class="admin-btn" style="white-space:nowrap;">🔎 Auto</button>
+  </div>
+  <p class="admin-hint">Rempli automatiquement via OMDb à partir du titre, ou saisis-la à la main.</p>
+</div>
+
       <div class="admin-field">
         <label>Acteurs</label>
         <input type="text" id="fActeurs" placeholder="Séparés par des virgules">
@@ -2348,6 +2358,16 @@ details.admin-template textarea {
         <label>Réalisateur</label>
         <input type="text" id="eRealisateur">
       </div>
+
+      <!-- À coller dans le modal "Modifier une fiche" (adminEditOverlay), au même endroit relatif que dans le formulaire d'ajout -->
+<div class="admin-field">
+  <label for="eDuree">Durée</label>
+  <div style="display:flex; gap:8px;">
+    <input type="text" id="eDuree" placeholder="ex: 2h05">
+    <button type="button" id="eDureeAuto" class="admin-btn" style="white-space:nowrap;">🔎 Auto</button>
+  </div>
+  <p class="admin-hint">Rempli automatiquement via OMDb à partir du titre, ou saisis-la à la main.</p>
+</div>
 
       <div class="admin-field">
         <label>Acteurs</label>
@@ -2488,6 +2508,46 @@ details.admin-template textarea {
 
   </script>
 
+  <script>
+  // ⚠️ Mets ta clé OMDb ici (celle que tu as déjà créée sur omdbapi.com)
+  const OMDB_API_KEY = "COLLE_TA_CLE_OMDB_ICI";
+
+  // Récupère la durée d'un film/série via OMDb.
+  // title : titre du film (sans l'année)
+  // year  : année (peut être vide/null)
+  // isSeries : true si c'est une série/anime en épisodes, false si film
+  // Retourne une chaîne du type "2h49" ou "24min", ou null si introuvable.
+  async function fetchDureeOMDb(title, year, isSeries) {
+    if (!OMDB_API_KEY || OMDB_API_KEY === "COLLE_TA_CLE_OMDB_ICI") {
+      alert("Pense à coller ta clé OMDb dans le script (OMDB_API_KEY).");
+      return null;
+    }
+    try {
+      const type = isSeries ? "series" : "movie";
+      let url = `https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&type=${type}&t=${encodeURIComponent(title)}`;
+      if (year) url += `&y=${year}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.Response === "False") return null;
+      const match = /(\d+)\s*min/.exec(data.Runtime || "");
+      if (!match) return null;
+      const minutes = parseInt(match[1], 10);
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return h > 0 ? `${h}h${m.toString().padStart(2, "0")}` : `${m}min`;
+    } catch (e) {
+      console.error("Erreur OMDb :", e);
+      return null;
+    }
+  }
+
+  // Extrait le titre (sans l'année) et l'année depuis "Madame Doubtfire (1993)"
+  function extraireTitreEtAnnee(h1) {
+    const m = /^(.*?)\s*\((\d{4})\)\s*$/.exec(h1.trim());
+    if (m) return { titre: m[1], annee: m[2] };
+    return { titre: h1.trim(), annee: null };
+  }
+</script>
   <!-- ===== SCRIPT ADMIN : GÉNÉRATEUR DE FICHE FILM ===== -->
   <script>
   (function () {
@@ -3037,6 +3097,7 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
     <div class="fiche-info">
       <h1>Madame Doubtfire (1993)</h1>
       <p><strong>Genre:</strong> Comédie, Drame et Familial</p>
+      <p><strong>Durée:</strong> 2h05</p>
       <p><strong>Réalisateur:</strong> Chris Columbus</p>
       <p><strong>Acteurs:</strong> Robin Williams, Sally Field, Lisa Jakub</p>
       <p><strong>Synopsis:</strong> Privé, à la suite de son divorce, de ses trois enfants qu'il adore, Daniel Hillard, doubleur de dessins animés, met en œuvre tous ses talents d'acteur et d'imitateur et se transforme en respectable gouvernante irlandaise. Lorsque Mme Doubtfire se présente dans la famille Hillard, elle est acceptée à l'unanimité.</p>
@@ -3572,6 +3633,23 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     const output = document.getElementById('adminOutput');
     const snippetBox = document.getElementById('catalogSnippet');
     const copyBtn = document.getElementById('copySnippetBtn');
+    const dureeInput = document.getElementById('fDuree');
+const dureeAutoBtn = document.getElementById('fDureeAuto');
+
+    dureeAutoBtn.addEventListener('click', async () => {
+  const h1 = document.getElementById('fTitreAffiche').value.trim();
+  if (!h1) { alert("Remplis d'abord le titre affiché."); return; }
+  const { titre, annee } = extraireTitreEtAnnee(h1);
+  const isSeries = typeSelect.value === 'Série';
+  dureeAutoBtn.textContent = '...';
+  const duree = await fetchDureeOMDb(titre, annee, isSeries);
+  dureeAutoBtn.textContent = '🔎 Auto';
+  if (duree) {
+    dureeInput.value = duree;
+  } else {
+    alert("Durée introuvable automatiquement, complète-la à la main.");
+  }
+});
 
     openBtn.addEventListener('click', () => {
       const pass = prompt("Mot de passe admin :");
@@ -3639,6 +3717,7 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
       const realisateur = document.getElementById('fRealisateur').value.trim();
       const acteurs = document.getElementById('fActeurs').value.trim();
       const synopsis = document.getElementById('fSynopsis').value.trim();
+      const duree = dureeInput.value.trim();
       const bgUrl = document.getElementById('fBackground').value.trim();
       const posterUrl = document.getElementById('fPoster').value.trim();
 let slug = document.getElementById('fSlug').value.trim();
@@ -3701,6 +3780,11 @@ const provisoire = document.getElementById('fProvisoire').checked;
       );
 
       page = page.replace(
+  '<p><strong>Durée:</strong> 2h05</p>',
+  duree ? `<p><strong>Durée:</strong> ${escapeHtml(duree)}</p>` : ''
+);
+
+      page = page.replace(
   "const MOVIE_ID      = 'doubtfire';",
   `const MOVIE_ID      = '${escapeJsString(movieId)}';`
 );
@@ -3729,14 +3813,12 @@ page = page.replace(
       const spanText = genre === 'Anime' ? `Anime — ${escapeHtml(subgenre)}` : escapeHtml(genre);
       const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
 
-      const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
+     const dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
+const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
   <a href="${href}"><img src="${posterUrl}" alt="${escapeAttr(h1)}"></a>
   <h2>${escapeHtml(h1)}</h2>
-  <span>${spanText}</span>${badge}
+  <span>${spanText}</span>${dureeSpan}${badge}
 </div>`;
-
-      snippetBox.value = snippet;
-      output.classList.add('show');
 
       // Aperçu live immédiat dans la grille (non persistant, juste pour visualiser)
       const wrapper = document.createElement('div');
@@ -3770,6 +3852,23 @@ page = page.replace(
   const output = document.getElementById('eOutput');
   const pageCodeBox = document.getElementById('ePageCode');
   const snippetBox = document.getElementById('eCatalogSnippet');
+  const eDureeInput = document.getElementById('eDuree');
+const eDureeAutoBtn = document.getElementById('eDureeAuto');
+
+  eDureeAutoBtn.addEventListener('click', async () => {
+  const h1 = document.getElementById('eTitreAffiche').value.trim();
+  if (!h1) { alert("Le titre est vide."); return; }
+  const { titre, annee } = extraireTitreEtAnnee(h1);
+  const isSeries = document.getElementById('eType').value === 'Série';
+  eDureeAutoBtn.textContent = '...';
+  const duree = await fetchDureeOMDb(titre, annee, isSeries);
+  eDureeAutoBtn.textContent = '🔎 Auto';
+  if (duree) {
+    eDureeInput.value = duree;
+  } else {
+    alert("Durée introuvable automatiquement, complète-la à la main.");
+  }
+});
 
   let currentHref = '';
 
@@ -3850,6 +3949,7 @@ page = page.replace(
         else if (label.startsWith('réalisateur')) document.getElementById('eRealisateur').value = value;
         else if (label.startsWith('acteurs')) document.getElementById('eActeurs').value = value;
         else if (label.startsWith('synopsis')) document.getElementById('eSynopsis').value = value;
+        if (label.startsWith('durée')) document.getElementById('eDuree').value = value;
       });
 
       const bgMatch = html.match(/background:\s*url\('([^']+)'\)\s*no-repeat/);
@@ -3883,6 +3983,7 @@ page = page.replace(
     const realisateur = document.getElementById('eRealisateur').value.trim();
     const acteurs = document.getElementById('eActeurs').value.trim();
     const synopsis = document.getElementById('eSynopsis').value.trim();
+    const duree = eDureeInput.value.trim();
     const bgUrl = document.getElementById('eBackground').value.trim();
     const posterUrl = document.getElementById('ePoster').value.trim();
     const slug = document.getElementById('eSlug').value.trim();
@@ -3924,6 +4025,11 @@ page = page.replace(
       "<p><strong>Synopsis:</strong> Privé, à la suite de son divorce, de ses trois enfants qu'il adore, Daniel Hillard, doubleur de dessins animés, met en œuvre tous ses talents d'acteur et d'imitateur et se transforme en respectable gouvernante irlandaise. Lorsque Mme Doubtfire se présente dans la famille Hillard, elle est acceptée à l'unanimité.</p>",
       `<p><strong>Synopsis:</strong> ${escapeHtml(synopsis)}</p>`
     );
+
+    page = page.replace(
+  '<p><strong>Durée:</strong> 2h05</p>',
+  duree ? `<p><strong>Durée:</strong> ${escapeHtml(duree)}</p>` : ''
+);
     page = page.replace("const MOVIE_ID      = 'doubtfire';", `const MOVIE_ID      = '${escapeJsString(movieId)}';`);
     page = page.replace(
       "const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/788-0xgdv/master.m3u8';",
@@ -3939,14 +4045,12 @@ page = page.replace(
     const spanText = genre === 'Anime' ? `Anime — ${escapeHtml(subgenre)}` : escapeHtml(genre);
     const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
 
-    const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
+    cconst dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
+const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
   <a href="${href}"><img src="${posterUrl}" alt="${escapeAttr(h1)}"></a>
   <h2>${escapeHtml(h1)}</h2>
-  <span>${spanText}</span>${badge}
+  <span>${spanText}</span>${dureeSpan}${badge}
 </div>`;
-
-    snippetBox.value = snippet;
-    output.classList.add('show');
 
     const oldA = currentHref ? document.querySelector(`#movieGrid a[href="${currentHref}"]`) : null;
     const oldCard = oldA ? oldA.closest('.movieimg') : null;
