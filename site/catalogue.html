@@ -2518,10 +2518,10 @@ details.admin-template textarea {
   // isSeries : true si c'est une série/anime en épisodes, false si film
   // Retourne une chaîne du type "2h49" ou "24min", ou null si introuvable.
   async function fetchDureeOMDb(title, year, isSeries) {
-    if (!OMDB_API_KEY || OMDB_API_KEY === "e35ff862") {
-      alert("Pense à coller ta clé OMDb dans le script (OMDB_API_KEY).");
-      return null;
-    }
+  if (!OMDB_API_KEY || OMDB_API_KEY === "COLLE_TA_CLE_OMDB_ICI") {   // ← le test reste inchangé
+    alert("Pense à coller ta clé OMDb dans le script (OMDB_API_KEY).");
+    return null;
+  }
     try {
       const type = isSeries ? "series" : "movie";
       let url = `https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&type=${type}&t=${encodeURIComponent(title)}`;
