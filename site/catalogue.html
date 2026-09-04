@@ -4234,7 +4234,79 @@ const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h
 })();
 </script>
 
-  <script>
+<!--
+==================================================================================
+ AJOUT : GESTION DES ÉPISODES POUR LES SÉRIES (admin catalogue.html)
+==================================================================================
+ Ce fichier contient TOUT ce qu'il faut ajouter à ton catalogue.html existant
+ pour pouvoir gérer les épisodes (saison / épisode / image / source vidéo /
+ URL fallback) directement depuis les modales "Ajouter un film / une série"
+ et "Modifier une fiche existante", en se basant sur le schéma de la page
+ "Adolescence" (cartes .card + .cards-container + sélecteur de saison).
+ 
+ Comment l'utiliser :
+  1) Colle le bloc HTML "MODALE AJOUT" dans adminOverlay, juste après le champ
+     Acteurs (id="fActeurs") et avant le champ Synopsis.
+  2) Colle le bloc HTML "MODALE MODIFICATION" dans adminEditOverlay, au même
+     endroit relatif (après eActeurs).
+  3) Colle le bloc HTML "MODÈLE DE PAGE SÉRIE" juste après le <details> existant
+     qui contient #templateInput (le modèle pour les films).
+  4) Colle tout le bloc de script JS ci-dessous à la fin, juste avant la fermeture du script
+     existant de génération (ou dans un nouveau <script> séparé, l'ordre n'a
+     pas d'importance tant qu'il est chargé après le DOM et après les scripts
+     existants qui définissent generateBtn / adminEditGenerateBtn / applyFilters
+     / folderFor / escapeHtml / escapeAttr / escapeJsString).
+ 
+ Important : contrairement au modèle "film" (qui remplace des chaînes littérales
+ comme "Madame Doubtfire"), le modèle "série" utilise deux marqueurs
+ <!--__SEASON_SELECTOR__--> et <!--__EPISODES_CARDS__--> pour insérer un nombre
+ variable d'épisodes/saisons. Si tu remplaces plus tard #templateInputSeries
+ par le code d'une autre fiche série existante, garde bien ces deux marqueurs
+ à la place du bloc d'épisodes codé en dur.
+-->
+ 
+<!-- ===================================================================
+     1) MODALE AJOUT — à coller après le champ Acteurs (fActeurs)
+     =================================================================== -->
+<div class="admin-field" id="episodesSection" style="display:none;">
+  <label>Épisodes (Séries uniquement)</label>
+  <div id="episodesList"></div>
+  <button type="button" id="addEpisodeBtn" class="admin-btn">+ Ajouter un épisode</button>
+  <p class="admin-hint">
+    Renseigne saison, épisode, une image, la source vidéo principale et l'URL
+    fallback pour chaque épisode. Ces infos génèrent automatiquement les cartes
+    d'épisodes, le sélecteur de saison (s'il y a plusieurs saisons) et le
+    lecteur, comme sur la fiche "Adolescence".
+  </p>
+</div>
+ 
+<!-- ===================================================================
+     2) MODALE MODIFICATION — à coller après le champ Acteurs (eActeurs)
+     =================================================================== -->
+<div class="admin-field" id="eEpisodesSection" style="display:none;">
+  <label>Épisodes (Séries uniquement)</label>
+  <div id="eEpisodesList"></div>
+  <button type="button" id="eAddEpisodeBtn" class="admin-btn">+ Ajouter un épisode</button>
+  <p class="admin-hint">
+    Si la fiche existante est une série, ses épisodes sont chargés automatiquement
+    ci-dessus quand tu la sélectionnes. Modifie / ajoute / supprime des lignes
+    puis clique sur "Générer le nouveau code".
+  </p>
+</div>
+ 
+<!-- ===================================================================
+     3) MODÈLE DE PAGE SÉRIE — à coller juste après le <details> existant
+        qui contient #templateInput (modèle film), dans adminOverlay.
+     =================================================================== -->
+<details class="admin-template">
+  <summary>Modèle de page HTML utilisé pour les SÉRIES (colle ici le code COMPLET d'une fiche série existante — garde les marqueurs &lt;!--__SEASON_SELECTOR__--&gt; et &lt;!--__EPISODES_CARDS__--&gt; à la place du bloc de cartes d'épisodes)</summary>
+  <textarea id="templateInputSeries"></textarea>
+</details>
+ 
+<!-- ===================================================================
+     4) SCRIPT — à coller en fin de page (après les scripts admin existants)
+     =================================================================== -->
+<script>
 (function () {
  
   // ----------------------------------------------------------------
@@ -6332,6 +6404,38 @@ async function clearCurrentActivity() {
   const eAddEpisodeBtn   = document.getElementById('eAddEpisodeBtn');
  
   let episodesDataEdit = [];
+ 
+  // ----------------------------------------------------------------
+  // Copies locales des helpers d'échappement / slug / dossier.
+  // Ce script est une IIFE séparée : elle ne voit pas les fonctions
+  // escapeHtml / escapeAttr / escapeJsString / slugify / folderFor
+  // définies à l'intérieur des IIFE des autres scripts admin.
+  // ----------------------------------------------------------------
+  function escapeAttr(str) {
+    return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  }
+  function escapeHtml(str) {
+    return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function escapeJsString(str) {
+    return String(str || '')
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/"/g, '\\"')
+      .replace(/\r/g, '\\r')
+      .replace(/\n/g, '\\n');
+  }
+  function slugify(str) {
+    return str
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '')
+      .trim();
+  }
+  function folderFor(type, genre) {
+    if (genre === 'Anime') return 'animes';
+    return type === 'Série' ? 'séries' : 'films';
+  }
  
   // ----------------------------------------------------------------
   // Rendu d'une liste d'épisodes éditable
