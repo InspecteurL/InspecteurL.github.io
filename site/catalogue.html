@@ -3814,20 +3814,22 @@ page = page.replace(
       const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
 
      const dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
-      snippetBox.value = snippet;
-output.classList.add('show');
-const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
+      const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
   <a href="${href}"><img src="${posterUrl}" alt="${escapeAttr(h1)}"></a>
   <h2>${escapeHtml(h1)}</h2>
   <span>${spanText}</span>${dureeSpan}${badge}
 </div>`;
-
+ 
+      snippetBox.value = snippet;
+      output.classList.add('show');
+ 
       // Aperçu live immédiat dans la grille (non persistant, juste pour visualiser)
       const wrapper = document.createElement('div');
       wrapper.innerHTML = snippet;
       document.getElementById('movieGrid').appendChild(wrapper.firstElementChild);
       applyFilters();
     });
+ 
 
     copyBtn.addEventListener('click', () => {
       snippetBox.select();
