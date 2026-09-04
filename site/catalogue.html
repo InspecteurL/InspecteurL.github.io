@@ -3814,6 +3814,8 @@ page = page.replace(
       const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
 
      const dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
+      snippetBox.value = snippet;
+output.classList.add('show');
 const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
   <a href="${href}"><img src="${posterUrl}" alt="${escapeAttr(h1)}"></a>
   <h2>${escapeHtml(h1)}</h2>
@@ -4045,7 +4047,7 @@ const eDureeAutoBtn = document.getElementById('eDureeAuto');
     const spanText = genre === 'Anime' ? `Anime — ${escapeHtml(subgenre)}` : escapeHtml(genre);
     const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
 
-    cconst dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
+    const dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
 const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
   <a href="${href}"><img src="${posterUrl}" alt="${escapeAttr(h1)}"></a>
   <h2>${escapeHtml(h1)}</h2>
