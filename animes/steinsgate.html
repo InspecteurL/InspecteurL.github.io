@@ -994,6 +994,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentFallbackSource = null;
 
   let usingFallback = false;
+  let fallbackAttempted = false;
 
 
   /* =====================================================
@@ -1086,7 +1087,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function switchToFallbackPlayer(reason) {
 
-    if (usingFallback) return;
+    if (usingFallback || fallbackAttempted) return;
 
     if (!currentFallbackSource) {
 
@@ -1097,7 +1098,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    usingFallback = true;
+    fallbackAttempted = true;
 
     disarmLoadTimeout();
 
@@ -1118,58 +1119,80 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    /*
-     * Arrêter lecteur principal
-     */
-
-    video.pause();
-    video.removeAttribute('src');
-    video.load();
-
-    video.style.display = 'none';
+    const fallbackIsHls =
+      currentFallbackSource.toLowerCase().includes('.m3u8');
 
 
-    /*
-     * Masquer contrôles lecteur principal
-     */
+    if (fallbackIsHls) {
 
-    controls.classList.add('hide');
-    progressWrapper.classList.add('hide');
-    centerPlay.classList.add('hide');
+      /*
+       * Fallback HLS : on passe par l'iframe tierce
+       * (m3u8player.online), car notre lecteur principal
+       * n'a pas réussi à lire ce flux HLS non plus.
+       */
 
+      usingFallback = true;
 
-    /*
-     * Afficher iframe fallback
-     */
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
 
-    fallbackFrame.src =
-      'https://www.m3u8player.online/embed/m3u8?url=' +
-      encodeURIComponent(currentFallbackSource);
+      video.style.display = 'none';
 
-    fallbackFrame.style.display = 'block';
+      controls.classList.add('hide');
+      progressWrapper.classList.add('hide');
+      centerPlay.classList.add('hide');
 
-    fallbackHoverZone.style.display = 'block';
+      fallbackFrame.src =
+        'https://www.m3u8player.online/embed/m3u8?url=' +
+        encodeURIComponent(currentFallbackSource);
 
+      fallbackFrame.style.display = 'block';
 
-    /*
-     * Message fallback
-     */
+      fallbackHoverZone.style.display = 'block';
 
-    fallbackBanner.textContent =
-      '⚠️ Lecture via serveur alternatif';
+      fallbackBanner.textContent =
+        '⚠️ Lecture via serveur alternatif';
 
-    fallbackBanner.style.display = 'block';
+      fallbackBanner.style.display = 'block';
 
-    setTimeout(() => {
-      fallbackBanner.style.display = 'none';
-    }, 4000);
+      setTimeout(() => {
+        fallbackBanner.style.display = 'none';
+      }, 4000);
 
+      showFallbackBackButton();
 
-    /*
-     * Bouton retour
-     */
+    } else {
 
-    showFallbackBackButton();
+      /*
+       * Fallback direct (MP4 ou autre format lisible
+       * nativement) : on reste sur le lecteur principal,
+       * pas besoin d'iframe tierce. Pas de sélection de
+       * piste audio possible dans ce cas (source figée).
+       */
+
+      video.style.display = '';
+
+      video.src = currentFallbackSource;
+      video.load();
+
+      video.play().catch(err => {
+        console.warn(
+          'Lecture fallback impossible :',
+          err
+        );
+      });
+
+      fallbackBanner.textContent =
+        '⚠️ Lecture via source alternative (VF uniquement)';
+
+      fallbackBanner.style.display = 'block';
+
+      setTimeout(() => {
+        fallbackBanner.style.display = 'none';
+      }, 4000);
+
+    }
   }
 
 
@@ -1302,6 +1325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentFallbackSource = fallbackSrc;
 
     usingFallback = false;
+    fallbackAttempted = false;
 
 
     /*
