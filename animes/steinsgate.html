@@ -573,6 +573,37 @@ video {
   display: none;
 }
 
+.audio-pref-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 10px 0 20px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.lang-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.lang-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.lang-btn.active {
+  background: linear-gradient(90deg, #ff416c, #ff4b2b);
+  border-color: transparent;
+  box-shadow: 0 0 10px rgba(255,65,108,0.6);
+}
+
 </style>
 </head>
 <body>
@@ -676,6 +707,12 @@ Une organisation, la SERN, a mené différentes recherches à propos des voyages
 <div id="audioTrackMenu" class="menu"></div>
   </div>
 
+
+<div class="audio-pref-selector" id="audioPrefSelector">
+  <span>Langue audio :</span>
+  <button class="lang-btn active" data-lang="vf">VF</button>
+  <button class="lang-btn" data-lang="vostfr">VOSTFR</button>
+</div>
 
 <div class="cards-container" id="season-episodes">
   <div class="card" data-season="1" data-episode="" data-video="https://cinefries.xyz/animes/VF/Steins-Gate/S01/Steins-Gate-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/animes/tv/42509/S1/E1/premium-kguu8e/master.m3u8">
@@ -1170,6 +1207,46 @@ document.addEventListener('DOMContentLoaded', () => {
   const audioTrackBtn = document.getElementById('audioTrackBtn');
   const audioTrackMenu = document.getElementById('audioTrackMenu');
 
+  let preferredAudioLang = 'vf'; // valeur par défaut
+
+  const langButtons = document.querySelectorAll('.lang-btn');
+  langButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      langButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      preferredAudioLang = btn.dataset.lang;
+
+      // Si une vidéo est déjà en cours de lecture, on change la piste tout de suite
+      if (hls && hls.audioTracks && hls.audioTracks.length > 0) {
+        applyPreferredAudioTrack(hls.audioTracks);
+        buildAudioTrackMenu(hls.audioTracks);
+      }
+    });
+  });
+
+  function applyPreferredAudioTrack(tracks) {
+    const targetIndex = tracks.findIndex(track => {
+      const label = (track.name || '').toLowerCase();
+      const lang = (track.lang || '').toLowerCase();
+
+      if (preferredAudioLang === 'vf') {
+        return label.includes('vf') || label.includes('fran') || lang === 'fr';
+      } else {
+        return (
+          label.includes('vostfr') ||
+          label.includes('vo') ||
+          label.includes('jap') ||
+          lang === 'ja' ||
+          lang === 'jpn'
+        );
+      }
+    });
+
+    if (targetIndex !== -1) {
+      hls.audioTrack = targetIndex;
+    }
+  }
+
   function buildAudioTrackMenu(tracks) {
     audioTrackMenu.innerHTML = '';
 
@@ -1338,16 +1415,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const tracks = hls.audioTracks;
           console.log('Pistes audio disponibles :', tracks);
 
-          const vfIndex = tracks.findIndex(track => {
-            const label = (track.name || '').toLowerCase();
-            const lang = (track.lang || '').toLowerCase();
-            return label.includes('vf') || label.includes('fran') || lang === 'fr';
-          });
-
-          if (vfIndex !== -1) {
-            hls.audioTrack = vfIndex;
-          }
-
+          applyPreferredAudioTrack(tracks);
           buildAudioTrackMenu(tracks);
         });
 
