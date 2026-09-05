@@ -677,7 +677,7 @@ Une organisation, la SERN, a mené différentes recherches à propos des voyages
 
 <div class="cards-container" id="season-episodes">
   <div class="card" data-season="1" data-episode="" data-video="https://cinefries.xyz/animes/VF/Steins-Gate/S01/Steins-Gate-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/animes/tv/42509/S1/E1/premium-kguu8e/master.m3u8">
-    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/gPZXNWR7WuUgMZ9x6hwIZPRLbna.jpg" alt="Épisode 1">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/gPZXNWR7WuUgMZ9x6hwIZPRLbna.jpg" alt="Épisode 1"> 
     <h3>Épisode 1</h3>
   </div>
 
@@ -1045,93 +1045,263 @@ document.addEventListener('DOMContentLoaded', () => {
      FALLBACK
   ===================================================== */
  
-  function switchToFallbackPlayer(reason) {
- 
-    if (usingFallback) return;
- 
-    if (!currentFallbackSource) {
- 
-      console.error(
-        'Aucun fallback disponible pour cet épisode.'
-      );
- 
-      return;
-    }
- 
-    usingFallback = true;
- 
-    disarmLoadTimeout();
- 
-    console.warn(
-      'Fallback activé :',
-      reason,
-      currentFallbackSource
-    );
- 
- 
-    /*
-     * Détruire HLS principal
-     */
- 
-    if (hls) {
-      hls.destroy();
-      hls = null;
-    }
- 
- 
-    /*
-     * Arrêter lecteur principal
-     */
- 
-    video.pause();
-    video.removeAttribute('src');
-    video.load();
- 
-    video.style.display = 'none';
- 
- 
-    /*
-     * Masquer contrôles lecteur principal
-     */
- 
-    controls.classList.add('hide');
-    progressWrapper.classList.add('hide');
-    centerPlay.classList.add('hide');
- 
- 
-    /*
-     * Afficher iframe fallback
-     */
- 
-    fallbackFrame.src =
-      'https://www.m3u8player.online/embed/m3u8?url=' +
-      encodeURIComponent(currentFallbackSource);
- 
-    fallbackFrame.style.display = 'block';
- 
-    fallbackHoverZone.style.display = 'block';
- 
- 
-    /*
-     * Message fallback
-     */
- 
-    fallbackBanner.textContent =
-      '⚠️ Lecture via serveur alternatif';
- 
-    fallbackBanner.style.display = 'block';
- 
-    setTimeout(() => {
-      fallbackBanner.style.display = 'none';
-    }, 4000);
- 
- 
-    /*
-     * Bouton retour
-     */
- 
-    showFallbackBackButton();
+ function switchToFallbackPlayer(reason) {
+
+  if (usingFallback) return;
+
+  if (!currentFallbackSource) {
+    console.error("Aucun fallback disponible pour cet épisode.");
+    return;
   }
+
+  usingFallback = true;
+
+  disarmLoadTimeout();
+
+  console.warn(
+    "Fallback HLS activé :",
+    reason,
+    currentFallbackSource
+  );
+
+  // Détruire l'ancien HLS
+  if (hls) {
+    hls.destroy();
+    hls = null;
+  }
+
+  // Nettoyer le lecteur
+  video.pause();
+  video.removeAttribute('src');
+  video.load();
+
+  // IMPORTANT : on n'utilise plus l'iframe externe
+  fallbackFrame.src = '';
+  fallbackFrame.style.display = 'none';
+
+  fallbackHoverZone.style.display = 'none';
+
+  // Afficher le lecteur vidéo
+  video.style.display = '';
+
+  // Message
+  fallbackBanner.textContent = '⚠️ Fallback — VF';
+  fallbackBanner.style.display = 'block';
+
+  setTimeout(() => {
+    fallbackBanner.style.display = 'none';
+  }, 4000);
+
+  /*
+   * ==========================================
+   * LECTURE DU FALLBACK HLS
+   * ==========================================
+   */
+
+  if (typeof Hls === 'undefined') {
+    console.error("Hls.js n'est pas disponible.");
+    return;
+  }
+
+  /*
+   * Safari / navigateurs avec HLS natif
+   */
+  if (
+    video.canPlayType(
+      'application/vnd.apple.mpegurl'
+    )
+  ) {
+
+    video.src = currentFallbackSource;
+
+    video.addEventListener(
+      'loadedmetadata',
+      () => {
+
+        console.log(
+          "Fallback HLS chargé en HLS natif."
+        );
+
+        video.play().catch(console.warn);
+
+      },
+      { once: true }
+    );
+
+    return;
+  }
+
+  /*
+   * ==========================================
+   * HLS.JS
+   * ==========================================
+   */
+
+  if (Hls.isSupported()) {
+
+    hls = new Hls({
+      maxBufferLength: 60,
+      maxMaxBufferLength: 120,
+      enableWorker: true
+    });
+
+    /*
+     * Charger le master.m3u8
+     */
+    hls.loadSource(currentFallbackSource);
+    hls.attachMedia(video);
+
+    /*
+     * Récupérer les pistes audio
+     */
+    hls.on(
+      Hls.Events.AUDIO_TRACKS_UPDATED,
+      (event, data) => {
+
+        console.log(
+          '🎧 Pistes audio disponibles :',
+          data.audioTracks
+        );
+
+        const tracks = data.audioTracks || [];
+
+        /*
+         * Chercher "VF"
+         */
+        let vfIndex = tracks.findIndex(track =>
+          /(^|\b)vf(\b|$)/i.test(
+            track.name || ''
+          )
+        );
+
+        /*
+         * Si "VF" n'existe pas,
+         * chercher une piste française.
+         */
+        if (vfIndex === -1) {
+
+          vfIndex = tracks.findIndex(track =>
+            /français|french/i.test(
+              track.name || ''
+            ) ||
+            /^fr(-|$)/i.test(
+              track.lang || ''
+            ) ||
+            /^fra(-|$)/i.test(
+              track.lang || ''
+            )
+          );
+
+        }
+
+        /*
+         * Sélectionner la VF
+         */
+        if (vfIndex !== -1) {
+
+          console.log(
+            '🇫🇷 VF sélectionnée :',
+            tracks[vfIndex]
+          );
+
+          hls.audioTrack = vfIndex;
+
+        } else {
+
+          console.warn(
+            '⚠️ Aucune piste VF trouvée automatiquement.'
+          );
+
+          console.log(
+            'Pistes disponibles :',
+            tracks
+          );
+        }
+
+      }
+    );
+
+    /*
+     * Manifest chargé
+     */
+    hls.on(
+      Hls.Events.MANIFEST_PARSED,
+      () => {
+
+        console.log(
+          '✅ Fallback HLS chargé.'
+        );
+
+        video.play().catch(err => {
+          console.warn(
+            'Lecture automatique impossible :',
+            err
+          );
+        });
+
+      }
+    );
+
+    /*
+     * Erreurs HLS
+     */
+    hls.on(
+      Hls.Events.ERROR,
+      (event, data) => {
+
+        console.error(
+          'Erreur HLS fallback :',
+          data
+        );
+
+        if (!data.fatal) return;
+
+        switch (data.type) {
+
+          case Hls.ErrorTypes.NETWORK_ERROR:
+
+            console.warn(
+              'Erreur réseau HLS, récupération...'
+            );
+
+            hls.startLoad();
+            break;
+
+          case Hls.ErrorTypes.MEDIA_ERROR:
+
+            console.warn(
+              'Erreur média HLS, récupération...'
+            );
+
+            hls.recoverMediaError();
+            break;
+
+          default:
+
+            console.error(
+              'Erreur HLS fatale.'
+            );
+
+            hls.destroy();
+            hls = null;
+
+            break;
+        }
+
+      }
+    );
+
+  } else {
+
+    console.error(
+      'Ce navigateur ne supporte pas HLS.'
+    );
+
+  }
+
+  showControls();
+}
+
  
  
   /* =====================================================
@@ -1205,10 +1375,6 @@ document.addEventListener('DOMContentLoaded', () => {
       hls = null;
     }
  
-    fallbackFrame.src = '';
-    fallbackFrame.style.display = 'none';
- 
-    fallbackHoverZone.style.display = 'none';
     fallbackBanner.style.display = 'none';
  
     video.style.display = '';
