@@ -1059,174 +1059,6 @@ document.addEventListener('DOMContentLoaded', () => {
   backButton.addEventListener('click', closeVideo);
 
 
-  /* =====================================================
-     TIMEOUT
-  ===================================================== */
-
-  function armLoadTimeout() {
-
-    clearTimeout(loadTimeoutId);
-
-    loadTimeoutId = setTimeout(() => {
-
-      if (!usingFallback) {
-        switchToFallbackPlayer('timeout');
-      }
-
-    }, LOAD_TIMEOUT_MS);
-  }
-
-  function disarmLoadTimeout() {
-    clearTimeout(loadTimeoutId);
-  }
-
-
-  /* =====================================================
-     FALLBACK
-  ===================================================== */
-
-  function switchToFallbackPlayer(reason) {
-
-    if (usingFallback || fallbackAttempted) return;
-
-    if (!currentFallbackSource) {
-
-      console.error(
-        'Aucun fallback disponible pour cet épisode.'
-      );
-
-      return;
-    }
-
-    fallbackAttempted = true;
-
-    disarmLoadTimeout();
-
-    console.warn(
-      'Fallback activé :',
-      reason,
-      currentFallbackSource
-    );
-
-
-    /*
-     * Détruire HLS principal
-     */
-
-    if (hls) {
-      hls.destroy();
-      hls = null;
-    }
-
-
-    const fallbackIsHls =
-      currentFallbackSource.toLowerCase().includes('.m3u8');
-
-
-    if (fallbackIsHls) {
-
-      /*
-       * Fallback HLS : on passe par l'iframe tierce
-       * (m3u8player.online), car notre lecteur principal
-       * n'a pas réussi à lire ce flux HLS non plus.
-       */
-
-      usingFallback = true;
-
-      video.pause();
-      video.removeAttribute('src');
-      video.load();
-
-      video.style.display = 'none';
-
-      controls.classList.add('hide');
-      progressWrapper.classList.add('hide');
-      centerPlay.classList.add('hide');
-
-      fallbackFrame.src =
-        'https://www.m3u8player.online/embed/m3u8?url=' +
-        encodeURIComponent(currentFallbackSource);
-
-      fallbackFrame.style.display = 'block';
-
-      fallbackHoverZone.style.display = 'block';
-
-      fallbackBanner.textContent =
-        '⚠️ Lecture via serveur alternatif';
-
-      fallbackBanner.style.display = 'block';
-
-      setTimeout(() => {
-        fallbackBanner.style.display = 'none';
-      }, 4000);
-
-      showFallbackBackButton();
-
-    } else {
-
-      /*
-       * Fallback direct (MP4 ou autre format lisible
-       * nativement) : on reste sur le lecteur principal,
-       * pas besoin d'iframe tierce. Pas de sélection de
-       * piste audio possible dans ce cas (source figée).
-       */
-
-      video.style.display = '';
-
-      video.src = currentFallbackSource;
-      video.load();
-
-      video.play().catch(err => {
-        console.warn(
-          'Lecture fallback impossible :',
-          err
-        );
-      });
-
-      fallbackBanner.textContent =
-        '⚠️ Lecture via source alternative (VF uniquement)';
-
-      fallbackBanner.style.display = 'block';
-
-      setTimeout(() => {
-        fallbackBanner.style.display = 'none';
-      }, 4000);
-
-    }
-  }
-
-
-  /* =====================================================
-     BOUTON RETOUR FALLBACK
-  ===================================================== */
-
-  function showFallbackBackButton() {
-
-    backButton.classList.remove('hide');
-
-    clearTimeout(fallbackBtnHideTimeout);
-
-    fallbackBtnHideTimeout = setTimeout(() => {
-
-      if (usingFallback) {
-        backButton.classList.add('hide');
-      }
-
-    }, 3000);
-  }
-
-
-  fallbackHoverZone.addEventListener(
-    'mousemove',
-    showFallbackBackButton
-  );
-
-  fallbackHoverZone.addEventListener(
-    'mouseenter',
-    showFallbackBackButton
-  );
-
-
   const audioTrackBtn = document.getElementById('audioTrackBtn');
   const audioTrackMenu = document.getElementById('audioTrackMenu');
 
@@ -1322,11 +1154,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentMainSource = src;
 
-    currentFallbackSource = fallbackSrc;
-
-    usingFallback = false;
-    fallbackAttempted = false;
-
 
     /*
      * Activité Supabase
@@ -1353,12 +1180,6 @@ document.addEventListener('DOMContentLoaded', () => {
       hls = null;
     }
 
-    fallbackFrame.src = '';
-    fallbackFrame.style.display = 'none';
-
-    fallbackHoverZone.style.display = 'none';
-    fallbackBanner.style.display = 'none';
-
     video.style.display = '';
 
     video.removeAttribute('src');
@@ -1366,28 +1187,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /*
-     * Lancer timeout
-     */
-
-    armLoadTimeout();
-
-
-    /*
      * SOURCE HLS
      */
 
     if (src.endsWith('.m3u8')) {
-
-      console.log(
-        'Diagnostic HLS — Hls défini :', typeof Hls !== 'undefined',
-        '| Hls.isSupported() :', typeof Hls !== 'undefined' && Hls.isSupported(),
-        '| canPlayType HLS natif :', video.canPlayType('application/vnd.apple.mpegurl')
-      );
-
-      /*
-       * HLS.js (priorité : c'est lui qui gère
-       * correctement le multi-audio VF/VOSTFR)
-       */
 
       if (
         typeof Hls !== 'undefined' &&
@@ -1414,7 +1217,6 @@ document.addEventListener('DOMContentLoaded', () => {
         hls.on(
           Hls.Events.MANIFEST_PARSED,
           () => {
-            disarmLoadTimeout();
             video.play().catch(err => {
               console.warn('Lecture impossible :', err);
             });
@@ -1425,16 +1227,15 @@ document.addEventListener('DOMContentLoaded', () => {
           Hls.Events.ERROR,
           (event, data) => {
             if (!data.fatal) return;
-            console.error('Erreur HLS principale :', data);
-            switchToFallbackPlayer(data.details || 'hls-error');
+            console.error('Erreur HLS :', data);
+            showPlaybackError(data.details);
           }
         );
 
       }
 
       /*
-       * HLS natif (repli : Safari uniquement, hls.js
-       * se désactive lui-même sur ce navigateur)
+       * HLS natif (Safari uniquement)
        */
 
       else if (
@@ -1448,55 +1249,24 @@ document.addEventListener('DOMContentLoaded', () => {
         video.addEventListener(
           'loadedmetadata',
           () => {
-
-            disarmLoadTimeout();
-
             video.play().catch(err => {
-              console.warn(
-                'Lecture impossible :',
-                err
-              );
+              console.warn('Lecture impossible :', err);
             });
-
           },
           { once: true }
         );
-
-
-        video.addEventListener(
-          'error',
-          () => {
-
-            if (!usingFallback) {
-              switchToFallbackPlayer(
-                'native-hls-error'
-              );
-            }
-
-          },
-          { once: true }
-        );
-
 
       }
 
-      /*
-       * Navigateur sans support HLS
-       */
-
       else {
-
-        switchToFallbackPlayer(
-          'hls-not-supported'
-        );
-
+        showPlaybackError('hls-not-supported');
       }
 
     }
 
 
     /*
-     * SOURCE MP4
+     * SOURCE MP4 (piste unique, pas de choix VF/VOSTFR possible)
      */
 
     else {
@@ -1504,16 +1274,8 @@ document.addEventListener('DOMContentLoaded', () => {
       video.src = src;
 
       video.play().catch(err => {
-
-        console.warn(
-          'Impossible de lancer le MP4 principal :',
-          err
-        );
-
-        switchToFallbackPlayer(
-          'mp4-play-error'
-        );
-
+        console.warn('Impossible de lancer le MP4 :', err);
+        showPlaybackError('mp4-error');
       });
 
     }
@@ -1521,32 +1283,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   /* =====================================================
-     ERREUR VIDEO PRINCIPALE
+     ERREUR DE LECTURE
   ===================================================== */
+
+  function showPlaybackError(reason) {
+
+    console.error('Lecture impossible :', reason);
+
+    fallbackBanner.textContent =
+      '⚠️ Impossible de lire cet épisode pour le moment.';
+
+    fallbackBanner.style.display = 'block';
+  }
 
   video.addEventListener('error', () => {
 
     /*
      * Un removeAttribute('src') + load() déclenche un faux
      * événement 'error' (pas de source = pas une vraie
-     * erreur de lecture). On l'ignore : on ne réagit que
-     * si une source a réellement été assignée.
+     * erreur de lecture). On l'ignore.
      */
 
     if (!video.src && !video.currentSrc) {
       return;
     }
 
-    if (!usingFallback) {
-
-      console.error(
-        'Erreur du lecteur principal.'
-      );
-
-      switchToFallbackPlayer(
-        'video-error'
-      );
-    }
+    showPlaybackError('video-error');
 
   });
 
