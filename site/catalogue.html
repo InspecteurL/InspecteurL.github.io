@@ -6430,6 +6430,16 @@ async function clearCurrentActivity() {
     return type === 'Série' ? 'séries' : 'films';
   }
  
+  // Un anime fonctionne techniquement comme une série (épisodes), qu'il soit
+  // classé Type="Film" ou Type="Série" dans le formulaire : on le traite
+  // comme une série dès que le genre est "Anime".
+  function isSerieLike(typeVal, genreVal) {
+    return typeVal === 'Série' || genreVal === 'Anime';
+  }
+ 
+  const genreSelectAdd  = document.getElementById('fGenre');
+  const genreSelectEdit = document.getElementById('eGenre');
+ 
   // ----------------------------------------------------------------
   // Rendu d'une liste d'épisodes éditable
   // ----------------------------------------------------------------
@@ -6476,19 +6486,20 @@ async function clearCurrentActivity() {
     eAddEpisodeBtn.addEventListener('click', () => addEpisodeRow(episodesDataEdit, eEpisodesListEl));
   }
  
-  // Afficher/masquer la section épisodes selon le type choisi
-  if (typeSelect) {
-    typeSelect.addEventListener('change', () => {
-      const isSerie = typeSelect.value === 'Série';
-      episodesSection.style.display = isSerie ? 'block' : 'none';
-      if (isSerie && episodesData.length === 0) addEpisodeRow(episodesData, episodesListEl);
-    });
+  // Afficher/masquer la section épisodes selon le type OU le genre (Anime)
+  function refreshAddEpisodesVisibility() {
+    const isSerie = isSerieLike(typeSelect.value, genreSelectAdd ? genreSelectAdd.value : '');
+    episodesSection.style.display = isSerie ? 'block' : 'none';
+    if (isSerie && episodesData.length === 0) addEpisodeRow(episodesData, episodesListEl);
   }
-  if (eTypeSelect) {
-    eTypeSelect.addEventListener('change', () => {
-      eEpisodesSection.style.display = eTypeSelect.value === 'Série' ? 'block' : 'none';
-    });
+  function refreshEditEpisodesVisibility() {
+    const isSerie = isSerieLike(eTypeSelect.value, genreSelectEdit ? genreSelectEdit.value : '');
+    eEpisodesSection.style.display = isSerie ? 'block' : 'none';
   }
+  if (typeSelect) typeSelect.addEventListener('change', refreshAddEpisodesVisibility);
+  if (genreSelectAdd) genreSelectAdd.addEventListener('change', refreshAddEpisodesVisibility);
+  if (eTypeSelect) eTypeSelect.addEventListener('change', refreshEditEpisodesVisibility);
+  if (genreSelectEdit) genreSelectEdit.addEventListener('change', refreshEditEpisodesVisibility);
  
   // ----------------------------------------------------------------
   // Construit le sélecteur de saison + les cartes d'épisodes à partir
@@ -6581,10 +6592,13 @@ async function clearCurrentActivity() {
     const folder = folderFor(fields.type, fields.genre);
     const href = `https://inspecteurl.github.io/${folder}/${fields.slug}.html`;
     const badge = fields.provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
-    return `<div class="movieimg" data-type="${escapeAttr(fields.type)}" data-title="${escapeAttr(fields.h1)}" data-genre="${escapeAttr(fields.genre)}">
+    const dataTypeAttr = fields.genre === 'Anime' ? '' : ` data-type="${escapeAttr(fields.type)}"`;
+    const subgenreAttr = fields.genre === 'Anime' ? ` data-subgenre="${escapeAttr(fields.subgenre || '')}"` : '';
+    const spanText = fields.genre === 'Anime' ? `Anime — ${escapeHtml(fields.subgenre || '')}` : escapeHtml(fields.genre);
+    return `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(fields.h1)}" data-genre="${escapeAttr(fields.genre)}"${subgenreAttr}>
   <a href="${href}"><img src="${fields.posterUrl}" alt="${escapeAttr(fields.h1)}"></a>
   <h2>${escapeHtml(fields.h1)}</h2>
-  <span>${escapeHtml(fields.genre)}</span>${badge}
+  <span>${spanText}</span>${badge}
 </div>`;
   }
  
@@ -6596,8 +6610,9 @@ async function clearCurrentActivity() {
   function generateSeriesPage() {
     const fields = {
       h1: document.getElementById('fTitreAffiche').value.trim(),
-      type: 'Série',
+      type: typeSelect.value,
       genre: document.getElementById('fGenre').value,
+      subgenre: document.getElementById('fSubgenre') ? document.getElementById('fSubgenre').value : '',
       genreTexte: document.getElementById('fGenreTexte').value.trim(),
       realisateur: document.getElementById('fRealisateur').value.trim(),
       acteurs: document.getElementById('fActeurs').value.trim(),
@@ -6638,7 +6653,7 @@ async function clearCurrentActivity() {
   const generateBtn = document.getElementById('adminGenerateBtn');
   if (generateBtn) {
     generateBtn.addEventListener('click', (e) => {
-      if (typeSelect && typeSelect.value === 'Série') {
+      if (typeSelect && isSerieLike(typeSelect.value, genreSelectAdd ? genreSelectAdd.value : '')) {
         e.stopImmediatePropagation();
         generateSeriesPage();
       }
@@ -6660,8 +6675,11 @@ async function clearCurrentActivity() {
       renderEpisodes(eEpisodesListEl, episodesDataEdit);
       if (!href) return;
  
-      const isSerie = eTypeSelect.value === 'Série'
-        || document.querySelector(`#movieGrid a[href="${href}"]`)?.closest('.movieimg')?.dataset.type === 'Série';
+      const cardEl = document.querySelector(`#movieGrid a[href="${href}"]`)?.closest('.movieimg');
+      const isSerie = isSerieLike(
+        eTypeSelect.value,
+        genreSelectEdit ? genreSelectEdit.value : (cardEl?.dataset.genre || '')
+      ) || cardEl?.dataset.type === 'Série' || cardEl?.dataset.genre === 'Anime';
       eEpisodesSection.style.display = isSerie ? 'block' : 'none';
       if (!isSerie) return;
  
@@ -6694,8 +6712,9 @@ async function clearCurrentActivity() {
   function generateSeriesPageEdit() {
     const fields = {
       h1: document.getElementById('eTitreAffiche').value.trim(),
-      type: 'Série',
+      type: eTypeSelect.value,
       genre: document.getElementById('eGenre').value,
+      subgenre: document.getElementById('eSubgenre') ? document.getElementById('eSubgenre').value : '',
       genreTexte: document.getElementById('eGenreTexte').value.trim(),
       realisateur: document.getElementById('eRealisateur').value.trim(),
       acteurs: document.getElementById('eActeurs').value.trim(),
@@ -6729,7 +6748,7 @@ async function clearCurrentActivity() {
   const eGenerateBtn = document.getElementById('adminEditGenerateBtn');
   if (eGenerateBtn) {
     eGenerateBtn.addEventListener('click', (e) => {
-      if (eTypeSelect && eTypeSelect.value === 'Série') {
+      if (eTypeSelect && isSerieLike(eTypeSelect.value, genreSelectEdit ? genreSelectEdit.value : '')) {
         e.stopImmediatePropagation();
         generateSeriesPageEdit();
       }
@@ -6738,6 +6757,7 @@ async function clearCurrentActivity() {
  
 })();
 </script>
+ 
 <script>
 function updateCatalogueCounter() {
   const grid = document.getElementById('movieGrid');
