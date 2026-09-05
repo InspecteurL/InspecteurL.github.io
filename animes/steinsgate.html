@@ -653,11 +653,13 @@ Une organisation, la SERN, a mené différentes recherches à propos des voyages
         </div>
       </div>
       <div class="controls-right">
-        <span id="subtitles" class="material-symbols-outlined">subtitles</span>
-        <span id="source" class="material-symbols-outlined">cloud</span>
-        <span id="settings" class="material-symbols-outlined">settings</span>
-        <span id="fullscreen" class="material-symbols-outlined">fullscreen</span>
-      </div>
+  <span id="subtitles" class="material-symbols-outlined">subtitles</span>
+<span id="audioTrackBtn" class="material-symbols-outlined">record_voice_over</span>
+  <span id="source" class="material-symbols-outlined">cloud</span>
+  <span id="settings" class="material-symbols-outlined">settings</span>
+  <span id="fullscreen" class="material-symbols-outlined">fullscreen</span>
+</div>
+     
     </div>
  
     <div id="settingsMenu" class="menu">
@@ -672,6 +674,7 @@ Une organisation, la SERN, a mené différentes recherches à propos des voyages
     </div>
  
     <div id="subtitleMenu" class="menu"></div>
+<div id="audioTrackMenu" class="menu"></div>
   </div>
  
 
@@ -1163,7 +1166,44 @@ document.addEventListener('DOMContentLoaded', () => {
     'mouseenter',
     showFallbackBackButton
   );
- 
+
+
+ const audioTrackBtn = document.getElementById('audioTrackBtn');
+const audioTrackMenu = document.getElementById('audioTrackMenu');
+
+function buildAudioTrackMenu(tracks) {
+  audioTrackMenu.innerHTML = '';
+
+  if (!tracks || tracks.length === 0) {
+    const btn = document.createElement('button');
+    btn.textContent = 'Aucune piste disponible';
+    btn.disabled = true;
+    audioTrackMenu.appendChild(btn);
+    return;
+  }
+
+  tracks.forEach((track, index) => {
+    const btn = document.createElement('button');
+    const label = track.name || track.lang || `Piste ${index + 1}`;
+    btn.textContent = label;
+    btn.dataset.index = index;
+
+    if (index === hls.audioTrack) {
+      btn.style.color = '#ff416c';
+      btn.style.fontWeight = 'bold';
+    }
+
+    btn.addEventListener('click', () => {
+      hls.audioTrack = index;
+      audioTrackMenu.style.display = 'none';
+      buildAudioTrackMenu(tracks);
+    });
+
+    audioTrackMenu.appendChild(btn);
+  });
+}
+
+audioTrackBtn.addEventListener('click', () => toggleMenu(audioTrackMenu));
  
   /* =====================================================
      LECTEUR PRINCIPAL + FALLBACK
@@ -1286,54 +1326,41 @@ document.addEventListener('DOMContentLoaded', () => {
         Hls.isSupported()
       ) {
  
-        hls = new Hls({
-          maxBufferLength: 60,
-          maxMaxBufferLength: 120,
-          enableWorker: true
-        });
- 
- 
-        hls.loadSource(src);
- 
-        hls.attachMedia(video);
- 
- 
-        hls.on(
-          Hls.Events.MANIFEST_PARSED,
-          () => {
- 
-            disarmLoadTimeout();
- 
-            video.play().catch(err => {
-              console.warn(
-                'Lecture impossible :',
-                err
-              );
-            });
- 
-          }
-        );
- 
- 
-        hls.on(
-          Hls.Events.ERROR,
-          (event, data) => {
- 
-            if (!data.fatal) return;
- 
-            console.error(
-              'Erreur HLS principale :',
-              data
-            );
- 
-            switchToFallbackPlayer(
-              data.details || 'hls-error'
-            );
- 
-          }
-        );
- 
-      }
+hls = new Hls({
+  maxBufferLength: 60,
+  maxMaxBufferLength: 120,
+  enableWorker: true
+});
+
+hls.loadSource(src);
+hls.attachMedia(video);
+
+hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, () => {
+  const tracks = hls.audioTracks;
+  console.log('Pistes audio disponibles :', tracks);
+
+  const vfIndex = tracks.findIndex(track => {
+    const label = (track.name || '').toLowerCase();
+    const lang = (track.lang || '').toLowerCase();
+    return label.includes('vf') || label.includes('fran') || lang === 'fr';
+  });
+
+  if (vfIndex !== -1) {
+    hls.audioTrack = vfIndex;
+  }
+
+  buildAudioTrackMenu(tracks);
+});
+
+hls.on(
+  Hls.Events.MANIFEST_PARSED,
+  () => {
+    disarmLoadTimeout();
+    video.play().catch(err => {
+      console.warn('Lecture impossible :', err);
+    });
+  }
+);
  
       /*
        * Navigateur sans support HLS
@@ -1449,7 +1476,42 @@ document.addEventListener('DOMContentLoaded', () => {
       /*
        * Lancer lecteur
        */
- 
+ const audioTrackBtn = document.getElementById('audioTrackBtn');
+const audioTrackMenu = document.getElementById('audioTrackMenu');
+
+function buildAudioTrackMenu(tracks) {
+  audioTrackMenu.innerHTML = '';
+
+  if (!tracks || tracks.length === 0) {
+    const btn = document.createElement('button');
+    btn.textContent = 'Aucune piste disponible';
+    btn.disabled = true;
+    audioTrackMenu.appendChild(btn);
+    return;
+  }
+
+  tracks.forEach((track, index) => {
+    const btn = document.createElement('button');
+    const label = track.name || track.lang || `Piste ${index + 1}`;
+    btn.textContent = label;
+    btn.dataset.index = index;
+
+    if (index === hls.audioTrack) {
+      btn.style.color = '#ff416c';
+      btn.style.fontWeight = 'bold';
+    }
+
+    btn.addEventListener('click', () => {
+      hls.audioTrack = index;
+      audioTrackMenu.style.display = 'none';
+      buildAudioTrackMenu(tracks);
+    });
+
+    audioTrackMenu.appendChild(btn);
+  });
+}
+
+audioTrackBtn.addEventListener('click', () => toggleMenu(audioTrackMenu));
       playMovie(
         videoSrc,
         fallbackSrc,
@@ -1753,27 +1815,28 @@ document.addEventListener('DOMContentLoaded', () => {
   ===================================================== */
  
   function toggleMenu(menu) {
- 
-    const isVisible =
-      menu.style.display === 'flex';
- 
- 
-    [
-      settingsMenu,
-      sourceMenu,
-      subtitleMenu
-    ].forEach(m => {
- 
-      m.style.display = 'none';
- 
-    });
- 
- 
-    if (!isVisible) {
-      menu.style.display = 'flex';
-    }
- 
+
+  const isVisible =
+    menu.style.display === 'flex';
+
+
+  [
+    settingsMenu,
+    sourceMenu,
+    subtitleMenu,
+    audioTrackMenu
+  ].forEach(m => {
+
+    m.style.display = 'none';
+
+  });
+
+
+  if (!isVisible) {
+    menu.style.display = 'flex';
   }
+
+}
  
  
   /* =====================================================
@@ -1875,15 +1938,17 @@ document.addEventListener('DOMContentLoaded', () => {
       'none';
  
  
-    [
-      settingsMenu,
-      sourceMenu,
-      subtitleMenu
-    ].forEach(menu => {
+   [
+  settingsMenu,
+  sourceMenu,
+  subtitleMenu,
+  audioTrackMenu
+].forEach(menu => {
+
+  menu.style.display = 'none';
+
+});
  
-      menu.style.display = 'none';
- 
-    });
  
   }
  
