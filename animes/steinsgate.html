@@ -903,1446 +903,2175 @@ Une organisation, la SERN, a mené différentes recherches à propos des voyages
 </script>
  
 <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm';
- 
-  // Initialisation Supabase
-  const supabase = createClient(
-    'https://wuagahavmbugmnuzsouf.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
-  );
- 
-document.addEventListener('DOMContentLoaded', () => {
- 
-  const cards = document.querySelectorAll('.card');
- 
-  const videoContainer = document.getElementById('videoContainer');
-  const video = document.getElementById('video');
-  const backButton = document.getElementById('backButton');
-  const centerPlay = document.getElementById('centerPlay');
-  const controls = document.getElementById('controls');
-  const progressWrapper = document.getElementById('progressWrapper');
-  const progressBar = document.getElementById('progress-bar');
-  const currentTimeEl = document.getElementById('currentTime');
-  const totalTimeEl = document.getElementById('totalTime');
-  const playBtn = document.getElementById('play');
-  const volumeSlider = document.getElementById('volume-slider');
-  const volumeIcon = document.getElementById('volume-icon');
-  const settingsBtn = document.getElementById('settings');
-  const settingsMenu = document.getElementById('settingsMenu');
-  const sourceBtn = document.getElementById('source');
-  const sourceMenu = document.getElementById('sourceMenu');
-  const subtitleBtn = document.getElementById('subtitles');
-  const subtitleMenu = document.getElementById('subtitleMenu');
-  const forwardBtn = document.getElementById('forward');
-  const backwardBtn = document.getElementById('backward');
- 
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  const supabaseUrl = "https://wuagahavmbugmnuzsouf.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const movieId = "steinsgate";
+
+  const likeBtn = document.getElementById("likeBtn");
+  const dislikeBtn = document.getElementById("dislikeBtn");
+  const likeCount = document.getElementById("likeCount");
+  const dislikeCount = document.getElementById("dislikeCount");
+
+  let userId = null;
+  let currentVote = null;
+
   /* =====================================================
-     FALLBACK
+     AUTH
   ===================================================== */
- 
-  const fallbackFrame = document.getElementById('fallbackFrame');
-  const fallbackBanner = document.getElementById('fallbackBanner');
-  const fallbackHoverZone = document.getElementById('fallbackHoverZone');
- 
-  const LOAD_TIMEOUT_MS = 8000;
- 
-  let hls = null;
-  let loadTimeoutId = null;
-  let fallbackBtnHideTimeout = null;
- 
-  let currentCard = null;
-  let currentMainSource = null;
-  let currentFallbackSource = null;
- 
-  let usingFallback = false;
- 
- 
-  /* =====================================================
-     OUVERTURE
-  ===================================================== */
- 
-  function openVideo() {
-    videoContainer.style.display = 'flex';
-    showControls();
+
+  async function initUser() {
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    userId = user?.id || null;
   }
- 
- 
+
   /* =====================================================
-     FERMETURE
+     VOTES
   ===================================================== */
- 
-  function closeVideo() {
- 
-    clearTimeout(loadTimeoutId);
-    clearTimeout(fallbackBtnHideTimeout);
- 
-    video.pause();
- 
-    if (hls) {
-      hls.destroy();
-      hls = null;
+
+  async function loadVotes() {
+    const { data, error } = await supabase
+      .from("movie_likes")
+      .select("user_id, liked")
+      .eq("movie_id", movieId);
+
+    if (error) {
+      console.error("Erreur chargement votes :", error);
+      return;
     }
- 
-    video.removeAttribute('src');
-    video.load();
- 
-    fallbackFrame.src = '';
-    fallbackFrame.style.display = 'none';
- 
-    fallbackHoverZone.style.display = 'none';
-    fallbackBanner.style.display = 'none';
- 
-    video.style.display = '';
- 
-    controls.classList.remove('hide');
-    progressWrapper.classList.remove('hide');
-    centerPlay.classList.remove('hide');
-    backButton.classList.remove('hide');
- 
-    usingFallback = false;
- 
-    videoContainer.style.display = 'none';
- 
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
-    }
- 
-    /*
-     * Supabase :
-     * on efface l'activité quand le lecteur est fermé.
-     */
-    if (typeof clearCurrentActivity === 'function') {
-      clearCurrentActivity();
-    }
-  }
- 
-  backButton.addEventListener('click', closeVideo);
- 
- 
-  /* =====================================================
-     TIMEOUT
-  ===================================================== */
- 
-  function armLoadTimeout() {
- 
-    clearTimeout(loadTimeoutId);
- 
-    loadTimeoutId = setTimeout(() => {
- 
-      if (!usingFallback) {
-        switchToFallbackPlayer('timeout');
-      }
- 
-    }, LOAD_TIMEOUT_MS);
-  }
- 
-  function disarmLoadTimeout() {
-    clearTimeout(loadTimeoutId);
-  }
- 
- 
-  /* =====================================================
-     FALLBACK
-  ===================================================== */
- 
- function switchToFallbackPlayer(reason) {
 
-  if (usingFallback) return;
+    const votes = data || [];
 
-  if (!currentFallbackSource) {
-    console.error("Aucun fallback disponible pour cet épisode.");
-    return;
+    const likes = votes.filter(v => v.liked).length;
+    const dislikes = votes.filter(v => !v.liked).length;
+
+    likeCount.textContent = likes;
+    dislikeCount.textContent = dislikes;
+
+    const userVote = votes.find(v => v.user_id === userId);
+
+    currentVote = userVote
+      ? (userVote.liked ? "like" : "dislike")
+      : null;
+
+    updateVoteVisual();
   }
 
-  usingFallback = true;
-
-  disarmLoadTimeout();
-
-  console.warn(
-    "Fallback HLS activé :",
-    reason,
-    currentFallbackSource
-  );
-
-  // Détruire l'ancien HLS
-  if (hls) {
-    hls.destroy();
-    hls = null;
-  }
-
-  // Nettoyer le lecteur
-  video.pause();
-  video.removeAttribute('src');
-  video.load();
-
-  // IMPORTANT : on n'utilise plus l'iframe externe
-  fallbackFrame.src = '';
-  fallbackFrame.style.display = 'none';
-
-  fallbackHoverZone.style.display = 'none';
-
-  // Afficher le lecteur vidéo
-  video.style.display = '';
-
-  // Message
-  fallbackBanner.textContent = '⚠️ Fallback — VF';
-  fallbackBanner.style.display = 'block';
-
-  setTimeout(() => {
-    fallbackBanner.style.display = 'none';
-  }, 4000);
-
-  /*
-   * ==========================================
-   * LECTURE DU FALLBACK HLS
-   * ==========================================
-   */
-
-  if (typeof Hls === 'undefined') {
-    console.error("Hls.js n'est pas disponible.");
-    return;
-  }
-
-  /*
-   * Safari / navigateurs avec HLS natif
-   */
-  if (
-    video.canPlayType(
-      'application/vnd.apple.mpegurl'
-    )
-  ) {
-
-    video.src = currentFallbackSource;
-
-    video.addEventListener(
-      'loadedmetadata',
-      () => {
-
-        console.log(
-          "Fallback HLS chargé en HLS natif."
-        );
-
-        video.play().catch(console.warn);
-
-      },
-      { once: true }
+  function updateVoteVisual() {
+    likeBtn.classList.toggle(
+      "active-like",
+      currentVote === "like"
     );
 
-    return;
+    dislikeBtn.classList.toggle(
+      "active-dislike",
+      currentVote === "dislike"
+    );
   }
 
-  /*
-   * ==========================================
-   * HLS.JS
-   * ==========================================
-   */
+  /* =====================================================
+     LIKE
+  ===================================================== */
 
-  if (Hls.isSupported()) {
+  likeBtn.addEventListener("click", async () => {
+    if (!userId) {
+      alert("Connecte-toi pour voter !");
+      return;
+    }
 
-    hls = new Hls({
-      maxBufferLength: 60,
-      maxMaxBufferLength: 120,
-      enableWorker: true
-    });
+    if (currentVote === "like") {
 
-    /*
-     * Charger le master.m3u8
-     */
-    hls.loadSource(currentFallbackSource);
-    hls.attachMedia(video);
+      await supabase
+        .from("movie_likes")
+        .delete()
+        .eq("movie_id", movieId)
+        .eq("user_id", userId);
 
-    /*
-     * Récupérer les pistes audio
-     */
-    hls.on(
-      Hls.Events.AUDIO_TRACKS_UPDATED,
-      (event, data) => {
+      currentVote = null;
 
-        console.log(
-          '🎧 Pistes audio disponibles :',
-          data.audioTracks
-        );
+    } else {
 
-        const tracks = data.audioTracks || [];
+      await supabase
+        .from("movie_likes")
+        .delete()
+        .eq("movie_id", movieId)
+        .eq("user_id", userId);
 
-        /*
-         * Chercher "VF"
-         */
-        let vfIndex = tracks.findIndex(track =>
-          /(^|\b)vf(\b|$)/i.test(
-            track.name || ''
-          )
-        );
-
-        /*
-         * Si "VF" n'existe pas,
-         * chercher une piste française.
-         */
-        if (vfIndex === -1) {
-
-          vfIndex = tracks.findIndex(track =>
-            /français|french/i.test(
-              track.name || ''
-            ) ||
-            /^fr(-|$)/i.test(
-              track.lang || ''
-            ) ||
-            /^fra(-|$)/i.test(
-              track.lang || ''
-            )
-          );
-
-        }
-
-        /*
-         * Sélectionner la VF
-         */
-        if (vfIndex !== -1) {
-
-          console.log(
-            '🇫🇷 VF sélectionnée :',
-            tracks[vfIndex]
-          );
-
-          hls.audioTrack = vfIndex;
-
-        } else {
-
-          console.warn(
-            '⚠️ Aucune piste VF trouvée automatiquement.'
-          );
-
-          console.log(
-            'Pistes disponibles :',
-            tracks
-          );
-        }
-
-      }
-    );
-
-    /*
-     * Manifest chargé
-     */
-    hls.on(
-      Hls.Events.MANIFEST_PARSED,
-      () => {
-
-        console.log(
-          '✅ Fallback HLS chargé.'
-        );
-
-        video.play().catch(err => {
-          console.warn(
-            'Lecture automatique impossible :',
-            err
-          );
+      await supabase
+        .from("movie_likes")
+        .insert({
+          movie_id: movieId,
+          user_id: userId,
+          liked: true
         });
 
+      currentVote = "like";
+    }
+
+    updateVoteVisual();
+    loadVotes();
+  });
+
+  /* =====================================================
+     DISLIKE
+  ===================================================== */
+
+  dislikeBtn.addEventListener("click", async () => {
+    if (!userId) {
+      alert("Connecte-toi pour voter !");
+      return;
+    }
+
+    if (currentVote === "dislike") {
+
+      await supabase
+        .from("movie_likes")
+        .delete()
+        .eq("movie_id", movieId)
+        .eq("user_id", userId);
+
+      currentVote = null;
+
+    } else {
+
+      await supabase
+        .from("movie_likes")
+        .delete()
+        .eq("movie_id", movieId)
+        .eq("user_id", userId);
+
+      await supabase
+        .from("movie_likes")
+        .insert({
+          movie_id: movieId,
+          user_id: userId,
+          liked: false
+        });
+
+      currentVote = "dislike";
+    }
+
+    updateVoteVisual();
+    loadVotes();
+  });
+
+  /* =====================================================
+     REALTIME
+  ===================================================== */
+
+  supabase
+    .channel("public:movie_likes")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "movie_likes"
+      },
+      payload => {
+
+        if (
+          payload.new?.movie_id === movieId ||
+          payload.old?.movie_id === movieId
+        ) {
+          loadVotes();
+        }
+
       }
+    )
+    .subscribe();
+
+  await initUser();
+  loadVotes();
+
+
+  /* =====================================================
+     DOM
+  ===================================================== */
+
+  document.addEventListener("DOMContentLoaded", () => {
+
+    const cards =
+      document.querySelectorAll(".card");
+
+    const videoContainer =
+      document.getElementById("videoContainer");
+
+    const video =
+      document.getElementById("video");
+
+    const backButton =
+      document.getElementById("backButton");
+
+    const centerPlay =
+      document.getElementById("centerPlay");
+
+    const controls =
+      document.getElementById("controls");
+
+    const progressWrapper =
+      document.getElementById("progressWrapper");
+
+    const progressBar =
+      document.getElementById("progress-bar");
+
+    const currentTimeEl =
+      document.getElementById("currentTime");
+
+    const totalTimeEl =
+      document.getElementById("totalTime");
+
+    const playBtn =
+      document.getElementById("play");
+
+    const volumeSlider =
+      document.getElementById("volume-slider");
+
+    const volumeIcon =
+      document.getElementById("volume-icon");
+
+    const settingsBtn =
+      document.getElementById("settings");
+
+    const settingsMenu =
+      document.getElementById("settingsMenu");
+
+    const sourceBtn =
+      document.getElementById("source");
+
+    const sourceMenu =
+      document.getElementById("sourceMenu");
+
+    const subtitleBtn =
+      document.getElementById("subtitles");
+
+    const subtitleMenu =
+      document.getElementById("subtitleMenu");
+
+    const forwardBtn =
+      document.getElementById("forward");
+
+    const backwardBtn =
+      document.getElementById("backward");
+
+    /* =====================================================
+       FALLBACK
+    ===================================================== */
+
+    const fallbackFrame =
+      document.getElementById("fallbackFrame");
+
+    const fallbackBanner =
+      document.getElementById("fallbackBanner");
+
+    const fallbackHoverZone =
+      document.getElementById("fallbackHoverZone");
+
+    const LOAD_TIMEOUT_MS = 8000;
+
+    let hls = null;
+    let loadTimeoutId = null;
+    let fallbackBtnHideTimeout = null;
+
+    let currentCard = null;
+    let currentMainSource = null;
+    let currentFallbackSource = null;
+
+    let usingFallback = false;
+
+
+    /* =====================================================
+       OUVERTURE
+    ===================================================== */
+
+    function openVideo() {
+
+      videoContainer.style.display = "flex";
+
+      showControls();
+    }
+
+
+    /* =====================================================
+       FERMETURE
+    ===================================================== */
+
+    function closeVideo() {
+
+      clearTimeout(loadTimeoutId);
+      clearTimeout(fallbackBtnHideTimeout);
+
+      video.pause();
+
+      if (hls) {
+
+        hls.destroy();
+        hls = null;
+
+      }
+
+      video.removeAttribute("src");
+      video.load();
+
+      if (fallbackFrame) {
+
+        fallbackFrame.src = "";
+        fallbackFrame.style.display = "none";
+
+      }
+
+      if (fallbackHoverZone) {
+        fallbackHoverZone.style.display = "none";
+      }
+
+      if (fallbackBanner) {
+        fallbackBanner.style.display = "none";
+      }
+
+      video.style.display = "";
+
+      controls.classList.remove("hide");
+      progressWrapper.classList.remove("hide");
+      centerPlay.classList.remove("hide");
+      backButton.classList.remove("hide");
+
+      usingFallback = false;
+
+      videoContainer.style.display = "none";
+
+      if (document.fullscreenElement) {
+
+        document
+          .exitFullscreen()
+          .catch(() => {});
+
+      }
+
+      if (typeof clearCurrentActivity === "function") {
+        clearCurrentActivity();
+      }
+    }
+
+    backButton.addEventListener(
+      "click",
+      closeVideo
     );
 
-    /*
-     * Erreurs HLS
-     */
-    hls.on(
-      Hls.Events.ERROR,
-      (event, data) => {
+
+    /* =====================================================
+       TIMEOUT
+    ===================================================== */
+
+    function armLoadTimeout() {
+
+      clearTimeout(loadTimeoutId);
+
+      loadTimeoutId = setTimeout(() => {
+
+        if (!usingFallback) {
+
+          console.warn(
+            "⏱️ Timeout du lecteur principal."
+          );
+
+          switchToFallbackPlayer("timeout");
+
+        }
+
+      }, LOAD_TIMEOUT_MS);
+    }
+
+
+    function disarmLoadTimeout() {
+
+      clearTimeout(loadTimeoutId);
+
+    }
+
+
+    /* =====================================================
+       RECHERCHE PISTE VF
+    ===================================================== */
+
+    function findFrenchAudioTrack(tracks) {
+
+      if (!tracks || !tracks.length) {
+        return -1;
+      }
+
+      console.log(
+        "🎧 Analyse des pistes audio :",
+        tracks
+      );
+
+      /*
+       * PRIORITÉ 1
+       *
+       * Nom contenant exactement VF
+       *
+       * Exemples :
+       * VF
+       * VF Français
+       * Français VF
+       */
+
+      let index = tracks.findIndex(track => {
+
+        const name =
+          String(track.name || "")
+            .trim()
+            .toLowerCase();
+
+        return (
+          name === "vf" ||
+          name.includes("vf ") ||
+          name.includes(" vf") ||
+          name === "vf français" ||
+          name === "français vf"
+        );
+
+      });
+
+      if (index !== -1) {
+        return index;
+      }
+
+
+      /*
+       * PRIORITÉ 2
+       *
+       * Langue française
+       */
+
+      index = tracks.findIndex(track => {
+
+        const lang =
+          String(track.lang || "")
+            .trim()
+            .toLowerCase();
+
+        const name =
+          String(track.name || "")
+            .trim()
+            .toLowerCase();
+
+        return (
+          lang === "fr" ||
+          lang === "fra" ||
+          lang === "fre" ||
+          lang.startsWith("fr-") ||
+          name.includes("français") ||
+          name.includes("french")
+        );
+
+      });
+
+      if (index !== -1) {
+        return index;
+      }
+
+
+      /*
+       * PRIORITÉ 3
+       *
+       * Chercher une piste qui n'est PAS explicitement VO
+       */
+
+      index = tracks.findIndex(track => {
+
+        const name =
+          String(track.name || "")
+            .trim()
+            .toLowerCase();
+
+        return (
+          !name.includes("vo") &&
+          !name.includes("vost") &&
+          !name.includes("original") &&
+          !name.includes("japanese") &&
+          !name.includes("japon")
+        );
+
+      });
+
+      return index;
+    }
+
+
+    /* =====================================================
+       FORCER VF
+    ===================================================== */
+
+    function forceFrenchAudio() {
+
+      if (!hls) {
+        return false;
+      }
+
+      const tracks =
+        hls.audioTracks || [];
+
+      if (!tracks.length) {
+
+        console.warn(
+          "⚠️ Aucune piste audio détectée pour le moment."
+        );
+
+        return false;
+      }
+
+      const vfIndex =
+        findFrenchAudioTrack(tracks);
+
+      console.log(
+        "🔎 Index VF trouvé :",
+        vfIndex
+      );
+
+      if (vfIndex === -1) {
+
+        console.warn(
+          "⚠️ Impossible de trouver automatiquement la piste VF."
+        );
+
+        console.table(
+          tracks.map((track, index) => ({
+            index,
+            name: track.name,
+            lang: track.lang,
+            default: track.default,
+            groupId: track.groupId
+          }))
+        );
+
+        return false;
+      }
+
+      console.log(
+        "🇫🇷 FORCE VF :",
+        tracks[vfIndex]
+      );
+
+      /*
+       * C'est cette ligne qui force réellement
+       * HLS.js à utiliser la piste VF.
+       */
+
+      hls.audioTrack = vfIndex;
+
+      return true;
+    }
+
+
+    /* =====================================================
+       FALLBACK HLS
+    ===================================================== */
+
+    function switchToFallbackPlayer(reason) {
+
+      if (usingFallback) {
+        return;
+      }
+
+      if (!currentFallbackSource) {
 
         console.error(
-          'Erreur HLS fallback :',
-          data
+          "❌ Aucun fallback disponible pour cet épisode."
         );
 
-        if (!data.fatal) return;
-
-        switch (data.type) {
-
-          case Hls.ErrorTypes.NETWORK_ERROR:
-
-            console.warn(
-              'Erreur réseau HLS, récupération...'
-            );
-
-            hls.startLoad();
-            break;
-
-          case Hls.ErrorTypes.MEDIA_ERROR:
-
-            console.warn(
-              'Erreur média HLS, récupération...'
-            );
-
-            hls.recoverMediaError();
-            break;
-
-          default:
-
-            console.error(
-              'Erreur HLS fatale.'
-            );
-
-            hls.destroy();
-            hls = null;
-
-            break;
-        }
-
+        return;
       }
-    );
 
-  } else {
+      usingFallback = true;
 
-    console.error(
-      'Ce navigateur ne supporte pas HLS.'
-    );
+      disarmLoadTimeout();
 
-  }
+      console.warn(
+        "🔄 Fallback HLS activé :",
+        reason,
+        currentFallbackSource
+      );
 
-  showControls();
-}
 
- 
- 
-  /* =====================================================
-     BOUTON RETOUR FALLBACK
-  ===================================================== */
- 
-  function showFallbackBackButton() {
- 
-    backButton.classList.remove('hide');
- 
-    clearTimeout(fallbackBtnHideTimeout);
- 
-    fallbackBtnHideTimeout = setTimeout(() => {
- 
-      if (usingFallback) {
-        backButton.classList.add('hide');
-      }
- 
-    }, 3000);
-  }
- 
- 
-  fallbackHoverZone.addEventListener(
-    'mousemove',
-    showFallbackBackButton
-  );
- 
-  fallbackHoverZone.addEventListener(
-    'mouseenter',
-    showFallbackBackButton
-  );
- 
- 
-  /* =====================================================
-     LECTEUR PRINCIPAL + FALLBACK
-  ===================================================== */
- 
-  function playMovie(src, fallbackSrc, card) {
- 
-    currentCard = card;
- 
-    currentMainSource = src;
- 
-    currentFallbackSource = fallbackSrc;
- 
-    usingFallback = false;
- 
- 
-    /*
-     * Activité Supabase
-     */
- 
-    if (typeof updateCurrentActivity === 'function') {
-      updateCurrentActivity(card);
-    }
- 
- 
-    /*
-     * Ouvrir lecteur
-     */
- 
-    openVideo();
- 
- 
-    /*
-     * Nettoyage ancien lecteur
-     */
- 
-    if (hls) {
-      hls.destroy();
-      hls = null;
-    }
- 
-    fallbackBanner.style.display = 'none';
- 
-    video.style.display = '';
- 
-    video.removeAttribute('src');
-    video.load();
- 
- 
-    /*
-     * Lancer timeout
-     */
- 
-    armLoadTimeout();
- 
- 
-    /*
-     * SOURCE HLS
-     */
- 
-    if (src.endsWith('.m3u8')) {
- 
       /*
-       * HLS natif
+       * Détruire ancien HLS
        */
- 
+
+      if (hls) {
+
+        hls.destroy();
+        hls = null;
+
+      }
+
+
+      /*
+       * Nettoyer vidéo
+       */
+
+      video.pause();
+
+      video.removeAttribute("src");
+
+      video.load();
+
+
+      /*
+       * Ne pas utiliser iframe
+       */
+
+      if (fallbackFrame) {
+
+        fallbackFrame.src = "";
+        fallbackFrame.style.display = "none";
+
+      }
+
+      if (fallbackHoverZone) {
+
+        fallbackHoverZone.style.display = "none";
+
+      }
+
+
+      /*
+       * Afficher lecteur vidéo
+       */
+
+      video.style.display = "";
+
+
+      /*
+       * Bannière
+       */
+
+      fallbackBanner.textContent =
+        "⚠️ Fallback — VF";
+
+      fallbackBanner.style.display =
+        "block";
+
+      setTimeout(() => {
+
+        fallbackBanner.style.display =
+          "none";
+
+      }, 4000);
+
+
+      /*
+       * Vérifier Hls.js
+       */
+
+      if (
+        typeof Hls === "undefined"
+      ) {
+
+        console.error(
+          "❌ Hls.js n'est pas disponible."
+        );
+
+        return;
+      }
+
+
+      /* =================================================
+         HLS NATIF
+      ================================================= */
+
       if (
         video.canPlayType(
-          'application/vnd.apple.mpegurl'
+          "application/vnd.apple.mpegurl"
         )
       ) {
- 
-        video.src = src;
- 
-        video.addEventListener(
-          'loadedmetadata',
-          () => {
- 
-            disarmLoadTimeout();
- 
-            video.play().catch(err => {
-              console.warn(
-                'Lecture impossible :',
-                err
-              );
-            });
- 
-          },
-          { once: true }
+
+        console.log(
+          "🍎 HLS natif utilisé."
         );
- 
- 
+
+        video.src =
+          currentFallbackSource;
+
         video.addEventListener(
-          'error',
+          "loadedmetadata",
           () => {
- 
-            if (!usingFallback) {
-              switchToFallbackPlayer(
-                'native-hls-error'
-              );
-            }
- 
+
+            console.log(
+              "✅ Fallback HLS natif chargé."
+            );
+
+            video
+              .play()
+              .catch(console.warn);
+
           },
-          { once: true }
+          {
+            once: true
+          }
         );
- 
- 
+
+        showControls();
+
+        return;
       }
- 
-      /*
-       * HLS.js
-       */
- 
-      else if (
-        typeof Hls !== 'undefined' &&
-        Hls.isSupported()
-      ) {
- 
+
+
+      /* =================================================
+         HLS.JS
+      ================================================= */
+
+      if (Hls.isSupported()) {
+
+        console.log(
+          "🎬 Initialisation HLS.js pour le fallback."
+        );
+
         hls = new Hls({
+
           maxBufferLength: 60,
+
           maxMaxBufferLength: 120,
-          enableWorker: true
+
+          enableWorker: true,
+
+          /*
+           * On ne laisse pas HLS.js choisir
+           * une piste audio différente.
+           */
+
+          autoStartLoad: true
+
         });
- 
- 
-        hls.loadSource(src);
- 
+
+
+        /*
+         * Charger master.m3u8
+         */
+
+        hls.loadSource(
+          currentFallbackSource
+        );
+
+
+        /*
+         * Attacher vidéo
+         */
+
         hls.attachMedia(video);
- 
- 
+
+
+        /* =================================================
+           AUDIO TRACKS UPDATED
+        ================================================= */
+
+        hls.on(
+          Hls.Events.AUDIO_TRACKS_UPDATED,
+          (event, data) => {
+
+            console.log(
+              "🎧 AUDIO_TRACKS_UPDATED",
+              data.audioTracks
+            );
+
+            /*
+             * On force immédiatement la VF.
+             */
+
+            forceFrenchAudio();
+
+          }
+        );
+
+
+        /* =================================================
+           MANIFEST PARSED
+        ================================================= */
+
         hls.on(
           Hls.Events.MANIFEST_PARSED,
           () => {
- 
-            disarmLoadTimeout();
- 
-            video.play().catch(err => {
-              console.warn(
-                'Lecture impossible :',
-                err
-              );
-            });
- 
+
+            console.log(
+              "✅ Manifest fallback chargé."
+            );
+
+            /*
+             * Important :
+             *
+             * Les pistes peuvent être disponibles
+             * au moment du MANIFEST_PARSED.
+             *
+             * On force donc encore une fois la VF.
+             */
+
+            forceFrenchAudio();
+
+
+            /*
+             * Petite seconde vérification,
+             * utile lorsque le serveur fournit
+             * les pistes légèrement après le manifeste.
+             */
+
+            setTimeout(() => {
+
+              if (usingFallback && hls) {
+
+                console.log(
+                  "🔁 Vérification audio VF..."
+                );
+
+                forceFrenchAudio();
+
+              }
+
+            }, 300);
+
+
+            /*
+             * Lancer lecture
+             */
+
+            video
+              .play()
+              .then(() => {
+
+                console.log(
+                  "▶️ Fallback en lecture."
+                );
+
+              })
+              .catch(err => {
+
+                console.warn(
+                  "Lecture automatique impossible :",
+                  err
+                );
+
+              });
+
           }
         );
- 
- 
+
+
+        /* =================================================
+           AUDIO TRACK SWITCHED
+        ================================================= */
+
+        hls.on(
+          Hls.Events.AUDIO_TRACK_SWITCHED,
+          (event, data) => {
+
+            console.log(
+              "🎧 Piste audio active :",
+              data.id
+            );
+
+            /*
+             * Vérifier que HLS.js n'a pas repris
+             * la VO.
+             */
+
+            const tracks =
+              hls.audioTracks || [];
+
+            const currentTrack =
+              tracks[data.id];
+
+            if (!currentTrack) {
+              return;
+            }
+
+            const vfIndex =
+              findFrenchAudioTrack(tracks);
+
+            if (
+              vfIndex !== -1 &&
+              data.id !== vfIndex
+            ) {
+
+              console.warn(
+                "⚠️ HLS.js a sélectionné une autre piste."
+              );
+
+              console.log(
+                "🇫🇷 Retour forcé vers VF."
+              );
+
+              hls.audioTrack =
+                vfIndex;
+
+            }
+
+          }
+        );
+
+
+        /* =================================================
+           ERREURS HLS
+        ================================================= */
+
         hls.on(
           Hls.Events.ERROR,
           (event, data) => {
- 
-            if (!data.fatal) return;
- 
+
             console.error(
-              'Erreur HLS principale :',
+              "❌ Erreur HLS fallback :",
               data
             );
- 
-            switchToFallbackPlayer(
-              data.details || 'hls-error'
-            );
- 
+
+            if (!data.fatal) {
+              return;
+            }
+
+            switch (data.type) {
+
+              case Hls.ErrorTypes.NETWORK_ERROR:
+
+                console.warn(
+                  "🌐 Erreur réseau HLS, récupération..."
+                );
+
+                hls.startLoad();
+
+                break;
+
+
+              case Hls.ErrorTypes.MEDIA_ERROR:
+
+                console.warn(
+                  "🎞️ Erreur média HLS, récupération..."
+                );
+
+                hls.recoverMediaError();
+
+                break;
+
+
+              default:
+
+                console.error(
+                  "❌ Erreur HLS fatale."
+                );
+
+                hls.destroy();
+
+                hls = null;
+
+                break;
+
+            }
+
           }
         );
- 
-      }
- 
-      /*
-       * Navigateur sans support HLS
-       */
- 
-      else {
- 
-        switchToFallbackPlayer(
-          'hls-not-supported'
-        );
- 
-      }
- 
-    }
- 
- 
-    /*
-     * SOURCE MP4
-     */
- 
-    else {
- 
-      video.src = src;
- 
-      video.play().catch(err => {
- 
-        console.warn(
-          'Impossible de lancer le MP4 principal :',
-          err
-        );
- 
-        switchToFallbackPlayer(
-          'mp4-play-error'
-        );
- 
-      });
- 
-    }
-  }
- 
- 
-  /* =====================================================
-     ERREUR VIDEO PRINCIPALE
-  ===================================================== */
- 
-  video.addEventListener('error', () => {
- 
-    if (!usingFallback) {
- 
-      console.error(
-        'Erreur du lecteur principal.'
-      );
- 
-      switchToFallbackPlayer(
-        'video-error'
-      );
-    }
- 
-  });
- 
- 
-  /* =====================================================
-     CARTES ÉPISODES
-  ===================================================== */
- 
-  cards.forEach(card => {
- 
-    card.addEventListener('click', () => {
- 
-      const videoSrc =
-        card.dataset.video;
- 
-      const fallbackSrc =
-        card.dataset.fallback;
- 
- 
-      if (!videoSrc) {
- 
-        console.error(
-          'Aucune source principale pour cet épisode.'
-        );
- 
-        return;
-      }
- 
- 
-      if (!fallbackSrc) {
- 
-        console.warn(
-          'Aucun fallback pour cet épisode.'
-        );
- 
-      }
- 
- 
-      /*
-       * Saison / épisode
-       */
- 
-      currentSeason =
-        parseInt(
-          card.dataset.season || '1',
-          10
-        );
- 
-      currentEpisodeIndex =
-        parseInt(
-          card.dataset.episode || '1',
-          10
-        );
- 
- 
-      /*
-       * Lancer lecteur
-       */
- 
-      playMovie(
-        videoSrc,
-        fallbackSrc,
-        card
-      );
- 
-    });
- 
-  });
- 
- 
-  /* =====================================================
-     PLAY / PAUSE
-  ===================================================== */
- 
-  function togglePlay() {
- 
-    if (usingFallback) return;
- 
-    if (video.paused) {
- 
-      video.play().catch(console.warn);
- 
-    } else {
- 
-      video.pause();
- 
-    }
-  }
- 
- 
-  playBtn.addEventListener(
-    'click',
-    togglePlay
-  );
- 
-  centerPlay.addEventListener(
-    'click',
-    togglePlay
-  );
- 
- 
-  video.addEventListener('play', () => {
- 
-    playBtn.textContent = 'pause';
-    centerPlay.textContent = 'pause';
- 
-    showControls();
- 
-  });
- 
- 
-  video.addEventListener('pause', () => {
- 
-    playBtn.textContent = 'play_arrow';
-    centerPlay.textContent = 'play_arrow';
- 
-    centerPlay.classList.remove('hide');
- 
-    showControls();
- 
-  });
- 
- 
-  /* =====================================================
-     AVANCE / RECUL
-  ===================================================== */
- 
-  forwardBtn.addEventListener('click', () => {
- 
-    if (
-      usingFallback ||
-      isNaN(video.duration)
-    ) return;
- 
-    video.currentTime =
-      Math.min(
-        video.currentTime + 10,
-        video.duration
-      );
- 
-  });
- 
- 
-  backwardBtn.addEventListener('click', () => {
- 
-    if (
-      usingFallback ||
-      isNaN(video.duration)
-    ) return;
- 
-    video.currentTime =
-      Math.max(
-        video.currentTime - 10,
-        0
-      );
- 
-  });
- 
- 
-  /* =====================================================
-     TEMPS
-  ===================================================== */
- 
-  function formatTime(sec) {
- 
-    if (!isFinite(sec)) {
-      return '0:00';
-    }
- 
-    const m =
-      Math.floor(sec / 60);
- 
-    const s =
-      Math.floor(sec % 60);
- 
-    return `${m}:${s
-      .toString()
-      .padStart(2, '0')}`;
-  }
- 
- 
-  video.addEventListener(
-    'timeupdate',
-    () => {
- 
-      if (
-        usingFallback ||
-        !isFinite(video.duration) ||
-        video.duration <= 0
-      ) return;
- 
- 
-      const percent =
-        (video.currentTime /
-          video.duration) * 100;
- 
- 
-      progressBar.style.width =
-        percent + '%';
- 
- 
-      currentTimeEl.textContent =
-        formatTime(video.currentTime);
- 
- 
-      totalTimeEl.textContent =
-        formatTime(video.duration);
- 
-    }
-  );
- 
- 
-  /* =====================================================
-     BARRE DE PROGRESSION
-  ===================================================== */
- 
-  progressWrapper.addEventListener(
-    'click',
-    e => {
- 
-      if (
-        usingFallback ||
-        !isFinite(video.duration) ||
-        video.duration <= 0
-      ) return;
- 
- 
-      const rect =
-        progressWrapper.getBoundingClientRect();
- 
- 
-      const pos =
-        (e.clientX - rect.left) /
-        rect.width;
- 
- 
-      video.currentTime =
-        pos * video.duration;
- 
-    }
-  );
- 
- 
-  /* =====================================================
-     VOLUME
-  ===================================================== */
- 
-  volumeSlider.addEventListener(
-    'input',
-    () => {
- 
-      video.volume =
-        parseFloat(
-          volumeSlider.value
-        );
- 
-      updateVolumeIcon();
- 
-    }
-  );
- 
- 
-  volumeIcon.addEventListener(
-    'click',
-    () => {
- 
-      if (video.volume > 0) {
- 
-        video.volume = 0;
-        volumeSlider.value = 0;
- 
+
       } else {
- 
-        video.volume = 1;
-        volumeSlider.value = 1;
- 
+
+        console.error(
+          "❌ Ce navigateur ne supporte pas HLS."
+        );
+
       }
- 
-      updateVolumeIcon();
- 
+
+      showControls();
     }
-  );
- 
- 
-  function updateVolumeIcon() {
- 
-    if (video.volume === 0) {
- 
-      volumeIcon.textContent =
-        'volume_off';
- 
-    } else if (video.volume < 0.5) {
- 
-      volumeIcon.textContent =
-        'volume_down';
- 
-    } else {
- 
-      volumeIcon.textContent =
-        'volume_up';
- 
-    }
-  }
- 
- 
-  /* =====================================================
-     SETTINGS
-  ===================================================== */
- 
-  settingsBtn.addEventListener(
-    'click',
-    () => toggleMenu(settingsMenu)
-  );
- 
- 
-  settingsMenu
-    .querySelectorAll('button')
-    .forEach(btn => {
- 
-      btn.addEventListener(
-        'click',
-        () => {
- 
-          video.playbackRate =
-            parseFloat(
-              btn.dataset.speed
+
+
+    /* =====================================================
+       BOUTON RETOUR FALLBACK
+    ===================================================== */
+
+    function showFallbackBackButton() {
+
+      backButton.classList.remove("hide");
+
+      clearTimeout(
+        fallbackBtnHideTimeout
+      );
+
+      fallbackBtnHideTimeout =
+        setTimeout(() => {
+
+          if (usingFallback) {
+
+            backButton.classList.add(
+              "hide"
             );
- 
-          settingsMenu.style.display =
-            'none';
- 
+
+          }
+
+        }, 3000);
+    }
+
+
+    fallbackHoverZone.addEventListener(
+      "mousemove",
+      showFallbackBackButton
+    );
+
+    fallbackHoverZone.addEventListener(
+      "mouseenter",
+      showFallbackBackButton
+    );
+
+
+    /* =====================================================
+       LECTEUR PRINCIPAL + FALLBACK
+    ===================================================== */
+
+    function playMovie(
+      src,
+      fallbackSrc,
+      card
+    ) {
+
+      currentCard = card;
+
+      currentMainSource = src;
+
+      currentFallbackSource =
+        fallbackSrc;
+
+      usingFallback = false;
+
+
+      /*
+       * Activité Supabase
+       */
+
+      if (
+        typeof updateCurrentActivity ===
+        "function"
+      ) {
+
+        updateCurrentActivity(card);
+
+      }
+
+
+      /*
+       * Ouvrir lecteur
+       */
+
+      openVideo();
+
+
+      /*
+       * Nettoyage ancien HLS
+       */
+
+      if (hls) {
+
+        hls.destroy();
+
+        hls = null;
+
+      }
+
+
+      fallbackBanner.style.display =
+        "none";
+
+      video.style.display = "";
+
+      video.removeAttribute("src");
+
+      video.load();
+
+
+      /*
+       * Timeout
+       */
+
+      armLoadTimeout();
+
+
+      /* =================================================
+         SOURCE HLS
+      ================================================= */
+
+      if (src.endsWith(".m3u8")) {
+
+
+        /*
+         * HLS NATIF
+         */
+
+        if (
+          video.canPlayType(
+            "application/vnd.apple.mpegurl"
+          )
+        ) {
+
+          video.src = src;
+
+          video.addEventListener(
+            "loadedmetadata",
+            () => {
+
+              disarmLoadTimeout();
+
+              video
+                .play()
+                .catch(err => {
+
+                  console.warn(
+                    "Lecture impossible :",
+                    err
+                  );
+
+                });
+
+            },
+            {
+              once: true
+            }
+          );
+
+
+          video.addEventListener(
+            "error",
+            () => {
+
+              if (!usingFallback) {
+
+                switchToFallbackPlayer(
+                  "native-hls-error"
+                );
+
+              }
+
+            },
+            {
+              once: true
+            }
+          );
+
+        }
+
+
+        /*
+         * HLS.JS
+         */
+
+        else if (
+          typeof Hls !== "undefined" &&
+          Hls.isSupported()
+        ) {
+
+          hls = new Hls({
+
+            maxBufferLength: 60,
+
+            maxMaxBufferLength: 120,
+
+            enableWorker: true
+
+          });
+
+
+          hls.loadSource(src);
+
+          hls.attachMedia(video);
+
+
+          hls.on(
+            Hls.Events.MANIFEST_PARSED,
+            () => {
+
+              disarmLoadTimeout();
+
+              video
+                .play()
+                .catch(err => {
+
+                  console.warn(
+                    "Lecture impossible :",
+                    err
+                  );
+
+                });
+
+            }
+          );
+
+
+          hls.on(
+            Hls.Events.ERROR,
+            (event, data) => {
+
+              if (!data.fatal) {
+                return;
+              }
+
+              console.error(
+                "Erreur HLS principale :",
+                data
+              );
+
+              switchToFallbackPlayer(
+                data.details ||
+                "hls-error"
+              );
+
+            }
+          );
+
+        }
+
+
+        /*
+         * Navigateur sans HLS
+         */
+
+        else {
+
+          switchToFallbackPlayer(
+            "hls-not-supported"
+          );
+
+        }
+
+      }
+
+
+      /* =================================================
+         SOURCE MP4
+      ================================================= */
+
+      else {
+
+        video.src = src;
+
+
+        video.addEventListener(
+          "loadedmetadata",
+          () => {
+
+            disarmLoadTimeout();
+
+          },
+          {
+            once: true
+          }
+        );
+
+
+        video
+          .play()
+          .catch(err => {
+
+            console.warn(
+              "Impossible de lancer le MP4 principal :",
+              err
+            );
+
+            switchToFallbackPlayer(
+              "mp4-play-error"
+            );
+
+          });
+
+      }
+
+    }
+
+
+    /* =====================================================
+       ERREUR VIDÉO PRINCIPALE
+    ===================================================== */
+
+    video.addEventListener(
+      "error",
+      () => {
+
+        if (!usingFallback) {
+
+          console.error(
+            "Erreur du lecteur principal."
+          );
+
+          switchToFallbackPlayer(
+            "video-error"
+          );
+
+        }
+
+      }
+    );
+
+
+    /* =====================================================
+       CARTES ÉPISODES
+    ===================================================== */
+
+    cards.forEach(card => {
+
+      card.addEventListener(
+        "click",
+        () => {
+
+          const videoSrc =
+            card.dataset.video;
+
+          const fallbackSrc =
+            card.dataset.fallback;
+
+
+          if (!videoSrc) {
+
+            console.error(
+              "Aucune source principale pour cet épisode."
+            );
+
+            return;
+          }
+
+
+          if (!fallbackSrc) {
+
+            console.warn(
+              "Aucun fallback pour cet épisode."
+            );
+
+          }
+
+
+          currentSeason =
+            parseInt(
+              card.dataset.season || "1",
+              10
+            );
+
+
+          currentEpisodeIndex =
+            parseInt(
+              card.dataset.episode || "1",
+              10
+            );
+
+
+          playMovie(
+            videoSrc,
+            fallbackSrc,
+            card
+          );
+
         }
       );
- 
+
     });
- 
- 
-  /* =====================================================
-     SOURCE
-  ===================================================== */
- 
-  sourceBtn.addEventListener(
-    'click',
-    () => toggleMenu(sourceMenu)
-  );
- 
- 
-  /* =====================================================
-     SOUS-TITRES
-  ===================================================== */
- 
-  subtitleBtn.addEventListener(
-    'click',
-    () => toggleMenu(subtitleMenu)
-  );
- 
- 
-  /* =====================================================
-     MENUS
-  ===================================================== */
- 
-  function toggleMenu(menu) {
- 
-    const isVisible =
-      menu.style.display === 'flex';
- 
- 
-    [
-      settingsMenu,
-      sourceMenu,
-      subtitleMenu
-    ].forEach(m => {
- 
-      m.style.display = 'none';
- 
-    });
- 
- 
-    if (!isVisible) {
-      menu.style.display = 'flex';
-    }
- 
-  }
- 
- 
-  /* =====================================================
-     FULLSCREEN
-  ===================================================== */
- 
-  document
-    .getElementById('fullscreen')
-    .addEventListener('click', () => {
- 
-      if (!document.fullscreenElement) {
- 
-        videoContainer
-          .requestFullscreen()
+
+
+    /* =====================================================
+       PLAY / PAUSE
+    ===================================================== */
+
+    function togglePlay() {
+
+      /*
+       * IMPORTANT :
+       * On ne bloque PLUS le fallback ici.
+       *
+       * Le fallback utilise également <video>.
+       */
+
+      if (video.paused) {
+
+        video
+          .play()
           .catch(console.warn);
- 
+
       } else {
- 
-        document
-          .exitFullscreen()
-          .catch(console.warn);
- 
+
+        video.pause();
+
       }
- 
-    });
- 
- 
-  /* =====================================================
-     CONTRÔLES AUTO-HIDE
-  ===================================================== */
- 
-  let hideTimeout;
- 
-  video.controls = false;
- 
- 
-  function showControls() {
- 
-    if (usingFallback) {
- 
-      showFallbackBackButton();
- 
+
+    }
+
+
+    playBtn.addEventListener(
+      "click",
+      togglePlay
+    );
+
+    centerPlay.addEventListener(
+      "click",
+      togglePlay
+    );
+
+
+    video.addEventListener(
+      "play",
+      () => {
+
+        playBtn.textContent =
+          "pause";
+
+        centerPlay.textContent =
+          "pause";
+
+        showControls();
+
+      }
+    );
+
+
+    video.addEventListener(
+      "pause",
+      () => {
+
+        playBtn.textContent =
+          "play_arrow";
+
+        centerPlay.textContent =
+          "play_arrow";
+
+        centerPlay.classList.remove(
+          "hide"
+        );
+
+        showControls();
+
+      }
+    );
+
+
+    /* =====================================================
+       AVANCE
+    ===================================================== */
+
+    forwardBtn.addEventListener(
+      "click",
+      () => {
+
+        if (
+          isNaN(video.duration)
+        ) {
+          return;
+        }
+
+        video.currentTime =
+          Math.min(
+            video.currentTime + 10,
+            video.duration
+          );
+
+      }
+    );
+
+
+    /* =====================================================
+       RECUL
+    ===================================================== */
+
+    backwardBtn.addEventListener(
+      "click",
+      () => {
+
+        if (
+          isNaN(video.duration)
+        ) {
+          return;
+        }
+
+        video.currentTime =
+          Math.max(
+            video.currentTime - 10,
+            0
+          );
+
+      }
+    );
+
+
+    /* =====================================================
+       TEMPS
+    ===================================================== */
+
+    function formatTime(sec) {
+
+      if (!isFinite(sec)) {
+        return "0:00";
+      }
+
+      const m =
+        Math.floor(sec / 60);
+
+      const s =
+        Math.floor(sec % 60);
+
+      return `${m}:${s
+        .toString()
+        .padStart(2, "0")}`;
+    }
+
+
+    video.addEventListener(
+      "timeupdate",
+      () => {
+
+        if (
+          !isFinite(video.duration) ||
+          video.duration <= 0
+        ) {
+          return;
+        }
+
+
+        const percent =
+          (
+            video.currentTime /
+            video.duration
+          ) * 100;
+
+
+        progressBar.style.width =
+          percent + "%";
+
+
+        currentTimeEl.textContent =
+          formatTime(
+            video.currentTime
+          );
+
+
+        totalTimeEl.textContent =
+          formatTime(
+            video.duration
+          );
+
+      }
+    );
+
+
+    /* =====================================================
+       BARRE DE PROGRESSION
+    ===================================================== */
+
+    progressWrapper.addEventListener(
+      "click",
+      e => {
+
+        if (
+          !isFinite(video.duration) ||
+          video.duration <= 0
+        ) {
+          return;
+        }
+
+
+        const rect =
+          progressWrapper
+            .getBoundingClientRect();
+
+
+        const pos =
+          (
+            e.clientX -
+            rect.left
+          ) / rect.width;
+
+
+        video.currentTime =
+          pos * video.duration;
+
+      }
+    );
+
+
+    /* =====================================================
+       VOLUME
+    ===================================================== */
+
+    volumeSlider.addEventListener(
+      "input",
+      () => {
+
+        video.volume =
+          parseFloat(
+            volumeSlider.value
+          );
+
+        updateVolumeIcon();
+
+      }
+    );
+
+
+    volumeIcon.addEventListener(
+      "click",
+      () => {
+
+        if (video.volume > 0) {
+
+          video.volume = 0;
+
+          volumeSlider.value = 0;
+
+        } else {
+
+          video.volume = 1;
+
+          volumeSlider.value = 1;
+
+        }
+
+        updateVolumeIcon();
+
+      }
+    );
+
+
+    function updateVolumeIcon() {
+
+      if (video.volume === 0) {
+
+        volumeIcon.textContent =
+          "volume_off";
+
+      } else if (video.volume < 0.5) {
+
+        volumeIcon.textContent =
+          "volume_down";
+
+      } else {
+
+        volumeIcon.textContent =
+          "volume_up";
+
+      }
+
+    }
+
+
+    /* =====================================================
+       SETTINGS
+    ===================================================== */
+
+    settingsBtn.addEventListener(
+      "click",
+      () => toggleMenu(settingsMenu)
+    );
+
+
+    settingsMenu
+      .querySelectorAll("button")
+      .forEach(btn => {
+
+        btn.addEventListener(
+          "click",
+          () => {
+
+            video.playbackRate =
+              parseFloat(
+                btn.dataset.speed
+              );
+
+            settingsMenu.style.display =
+              "none";
+
+          }
+        );
+
+      });
+
+
+    /* =====================================================
+       SOURCE
+    ===================================================== */
+
+    sourceBtn.addEventListener(
+      "click",
+      () => toggleMenu(sourceMenu)
+    );
+
+
+    /* =====================================================
+       SOUS-TITRES
+    ===================================================== */
+
+    subtitleBtn.addEventListener(
+      "click",
+      () => toggleMenu(subtitleMenu)
+    );
+
+
+    /* =====================================================
+       MENUS
+    ===================================================== */
+
+    function toggleMenu(menu) {
+
+      const isVisible =
+        menu.style.display === "flex";
+
+
+      [
+        settingsMenu,
+        sourceMenu,
+        subtitleMenu
+      ].forEach(m => {
+
+        m.style.display = "none";
+
+      });
+
+
+      if (!isVisible) {
+
+        menu.style.display =
+          "flex";
+
+      }
+
+    }
+
+
+    /* =====================================================
+       FULLSCREEN
+    ===================================================== */
+
+    document
+      .getElementById("fullscreen")
+      .addEventListener(
+        "click",
+        () => {
+
+          if (!document.fullscreenElement) {
+
+            videoContainer
+              .requestFullscreen()
+              .catch(console.warn);
+
+          } else {
+
+            document
+              .exitFullscreen()
+              .catch(console.warn);
+
+          }
+
+        }
+      );
+
+
+    /* =====================================================
+       CONTRÔLES AUTO-HIDE
+    ===================================================== */
+
+    let hideTimeout;
+
+    video.controls = false;
+
+
+    function showControls() {
+
+      if (usingFallback) {
+
+        showFallbackBackButton();
+
+        return;
+      }
+
+
+      controls.classList.remove(
+        "hide"
+      );
+
+      progressWrapper.classList.remove(
+        "hide"
+      );
+
+      backButton.classList.remove(
+        "hide"
+      );
+
+
+      if (video.paused) {
+
+        centerPlay.classList.remove(
+          "hide"
+        );
+
+      } else {
+
+        centerPlay.classList.add(
+          "hide"
+        );
+
+      }
+
+
+      document.body.style.cursor =
+        "default";
+
+
+      clearTimeout(hideTimeout);
+
+
+      hideTimeout =
+        setTimeout(
+          hideControls,
+          3000
+        );
+
+    }
+
+
+    function hideControls() {
+
+      if (usingFallback) {
+        return;
+      }
+
+
+      if (!video.paused) {
+
+        centerPlay.classList.add(
+          "hide"
+        );
+
+      }
+
+
+      controls.classList.add(
+        "hide"
+      );
+
+      progressWrapper.classList.add(
+        "hide"
+      );
+
+      backButton.classList.add(
+        "hide"
+      );
+
+
+      document.body.style.cursor =
+        "none";
+
+
+      [
+        settingsMenu,
+        sourceMenu,
+        subtitleMenu
+      ].forEach(menu => {
+
+        menu.style.display = "none";
+
+      });
+
+    }
+
+
+    document.addEventListener(
+      "mousemove",
+      showControls
+    );
+
+    document.addEventListener(
+      "keydown",
+      showControls
+    );
+
+    video.addEventListener(
+      "click",
+      showControls
+    );
+
+
+    showControls();
+
+  });
+
+
+  /* =========================================================
+     SÉLECTEUR DE SAISONS
+  ========================================================= */
+
+  const seasonButtons =
+    document.querySelectorAll(
+      ".season-selector button"
+    );
+
+  const allCards =
+    document.querySelectorAll(
+      ".cards-container .card"
+    );
+
+
+  seasonButtons.forEach(btn => {
+
+    btn.addEventListener(
+      "click",
+      () => {
+
+        seasonButtons.forEach(b =>
+          b.classList.remove("active")
+        );
+
+        btn.classList.add("active");
+
+
+        const season =
+          btn.dataset.season;
+
+
+        allCards.forEach(card => {
+
+          if (
+            card.dataset.season ===
+            season
+          ) {
+
+            card.style.display =
+              "block";
+
+          } else {
+
+            card.style.display =
+              "none";
+
+          }
+
+        });
+
+      }
+    );
+
+  });
+
+
+  /* =========================================================
+     SAISON ACTIVE AU CHARGEMENT
+  ========================================================= */
+
+  window.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+      const activeButton =
+        document.querySelector(
+          ".season-selector button.active"
+        );
+
+
+      if (!activeButton) {
+        return;
+      }
+
+
+      const activeSeason =
+        activeButton.dataset.season;
+
+
+      allCards.forEach(card => {
+
+        card.style.display =
+          card.dataset.season ===
+          activeSeason
+            ? "block"
+            : "none";
+
+      });
+
+    }
+  );
+
+
+  /* =========================================================
+     ACTIVITÉ SUPABASE
+  ========================================================= */
+
+  const ANIME_TITLE =
+    "Steins ; Gate";
+
+  let currentSeason = 1;
+
+  let currentEpisodeIndex = null;
+
+  /*
+   * On réutilise le userId déjà récupéré
+   * par initUser().
+   */
+
+
+  /* =========================================================
+     SESSION UTILISATEUR
+  ========================================================= */
+
+  async function fetchSession() {
+
+    const {
+      data: sessionData,
+      error
+    } =
+      await supabase.auth.getSession();
+
+
+    if (error) {
+
+      console.error(
+        "Erreur session Supabase:",
+        error
+      );
+
+      return null;
+    }
+
+
+    const session =
+      sessionData?.session;
+
+
+    if (!session) {
+
+      console.warn(
+        "Pas de session (non connecté)."
+      );
+
+      return null;
+    }
+
+
+    return session.user.id;
+  }
+
+
+  /*
+   * Si initUser n'a pas encore récupéré
+   * l'utilisateur, on vérifie la session.
+   */
+
+  if (!userId) {
+
+    userId =
+      await fetchSession();
+
+  }
+
+
+  /* =========================================================
+     MISE À JOUR ACTIVITÉ
+  ========================================================= */
+
+  async function updateCurrentActivity(
+    episodeCard
+  ) {
+
+    if (!userId) {
       return;
     }
- 
- 
-    controls.classList.remove('hide');
- 
-    progressWrapper.classList.remove('hide');
- 
-    backButton.classList.remove('hide');
- 
- 
-    if (video.paused) {
- 
-      centerPlay.classList.remove('hide');
- 
-    } else {
- 
-      centerPlay.classList.add('hide');
- 
-    }
- 
- 
-    document.body.style.cursor =
-      'default';
- 
- 
-    clearTimeout(hideTimeout);
- 
- 
-    hideTimeout =
-      setTimeout(
-        hideControls,
-        3000
+
+
+    const episodeTitle =
+      episodeCard
+        .querySelector("h3")
+        ?.textContent || "";
+
+
+    const match =
+      episodeTitle.match(/\d+/);
+
+
+    const episodeNumber =
+      match
+        ? parseInt(match[0], 10)
+        : null;
+
+
+    const episodeImage =
+      episodeCard
+        .querySelector("img")
+        ?.src || null;
+
+
+    const {
+      error
+    } =
+      await supabase
+        .from("profiles")
+        .update({
+
+          currently_watching:
+            ANIME_TITLE,
+
+          episode_number:
+            episodeNumber,
+
+          episode_image:
+            episodeImage,
+
+          current_season:
+            currentSeason
+
+        })
+        .eq("id", userId);
+
+
+    if (error) {
+
+      console.error(
+        "Erreur update activité:",
+        error
       );
- 
-  }
- 
- 
-  function hideControls() {
- 
-    if (usingFallback) return;
- 
- 
-    if (!video.paused) {
-      centerPlay.classList.add('hide');
+
     }
- 
- 
-    controls.classList.add('hide');
- 
-    progressWrapper.classList.add('hide');
- 
-    backButton.classList.add('hide');
- 
- 
-    document.body.style.cursor =
-      'none';
- 
- 
-    [
-      settingsMenu,
-      sourceMenu,
-      subtitleMenu
-    ].forEach(menu => {
- 
-      menu.style.display = 'none';
- 
-    });
- 
+
   }
- 
- 
-  document.addEventListener(
-    'mousemove',
-    showControls
-  );
- 
-  document.addEventListener(
-    'keydown',
-    showControls
-  );
- 
-  video.addEventListener(
-    'click',
-    showControls
-  );
- 
- 
-  showControls();
- 
-});
- 
- 
- 
-/* =========================================================
-   SÉLECTEUR DE SAISONS
-========================================================= */
- 
-const seasonButtons =
-  document.querySelectorAll(
-    '.season-selector button'
-  );
- 
-const allCards =
-  document.querySelectorAll(
-    '.cards-container .card'
-  );
- 
- 
-seasonButtons.forEach(btn => {
- 
-  btn.addEventListener('click', () => {
- 
-    seasonButtons.forEach(b =>
-      b.classList.remove('active')
-    );
- 
-    btn.classList.add('active');
- 
-    const season =
-      btn.dataset.season;
- 
- 
-    allCards.forEach(card => {
- 
-      if (
-        card.dataset.season === season
-      ) {
- 
-        card.style.display = 'block';
- 
-      } else {
- 
-        card.style.display = 'none';
- 
-      }
- 
-    });
- 
-  });
- 
-});
- 
- 
-/* =========================================================
-   SAISON ACTIVE AU CHARGEMENT
-========================================================= */
- 
-window.addEventListener(
-  'DOMContentLoaded',
-  () => {
- 
-    const activeButton =
-      document.querySelector(
-        '.season-selector button.active'
+
+
+  /* =========================================================
+     EFFACER ACTIVITÉ
+  ========================================================= */
+
+  async function clearCurrentActivity() {
+
+    if (!userId) {
+      return;
+    }
+
+
+    const {
+      error
+    } =
+      await supabase
+        .from("profiles")
+        .update({
+
+          currently_watching: null,
+
+          episode_number: null,
+
+          episode_image: null,
+
+          current_season: null
+
+        })
+        .eq("id", userId);
+
+
+    if (error) {
+
+      console.error(
+        "Erreur clear activité:",
+        error
       );
- 
-    if (!activeButton) return;
- 
-    const activeSeason =
-      activeButton.dataset.season;
- 
- 
-    allCards.forEach(card => {
- 
-      card.style.display =
-        card.dataset.season === activeSeason
-          ? 'block'
-          : 'none';
- 
-    });
- 
+
+    }
+
   }
-);
- 
- 
- 
-/*************************************************
- * ACTIVITÉ SUPABASE
- *************************************************/
- 
-const ANIME_TITLE = "Steins ; Gate";
- 
-let currentSeason = 1;
-let currentEpisodeIndex = null;
-let userId = null;
- 
- 
-/*************************************************
- * SESSION UTILISATEUR
- *************************************************/
- 
-async function fetchSession() {
- 
-  if (
-    typeof supabase === 'undefined'
-  ) {
- 
-    console.error(
-      'Supabase n’est pas disponible.'
-    );
- 
-    return null;
-  }
- 
- 
-  const {
-    data: sessionData,
-    error
-  } =
-    await supabase.auth.getSession();
- 
- 
-  if (error) {
- 
-    console.error(
-      "Erreur session Supabase:",
-      error
-    );
- 
-    return null;
-  }
- 
- 
-  const session =
-    sessionData?.session;
- 
- 
-  if (!session) {
- 
-    console.warn(
-      "Pas de session (non connecté)."
-    );
- 
-    return null;
-  }
- 
- 
-  return session.user.id;
-}
- 
- 
-(async () => {
- 
-  userId =
-    await fetchSession();
- 
-})();
- 
- 
- 
-/*************************************************
- * MISE À JOUR ACTIVITÉ
- *************************************************/
- 
-async function updateCurrentActivity(
-  episodeCard
-) {
- 
-  if (!userId) return;
- 
- 
-  const episodeTitle =
-    episodeCard
-      .querySelector("h3")
-      ?.textContent || "";
- 
- 
-  const match =
-    episodeTitle.match(/\d+/);
- 
- 
-  const episodeNumber =
-    match
-      ? parseInt(match[0], 10)
-      : null;
- 
- 
-  const episodeImage =
-    episodeCard
-      .querySelector("img")
-      ?.src || null;
- 
- 
-  const {
-    error
-  } =
-    await supabase
-      .from("profiles")
-      .update({
- 
-        currently_watching:
-          ANIME_TITLE,
- 
-        episode_number:
-          episodeNumber,
- 
-        episode_image:
-          episodeImage,
- 
-        current_season:
-          currentSeason
- 
-      })
-      .eq("id", userId);
- 
- 
-  if (error) {
- 
-    console.error(
-      "Erreur update activité:",
-      error
-    );
- 
-  }
- 
-}
- 
- 
- 
-/*************************************************
- * EFFACER ACTIVITÉ
- *************************************************/
- 
-async function clearCurrentActivity() {
- 
-  if (!userId) return;
- 
- 
-  const {
-    error
-  } =
-    await supabase
-      .from("profiles")
-      .update({
- 
-        currently_watching: null,
- 
-        episode_number: null,
- 
-        episode_image: null,
- 
-        current_season: null
- 
-      })
-      .eq("id", userId);
- 
- 
-  if (error) {
- 
-    console.error(
-      "Erreur clear activité:",
-      error
-    );
- 
-  }
- 
-}
- 
- 
+
 </script>
+
  
 <script src="https://inspecteurl.github.io/films/script.js"></script>
 </body>
