@@ -650,7 +650,7 @@ Une organisation, la SERN, a mené différentes recherches à propos des voyages
   <!-- --- Lecteur vidéo --- -->
   <div class="video-container" id="videoContainer">
     <button class="back-button" id="backButton">← Retour à la fiche</button>
-    <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
+    <video id="video"></video>
     <iframe
   id="fallbackFrame"
   allow="autoplay; fullscreen"
@@ -1517,6 +1517,17 @@ document.addEventListener('DOMContentLoaded', () => {
   ===================================================== */
 
   video.addEventListener('error', () => {
+
+    /*
+     * Un removeAttribute('src') + load() déclenche un faux
+     * événement 'error' (pas de source = pas une vraie
+     * erreur de lecture). On l'ignore : on ne réagit que
+     * si une source a réellement été assignée.
+     */
+
+    if (!video.src && !video.currentSrc) {
+      return;
+    }
 
     if (!usingFallback) {
 
