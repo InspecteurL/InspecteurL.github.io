@@ -1378,58 +1378,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (src.endsWith('.m3u8')) {
 
+      console.log(
+        'Diagnostic HLS — Hls défini :', typeof Hls !== 'undefined',
+        '| Hls.isSupported() :', typeof Hls !== 'undefined' && Hls.isSupported(),
+        '| canPlayType HLS natif :', video.canPlayType('application/vnd.apple.mpegurl')
+      );
+
       /*
-       * HLS natif
+       * HLS.js (priorité : c'est lui qui gère
+       * correctement le multi-audio VF/VOSTFR)
        */
 
       if (
-        video.canPlayType(
-          'application/vnd.apple.mpegurl'
-        )
-      ) {
-
-        video.src = src;
-
-        video.addEventListener(
-          'loadedmetadata',
-          () => {
-
-            disarmLoadTimeout();
-
-            video.play().catch(err => {
-              console.warn(
-                'Lecture impossible :',
-                err
-              );
-            });
-
-          },
-          { once: true }
-        );
-
-
-        video.addEventListener(
-          'error',
-          () => {
-
-            if (!usingFallback) {
-              switchToFallbackPlayer(
-                'native-hls-error'
-              );
-            }
-
-          },
-          { once: true }
-        );
-
-
-      }
-
-      /*
-       * HLS.js
-       */
-
-      else if (
         typeof Hls !== 'undefined' &&
         Hls.isSupported()
       ) {
@@ -1469,6 +1429,54 @@ document.addEventListener('DOMContentLoaded', () => {
             switchToFallbackPlayer(data.details || 'hls-error');
           }
         );
+
+      }
+
+      /*
+       * HLS natif (repli : Safari uniquement, hls.js
+       * se désactive lui-même sur ce navigateur)
+       */
+
+      else if (
+        video.canPlayType(
+          'application/vnd.apple.mpegurl'
+        )
+      ) {
+
+        video.src = src;
+
+        video.addEventListener(
+          'loadedmetadata',
+          () => {
+
+            disarmLoadTimeout();
+
+            video.play().catch(err => {
+              console.warn(
+                'Lecture impossible :',
+                err
+              );
+            });
+
+          },
+          { once: true }
+        );
+
+
+        video.addEventListener(
+          'error',
+          () => {
+
+            if (!usingFallback) {
+              switchToFallbackPlayer(
+                'native-hls-error'
+              );
+            }
+
+          },
+          { once: true }
+        );
+
 
       }
 
