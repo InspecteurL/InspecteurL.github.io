@@ -573,6 +573,339 @@ video {
   z-index: 1100;
   display: none;
 }
+
+ /* =========================================================
+   FALLBACK : VIDÉO + AUDIO SÉPARÉS
+========================================================= */
+
+.fallback-player {
+  position: absolute;
+  inset: 0;
+
+  display: none;
+
+  background: #000;
+
+  grid-template-columns: minmax(0, 1fr) 280px;
+
+  z-index: 1060;
+
+  overflow: hidden;
+}
+
+
+/* ---------------------------------------------------------
+   ZONE VIDÉO
+--------------------------------------------------------- */
+
+.fallback-video-zone {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  background: #000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#fallbackVideo {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  background: #000;
+}
+
+
+/* ---------------------------------------------------------
+   PANNEAU AUDIO
+--------------------------------------------------------- */
+
+.fallback-audio-panel {
+  width: 280px;
+
+  height: 100%;
+
+  box-sizing: border-box;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(28,28,28,0.98),
+      rgba(12,12,12,0.98)
+    );
+
+  border-left: 1px solid rgba(255,255,255,0.12);
+
+  padding: 30px 22px;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+
+  gap: 25px;
+
+  z-index: 1070;
+}
+
+
+/* ---------------------------------------------------------
+   TITRE AUDIO
+--------------------------------------------------------- */
+
+.fallback-audio-title {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  color: white;
+
+  font-size: 20px;
+
+  font-weight: 700;
+}
+
+.fallback-audio-title
+.material-symbols-outlined {
+  font-size: 28px;
+}
+
+
+/* ---------------------------------------------------------
+   BOUTONS VF / VO
+--------------------------------------------------------- */
+
+.fallback-language-buttons {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+.fallback-language {
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  border: 1px solid rgba(255,255,255,0.15);
+
+  border-radius: 10px;
+
+  background: rgba(255,255,255,0.06);
+
+  color: white;
+
+  font-size: 16px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.fallback-language:hover {
+  background: rgba(255,255,255,0.12);
+
+  transform: translateX(2px);
+}
+
+.fallback-language.active {
+  background:
+    linear-gradient(
+      90deg,
+      #ff416c,
+      #ff4b2b
+    );
+
+  border-color: transparent;
+
+  box-shadow:
+    0 5px 20px rgba(255,65,108,0.25);
+}
+
+
+/* Petit point */
+
+.audio-dot {
+  width: 10px;
+  height: 10px;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.4);
+}
+
+.fallback-language.active
+.audio-dot {
+  background: white;
+
+  box-shadow:
+    0 0 8px white;
+}
+
+
+/* ---------------------------------------------------------
+   AUDIO ACTUEL
+--------------------------------------------------------- */
+
+.fallback-current-audio {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  color: #ccc;
+
+  font-size: 14px;
+}
+
+.fallback-current-audio
+.material-symbols-outlined {
+  font-size: 22px;
+}
+
+
+/* ---------------------------------------------------------
+   VOLUME AUDIO
+--------------------------------------------------------- */
+
+#fallbackVolume {
+  width: 100%;
+
+  height: 5px;
+
+  appearance: none;
+
+  background:
+    rgba(255,255,255,0.25);
+
+  border-radius: 5px;
+
+  outline: none;
+
+  cursor: pointer;
+}
+
+#fallbackVolume::-webkit-slider-thumb {
+  appearance: none;
+
+  width: 14px;
+  height: 14px;
+
+  border-radius: 50%;
+
+  background: #ff416c;
+
+  cursor: pointer;
+}
+
+#fallbackVolume::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+
+  border-radius: 50%;
+
+  background: #ff416c;
+
+  cursor: pointer;
+}
+
+
+/* ---------------------------------------------------------
+   MESSAGE FALLBACK
+--------------------------------------------------------- */
+
+.fallback-banner {
+  position: absolute;
+
+  top: 20px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  background: rgba(0,0,0,0.8);
+
+  color: #ffb74d;
+
+  padding: 9px 18px;
+
+  border-radius: 10px;
+
+  font-size: 13px;
+
+  z-index: 1200;
+
+  display: none;
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE
+--------------------------------------------------------- */
+
+@media (max-width: 768px) {
+
+  .fallback-player {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+
+  .fallback-audio-panel {
+    width: 100%;
+
+    height: auto;
+
+    border-left: none;
+
+    border-top:
+      1px solid rgba(255,255,255,0.12);
+
+    padding: 12px 15px;
+
+    gap: 12px;
+  }
+
+  .fallback-audio-title {
+    font-size: 16px;
+  }
+
+  .fallback-language-buttons {
+    flex-direction: row;
+  }
+
+  .fallback-language {
+    justify-content: center;
+  }
+
+  .fallback-current-audio {
+    display: none;
+  }
+
+  #fallbackVolume {
+    width: 100%;
+  }
+}
+
  
 </style>
 </head>
@@ -621,16 +954,76 @@ Une organisation, la SERN, a mené différentes recherches à propos des voyages
   <div class="video-container" id="videoContainer">
     <button class="back-button" id="backButton">← Retour à la fiche</button>
     <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
-    <iframe
-  id="fallbackFrame"
-  allow="autoplay; fullscreen"
-></iframe>
- 
-<div class="fallback-banner" id="fallbackBanner">
+  <!-- =====================================================
+     FALLBACK VIDÉO + AUDIO
+===================================================== -->
+
+<div id="fallbackPlayer" class="fallback-player">
+
+  <!-- VIDÉO -->
+  <div class="fallback-video-zone">
+    <video
+      id="fallbackVideo"
+      playsinline
+      preload="auto"
+    ></video>
+  </div>
+
+  <!-- PANNEAU AUDIO -->
+  <div class="fallback-audio-panel">
+
+    <div class="fallback-audio-title">
+      <span class="material-symbols-outlined">headphones</span>
+      <span>Audio</span>
+    </div>
+
+    <div class="fallback-language-buttons">
+
+      <button
+        id="fallbackVF"
+        class="fallback-language active"
+        data-audio-index="1"
+      >
+        <span class="audio-dot"></span>
+        VF
+      </button>
+
+      <button
+        id="fallbackVO"
+        class="fallback-language"
+        data-audio-index="0"
+      >
+        <span class="audio-dot"></span>
+        VO
+      </button>
+
+    </div>
+
+    <div class="fallback-current-audio">
+      <span class="material-symbols-outlined">volume_up</span>
+      <span id="fallbackAudioLabel">Français</span>
+    </div>
+
+    <input
+      type="range"
+      id="fallbackVolume"
+      min="0"
+      max="1"
+      step="0.05"
+      value="1"
+    >
+
+  </div>
+
+</div>
+
+<div
+  id="fallbackBanner"
+  class="fallback-banner"
+>
   ⚠️ Lecture via serveur alternatif
 </div>
- 
-<div id="fallbackHoverZone"></div>
+
  
     <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
  
@@ -940,10 +1333,1160 @@ document.addEventListener('DOMContentLoaded', () => {
      FALLBACK
   ===================================================== */
  
-  const fallbackFrame = document.getElementById('fallbackFrame');
-  const fallbackBanner = document.getElementById('fallbackBanner');
-  const fallbackHoverZone = document.getElementById('fallbackHoverZone');
- 
+  /* =====================================================
+   FALLBACK VIDÉO + AUDIO SÉPARÉS
+===================================================== */
+
+const fallbackPlayer =
+  document.getElementById('fallbackPlayer');
+
+const fallbackVideo =
+  document.getElementById('fallbackVideo');
+
+const fallbackBanner =
+  document.getElementById('fallbackBanner');
+
+const fallbackVF =
+  document.getElementById('fallbackVF');
+
+const fallbackVO =
+  document.getElementById('fallbackVO');
+
+const fallbackAudioLabel =
+  document.getElementById('fallbackAudioLabel');
+
+const fallbackVolume =
+  document.getElementById('fallbackVolume');
+
+
+/* =====================================================
+   HLS FALLBACK
+===================================================== */
+
+let fallbackVideoHls = null;
+let fallbackAudioHls = null;
+
+let fallbackAudioTracks = [];
+
+let currentFallbackAudioIndex = 1;
+
+let fallbackSyncInterval = null;
+
+let fallbackSwitchingAudio = false;
+
+
+/* =====================================================
+   EXTRACTION DU MANIFESTE MASTER
+===================================================== */
+
+async function getFallbackStreams(masterUrl) {
+
+  const response = await fetch(masterUrl);
+
+  if (!response.ok) {
+    throw new Error(
+      `Impossible de charger le manifeste : ${response.status}`
+    );
+  }
+
+  const manifest =
+    await response.text();
+
+  /*
+   * URL de base du manifeste.
+   *
+   * Exemple :
+   *
+   * https://serveur/anime/master.m3u8
+   *
+   * devient :
+   *
+   * https://serveur/anime/
+   */
+
+  const baseUrl =
+    new URL(
+      masterUrl,
+      window.location.href
+    );
+
+
+  const resolveUrl = (url) => {
+
+    return new URL(
+      url,
+      baseUrl
+    ).href;
+
+  };
+
+
+  let videoUrl = null;
+
+  const audioTracks = [];
+
+
+  /*
+   * Découpage ligne par ligne
+   */
+
+  const lines =
+    manifest.split(/\r?\n/);
+
+
+  for (let i = 0; i < lines.length; i++) {
+
+    const line =
+      lines[i].trim();
+
+
+    /*
+     * AUDIO
+     */
+
+    if (
+      line.startsWith(
+        '#EXT-X-MEDIA:TYPE=AUDIO'
+      )
+    ) {
+
+      const uriMatch =
+        line.match(
+          /URI="([^"]+)"/
+        );
+
+      const languageMatch =
+        line.match(
+          /LANGUAGE="([^"]+)"/
+        );
+
+      const nameMatch =
+        line.match(
+          /NAME="([^"]+)"/
+        );
+
+
+      if (uriMatch) {
+
+        audioTracks.push({
+
+          url:
+            resolveUrl(
+              uriMatch[1]
+            ),
+
+          language:
+            languageMatch
+              ? languageMatch[1]
+              : '',
+
+          name:
+            nameMatch
+              ? nameMatch[1]
+              : ''
+
+        });
+
+      }
+
+    }
+
+
+    /*
+     * VIDEO
+     *
+     * La ligne suivant EXT-X-STREAM-INF
+     */
+
+    if (
+      line.startsWith(
+        '#EXT-X-STREAM-INF:'
+      )
+    ) {
+
+      const nextLine =
+        lines[i + 1]?.trim();
+
+
+      if (
+        nextLine &&
+        !nextLine.startsWith('#')
+      ) {
+
+        videoUrl =
+          resolveUrl(
+            nextLine
+          );
+
+      }
+
+    }
+
+  }
+
+
+  if (!videoUrl) {
+
+    throw new Error(
+      'Flux vidéo introuvable dans le manifeste.'
+    );
+
+  }
+
+
+  if (audioTracks.length === 0) {
+
+    throw new Error(
+      'Aucune piste audio trouvée dans le manifeste.'
+    );
+
+  }
+
+
+  return {
+
+    videoUrl,
+    audioTracks
+
+  };
+
+}
+
+
+/* =====================================================
+   CHARGER HLS DANS UN ÉLÉMENT
+===================================================== */
+
+function loadHlsIntoMedia(
+  media,
+  url,
+  existingHls,
+  onReady
+) {
+
+  /*
+   * Détruire l'ancien HLS
+   */
+
+  if (existingHls) {
+
+    existingHls.destroy();
+
+  }
+
+
+  /*
+   * HLS.js
+   */
+
+  if (
+    typeof Hls !== 'undefined' &&
+    Hls.isSupported()
+  ) {
+
+    const newHls =
+      new Hls({
+
+        enableWorker: true,
+
+        maxBufferLength: 30,
+
+        maxMaxBufferLength: 60
+
+      });
+
+
+    newHls.loadSource(url);
+
+    newHls.attachMedia(media);
+
+
+    newHls.on(
+      Hls.Events.MANIFEST_PARSED,
+      () => {
+
+        if (onReady) {
+          onReady(newHls);
+        }
+
+      }
+    );
+
+
+    newHls.on(
+      Hls.Events.ERROR,
+      (event, data) => {
+
+        if (data.fatal) {
+
+          console.error(
+            'Erreur HLS fallback :',
+            data
+          );
+
+        }
+
+      }
+    );
+
+
+    return newHls;
+
+  }
+
+
+  /*
+   * HLS natif
+   *
+   * Safari / iOS notamment
+   */
+
+  if (
+    media.canPlayType(
+      'application/vnd.apple.mpegurl'
+    )
+  ) {
+
+    media.src = url;
+
+
+    media.addEventListener(
+      'loadedmetadata',
+      () => {
+
+        if (onReady) {
+          onReady(null);
+        }
+
+      },
+      { once: true }
+    );
+
+
+    return null;
+
+  }
+
+
+  throw new Error(
+    'Ce navigateur ne supporte pas HLS.'
+  );
+
+}
+
+
+/* =====================================================
+   SYNCHRONISATION AUDIO / VIDÉO
+===================================================== */
+
+function syncFallbackAudio(
+  force = false
+) {
+
+  if (
+    !fallbackVideo ||
+    !fallbackAudio
+  ) {
+    return;
+  }
+
+
+  if (
+    !isFinite(
+      fallbackVideo.currentTime
+    )
+  ) {
+    return;
+  }
+
+
+  if (
+    !isFinite(
+      fallbackAudio.currentTime
+    )
+  ) {
+    return;
+  }
+
+
+  const difference =
+    fallbackAudio.currentTime -
+    fallbackVideo.currentTime;
+
+
+  /*
+   * Petite différence :
+   * on ne touche à rien.
+   */
+
+  if (
+    !force &&
+    Math.abs(difference) < 0.35
+  ) {
+
+    return;
+
+  }
+
+
+  /*
+   * Correction du décalage
+   */
+
+  try {
+
+    fallbackAudio.currentTime =
+      fallbackVideo.currentTime;
+
+  } catch (error) {
+
+    console.warn(
+      'Synchronisation audio impossible :',
+      error
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   AUDIO FALLBACK
+===================================================== */
+
+let fallbackAudio = null;
+
+
+/* =====================================================
+   CRÉER LECTEUR AUDIO
+===================================================== */
+
+function createFallbackAudio() {
+
+  /*
+   * Si déjà créé :
+   */
+
+  if (fallbackAudio) {
+
+    fallbackAudio.pause();
+
+    fallbackAudio.remove();
+
+  }
+
+
+  fallbackAudio =
+    document.createElement('audio');
+
+
+  fallbackAudio.id =
+    'fallbackAudio';
+
+
+  fallbackAudio.preload =
+    'auto';
+
+
+  fallbackAudio.volume =
+    parseFloat(
+      fallbackVolume.value
+    );
+
+
+  fallbackAudio.style.display =
+    'none';
+
+
+  fallbackPlayer.appendChild(
+    fallbackAudio
+  );
+
+
+  /*
+   * Synchronisation lorsque
+   * la vidéo démarre
+   */
+
+  fallbackVideo.addEventListener(
+    'play',
+    () => {
+
+      syncFallbackAudio(true);
+
+      fallbackAudio
+        .play()
+        .catch(console.warn);
+
+    }
+  );
+
+
+  /*
+   * Pause
+   */
+
+  fallbackVideo.addEventListener(
+    'pause',
+    () => {
+
+      fallbackAudio.pause();
+
+    }
+  );
+
+
+  /*
+   * Seek
+   */
+
+  fallbackVideo.addEventListener(
+    'seeking',
+    () => {
+
+      syncFallbackAudio(true);
+
+    }
+  );
+
+
+  fallbackVideo.addEventListener(
+    'seeked',
+    () => {
+
+      syncFallbackAudio(true);
+
+    }
+  );
+
+
+  /*
+   * Vitesse
+   */
+
+  fallbackVideo.addEventListener(
+    'ratechange',
+    () => {
+
+      fallbackAudio.playbackRate =
+        fallbackVideo.playbackRate;
+
+    }
+  );
+
+
+  /*
+   * Correction périodique
+   */
+
+  clearInterval(
+    fallbackSyncInterval
+  );
+
+
+  fallbackSyncInterval =
+    setInterval(() => {
+
+      if (
+        !fallbackVideo.paused
+      ) {
+
+        syncFallbackAudio();
+
+      }
+
+    }, 500);
+
+}
+
+
+/* =====================================================
+   CHANGER LA PISTE AUDIO
+===================================================== */
+
+async function switchFallbackAudio(
+  index
+) {
+
+  if (
+    fallbackSwitchingAudio
+  ) {
+    return;
+  }
+
+
+  if (
+    !fallbackAudioTracks[index]
+  ) {
+
+    console.error(
+      'Piste audio inexistante :',
+      index
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * Ne rien faire si même piste
+   */
+
+  if (
+    index === currentFallbackAudioIndex &&
+    fallbackAudio
+  ) {
+
+    return;
+
+  }
+
+
+  fallbackSwitchingAudio =
+    true;
+
+
+  const track =
+    fallbackAudioTracks[index];
+
+
+  const wasPlaying =
+    !fallbackVideo.paused;
+
+
+  const currentTime =
+    fallbackVideo.currentTime;
+
+
+  try {
+
+    /*
+     * Arrêter l'ancien HLS audio
+     */
+
+    if (fallbackAudioHls) {
+
+      fallbackAudioHls.destroy();
+
+      fallbackAudioHls = null;
+
+    }
+
+
+    if (fallbackAudio) {
+
+      fallbackAudio.pause();
+
+      fallbackAudio.removeAttribute(
+        'src'
+      );
+
+      fallbackAudio.load();
+
+    }
+
+
+    /*
+     * Charger nouvelle piste
+     */
+
+    fallbackAudioHls =
+      loadHlsIntoMedia(
+        fallbackAudio,
+        track.url,
+        null,
+        async () => {
+
+          /*
+           * Restaurer la position
+           */
+
+          try {
+
+            fallbackAudio.currentTime =
+              currentTime;
+
+          } catch (error) {
+
+            console.warn(error);
+
+          }
+
+
+          /*
+           * Restaurer vitesse
+           */
+
+          fallbackAudio.playbackRate =
+            fallbackVideo.playbackRate;
+
+
+          /*
+           * Restaurer volume
+           */
+
+          fallbackAudio.volume =
+            parseFloat(
+              fallbackVolume.value
+            );
+
+
+          /*
+           * Mettre à jour UI
+           */
+
+          currentFallbackAudioIndex =
+            index;
+
+
+          updateFallbackAudioUI();
+
+
+          /*
+           * Rejouer si la vidéo jouait
+           */
+
+          if (wasPlaying) {
+
+            await fallbackAudio
+              .play()
+              .catch(console.warn);
+
+          }
+
+
+          /*
+           * Synchronisation finale
+           */
+
+          setTimeout(
+            () => {
+
+              syncFallbackAudio(true);
+
+            },
+            300
+          );
+
+        }
+      );
+
+  } catch (error) {
+
+    console.error(
+      'Erreur changement audio :',
+      error
+    );
+
+  } finally {
+
+    fallbackSwitchingAudio =
+      false;
+
+  }
+
+}
+
+
+/* =====================================================
+   UI AUDIO
+===================================================== */
+
+function updateFallbackAudioUI() {
+
+  fallbackVF.classList.toggle(
+    'active',
+    currentFallbackAudioIndex === 1
+  );
+
+
+  fallbackVO.classList.toggle(
+    'active',
+    currentFallbackAudioIndex === 0
+  );
+
+
+  if (
+    currentFallbackAudioIndex === 1
+  ) {
+
+    fallbackAudioLabel.textContent =
+      'Français';
+
+  } else {
+
+    fallbackAudioLabel.textContent =
+      'Japonais';
+
+  }
+
+}
+
+
+/* =====================================================
+   BOUTONS VF / VO
+===================================================== */
+
+fallbackVF.addEventListener(
+  'click',
+  () => {
+
+    switchFallbackAudio(1);
+
+  }
+);
+
+
+fallbackVO.addEventListener(
+  'click',
+  () => {
+
+    switchFallbackAudio(0);
+
+  }
+);
+
+
+/* =====================================================
+   VOLUME
+===================================================== */
+
+fallbackVolume.addEventListener(
+  'input',
+  () => {
+
+    if (!fallbackAudio) {
+      return;
+    }
+
+
+    fallbackAudio.volume =
+      parseFloat(
+        fallbackVolume.value
+      );
+
+  }
+);
+
+
+/* =====================================================
+   FALLBACK PRINCIPAL
+===================================================== */
+
+async function switchToFallbackPlayer(
+  reason
+) {
+
+  if (usingFallback) {
+    return;
+  }
+
+
+  if (!currentFallbackSource) {
+
+    console.error(
+      'Aucun fallback disponible.'
+    );
+
+    return;
+
+  }
+
+
+  usingFallback = true;
+
+
+  disarmLoadTimeout();
+
+
+  console.warn(
+    'Fallback activé :',
+    reason
+  );
+
+
+  /*
+   * Détruire HLS principal
+   */
+
+  if (hls) {
+
+    hls.destroy();
+
+    hls = null;
+
+  }
+
+
+  /*
+   * Arrêter lecteur principal
+   */
+
+  video.pause();
+
+  video.removeAttribute(
+    'src'
+  );
+
+  video.load();
+
+
+  /*
+   * Masquer lecteur principal
+   */
+
+  video.style.display =
+    'none';
+
+
+  controls.classList.add(
+    'hide'
+  );
+
+  progressWrapper.classList.add(
+    'hide'
+  );
+
+  centerPlay.classList.add(
+    'hide'
+  );
+
+
+  /*
+   * Afficher fallback
+   */
+
+  fallbackPlayer.style.display =
+    'grid';
+
+
+  fallbackBanner.textContent =
+    '⚠️ Lecture via serveur alternatif';
+
+
+  fallbackBanner.style.display =
+    'block';
+
+
+  setTimeout(() => {
+
+    fallbackBanner.style.display =
+      'none';
+
+  }, 4000);
+
+
+  /*
+   * Créer lecteur audio
+   */
+
+  createFallbackAudio();
+
+
+  try {
+
+    /*
+     * Lire le master.m3u8
+     */
+
+    const streams =
+      await getFallbackStreams(
+        currentFallbackSource
+      );
+
+
+    console.log(
+      'Flux fallback trouvés :',
+      streams
+    );
+
+
+    /*
+     * Sauvegarder pistes audio
+     */
+
+    fallbackAudioTracks =
+      streams.audioTracks;
+
+
+    /*
+     * Par sécurité :
+     *
+     * index 0 = VO
+     * index 1 = VF
+     *
+     * comme dans TON manifeste.
+     */
+
+    if (
+      !fallbackAudioTracks[1]
+    ) {
+
+      console.warn(
+        'La piste VF (index 1) est absente.'
+      );
+
+    }
+
+
+    /*
+     * Charger la vidéo seule
+     */
+
+    fallbackVideoHls =
+      loadHlsIntoMedia(
+        fallbackVideo,
+        streams.videoUrl,
+        null,
+        async () => {
+
+          /*
+           * Charger VF par défaut
+           */
+
+          currentFallbackAudioIndex =
+            1;
+
+
+          await switchFallbackAudio(
+            1
+          );
+
+
+          /*
+           * Afficher l'UI
+           */
+
+          updateFallbackAudioUI();
+
+
+          /*
+           * Lecture
+           */
+
+          fallbackVideo
+            .play()
+            .catch(error => {
+
+              console.warn(
+                'Autoplay fallback bloqué :',
+                error
+              );
+
+            });
+
+        }
+      );
+
+  } catch (error) {
+
+    console.error(
+      'Erreur fallback :',
+      error
+    );
+
+
+    fallbackBanner.textContent =
+      '❌ Impossible de charger le fallback';
+
+
+    fallbackBanner.style.display =
+      'block';
+
+  }
+
+}
+
+
+/* =====================================================
+   FERMETURE FALLBACK
+===================================================== */
+
+function destroyFallbackPlayer() {
+
+  clearInterval(
+    fallbackSyncInterval
+  );
+
+
+  fallbackSyncInterval =
+    null;
+
+
+  /*
+   * HLS vidéo
+   */
+
+  if (fallbackVideoHls) {
+
+    fallbackVideoHls.destroy();
+
+    fallbackVideoHls = null;
+
+  }
+
+
+  /*
+   * HLS audio
+   */
+
+  if (fallbackAudioHls) {
+
+    fallbackAudioHls.destroy();
+
+    fallbackAudioHls = null;
+
+  }
+
+
+  /*
+   * Audio
+   */
+
+  if (fallbackAudio) {
+
+    fallbackAudio.pause();
+
+    fallbackAudio.removeAttribute(
+      'src'
+    );
+
+    fallbackAudio.load();
+
+    fallbackAudio.remove();
+
+    fallbackAudio = null;
+
+  }
+
+
+  /*
+   * Vidéo
+   */
+
+  fallbackVideo.pause();
+
+  fallbackVideo.removeAttribute(
+    'src'
+  );
+
+  fallbackVideo.load();
+
+
+  fallbackPlayer.style.display =
+    'none';
+
+
+  fallbackBanner.style.display =
+    'none';
+
+
+  fallbackAudioTracks =
+    [];
+
+}
+
   const LOAD_TIMEOUT_MS = 8000;
  
   let hls = null;
@@ -971,50 +2514,46 @@ document.addEventListener('DOMContentLoaded', () => {
      FERMETURE
   ===================================================== */
  
-  function closeVideo() {
- 
-    clearTimeout(loadTimeoutId);
-    clearTimeout(fallbackBtnHideTimeout);
- 
-    video.pause();
- 
-    if (hls) {
-      hls.destroy();
-      hls = null;
-    }
- 
-    video.removeAttribute('src');
-    video.load();
- 
-    fallbackFrame.src = '';
-    fallbackFrame.style.display = 'none';
- 
-    fallbackHoverZone.style.display = 'none';
-    fallbackBanner.style.display = 'none';
- 
-    video.style.display = '';
- 
-    controls.classList.remove('hide');
-    progressWrapper.classList.remove('hide');
-    centerPlay.classList.remove('hide');
-    backButton.classList.remove('hide');
- 
-    usingFallback = false;
- 
-    videoContainer.style.display = 'none';
- 
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
-    }
- 
-    /*
-     * Supabase :
-     * on efface l'activité quand le lecteur est fermé.
-     */
-    if (typeof clearCurrentActivity === 'function') {
-      clearCurrentActivity();
-    }
+ function closeVideo() {
+
+  clearTimeout(loadTimeoutId);
+  clearTimeout(fallbackBtnHideTimeout);
+
+  video.pause();
+
+  if (hls) {
+    hls.destroy();
+    hls = null;
   }
+
+  video.removeAttribute('src');
+  video.load();
+
+  /*
+   * Nettoyage du fallback
+   */
+  destroyFallbackPlayer();
+
+  video.style.display = '';
+
+  controls.classList.remove('hide');
+  progressWrapper.classList.remove('hide');
+  centerPlay.classList.remove('hide');
+  backButton.classList.remove('hide');
+
+  usingFallback = false;
+
+  videoContainer.style.display = 'none';
+
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  }
+
+  if (typeof clearCurrentActivity === 'function') {
+    clearCurrentActivity();
+  }
+}
+
  
   backButton.addEventListener('click', closeVideo);
  
@@ -1205,13 +2744,10 @@ document.addEventListener('DOMContentLoaded', () => {
       hls = null;
     }
  
-    fallbackFrame.src = '';
-    fallbackFrame.style.display = 'none';
- 
-    fallbackHoverZone.style.display = 'none';
-    fallbackBanner.style.display = 'none';
- 
-    video.style.display = '';
+   destroyFallbackPlayer();
+
+video.style.display = '';
+
  
     video.removeAttribute('src');
     video.load();
