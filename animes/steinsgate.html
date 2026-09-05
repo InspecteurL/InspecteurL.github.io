@@ -1230,14 +1230,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const lang = (track.lang || '').toLowerCase();
 
       if (preferredAudioLang === 'vf') {
-        return label.includes('vf') || label.includes('fran') || lang === 'fr';
+        return (
+          lang === 'fr' ||
+          lang === 'fra' ||
+          lang === 'fre' ||
+          label.includes('vf') ||
+          label.includes('fra') ||
+          label.includes('fran')
+        );
       } else {
         return (
+          lang === 'ja' ||
+          lang === 'jpn' ||
           label.includes('vostfr') ||
           label.includes('vo') ||
           label.includes('jap') ||
-          lang === 'ja' ||
-          lang === 'jpn'
+          label.includes('jpn')
         );
       }
     });
