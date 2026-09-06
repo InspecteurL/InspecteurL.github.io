@@ -808,27 +808,27 @@ video {
   </div>
 
   <div class="card" data-season="1" data-episode="" data-video="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E28.mp4" data-fallback="https://free.finepulfe.xyz/animes/tv/203737/S1/E28/premium-4ks0ah/master.m3u8">
-    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 28">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/8S0cS8muiH5iQwF53tOAHFld1hW.jpg" alt="Épisode 28">
     <h3>Épisode 28</h3>
   </div>
 
   <div class="card" data-season="1" data-episode="" data-video="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E29.mp4" data-fallback="https://free.finepulfe.xyz/animes/tv/203737/S1/E29/premium-e9whv9/master.m3u8">
-    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 29">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/yGqyqnR8jZMBwRWRjSiqBsnbL6x.jpg" alt="Épisode 29">
     <h3>Épisode 29</h3>
   </div>
 
   <div class="card" data-season="1" data-episode="" data-video="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E30.mp4" data-fallback="https://free.finepulfe.xyz/animes/tv/203737/S1/E30/premium-uhv7tt/master.m3u8">
-    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 30">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/os6DdBAJGljvP6EYa7ETIeTVAsw.jpg" alt="Épisode 30">
     <h3>Épisode 30</h3>
   </div>
 
   <div class="card" data-season="1" data-episode="" data-video="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E31.mp4" data-fallback="https://free.finepulfe.xyz/animes/tv/203737/S1/E31/premium-nwc053/master.m3u8">
-    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 31">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/iJOvKTBpkm0QicwHjZWzCdMmsBA.jpg" alt="Épisode 31">
     <h3>Épisode 31</h3>
   </div>
 
   <div class="card" data-season="1" data-episode="" data-video="https://cinedonuts.xyz/animes/VF/Oshi-No-Ko/S01/Oshi-No-Ko-S01-E32.mp4" data-fallback="https://free.finepulfe.xyz/animes/tv/203737/S1/E32/premium-u7cjbz/master.m3u8">
-    <img src="https://4kwallpapers.com/images/wallpapers/ai-hoshino-5k-oshi-no-ko-2880x1800-16213.jpg" alt="Épisode 32">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/pkDQjX6ngKU8OcYsl4pyiTPqeZP.jpg" alt="Épisode 32">
     <h3>Épisode 32</h3>
   </div>
 </div>
@@ -1139,9 +1139,12 @@ document.addEventListener('DOMContentLoaded', () => {
      * Afficher iframe fallback
      */
  
-    fallbackFrame.src =
-      'https://www.m3u8player.online/embed/m3u8?url=' +
-      encodeURIComponent(currentFallbackSource);
+     const fallbackUrl =
+  'https://bradm.ax/build/202606/10/e1c1f29d59fb2a341df6fe3103a41b06338c2049/index.html' +
+  '?mediaUrl=' + encodeURIComponent(currentFallbackSource) +
+  '&autoplay=1';
+
+fallbackFrame.src = fallbackUrl;
  
     fallbackFrame.style.display = 'block';
  
