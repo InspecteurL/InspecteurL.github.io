@@ -355,6 +355,58 @@
     margin-top:10px;
   }
   a.download-link:hover{opacity:0.7;}
+
+  .btn.small{
+    padding:5px 10px;
+    font-size:12px;
+  }
+  .trim-row{
+    display:flex;
+    gap:24px;
+    margin-top:14px;
+  }
+  .trim-field label{
+    display:block;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .trim-inline{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .trim-inline .mono{font-size:13px;}
+
+  .wave-panel{
+    border:1px solid var(--ink);
+    border-top:none;
+    padding:10px 14px 14px;
+  }
+  .wave-panel-label{
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .wave-panel canvas{
+    width:100%;
+    height:70px;
+    display:block;
+    background:#0F0F10;
+  }
+
+  .video-frame{position:relative;}
+  .countdown-overlay{
+    position:absolute;
+    inset:14px;
+    background:rgba(0,0,0,0.55);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:56px;
+  }
 </style>
 </head>
 <body>
@@ -471,35 +523,107 @@
   </div><!-- /tab-jeu -->
 
   <div class="tab-panel" id="tab-dub">
-    <div class="dropzone" id="dropzone" onclick="document.getElementById('video-input').click()">
-      <input type="file" id="video-input" accept="video/*" onchange="onVideoChosen(event)">
-      <div class="label">Cliquez pour importer une vidéo depuis votre appareil<br>(elle reste sur cet appareil, rien n'est envoyé)</div>
+
+    <!-- Builder: add clips to the reel -->
+    <div id="dub-builder">
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('video-input').click()">
+        <input type="file" id="video-input" accept="video/*" onchange="onVideoChosen(event)">
+        <div class="label">Importer une vidéo pour en découper un extrait<br>(elle reste sur cet appareil, rien n'est envoyé)</div>
+      </div>
+
+      <div class="video-frame" id="builder-frame" style="display:none;">
+        <div class="file-name mono" id="builder-filename"></div>
+        <video id="builder-video" playsinline controls></video>
+
+        <div class="trim-row">
+          <div class="trim-field">
+            <label>Début</label>
+            <div class="trim-inline">
+              <span class="mono" id="trim-start-label">0.0 s</span>
+              <button class="btn small" onclick="setTrim('start')">Caler ici</button>
+            </div>
+          </div>
+          <div class="trim-field">
+            <label>Fin</label>
+            <div class="trim-inline">
+              <span class="mono" id="trim-end-label">0.0 s</span>
+              <button class="btn small" onclick="setTrim('end')">Caler ici</button>
+            </div>
+          </div>
+        </div>
+        <p class="hint">Lisez la vidéo, mettez sur pause au bon moment, puis "Caler ici" pour poser le début ou la fin de l'extrait.</p>
+
+        <div class="dub-controls">
+          <button class="btn" onclick="previewTrim()">Prévisualiser l'extrait</button>
+          <button class="btn primary" onclick="addClipToReel()">Ajouter cet extrait à la liste</button>
+          <button class="btn" onclick="resetBuilder()">Changer de vidéo</button>
+        </div>
+        <div class="status-line mono" id="builder-status"></div>
+      </div>
+
+      <div id="reel-list-wrap" style="display:none;">
+        <table class="scoreboard" style="margin-top:8px;">
+          <thead><tr><th>Extrait</th><th style="text-align:right;">Durée</th><th></th></tr></thead>
+          <tbody id="reel-list-body"></tbody>
+        </table>
+        <div class="top-actions" style="justify-content:space-between;">
+          <span class="hint" style="margin-top:0;" id="reel-count-hint"></span>
+          <button class="btn primary" onclick="startReel()">Commencer la session de doublage</button>
+        </div>
+      </div>
     </div>
 
-    <div class="video-frame" id="video-frame" style="display:none;">
-      <div class="file-name mono" id="video-filename"></div>
-      <video id="dub-video" playsinline></video>
+    <!-- Player: go through the reel clip by clip -->
+    <div id="dub-player" style="display:none;">
+      <div class="session-bar mono">
+        <span id="clip-counter">CLIP 1 / 1</span>
+        <span id="clip-name-label"></span>
+      </div>
+
+      <div class="video-frame">
+        <video id="dub-video" playsinline></video>
+        <div class="countdown-overlay" id="countdown-overlay" style="display:none;"></div>
+      </div>
+
+      <div class="wave-panel">
+        <div class="wave-panel-label mono">Référence — voix atténuée</div>
+        <canvas id="wave-ref-canvas" width="700" height="90"></canvas>
+      </div>
+      <div class="wave-panel">
+        <div class="wave-panel-label mono">Ta prise</div>
+        <canvas id="wave-take-canvas" width="700" height="90"></canvas>
+      </div>
+
       <div class="dub-controls">
-        <button class="btn" id="btn-original" onclick="playOriginal()">Écouter la version originale</button>
-        <button class="btn primary" id="btn-dub" onclick="toggleDub()">Doubler cette scène</button>
-        <button class="btn" id="btn-change-video" onclick="resetDub()">Changer de vidéo</button>
+        <button class="btn" id="btn-hear-again" onclick="hearClipAgain()">Hear clip again</button>
+        <button class="btn" id="btn-watch" onclick="watchClip()">Watch</button>
+        <button class="btn primary" id="btn-record-clip" onclick="startRecordClip()">Record</button>
+        <button class="btn" id="btn-reset-mic" onclick="resetMicTake()" disabled>Reset Mic</button>
+        <button class="btn" id="btn-save-dub" onclick="saveDub()" disabled>Save Dub</button>
+        <button class="btn" id="btn-next-clip" onclick="nextClip()">Next ▶</button>
       </div>
       <div class="status-line mono" id="dub-status"></div>
-    </div>
 
-    <div class="result-block" id="dub-result" style="display:none;">
-      <div class="file-name mono">Ta version doublée</div>
-      <video id="dub-output" controls></video>
-      <br>
-      <a class="download-link" id="dub-download" download="doublage.webm">Télécharger le fichier .webm</a>
+      <div class="result-block" id="dub-result" style="display:none;">
+        <div class="file-name mono">Doublage exporté pour cet extrait</div>
+        <video id="dub-output" controls></video>
+        <br>
+        <a class="download-link" id="dub-download" download="doublage.webm">Télécharger le fichier .webm</a>
+      </div>
+
+      <div class="top-actions">
+        <button class="btn" onclick="backToBuilder()">Revenir à la liste des extraits</button>
+      </div>
     </div>
 
     <p class="hint" id="dub-support-hint"></p>
+    <p class="hint">Astuce technique : la réduction de voix utilise l'annulation du canal central (le vieux truc du karaoké), pas une vraie séparation par IA. Elle marche surtout si la vidéo est en stéréo avec les dialogues mixés au centre — le résultat varie selon la source.</p>
   </div><!-- /tab-dub -->
 
 </div>
 
 <script>
+
 /* ---------------- Data ---------------- */
 const REPLIQUES = [
   {text:"Mesdames et messieurs, le train de 8h12 n'arrivera jamais, et personne ne sait pourquoi.", consigne:"voix d'annonce de gare, lasse et résignée", rate:0.85, pitch:0.9},
@@ -837,7 +961,7 @@ function revealJudges(){
   const base = computeBaseScore(); // 0-1
   document.getElementById('judges-panel').style.display = 'block';
   document.getElementById('btn-judge').disabled = true;
-  document.getElementById('btn-record').disabled = true;
+  document.getElementById('btn-record-clip').disabled = true;
 
   let total = 0;
   const rows = [0,1,2];
@@ -913,117 +1037,427 @@ function switchTab(name){
   document.getElementById('tab-btn-dub').classList.toggle('active', name==='dub');
 }
 
-/* ---------------- Video dub feature ---------------- */
-let dubVideoURL = null;
-let dubMicStream = null;
-let dubRecorder = null;
-let dubChunks = [];
-let dubbing = false;
+/* ---------------- Video dub feature (clip reel) ---------------- */
+let sharedAudioCtx = null;
+function getCtx(){
+  if(!sharedAudioCtx) sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return sharedAudioCtx;
+}
+
+let reel = [];          // {name, url, start, end, buffer(full decoded AudioBuffer), takeUrl, takePeaks}
+let reelIndex = 0;
+let builderURL = null;
+let builderFile = null;
+let trimStart = 0, trimEnd = 0;
+
+let liveMicStream = null;
+let liveRecorder = null;
+let liveChunks = [];
+let liveAmpSamples = [];
+let liveAnimId2 = null;
+let currentTakePeaks = null;
 
 (function checkDubSupport(){
-  const video = document.createElement('video');
-  const supported = typeof video.captureStream === 'function' || typeof video.mozCaptureStream === 'function';
+  const v = document.createElement('video');
+  const supported = typeof v.captureStream === 'function' || typeof v.mozCaptureStream === 'function';
   if(!supported){
     document.getElementById('dub-support-hint').textContent =
       "Votre navigateur ne permet pas d'exporter la vidéo doublée (captureStream indisponible). Essayez avec Chrome, Edge ou Firefox à jour.";
   }
 })();
 
+/* ---- Builder: pick a video, trim, add to reel ---- */
 function onVideoChosen(e){
   const file = e.target.files[0];
   if(!file) return;
-  dubVideoURL = URL.createObjectURL(file);
-  const video = document.getElementById('dub-video');
-  video.src = dubVideoURL;
+  builderFile = file;
+  builderURL = URL.createObjectURL(file);
+  const video = document.getElementById('builder-video');
+  video.src = builderURL;
   video.muted = false;
-  document.getElementById('video-filename').textContent = file.name;
-  document.getElementById('video-frame').style.display = 'block';
+  document.getElementById('builder-filename').textContent = file.name;
+  document.getElementById('builder-frame').style.display = 'block';
   document.getElementById('dropzone').style.display = 'none';
-  document.getElementById('dub-result').style.display = 'none';
-  document.getElementById('dub-status').textContent = '';
+  document.getElementById('builder-status').textContent = '';
+  trimStart = 0; trimEnd = 0;
+  document.getElementById('trim-start-label').textContent = '0.0 s';
+  document.getElementById('trim-end-label').textContent = '0.0 s';
+  video.onloadedmetadata = () => {
+    trimEnd = video.duration;
+    document.getElementById('trim-end-label').textContent = video.duration.toFixed(1) + ' s';
+  };
 }
 
-function playOriginal(){
-  const video = document.getElementById('dub-video');
+function setTrim(which){
+  const video = document.getElementById('builder-video');
+  if(which === 'start'){
+    trimStart = video.currentTime;
+    document.getElementById('trim-start-label').textContent = trimStart.toFixed(1) + ' s';
+  } else {
+    trimEnd = video.currentTime;
+    document.getElementById('trim-end-label').textContent = trimEnd.toFixed(1) + ' s';
+  }
+}
+
+function previewTrim(){
+  const video = document.getElementById('builder-video');
+  if(trimEnd <= trimStart){
+    document.getElementById('builder-status').textContent = 'La fin doit être après le début.';
+    return;
+  }
+  video.currentTime = trimStart;
   video.muted = false;
-  video.currentTime = 0;
   video.play();
-  document.getElementById('dub-status').textContent = 'Lecture de la version originale…';
+  const stopAt = () => {
+    if(video.currentTime >= trimEnd - 0.05){
+      video.pause();
+      video.removeEventListener('timeupdate', stopAt);
+    }
+  };
+  video.addEventListener('timeupdate', stopAt);
 }
 
-function resetDub(){
-  const video = document.getElementById('dub-video');
+async function addClipToReel(){
+  if(trimEnd <= trimStart){
+    document.getElementById('builder-status').textContent = 'La fin doit être après le début.';
+    return;
+  }
+  document.getElementById('builder-status').textContent = 'Analyse de la piste audio…';
+  let buffer = null;
+  try{
+    const arrBuf = await builderFile.arrayBuffer();
+    buffer = await getCtx().decodeAudioData(arrBuf.slice(0));
+  }catch(err){
+    document.getElementById('builder-status').textContent =
+      "Impossible d'extraire l'audio de ce fichier — la voix atténuée ne sera pas disponible pour cet extrait, mais tu peux quand même le doubler.";
+  }
+  reel.push({
+    name: `${builderFile.name} (${trimStart.toFixed(1)}s–${trimEnd.toFixed(1)}s)`,
+    url: builderURL,
+    start: trimStart,
+    end: trimEnd,
+    buffer: buffer,
+    takeUrl: null,
+    takePeaks: null
+  });
+  renderReelList();
+  resetBuilder(true);
+}
+
+function resetBuilder(keepReel){
+  const video = document.getElementById('builder-video');
   video.pause();
   video.src = '';
-  document.getElementById('video-frame').style.display = 'none';
+  document.getElementById('builder-frame').style.display = 'none';
   document.getElementById('dropzone').style.display = 'block';
   document.getElementById('video-input').value = '';
-  document.getElementById('dub-result').style.display = 'none';
+  builderFile = null; builderURL = null;
 }
 
-async function toggleDub(){
-  if(dubbing){ stopDub(); return; }
+function renderReelList(){
+  const wrap = document.getElementById('reel-list-wrap');
+  const body = document.getElementById('reel-list-body');
+  if(reel.length === 0){ wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  body.innerHTML = '';
+  reel.forEach((c,i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${c.name}</td><td class="pts mono">${(c.end-c.start).toFixed(1)} s</td>
+      <td style="text-align:right;"><button class="remove mono" onclick="removeClip(${i})">retirer</button></td>`;
+    body.appendChild(tr);
+  });
+  document.getElementById('reel-count-hint').textContent = `${reel.length} extrait${reel.length>1?'s':''} dans la liste`;
+}
+function removeClip(i){ reel.splice(i,1); renderReelList(); }
+
+/* ---- Reel player ---- */
+function startReel(){
+  if(reel.length === 0) return;
+  reelIndex = 0;
+  document.getElementById('dub-builder').style.display = 'none';
+  document.getElementById('dub-player').style.display = 'block';
+  loadClip();
+}
+function backToBuilder(){
+  document.getElementById('dub-player').style.display = 'none';
+  document.getElementById('dub-builder').style.display = 'block';
+  renderReelList();
+}
+
+function centerCancel(buffer){
+  if(buffer.numberOfChannels < 2){
+    const ctx = getCtx();
+    const out = ctx.createBuffer(1, buffer.length, buffer.sampleRate);
+    out.copyToChannel(buffer.getChannelData(0), 0);
+    return out;
+  }
+  const L = buffer.getChannelData(0);
+  const R = buffer.getChannelData(1);
+  const ctx = getCtx();
+  const out = ctx.createBuffer(2, L.length, buffer.sampleRate);
+  const diff = new Float32Array(L.length);
+  for(let i=0;i<L.length;i++){ diff[i] = (L[i]-R[i]) * 0.6; }
+  out.copyToChannel(diff, 0);
+  out.copyToChannel(diff, 1);
+  return out;
+}
+
+function sliceBuffer(buffer, start, end){
+  const ctx = getCtx();
+  const sr = buffer.sampleRate;
+  const startSample = Math.floor(start*sr);
+  const endSample = Math.min(buffer.length, Math.floor(end*sr));
+  const len = Math.max(1, endSample - startSample);
+  const out = ctx.createBuffer(buffer.numberOfChannels, len, sr);
+  for(let ch=0; ch<buffer.numberOfChannels; ch++){
+    out.copyToChannel(buffer.getChannelData(ch).subarray(startSample, endSample), ch);
+  }
+  return out;
+}
+
+function computePeaks(buffer, bucketCount){
+  const data = buffer.getChannelData(0);
+  const bucketSize = Math.max(1, Math.floor(data.length / bucketCount));
+  const peaks = [];
+  for(let i=0;i<bucketCount;i++){
+    let min=1, max=-1;
+    const start = i*bucketSize;
+    for(let j=start; j<start+bucketSize && j<data.length; j++){
+      if(data[j] < min) min = data[j];
+      if(data[j] > max) max = data[j];
+    }
+    peaks.push([min===1?0:min, max===-1?0:max]);
+  }
+  return peaks;
+}
+
+function drawWaveform(canvasId, peaks, color, playheadRatio){
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height, mid = h/2;
+  ctx.clearRect(0,0,w,h);
+  if(!peaks || peaks.length === 0) return;
+  const barW = w / peaks.length;
+  ctx.fillStyle = color;
+  peaks.forEach((p,i) => {
+    const y1 = mid + p[0]*mid*0.9;
+    const y2 = mid + p[1]*mid*0.9;
+    ctx.fillRect(i*barW, Math.min(y1,y2), Math.max(barW-1,1), Math.max(Math.abs(y2-y1),2));
+  });
+  if(playheadRatio !== undefined && playheadRatio !== null){
+    ctx.strokeStyle = '#B23A2E';
+    ctx.beginPath();
+    ctx.moveTo(playheadRatio*w, 0);
+    ctx.lineTo(playheadRatio*w, h);
+    ctx.stroke();
+  }
+}
+
+let refReducedSliced = null;
+let refPeaksCache = null;
+
+function loadClip(){
+  const clip = reel[reelIndex];
+  document.getElementById('clip-counter').textContent = `CLIP ${reelIndex+1} / ${reel.length}`;
+  document.getElementById('clip-name-label').textContent = clip.name;
   const video = document.getElementById('dub-video');
-  if(!video.src){ return; }
+  video.src = clip.url;
+  video.currentTime = clip.start;
+
+  refReducedSliced = null;
+  refPeaksCache = null;
+  if(clip.buffer){
+    const sliced = sliceBuffer(clip.buffer, clip.start, clip.end);
+    refReducedSliced = centerCancel(sliced);
+    refPeaksCache = computePeaks(refReducedSliced, 140);
+  }
+  drawWaveform('wave-ref-canvas', refPeaksCache, '#C23FA6', null);
+
+  document.getElementById('dub-result').style.display = 'none';
+  document.getElementById('btn-reset-mic').disabled = true;
+  document.getElementById('btn-save-dub').disabled = true;
+  document.getElementById('dub-status').textContent = '';
+  currentTakePeaks = clip.takePeaks || null;
+  drawWaveform('wave-take-canvas', currentTakePeaks, '#3F8FC2', null);
+}
+
+function hearClipAgain(){
+  if(!refReducedSliced){
+    document.getElementById('dub-status').textContent = "Voix atténuée indisponible pour cet extrait.";
+    return;
+  }
+  const ctx = getCtx();
+  const src = ctx.createBufferSource();
+  src.buffer = refReducedSliced;
+  src.connect(ctx.destination);
+  const startedAt = performance.now();
+  const durMs = refReducedSliced.duration * 1000;
+  src.start();
+  document.getElementById('dub-status').textContent = 'Lecture de la référence (voix atténuée)…';
+  function frame(){
+    const t = performance.now() - startedAt;
+    if(t > durMs){ drawWaveform('wave-ref-canvas', refPeaksCache, '#C23FA6', null); return; }
+    drawWaveform('wave-ref-canvas', refPeaksCache, '#C23FA6', t/durMs);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+function watchClip(){
+  const clip = reel[reelIndex];
+  const video = document.getElementById('dub-video');
+  video.muted = false;
+  video.currentTime = clip.start;
+  video.play();
+  document.getElementById('dub-status').textContent = 'Lecture de la scène originale…';
+  const stopAt = () => {
+    if(video.currentTime >= clip.end - 0.05){
+      video.pause();
+      video.removeEventListener('timeupdate', stopAt);
+    }
+  };
+  video.addEventListener('timeupdate', stopAt);
+}
+
+async function startRecordClip(){
+  const clip = reel[reelIndex];
+  const video = document.getElementById('dub-video');
+  const overlay = document.getElementById('countdown-overlay');
 
   try{
-    dubMicStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    liveMicStream = await navigator.mediaDevices.getUserMedia({audio:true});
   }catch(err){
     document.getElementById('dub-status').textContent = 'Micro refusé ou indisponible — vérifiez les permissions.';
     return;
   }
 
-  const captureFn = video.captureStream || video.mozCaptureStream;
-  if(!captureFn){
-    document.getElementById('dub-status').textContent = "Export vidéo non supporté par ce navigateur.";
-    return;
+  document.getElementById('btn-record-clip').disabled = true;
+  document.getElementById('btn-hear-again').disabled = true;
+  document.getElementById('btn-watch').disabled = true;
+  document.getElementById('btn-next-clip').disabled = true;
+
+  overlay.style.display = 'flex';
+  for(const n of ['3','2','1','Parlez !']){
+    overlay.textContent = n;
+    await new Promise(r => setTimeout(r, 700));
+  }
+  overlay.style.display = 'none';
+
+  const ctx = getCtx();
+  const micSource = ctx.createMediaStreamSource(liveMicStream);
+  const analyser = ctx.createAnalyser();
+  analyser.fftSize = 512;
+  micSource.connect(analyser);
+
+  const mixDest = ctx.createMediaStreamDestination();
+  micSource.connect(mixDest);
+  let backingSrc = null;
+  if(refReducedSliced){
+    backingSrc = ctx.createBufferSource();
+    backingSrc.buffer = refReducedSliced;
+    backingSrc.connect(mixDest);
+    backingSrc.connect(ctx.destination); // let the performer hear the backing too
   }
 
-  video.muted = true;
-  video.currentTime = 0;
+  const captureFn = video.captureStream || video.mozCaptureStream;
+  let videoTracks = [];
+  if(captureFn){
+    video.muted = true;
+    const vs = captureFn.call(video);
+    videoTracks = vs.getVideoTracks();
+  }
 
-  const videoStream = captureFn.call(video);
-  const combined = new MediaStream([
-    ...videoStream.getVideoTracks(),
-    ...dubMicStream.getAudioTracks()
-  ]);
-
+  const combined = new MediaStream([...videoTracks, ...mixDest.stream.getAudioTracks()]);
   let mimeType = '';
   const candidates = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
   for(const c of candidates){
     if(window.MediaRecorder && MediaRecorder.isTypeSupported(c)){ mimeType = c; break; }
   }
 
-  dubChunks = [];
-  dubRecorder = new MediaRecorder(combined, mimeType ? {mimeType} : undefined);
-  dubRecorder.ondataavailable = e => { if(e.data.size>0) dubChunks.push(e.data); };
-  dubRecorder.onstop = () => {
-    const blob = new Blob(dubChunks, {type: dubRecorder.mimeType || 'video/webm'});
+  liveChunks = [];
+  liveAmpSamples = [];
+  liveRecorder = new MediaRecorder(combined, mimeType ? {mimeType} : undefined);
+  liveRecorder.ondataavailable = e => { if(e.data.size>0) liveChunks.push(e.data); };
+
+  const finish = () => {
+    video.pause();
+    video.removeEventListener('timeupdate', stopAtEnd);
+    if(liveRecorder.state !== 'inactive') liveRecorder.stop();
+  };
+
+  liveRecorder.onstop = () => {
+    const blob = new Blob(liveChunks, {type: liveRecorder.mimeType || 'video/webm'});
     const url = URL.createObjectURL(blob);
+    clip.takeUrl = url;
+    clip.takePeaks = liveAmpSamples.map(a => [-a, a]);
+    currentTakePeaks = clip.takePeaks;
+    drawWaveform('wave-take-canvas', currentTakePeaks, '#3F8FC2', null);
+    liveMicStream.getTracks().forEach(t => t.stop());
+
+    document.getElementById('btn-record-clip').disabled = false;
+    document.getElementById('btn-hear-again').disabled = false;
+    document.getElementById('btn-watch').disabled = false;
+    document.getElementById('btn-next-clip').disabled = false;
+    document.getElementById('btn-reset-mic').disabled = false;
+    document.getElementById('btn-save-dub').disabled = false;
+    document.getElementById('dub-status').textContent = 'Prise terminée — réécoute, refais-la ou sauvegarde.';
+
     const out = document.getElementById('dub-output');
     out.src = url;
     document.getElementById('dub-download').href = url;
     document.getElementById('dub-result').style.display = 'block';
-    dubMicStream.getTracks().forEach(t => t.stop());
-    dubbing = false;
-    document.getElementById('btn-dub').textContent = 'Doubler cette scène';
-    document.getElementById('dub-status').textContent = 'Doublage terminé.';
   };
 
-  video.onended = () => { if(dubbing) stopDub(); };
+  video.currentTime = clip.start;
+  const stopAtEnd = () => { if(video.currentTime >= clip.end - 0.05) finish(); };
+  video.addEventListener('timeupdate', stopAtEnd);
 
-  dubRecorder.start();
+  liveRecorder.start();
+  if(backingSrc) backingSrc.start();
   video.play();
-  dubbing = true;
-  document.getElementById('btn-dub').textContent = 'Arrêter le doublage';
-  document.getElementById('dub-status').innerHTML = '<span class="rec-dot"></span>Doublage en cours — parlez par-dessus la vidéo (son coupé).';
+  document.getElementById('dub-status').innerHTML = '<span class="rec-dot"></span>Enregistrement en cours…';
+
+  liveWaveLoop2(analyser);
 }
 
-function stopDub(){
-  if(!dubbing) return;
-  const video = document.getElementById('dub-video');
-  video.pause();
-  if(dubRecorder && dubRecorder.state !== 'inactive') dubRecorder.stop();
+function liveWaveLoop2(analyser){
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  function frame(){
+    if(document.getElementById('dub-status').textContent.indexOf('Enregistrement') === -1) return;
+    analyser.getByteTimeDomainData(data);
+    let sum = 0;
+    for(let i=0;i<data.length;i++){ sum += Math.abs((data[i]-128)/128); }
+    liveAmpSamples.push(sum/data.length);
+    liveAnimId2 = requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function resetMicTake(){
+  const clip = reel[reelIndex];
+  clip.takeUrl = null;
+  clip.takePeaks = null;
+  currentTakePeaks = null;
+  drawWaveform('wave-take-canvas', null, '#3F8FC2', null);
+  document.getElementById('dub-result').style.display = 'none';
+  document.getElementById('btn-reset-mic').disabled = true;
+  document.getElementById('btn-save-dub').disabled = true;
+  document.getElementById('dub-status').textContent = 'Prise effacée — réenregistre quand tu veux.';
+}
+
+function saveDub(){
+  document.getElementById('dub-status').textContent = 'Doublage sauvegardé pour cet extrait.';
+  document.getElementById('btn-save-dub').disabled = true;
+}
+
+function nextClip(){
+  reelIndex++;
+  if(reelIndex >= reel.length){
+    document.getElementById('dub-status').textContent = 'Dernier extrait de la liste.';
+    reelIndex = reel.length - 1;
+    return;
+  }
+  loadClip();
 }
 </script>
 </body>
