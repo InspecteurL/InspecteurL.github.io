@@ -275,6 +275,86 @@
 
   .hint{font-size:12px; color:var(--ink-soft); margin-top:8px;}
   .top-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:24px;}
+
+  /* ---- Tabs ---- */
+  .tabs{
+    display:flex;
+    gap:0;
+    margin-bottom:24px;
+    border-bottom:1px solid var(--ink);
+  }
+  .tab-btn{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:13px;
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    padding:0 0 10px 0;
+    margin-right:24px;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    margin-bottom:-1px;
+  }
+  .tab-btn.active{
+    color:var(--ink);
+    border-bottom-color:var(--petrol);
+  }
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* ---- Video dub ---- */
+  .dropzone{
+    border:1px dashed var(--line);
+    padding:26px 20px;
+    text-align:center;
+    cursor:pointer;
+    margin-bottom:20px;
+  }
+  .dropzone:hover{border-color:var(--ink);}
+  .dropzone input{display:none;}
+  .dropzone .label{font-size:13px; color:var(--ink-soft);}
+  .video-frame{
+    border:1px solid var(--ink);
+    padding:14px;
+    margin-bottom:16px;
+  }
+  .video-frame video{
+    width:100%;
+    display:block;
+    background:#000;
+    max-height:360px;
+  }
+  .video-frame .file-name{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .dub-controls{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
+  .rec-dot{
+    display:inline-block;
+    width:8px; height:8px;
+    background:var(--live);
+    border-radius:50%;
+    margin-right:6px;
+    vertical-align:middle;
+  }
+  .result-block{
+    border-top:1px solid var(--ink);
+    padding-top:18px;
+    margin-top:18px;
+  }
+  .result-block .file-name{margin-bottom:10px;}
+  a.download-link{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--petrol);
+    text-decoration:none;
+    border-bottom:1px solid var(--petrol);
+    margin-top:10px;
+  }
+  a.download-link:hover{opacity:0.7;}
 </style>
 </head>
 <body>
@@ -284,6 +364,13 @@
     <h1>La Cabine</h1>
     <div class="tag mono">JEU D'IMITATION VOCALE</div>
   </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-btn-jeu" onclick="switchTab('jeu')">Jeu à répliques</button>
+    <button class="tab-btn" id="tab-btn-dub" onclick="switchTab('dub')">Doublage vidéo</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-jeu">
 
   <!-- SETUP -->
   <div class="screen active" id="screen-setup">
@@ -380,6 +467,35 @@
       <button class="btn" onclick="restart()">Nouvelle session</button>
     </div>
   </div>
+
+  </div><!-- /tab-jeu -->
+
+  <div class="tab-panel" id="tab-dub">
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('video-input').click()">
+      <input type="file" id="video-input" accept="video/*" onchange="onVideoChosen(event)">
+      <div class="label">Cliquez pour importer une vidéo depuis votre appareil<br>(elle reste sur cet appareil, rien n'est envoyé)</div>
+    </div>
+
+    <div class="video-frame" id="video-frame" style="display:none;">
+      <div class="file-name mono" id="video-filename"></div>
+      <video id="dub-video" playsinline></video>
+      <div class="dub-controls">
+        <button class="btn" id="btn-original" onclick="playOriginal()">Écouter la version originale</button>
+        <button class="btn primary" id="btn-dub" onclick="toggleDub()">Doubler cette scène</button>
+        <button class="btn" id="btn-change-video" onclick="resetDub()">Changer de vidéo</button>
+      </div>
+      <div class="status-line mono" id="dub-status"></div>
+    </div>
+
+    <div class="result-block" id="dub-result" style="display:none;">
+      <div class="file-name mono">Ta version doublée</div>
+      <video id="dub-output" controls></video>
+      <br>
+      <a class="download-link" id="dub-download" download="doublage.webm">Télécharger le fichier .webm</a>
+    </div>
+
+    <p class="hint" id="dub-support-hint"></p>
+  </div><!-- /tab-dub -->
 
 </div>
 
@@ -787,6 +903,127 @@ function showResults(){
 function restart(){
   document.getElementById('screen-results').classList.remove('active');
   document.getElementById('screen-setup').classList.add('active');
+}
+
+/* ---------------- Tabs ---------------- */
+function switchTab(name){
+  document.getElementById('tab-jeu').classList.toggle('active', name==='jeu');
+  document.getElementById('tab-dub').classList.toggle('active', name==='dub');
+  document.getElementById('tab-btn-jeu').classList.toggle('active', name==='jeu');
+  document.getElementById('tab-btn-dub').classList.toggle('active', name==='dub');
+}
+
+/* ---------------- Video dub feature ---------------- */
+let dubVideoURL = null;
+let dubMicStream = null;
+let dubRecorder = null;
+let dubChunks = [];
+let dubbing = false;
+
+(function checkDubSupport(){
+  const video = document.createElement('video');
+  const supported = typeof video.captureStream === 'function' || typeof video.mozCaptureStream === 'function';
+  if(!supported){
+    document.getElementById('dub-support-hint').textContent =
+      "Votre navigateur ne permet pas d'exporter la vidéo doublée (captureStream indisponible). Essayez avec Chrome, Edge ou Firefox à jour.";
+  }
+})();
+
+function onVideoChosen(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  dubVideoURL = URL.createObjectURL(file);
+  const video = document.getElementById('dub-video');
+  video.src = dubVideoURL;
+  video.muted = false;
+  document.getElementById('video-filename').textContent = file.name;
+  document.getElementById('video-frame').style.display = 'block';
+  document.getElementById('dropzone').style.display = 'none';
+  document.getElementById('dub-result').style.display = 'none';
+  document.getElementById('dub-status').textContent = '';
+}
+
+function playOriginal(){
+  const video = document.getElementById('dub-video');
+  video.muted = false;
+  video.currentTime = 0;
+  video.play();
+  document.getElementById('dub-status').textContent = 'Lecture de la version originale…';
+}
+
+function resetDub(){
+  const video = document.getElementById('dub-video');
+  video.pause();
+  video.src = '';
+  document.getElementById('video-frame').style.display = 'none';
+  document.getElementById('dropzone').style.display = 'block';
+  document.getElementById('video-input').value = '';
+  document.getElementById('dub-result').style.display = 'none';
+}
+
+async function toggleDub(){
+  if(dubbing){ stopDub(); return; }
+  const video = document.getElementById('dub-video');
+  if(!video.src){ return; }
+
+  try{
+    dubMicStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  }catch(err){
+    document.getElementById('dub-status').textContent = 'Micro refusé ou indisponible — vérifiez les permissions.';
+    return;
+  }
+
+  const captureFn = video.captureStream || video.mozCaptureStream;
+  if(!captureFn){
+    document.getElementById('dub-status').textContent = "Export vidéo non supporté par ce navigateur.";
+    return;
+  }
+
+  video.muted = true;
+  video.currentTime = 0;
+
+  const videoStream = captureFn.call(video);
+  const combined = new MediaStream([
+    ...videoStream.getVideoTracks(),
+    ...dubMicStream.getAudioTracks()
+  ]);
+
+  let mimeType = '';
+  const candidates = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+  for(const c of candidates){
+    if(window.MediaRecorder && MediaRecorder.isTypeSupported(c)){ mimeType = c; break; }
+  }
+
+  dubChunks = [];
+  dubRecorder = new MediaRecorder(combined, mimeType ? {mimeType} : undefined);
+  dubRecorder.ondataavailable = e => { if(e.data.size>0) dubChunks.push(e.data); };
+  dubRecorder.onstop = () => {
+    const blob = new Blob(dubChunks, {type: dubRecorder.mimeType || 'video/webm'});
+    const url = URL.createObjectURL(blob);
+    const out = document.getElementById('dub-output');
+    out.src = url;
+    document.getElementById('dub-download').href = url;
+    document.getElementById('dub-result').style.display = 'block';
+    dubMicStream.getTracks().forEach(t => t.stop());
+    dubbing = false;
+    document.getElementById('btn-dub').textContent = 'Doubler cette scène';
+    document.getElementById('dub-status').textContent = 'Doublage terminé.';
+  };
+
+  video.onended = () => { if(dubbing) stopDub(); };
+
+  dubRecorder.start();
+  video.play();
+  dubbing = true;
+  document.getElementById('btn-dub').textContent = 'Arrêter le doublage';
+  document.getElementById('dub-status').innerHTML = '<span class="rec-dot"></span>Doublage en cours — parlez par-dessus la vidéo (son coupé).';
+}
+
+function stopDub(){
+  if(!dubbing) return;
+  const video = document.getElementById('dub-video');
+  video.pause();
+  if(dubRecorder && dubRecorder.state !== 'inactive') dubRecorder.stop();
 }
 </script>
 </body>
