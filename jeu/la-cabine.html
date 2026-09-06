@@ -5,21 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Cabine — jeu d'imitation vocale</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#F6F5F1;
-    --ink:#17181A;
-    --ink-soft:#55575C;
-    --line:#D8D6CF;
-    --petrol:#1F5C52;
-    --gold:#B8862B;
-    --live:#B23A2E;
+    --bg:#0E0E11;
+    --panel:#1C1C20;
+    --panel-raised:#2A2A30;
+    --panel-raised-hover:#36363E;
+    --ink:#EDEDF0;
+    --ink-soft:#96969F;
+    --line:#38383F;
+    --magenta:#E23FB0;
+    --cyan:#42D6DE;
+    --gold:#D9A63E;
+    --live:#E1503F;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--paper);
+    background:
+      radial-gradient(ellipse at top, #17171B 0%, var(--bg) 60%);
     color:var(--ink);
     font-family:'Space Grotesk', sans-serif;
     min-height:100vh;
@@ -27,20 +32,27 @@
   }
   .mono{font-family:'IBM Plex Mono', monospace;}
   #app{
-    max-width:760px;
+    max-width:860px;
     margin:0 auto;
-    padding:28px 20px 60px;
+    padding:28px 18px 60px;
+  }
+  .cabinet{
+    background:var(--panel);
+    border-radius:20px;
+    padding:24px 24px 30px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+    border:1px solid #000;
   }
   .masthead{
     display:flex;
     justify-content:space-between;
     align-items:baseline;
-    border-bottom:1px solid var(--ink);
+    border-bottom:1px solid var(--line);
     padding-bottom:14px;
-    margin-bottom:28px;
+    margin-bottom:22px;
   }
   .masthead h1{
-    font-size:22px;
+    font-size:21px;
     letter-spacing:0.01em;
     margin:0;
     font-weight:700;
@@ -53,6 +65,59 @@
   .screen{display:none;}
   .screen.active{display:block;}
 
+  /* ---- Tabs ---- */
+  .tabs{
+    display:flex;
+    gap:0;
+    margin-bottom:22px;
+    border-bottom:1px solid var(--line);
+  }
+  .tab-btn{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:13px;
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    padding:0 0 10px 0;
+    margin-right:24px;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    margin-bottom:-1px;
+  }
+  .tab-btn.active{
+    color:var(--ink);
+    border-bottom-color:var(--magenta);
+  }
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* ---- Buttons ---- */
+  .btn{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:14px;
+    background:var(--panel-raised);
+    border:1px solid #000;
+    color:var(--ink);
+    padding:11px 18px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:0 2px 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition:background .15s ease, transform .05s ease;
+  }
+  .btn:hover{background:var(--panel-raised-hover);}
+  .btn:active{transform:translateY(1px);}
+  .btn.selected{background:var(--magenta); border-color:var(--magenta); color:#fff;}
+  .btn.primary{
+    background:linear-gradient(180deg, #EF52C4, var(--magenta));
+    border-color:var(--magenta);
+    color:#fff;
+  }
+  .btn.primary:hover{filter:brightness(1.08);}
+  .btn.wide{width:100%;}
+  .btn.small{padding:6px 12px; font-size:12px;}
+  .btn:disabled{opacity:0.35; cursor:not-allowed;}
+  .btn:disabled:hover{background:var(--panel-raised);}
+
   /* ---- Setup ---- */
   .field{margin-bottom:22px;}
   .field label{
@@ -61,28 +126,7 @@
     color:var(--ink-soft);
     margin-bottom:8px;
   }
-  .mode-row{display:flex; gap:10px;}
-  .btn{
-    font-family:'Space Grotesk', sans-serif;
-    font-size:14px;
-    background:transparent;
-    border:1px solid var(--ink);
-    color:var(--ink);
-    padding:10px 16px;
-    cursor:pointer;
-    transition:background .15s ease, color .15s ease;
-  }
-  .btn:hover{background:var(--ink); color:var(--paper);}
-  .btn.selected{background:var(--ink); color:var(--paper);}
-  .btn.primary{
-    background:var(--petrol);
-    border-color:var(--petrol);
-    color:var(--paper);
-  }
-  .btn.primary:hover{opacity:0.85; background:var(--petrol);}
-  .btn.wide{width:100%;}
-  .btn:disabled{opacity:0.35; cursor:not-allowed;}
-  .btn:disabled:hover{background:transparent; color:var(--ink);}
+  .mode-row{display:flex; gap:10px; flex-wrap:wrap;}
 
   .player-list{border-top:1px solid var(--line);}
   .player-row{
@@ -108,7 +152,7 @@
     padding:6px 2px;
     color:var(--ink);
   }
-  .player-row input:focus{outline:none; border-bottom-color:var(--ink);}
+  .player-row input:focus{outline:none; border-bottom-color:var(--magenta);}
   .player-row .remove{
     font-family:'IBM Plex Mono', monospace;
     font-size:12px;
@@ -119,27 +163,37 @@
   .add-player{
     margin-top:12px;
     font-size:13px;
-    color:var(--petrol);
+    color:var(--cyan);
     background:none; border:none; cursor:pointer;
     padding:0;
   }
 
-  /* ---- Game ---- */
+  /* ---- Game stage ---- */
   .session-bar{
     display:flex;
     justify-content:space-between;
     font-size:12px;
     color:var(--ink-soft);
-    margin-bottom:18px;
+    margin-bottom:16px;
+  }
+  .pill-label{
+    display:inline-block;
+    background:var(--panel-raised);
+    border-radius:999px;
+    padding:5px 14px;
+    font-size:11px;
+    letter-spacing:0.03em;
   }
   .stage{
-    border:1px solid var(--ink);
-    padding:26px 22px;
-    margin-bottom:20px;
+    background:#111114;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:24px 22px;
+    margin-bottom:18px;
   }
   .stage .whoami{
     font-size:12px;
-    color:var(--petrol);
+    color:var(--cyan);
     text-transform:uppercase;
     letter-spacing:0.06em;
     margin-bottom:6px;
@@ -150,7 +204,7 @@
     margin-bottom:14px;
   }
   .stage .replique{
-    font-size:21px;
+    font-size:20px;
     line-height:1.4;
     margin:0 0 20px 0;
   }
@@ -160,15 +214,19 @@
     gap:3px;
     height:48px;
     margin-bottom:18px;
+    background:#000;
+    border-radius:8px;
+    padding:6px 8px;
   }
   .waveform .bar{
     flex:1;
     background:var(--line);
     min-height:3px;
+    border-radius:1px;
     transition:height .08s linear, background .15s;
   }
   .waveform.live .bar{background:var(--live);}
-  .waveform.ref .bar{background:var(--petrol);}
+  .waveform.ref .bar{background:var(--magenta);}
   .controls{
     display:flex;
     gap:10px;
@@ -184,7 +242,7 @@
   .status-line.live{color:var(--live);}
 
   .judges{
-    border-top:1px solid var(--ink);
+    border-top:1px solid var(--line);
     padding-top:14px;
   }
   .judge-row{
@@ -222,13 +280,14 @@
   .total-row .score{
     font-family:'IBM Plex Mono', monospace;
     font-weight:600;
+    color:var(--gold);
   }
 
   /* ---- Scoreboard ---- */
   table.scoreboard{
     width:100%;
     border-collapse:collapse;
-    margin-top:24px;
+    margin-top:22px;
     font-size:13px;
   }
   table.scoreboard th{
@@ -236,7 +295,7 @@
     font-size:11px;
     color:var(--ink-soft);
     font-weight:400;
-    border-bottom:1px solid var(--ink);
+    border-bottom:1px solid var(--line);
     padding-bottom:6px;
   }
   table.scoreboard td{
@@ -250,7 +309,7 @@
 
   /* ---- Results ---- */
   .podium{
-    border-top:1px solid var(--ink);
+    border-top:1px solid var(--line);
     padding-top:20px;
   }
   .podium-row{
@@ -274,96 +333,56 @@
   }
 
   .hint{font-size:12px; color:var(--ink-soft); margin-top:8px;}
-  .top-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:24px;}
+  .top-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:22px;}
 
-  /* ---- Tabs ---- */
-  .tabs{
-    display:flex;
-    gap:0;
-    margin-bottom:24px;
-    border-bottom:1px solid var(--ink);
-  }
-  .tab-btn{
-    font-family:'Space Grotesk', sans-serif;
-    font-size:13px;
-    background:none;
-    border:none;
-    color:var(--ink-soft);
-    padding:0 0 10px 0;
-    margin-right:24px;
-    cursor:pointer;
-    border-bottom:2px solid transparent;
-    margin-bottom:-1px;
-  }
-  .tab-btn.active{
-    color:var(--ink);
-    border-bottom-color:var(--petrol);
-  }
-  .tab-panel{display:none;}
-  .tab-panel.active{display:block;}
-
-  /* ---- Video dub ---- */
+  /* ---- Dub: dropzone / builder ---- */
   .dropzone{
     border:1px dashed var(--line);
-    padding:26px 20px;
+    border-radius:16px;
+    padding:30px 20px;
     text-align:center;
     cursor:pointer;
     margin-bottom:20px;
+    background:#111114;
   }
-  .dropzone:hover{border-color:var(--ink);}
+  .dropzone:hover{border-color:var(--cyan);}
   .dropzone input{display:none;}
   .dropzone .label{font-size:13px; color:var(--ink-soft);}
-  .video-frame{
-    border:1px solid var(--ink);
-    padding:14px;
-    margin-bottom:16px;
+
+  .screen-frame{
+    background:#000;
+    border-radius:18px;
+    padding:8px;
+    border:5px solid #050506;
+    box-shadow:0 10px 30px rgba(0,0,0,0.6);
   }
-  .video-frame video{
+  .screen-frame video{
     width:100%;
     display:block;
+    border-radius:12px;
     background:#000;
-    max-height:360px;
+    max-height:340px;
   }
-  .video-frame .file-name{
+
+  .builder-panel{
+    background:#111114;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:20px;
+  }
+  .file-name{
     font-family:'IBM Plex Mono', monospace;
     font-size:11px;
     color:var(--ink-soft);
     margin-bottom:10px;
-  }
-  .dub-controls{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
-  .rec-dot{
-    display:inline-block;
-    width:8px; height:8px;
-    background:var(--live);
-    border-radius:50%;
-    margin-right:6px;
-    vertical-align:middle;
-  }
-  .result-block{
-    border-top:1px solid var(--ink);
-    padding-top:18px;
-    margin-top:18px;
-  }
-  .result-block .file-name{margin-bottom:10px;}
-  a.download-link{
-    display:inline-block;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    color:var(--petrol);
-    text-decoration:none;
-    border-bottom:1px solid var(--petrol);
-    margin-top:10px;
-  }
-  a.download-link:hover{opacity:0.7;}
-
-  .btn.small{
-    padding:5px 10px;
-    font-size:12px;
+    word-break:break-all;
   }
   .trim-row{
     display:flex;
     gap:24px;
-    margin-top:14px;
+    margin-top:16px;
+    flex-wrap:wrap;
   }
   .trim-field label{
     display:block;
@@ -376,12 +395,80 @@
     align-items:center;
     gap:10px;
   }
-  .trim-inline .mono{font-size:13px;}
+  .trim-inline .mono{font-size:13px; color:var(--cyan);}
+  .dub-controls{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;}
+  .rec-dot{
+    display:inline-block;
+    width:8px; height:8px;
+    background:var(--live);
+    border-radius:50%;
+    margin-right:6px;
+    vertical-align:middle;
+    animation:pulse 1s infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+  /* ---- Dub: reel list ---- */
+  .reel-row{display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px;}
+  .reel-row .dur{font-family:'IBM Plex Mono', monospace; color:var(--ink-soft); margin-right:14px;}
+
+  /* ---- Dub player layout (screenshot-inspired) ---- */
+  .dub-stage{
+    display:flex;
+    gap:18px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .dub-video-col{
+    flex:1 1 380px;
+    min-width:280px;
+    position:relative;
+  }
+  .dub-side-col{
+    width:220px;
+    flex:0 0 220px;
+    background:#111114;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .dub-side-col .clip-counter{
+    text-align:center;
+    font-size:15px;
+    font-weight:600;
+    margin-bottom:2px;
+  }
+  .dub-side-col .clip-name{
+    text-align:center;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+    word-break:break-word;
+  }
+  .dub-side-col .btn{width:100%;}
+
+  .countdown-overlay{
+    position:absolute;
+    inset:8px;
+    background:rgba(0,0,0,0.6);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:52px;
+    border-radius:14px;
+  }
 
   .wave-panel{
-    border:1px solid var(--ink);
-    border-top:none;
+    border:2px solid var(--cyan);
+    border-radius:12px;
     padding:10px 14px 14px;
+    margin-top:16px;
+    background:#050506;
   }
   .wave-panel-label{
     font-size:11px;
@@ -392,25 +479,28 @@
     width:100%;
     height:70px;
     display:block;
-    background:#0F0F10;
   }
 
-  .video-frame{position:relative;}
-  .countdown-overlay{
-    position:absolute;
-    inset:14px;
-    background:rgba(0,0,0,0.55);
-    color:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:56px;
+  .result-block{
+    border-top:1px solid var(--line);
+    padding-top:18px;
+    margin-top:18px;
   }
+  a.download-link{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--cyan);
+    text-decoration:none;
+    border-bottom:1px solid var(--cyan);
+    margin-top:10px;
+  }
+  a.download-link:hover{opacity:0.7;}
 </style>
 </head>
 <body>
 <div id="app">
+<div class="cabinet">
 
   <div class="masthead">
     <h1>La Cabine</h1>
@@ -456,8 +546,8 @@
   <!-- GAME -->
   <div class="screen" id="screen-game">
     <div class="session-bar mono">
-      <span id="round-label">MANCHE 1 / 5</span>
-      <span id="turn-label">AU MICRO — JOUEUR 1</span>
+      <span class="pill-label" id="round-label">MANCHE 1 / 5</span>
+      <span class="pill-label" id="turn-label">AU MICRO — JOUEUR 1</span>
     </div>
 
     <div class="stage">
@@ -465,9 +555,7 @@
       <div class="consigne" id="consigne"></div>
       <p class="replique" id="replique-text"></p>
 
-      <div class="waveform ref" id="wave-ref">
-        <!-- bars injected -->
-      </div>
+      <div class="waveform ref" id="wave-ref"></div>
 
       <div class="controls">
         <button class="btn" id="btn-listen" onclick="playReference()">Écouter la référence</button>
@@ -528,12 +616,14 @@
     <div id="dub-builder">
       <div class="dropzone" id="dropzone" onclick="document.getElementById('video-input').click()">
         <input type="file" id="video-input" accept="video/*" onchange="onVideoChosen(event)">
-        <div class="label">Importer une vidéo pour en découper un extrait<br>(elle reste sur cet appareil, rien n'est envoyé)</div>
+        <div class="label">Importer une vidéo pour en découper des extraits<br>(elle reste sur cet appareil, rien n'est envoyé)</div>
       </div>
 
-      <div class="video-frame" id="builder-frame" style="display:none;">
+      <div class="builder-panel" id="builder-frame" style="display:none;">
         <div class="file-name mono" id="builder-filename"></div>
-        <video id="builder-video" playsinline controls></video>
+        <div class="screen-frame">
+          <video id="builder-video" playsinline controls></video>
+        </div>
 
         <div class="trim-row">
           <div class="trim-field">
@@ -551,7 +641,7 @@
             </div>
           </div>
         </div>
-        <p class="hint">Lisez la vidéo, mettez sur pause au bon moment, puis "Caler ici" pour poser le début ou la fin de l'extrait.</p>
+        <p class="hint">Lisez la vidéo, mettez sur pause au bon moment, puis "Caler ici". Une fois l'extrait ajouté, le début repart automatiquement d'où le précédent s'arrête — pratique pour découper une scène réplique par réplique.</p>
 
         <div class="dub-controls">
           <button class="btn" onclick="previewTrim()">Prévisualiser l'extrait</button>
@@ -561,11 +651,8 @@
         <div class="status-line mono" id="builder-status"></div>
       </div>
 
-      <div id="reel-list-wrap" style="display:none;">
-        <table class="scoreboard" style="margin-top:8px;">
-          <thead><tr><th>Extrait</th><th style="text-align:right;">Durée</th><th></th></tr></thead>
-          <tbody id="reel-list-body"></tbody>
-        </table>
+      <div id="reel-list-wrap" style="display:none;" class="builder-panel">
+        <div id="reel-list-body"></div>
         <div class="top-actions" style="justify-content:space-between;">
           <span class="hint" style="margin-top:0;" id="reel-count-hint"></span>
           <button class="btn primary" onclick="startReel()">Commencer la session de doublage</button>
@@ -575,18 +662,28 @@
 
     <!-- Player: go through the reel clip by clip -->
     <div id="dub-player" style="display:none;">
-      <div class="session-bar mono">
-        <span id="clip-counter">CLIP 1 / 1</span>
-        <span id="clip-name-label"></span>
-      </div>
+      <div class="dub-stage">
+        <div class="dub-video-col">
+          <div class="screen-frame">
+            <video id="dub-video" playsinline></video>
+          </div>
+          <div class="countdown-overlay" id="countdown-overlay" style="display:none;"></div>
+        </div>
 
-      <div class="video-frame">
-        <video id="dub-video" playsinline></video>
-        <div class="countdown-overlay" id="countdown-overlay" style="display:none;"></div>
+        <div class="dub-side-col">
+          <div class="clip-counter mono" id="clip-counter">CLIP 1 / 1</div>
+          <div class="clip-name" id="clip-name-label"></div>
+          <button class="btn" id="btn-hear-again" onclick="hearClipAgain()">Hear clip again</button>
+          <button class="btn" id="btn-record-clip" onclick="startRecordClip()">Record</button>
+          <button class="btn" id="btn-next-clip" onclick="nextClip()">Next ▶</button>
+          <button class="btn" id="btn-watch" onclick="watchClip()">Watch</button>
+          <button class="btn" id="btn-save-dub" onclick="saveDub()" disabled>Save Dub</button>
+          <button class="btn" id="btn-reset-mic" onclick="resetMicTake()" disabled>Reset Mic</button>
+        </div>
       </div>
 
       <div class="wave-panel">
-        <div class="wave-panel-label mono">Référence — voix atténuée</div>
+        <div class="wave-panel-label mono">Référence — voix isolée (approximative)</div>
         <canvas id="wave-ref-canvas" width="700" height="90"></canvas>
       </div>
       <div class="wave-panel">
@@ -594,36 +691,29 @@
         <canvas id="wave-take-canvas" width="700" height="90"></canvas>
       </div>
 
-      <div class="dub-controls">
-        <button class="btn" id="btn-hear-again" onclick="hearClipAgain()">Hear clip again</button>
-        <button class="btn" id="btn-watch" onclick="watchClip()">Watch</button>
-        <button class="btn primary" id="btn-record-clip" onclick="startRecordClip()">Record</button>
-        <button class="btn" id="btn-reset-mic" onclick="resetMicTake()" disabled>Reset Mic</button>
-        <button class="btn" id="btn-save-dub" onclick="saveDub()" disabled>Save Dub</button>
-        <button class="btn" id="btn-next-clip" onclick="nextClip()">Next ▶</button>
-      </div>
       <div class="status-line mono" id="dub-status"></div>
 
       <div class="result-block" id="dub-result" style="display:none;">
         <div class="file-name mono">Doublage exporté pour cet extrait</div>
-        <video id="dub-output" controls></video>
-        <br>
+        <div class="screen-frame">
+          <video id="dub-output" controls></video>
+        </div>
         <a class="download-link" id="dub-download" download="doublage.webm">Télécharger le fichier .webm</a>
       </div>
 
-      <div class="top-actions">
-        <button class="btn" onclick="backToBuilder()">Revenir à la liste des extraits</button>
+      <div class="top-actions" style="justify-content:flex-start;">
+        <button class="btn" onclick="backToBuilder()">↩ Exit</button>
       </div>
     </div>
 
     <p class="hint" id="dub-support-hint"></p>
-    <p class="hint">Astuce technique : la réduction de voix utilise l'annulation du canal central (le vieux truc du karaoké), pas une vraie séparation par IA. Elle marche surtout si la vidéo est en stéréo avec les dialogues mixés au centre — le résultat varie selon la source.</p>
+    <p class="hint">Astuce technique : la voix isolée et la piste de fond utilisent l'annulation/isolation du canal central (le vieux truc du karaoké) — (L+R)/2 pour approcher la voix, (L−R)/2 pour l'atténuer. Ce n'est pas une vraie séparation par IA : le résultat varie selon que la vidéo est bien en stéréo avec la voix mixée au centre.</p>
   </div><!-- /tab-dub -->
 
+</div><!-- /cabinet -->
 </div>
 
 <script>
-
 /* ---------------- Data ---------------- */
 const REPLIQUES = [
   {text:"Mesdames et messieurs, le train de 8h12 n'arrivera jamais, et personne ne sait pourquoi.", consigne:"voix d'annonce de gare, lasse et résignée", rate:0.85, pitch:0.9},
@@ -647,13 +737,13 @@ const JUDGE_COMMENTS = {
   top:   ["Excellent, rien à redire.", "La cabine applaudit.", "On garde celle-là pour le montage final.", "Impossible de faire mieux."]
 };
 
-/* ---------------- State ---------------- */
+/* ---------------- State: replique game ---------------- */
 let mode = 'multi';
 let players = [];
 let numRounds = 5;
-let order = [];        // sequence of {playerIndex}
+let order = [];
 let turnIdx = 0;
-let scores = {};        // playerIndex -> total
+let scores = {};
 let currentReplique = null;
 let refDurationEstimate = 0;
 
@@ -681,15 +771,8 @@ function renderPlayerList(){
   });
   document.getElementById('add-player-btn').style.display = mode === 'solo' ? 'none' : 'block';
 }
-
-function addPlayer(){
-  players.push('Joueur ' + (players.length + 1));
-  renderPlayerList();
-}
-function removePlayer(i){
-  players.splice(i,1);
-  renderPlayerList();
-}
+function addPlayer(){ players.push('Joueur ' + (players.length + 1)); renderPlayerList(); }
+function removePlayer(i){ players.splice(i,1); renderPlayerList(); }
 function setMode(m){
   mode = m;
   document.getElementById('mode-solo').classList.toggle('selected', m==='solo');
@@ -703,7 +786,6 @@ function setRounds(n){
   document.querySelectorAll('.round-btn').forEach(b => b.classList.remove('selected'));
   event.target.classList.add('selected');
 }
-
 setMode('multi');
 
 /* ---------------- Game flow ---------------- */
@@ -722,12 +804,9 @@ function startGame(){
   players = players.map((p,i) => p.trim() || ('Joueur ' + (i+1)));
   scores = {};
   players.forEach((_,i) => scores[i] = 0);
-
   order = [];
   for(let r=0;r<numRounds;r++){
-    for(let p=0;p<players.length;p++){
-      order.push({round:r, playerIndex:p});
-    }
+    for(let p=0;p<players.length;p++){ order.push({round:r, playerIndex:p}); }
   }
   turnIdx = 0;
   buildWaveBars('wave-ref', 40);
@@ -736,7 +815,6 @@ function startGame(){
   document.getElementById('screen-game').classList.add('active');
   loadTurn();
 }
-
 function buildWaveBars(id, count){
   const el = document.getElementById(id);
   el.innerHTML = '';
@@ -747,18 +825,15 @@ function buildWaveBars(id, count){
     el.appendChild(b);
   }
 }
-
 function loadTurn(){
   const t = order[turnIdx];
-  currentReplique = shuffledRepliques(1)[0]; // fresh pick, but avoid immediate repeat if possible
-  // avoid identical back-to-back line
+  currentReplique = shuffledRepliques(1)[0];
   let tries = 0;
   while(window.__lastLine === currentReplique.text && tries < 5){
     currentReplique = shuffledRepliques(1)[0];
     tries++;
   }
   window.__lastLine = currentReplique.text;
-
   refDurationEstimate = estimateDuration(currentReplique.text, currentReplique.rate);
 
   document.getElementById('round-label').textContent = `MANCHE ${t.round+1} / ${numRounds}`;
@@ -787,15 +862,8 @@ function loadTurn(){
 
   renderScoreboard();
 }
-
-function resetBars(id){
-  document.querySelectorAll('#'+id+' .bar').forEach(b => b.style.height = '3px');
-}
-
-function estimateDuration(text, rate){
-  const words = text.split(/\s+/).length;
-  return (words / (2.6 * rate)); // seconds, rough speaking-rate model
-}
+function resetBars(id){ document.querySelectorAll('#'+id+' .bar').forEach(b => b.style.height = '3px'); }
+function estimateDuration(text, rate){ const words = text.split(/\s+/).length; return (words / (2.6 * rate)); }
 
 /* ---------------- Reference playback (TTS) ---------------- */
 function playReference(){
@@ -808,15 +876,11 @@ function playReference(){
   utter.lang = 'fr-FR';
   utter.rate = currentReplique.rate;
   utter.pitch = currentReplique.pitch;
-
   animateRefBars(refDurationEstimate);
   document.getElementById('status-line').textContent = 'Lecture de la référence…';
-  utter.onend = () => {
-    document.getElementById('status-line').textContent = 'À vous — enregistrez votre prise.';
-  };
+  utter.onend = () => { document.getElementById('status-line').textContent = 'À vous — enregistrez votre prise.'; };
   window.speechSynthesis.speak(utter);
 }
-
 function animateRefBars(durationSec){
   const bars = document.querySelectorAll('#wave-ref .bar');
   const start = performance.now();
@@ -834,33 +898,19 @@ function animateRefBars(durationSec){
   requestAnimationFrame(frame);
 }
 
-/* ---------------- Recording ---------------- */
-async function toggleRecord(){
-  if(!recording){
-    await startRecording();
-  } else {
-    stopRecording();
-  }
-}
-
+/* ---------------- Recording (replique game) ---------------- */
+async function toggleRecord(){ if(!recording){ await startRecording(); } else { stopRecording(); } }
 async function startRecording(){
-  try{
-    mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
-  }catch(e){
-    document.getElementById('status-line').textContent = 'Micro refusé ou indisponible — vérifiez les permissions.';
-    return;
-  }
+  try{ mediaStream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ document.getElementById('status-line').textContent = 'Micro refusé ou indisponible — vérifiez les permissions.'; return; }
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const source = audioCtx.createMediaStreamSource(mediaStream);
   analyser = audioCtx.createAnalyser();
   analyser.fftSize = 512;
   source.connect(analyser);
-
   recordedChunks = [];
   let options = {};
-  if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/webm')){
-    options = {mimeType:'audio/webm'};
-  }
+  if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/webm')){ options = {mimeType:'audio/webm'}; }
   mediaRecorder = new MediaRecorder(mediaStream, options);
   mediaRecorder.ondataavailable = e => { if(e.data.size>0) recordedChunks.push(e.data); };
   mediaRecorder.onstop = () => {
@@ -870,7 +920,6 @@ async function startRecording(){
     document.getElementById('btn-judge').disabled = false;
   };
   mediaRecorder.start();
-
   recording = true;
   recStart = performance.now();
   ampSamples = [];
@@ -879,10 +928,8 @@ async function startRecording(){
   document.getElementById('wave-live').style.display = 'flex';
   document.getElementById('status-line').textContent = 'Enregistrement en cours…';
   document.getElementById('status-line').classList.add('live');
-
   liveWaveLoop();
 }
-
 function liveWaveLoop(){
   const bars = document.querySelectorAll('#wave-live .bar');
   const data = new Uint8Array(analyser.frequencyBinCount);
@@ -902,7 +949,6 @@ function liveWaveLoop(){
   }
   frame();
 }
-
 function stopRecording(){
   recording = false;
   if(liveAnimId) cancelAnimationFrame(liveAnimId);
@@ -910,44 +956,31 @@ function stopRecording(){
   if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
   if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
   if(audioCtx) audioCtx.close();
-
   document.getElementById('btn-record').textContent = 'Réenregistrer';
   document.getElementById('btn-listen').disabled = false;
   document.getElementById('status-line').classList.remove('live');
   document.getElementById('status-line').textContent = `Prise enregistrée — ${recDuration.toFixed(1)} s.`;
   resetBars('wave-live');
 }
-
-function playRecording(){
-  if(!recordedBlobUrl) return;
-  const audio = new Audio(recordedBlobUrl);
-  audio.play();
-}
+function playRecording(){ if(!recordedBlobUrl) return; const audio = new Audio(recordedBlobUrl); audio.play(); }
 
 /* ---------------- Judging ---------------- */
 function computeBaseScore(){
-  // duration match (0-1)
   const durRatio = refDurationEstimate > 0 ? Math.min(recDuration, refDurationEstimate) / Math.max(recDuration, refDurationEstimate, 0.01) : 0.5;
-
-  // dynamism: variance of amplitude samples (0-1, normalized)
   let dynamism = 0.4;
   if(ampSamples.length > 3){
     const mean = ampSamples.reduce((a,b)=>a+b,0)/ampSamples.length;
     const variance = ampSamples.reduce((a,b)=>a+(b-mean)*(b-mean),0)/ampSamples.length;
     dynamism = Math.min(1, Math.sqrt(variance) * 12);
   }
-
-  // presence: was there actually sound?
   let presence = 0.3;
   if(ampSamples.length > 0){
     const mean = ampSamples.reduce((a,b)=>a+b,0)/ampSamples.length;
     presence = Math.min(1, mean * 8);
   }
-
   const base = (durRatio*0.35 + dynamism*0.35 + presence*0.3);
   return Math.max(0.05, Math.min(1, base));
 }
-
 function pickComment(score10){
   let bucket;
   if(score10 <= 3) bucket = JUDGE_COMMENTS.low;
@@ -956,13 +989,11 @@ function pickComment(score10){
   else bucket = JUDGE_COMMENTS.top;
   return bucket[Math.floor(Math.random()*bucket.length)];
 }
-
 function revealJudges(){
-  const base = computeBaseScore(); // 0-1
+  const base = computeBaseScore();
   document.getElementById('judges-panel').style.display = 'block';
   document.getElementById('btn-judge').disabled = true;
-  document.getElementById('btn-record-clip').disabled = true;
-
+  document.getElementById('btn-record').disabled = true;
   let total = 0;
   const rows = [0,1,2];
   rows.forEach((rowIdx, seq) => {
@@ -989,33 +1020,24 @@ function revealJudges(){
 /* ---------------- Turn progression ---------------- */
 function nextTurn(){
   turnIdx++;
-  if(turnIdx >= order.length){
-    showResults();
-  } else {
-    loadTurn();
-  }
+  if(turnIdx >= order.length){ showResults(); } else { loadTurn(); }
 }
-
 function renderScoreboard(){
   const body = document.getElementById('scoreboard-body');
   body.innerHTML = '';
-  const rows = players.map((name,i) => ({name, pts: scores[i]||0}))
-                       .sort((a,b) => b.pts - a.pts);
+  const rows = players.map((name,i) => ({name, pts: scores[i]||0})).sort((a,b) => b.pts - a.pts);
   rows.forEach(r => {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${r.name}</td><td class="pts mono">${r.pts}</td>`;
     body.appendChild(tr);
   });
 }
-
-/* ---------------- Results ---------------- */
 function showResults(){
   document.getElementById('screen-game').classList.remove('active');
   document.getElementById('screen-results').classList.add('active');
   const podium = document.getElementById('podium');
   podium.innerHTML = '';
-  const rows = players.map((name,i) => ({name, pts: scores[i]||0}))
-                       .sort((a,b) => b.pts - a.pts);
+  const rows = players.map((name,i) => ({name, pts: scores[i]||0})).sort((a,b) => b.pts - a.pts);
   rows.forEach((r,i) => {
     const div = document.createElement('div');
     div.className = 'podium-row' + (i===0 ? ' first' : '');
@@ -1023,7 +1045,6 @@ function showResults(){
     podium.appendChild(div);
   });
 }
-
 function restart(){
   document.getElementById('screen-results').classList.remove('active');
   document.getElementById('screen-setup').classList.add('active');
@@ -1044,17 +1065,17 @@ function getCtx(){
   return sharedAudioCtx;
 }
 
-let reel = [];          // {name, url, start, end, buffer(full decoded AudioBuffer), takeUrl, takePeaks}
+let reel = [];
 let reelIndex = 0;
 let builderURL = null;
 let builderFile = null;
+let builderBuffer = null;   // decoded AudioBuffer of the currently loaded video's full audio
 let trimStart = 0, trimEnd = 0;
 
 let liveMicStream = null;
 let liveRecorder = null;
 let liveChunks = [];
 let liveAmpSamples = [];
-let liveAnimId2 = null;
 let currentTakePeaks = null;
 
 (function checkDubSupport(){
@@ -1066,26 +1087,37 @@ let currentTakePeaks = null;
   }
 })();
 
-/* ---- Builder: pick a video, trim, add to reel ---- */
-function onVideoChosen(e){
+/* ---- Builder: pick a video, trim, add multiple clips ---- */
+async function onVideoChosen(e){
   const file = e.target.files[0];
   if(!file) return;
   builderFile = file;
   builderURL = URL.createObjectURL(file);
+  builderBuffer = null;
   const video = document.getElementById('builder-video');
   video.src = builderURL;
   video.muted = false;
   document.getElementById('builder-filename').textContent = file.name;
   document.getElementById('builder-frame').style.display = 'block';
   document.getElementById('dropzone').style.display = 'none';
-  document.getElementById('builder-status').textContent = '';
+  document.getElementById('builder-status').textContent = 'Analyse de la piste audio…';
   trimStart = 0; trimEnd = 0;
   document.getElementById('trim-start-label').textContent = '0.0 s';
   document.getElementById('trim-end-label').textContent = '0.0 s';
+
   video.onloadedmetadata = () => {
     trimEnd = video.duration;
     document.getElementById('trim-end-label').textContent = video.duration.toFixed(1) + ' s';
   };
+
+  try{
+    const arrBuf = await file.arrayBuffer();
+    builderBuffer = await getCtx().decodeAudioData(arrBuf.slice(0));
+    document.getElementById('builder-status').textContent = 'Vidéo prête — découpe ton premier extrait.';
+  }catch(err){
+    document.getElementById('builder-status').textContent =
+      "Impossible d'extraire l'audio de ce fichier — la voix isolée ne sera pas disponible, mais tu peux quand même le doubler.";
+  }
 }
 
 function setTrim(which){
@@ -1109,49 +1141,44 @@ function previewTrim(){
   video.muted = false;
   video.play();
   const stopAt = () => {
-    if(video.currentTime >= trimEnd - 0.05){
-      video.pause();
-      video.removeEventListener('timeupdate', stopAt);
-    }
+    if(video.currentTime >= trimEnd - 0.05){ video.pause(); video.removeEventListener('timeupdate', stopAt); }
   };
   video.addEventListener('timeupdate', stopAt);
 }
 
-async function addClipToReel(){
+function addClipToReel(){
   if(trimEnd <= trimStart){
     document.getElementById('builder-status').textContent = 'La fin doit être après le début.';
     return;
-  }
-  document.getElementById('builder-status').textContent = 'Analyse de la piste audio…';
-  let buffer = null;
-  try{
-    const arrBuf = await builderFile.arrayBuffer();
-    buffer = await getCtx().decodeAudioData(arrBuf.slice(0));
-  }catch(err){
-    document.getElementById('builder-status').textContent =
-      "Impossible d'extraire l'audio de ce fichier — la voix atténuée ne sera pas disponible pour cet extrait, mais tu peux quand même le doubler.";
   }
   reel.push({
     name: `${builderFile.name} (${trimStart.toFixed(1)}s–${trimEnd.toFixed(1)}s)`,
     url: builderURL,
     start: trimStart,
     end: trimEnd,
-    buffer: buffer,
+    buffer: builderBuffer,
     takeUrl: null,
     takePeaks: null
   });
   renderReelList();
-  resetBuilder(true);
+
+  // Stay on the same video: next segment starts where this one ended.
+  const video = document.getElementById('builder-video');
+  trimStart = trimEnd;
+  trimEnd = video.duration;
+  document.getElementById('trim-start-label').textContent = trimStart.toFixed(1) + ' s';
+  document.getElementById('trim-end-label').textContent = trimEnd.toFixed(1) + ' s';
+  document.getElementById('builder-status').textContent = 'Extrait ajouté ✓ — découpe le suivant, ou change de vidéo.';
 }
 
-function resetBuilder(keepReel){
+function resetBuilder(){
   const video = document.getElementById('builder-video');
   video.pause();
   video.src = '';
   document.getElementById('builder-frame').style.display = 'none';
   document.getElementById('dropzone').style.display = 'block';
   document.getElementById('video-input').value = '';
-  builderFile = null; builderURL = null;
+  builderFile = null; builderURL = null; builderBuffer = null;
 }
 
 function renderReelList(){
@@ -1161,10 +1188,11 @@ function renderReelList(){
   wrap.style.display = 'block';
   body.innerHTML = '';
   reel.forEach((c,i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${c.name}</td><td class="pts mono">${(c.end-c.start).toFixed(1)} s</td>
-      <td style="text-align:right;"><button class="remove mono" onclick="removeClip(${i})">retirer</button></td>`;
-    body.appendChild(tr);
+    const row = document.createElement('div');
+    row.className = 'reel-row';
+    row.innerHTML = `<span>${i+1}. ${c.name}</span>
+      <span><span class="dur mono">${(c.end-c.start).toFixed(1)} s</span><button class="remove mono" onclick="removeClip(${i})" style="background:none;border:none;color:var(--ink-soft);cursor:pointer;">retirer</button></span>`;
+    body.appendChild(row);
   });
   document.getElementById('reel-count-hint').textContent = `${reel.length} extrait${reel.length>1?'s':''} dans la liste`;
 }
@@ -1184,21 +1212,36 @@ function backToBuilder(){
   renderReelList();
 }
 
-function centerCancel(buffer){
+/* Approx center-channel isolation: (L+R)/2 keeps what's mixed centered (usually the dialogue). */
+function extractVoice(buffer){
+  const ctx = getCtx();
   if(buffer.numberOfChannels < 2){
-    const ctx = getCtx();
     const out = ctx.createBuffer(1, buffer.length, buffer.sampleRate);
     out.copyToChannel(buffer.getChannelData(0), 0);
     return out;
   }
-  const L = buffer.getChannelData(0);
-  const R = buffer.getChannelData(1);
-  const ctx = getCtx();
+  const L = buffer.getChannelData(0), R = buffer.getChannelData(1);
   const out = ctx.createBuffer(2, L.length, buffer.sampleRate);
-  const diff = new Float32Array(L.length);
-  for(let i=0;i<L.length;i++){ diff[i] = (L[i]-R[i]) * 0.6; }
-  out.copyToChannel(diff, 0);
-  out.copyToChannel(diff, 1);
+  const center = new Float32Array(L.length);
+  for(let i=0;i<L.length;i++){ center[i] = (L[i]+R[i]) * 0.5; }
+  out.copyToChannel(center, 0);
+  out.copyToChannel(center, 1);
+  return out;
+}
+/* Approx vocal removal: (L-R)/2 cancels what's identical (centered) in both channels — used as backing track. */
+function extractInstrumental(buffer){
+  const ctx = getCtx();
+  if(buffer.numberOfChannels < 2){
+    const out = ctx.createBuffer(1, buffer.length, buffer.sampleRate);
+    out.copyToChannel(buffer.getChannelData(0), 0);
+    return out; // mono source: can't cancel the center, returned as-is
+  }
+  const L = buffer.getChannelData(0), R = buffer.getChannelData(1);
+  const out = ctx.createBuffer(2, L.length, buffer.sampleRate);
+  const side = new Float32Array(L.length);
+  for(let i=0;i<L.length;i++){ side[i] = (L[i]-R[i]) * 0.7; }
+  out.copyToChannel(side, 0);
+  out.copyToChannel(side, 1);
   return out;
 }
 
@@ -1245,7 +1288,7 @@ function drawWaveform(canvasId, peaks, color, playheadRatio){
     ctx.fillRect(i*barW, Math.min(y1,y2), Math.max(barW-1,1), Math.max(Math.abs(y2-y1),2));
   });
   if(playheadRatio !== undefined && playheadRatio !== null){
-    ctx.strokeStyle = '#B23A2E';
+    ctx.strokeStyle = '#E1503F';
     ctx.beginPath();
     ctx.moveTo(playheadRatio*w, 0);
     ctx.lineTo(playheadRatio*w, h);
@@ -1253,8 +1296,9 @@ function drawWaveform(canvasId, peaks, color, playheadRatio){
   }
 }
 
-let refReducedSliced = null;
-let refPeaksCache = null;
+let refVoiceSliced = null;
+let refVoicePeaksCache = null;
+let refBackingSliced = null;
 
 function loadClip(){
   const clip = reel[reelIndex];
@@ -1264,40 +1308,42 @@ function loadClip(){
   video.src = clip.url;
   video.currentTime = clip.start;
 
-  refReducedSliced = null;
-  refPeaksCache = null;
+  refVoiceSliced = null;
+  refBackingSliced = null;
+  refVoicePeaksCache = null;
   if(clip.buffer){
     const sliced = sliceBuffer(clip.buffer, clip.start, clip.end);
-    refReducedSliced = centerCancel(sliced);
-    refPeaksCache = computePeaks(refReducedSliced, 140);
+    refVoiceSliced = extractVoice(sliced);
+    refBackingSliced = extractInstrumental(sliced);
+    refVoicePeaksCache = computePeaks(refVoiceSliced, 140);
   }
-  drawWaveform('wave-ref-canvas', refPeaksCache, '#C23FA6', null);
+  drawWaveform('wave-ref-canvas', refVoicePeaksCache, '#E23FB0', null);
 
   document.getElementById('dub-result').style.display = 'none';
   document.getElementById('btn-reset-mic').disabled = true;
   document.getElementById('btn-save-dub').disabled = true;
   document.getElementById('dub-status').textContent = '';
   currentTakePeaks = clip.takePeaks || null;
-  drawWaveform('wave-take-canvas', currentTakePeaks, '#3F8FC2', null);
+  drawWaveform('wave-take-canvas', currentTakePeaks, '#42D6DE', null);
 }
 
 function hearClipAgain(){
-  if(!refReducedSliced){
-    document.getElementById('dub-status').textContent = "Voix atténuée indisponible pour cet extrait.";
+  if(!refVoiceSliced){
+    document.getElementById('dub-status').textContent = "Voix isolée indisponible pour cet extrait.";
     return;
   }
   const ctx = getCtx();
   const src = ctx.createBufferSource();
-  src.buffer = refReducedSliced;
+  src.buffer = refVoiceSliced;
   src.connect(ctx.destination);
   const startedAt = performance.now();
-  const durMs = refReducedSliced.duration * 1000;
+  const durMs = refVoiceSliced.duration * 1000;
   src.start();
-  document.getElementById('dub-status').textContent = 'Lecture de la référence (voix atténuée)…';
+  document.getElementById('dub-status').textContent = 'Lecture de la référence (voix isolée)…';
   function frame(){
     const t = performance.now() - startedAt;
-    if(t > durMs){ drawWaveform('wave-ref-canvas', refPeaksCache, '#C23FA6', null); return; }
-    drawWaveform('wave-ref-canvas', refPeaksCache, '#C23FA6', t/durMs);
+    if(t > durMs){ drawWaveform('wave-ref-canvas', refVoicePeaksCache, '#E23FB0', null); return; }
+    drawWaveform('wave-ref-canvas', refVoicePeaksCache, '#E23FB0', t/durMs);
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
@@ -1311,10 +1357,7 @@ function watchClip(){
   video.play();
   document.getElementById('dub-status').textContent = 'Lecture de la scène originale…';
   const stopAt = () => {
-    if(video.currentTime >= clip.end - 0.05){
-      video.pause();
-      video.removeEventListener('timeupdate', stopAt);
-    }
+    if(video.currentTime >= clip.end - 0.05){ video.pause(); video.removeEventListener('timeupdate', stopAt); }
   };
   video.addEventListener('timeupdate', stopAt);
 }
@@ -1324,12 +1367,8 @@ async function startRecordClip(){
   const video = document.getElementById('dub-video');
   const overlay = document.getElementById('countdown-overlay');
 
-  try{
-    liveMicStream = await navigator.mediaDevices.getUserMedia({audio:true});
-  }catch(err){
-    document.getElementById('dub-status').textContent = 'Micro refusé ou indisponible — vérifiez les permissions.';
-    return;
-  }
+  try{ liveMicStream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(err){ document.getElementById('dub-status').textContent = 'Micro refusé ou indisponible — vérifiez les permissions.'; return; }
 
   document.getElementById('btn-record-clip').disabled = true;
   document.getElementById('btn-hear-again').disabled = true;
@@ -1345,18 +1384,18 @@ async function startRecordClip(){
 
   const ctx = getCtx();
   const micSource = ctx.createMediaStreamSource(liveMicStream);
-  const analyser = ctx.createAnalyser();
-  analyser.fftSize = 512;
-  micSource.connect(analyser);
+  const analyserNode = ctx.createAnalyser();
+  analyserNode.fftSize = 512;
+  micSource.connect(analyserNode);
 
   const mixDest = ctx.createMediaStreamDestination();
   micSource.connect(mixDest);
   let backingSrc = null;
-  if(refReducedSliced){
+  if(refBackingSliced){
     backingSrc = ctx.createBufferSource();
-    backingSrc.buffer = refReducedSliced;
+    backingSrc.buffer = refBackingSliced;
     backingSrc.connect(mixDest);
-    backingSrc.connect(ctx.destination); // let the performer hear the backing too
+    backingSrc.connect(ctx.destination); // let the performer hear the backing (fx/music, voice reduced)
   }
 
   const captureFn = video.captureStream || video.mozCaptureStream;
@@ -1391,7 +1430,7 @@ async function startRecordClip(){
     clip.takeUrl = url;
     clip.takePeaks = liveAmpSamples.map(a => [-a, a]);
     currentTakePeaks = clip.takePeaks;
-    drawWaveform('wave-take-canvas', currentTakePeaks, '#3F8FC2', null);
+    drawWaveform('wave-take-canvas', currentTakePeaks, '#42D6DE', null);
     liveMicStream.getTracks().forEach(t => t.stop());
 
     document.getElementById('btn-record-clip').disabled = false;
@@ -1417,18 +1456,18 @@ async function startRecordClip(){
   video.play();
   document.getElementById('dub-status').innerHTML = '<span class="rec-dot"></span>Enregistrement en cours…';
 
-  liveWaveLoop2(analyser);
+  liveWaveLoop2(analyserNode);
 }
 
-function liveWaveLoop2(analyser){
-  const data = new Uint8Array(analyser.frequencyBinCount);
+function liveWaveLoop2(analyserNode){
+  const data = new Uint8Array(analyserNode.frequencyBinCount);
   function frame(){
     if(document.getElementById('dub-status').textContent.indexOf('Enregistrement') === -1) return;
-    analyser.getByteTimeDomainData(data);
+    analyserNode.getByteTimeDomainData(data);
     let sum = 0;
     for(let i=0;i<data.length;i++){ sum += Math.abs((data[i]-128)/128); }
     liveAmpSamples.push(sum/data.length);
-    liveAnimId2 = requestAnimationFrame(frame);
+    requestAnimationFrame(frame);
   }
   frame();
 }
@@ -1438,7 +1477,7 @@ function resetMicTake(){
   clip.takeUrl = null;
   clip.takePeaks = null;
   currentTakePeaks = null;
-  drawWaveform('wave-take-canvas', null, '#3F8FC2', null);
+  drawWaveform('wave-take-canvas', null, '#42D6DE', null);
   document.getElementById('dub-result').style.display = 'none';
   document.getElementById('btn-reset-mic').disabled = true;
   document.getElementById('btn-save-dub').disabled = true;
