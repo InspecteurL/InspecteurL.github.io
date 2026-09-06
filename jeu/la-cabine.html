@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Cabine — jeu d'imitation vocale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F5F1;
+    --ink:#17181A;
+    --ink-soft:#55575C;
+    --line:#D8D6CF;
+    --petrol:#1F5C52;
+    --gold:#B8862B;
+    --live:#B23A2E;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  #app{
+    max-width:760px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+  }
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    border-bottom:1px solid var(--ink);
+    padding-bottom:14px;
+    margin-bottom:28px;
+  }
+  .masthead h1{
+    font-size:22px;
+    letter-spacing:0.01em;
+    margin:0;
+    font-weight:700;
+  }
+  .masthead .tag{
+    font-size:11px;
+    color:var(--ink-soft);
+    letter-spacing:0.04em;
+  }
+  .screen{display:none;}
+  .screen.active{display:block;}
+
+  /* ---- Setup ---- */
+  .field{margin-bottom:22px;}
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .mode-row{display:flex; gap:10px;}
+  .btn{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:14px;
+    background:transparent;
+    border:1px solid var(--ink);
+    color:var(--ink);
+    padding:10px 16px;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .btn:hover{background:var(--ink); color:var(--paper);}
+  .btn.selected{background:var(--ink); color:var(--paper);}
+  .btn.primary{
+    background:var(--petrol);
+    border-color:var(--petrol);
+    color:var(--paper);
+  }
+  .btn.primary:hover{opacity:0.85; background:var(--petrol);}
+  .btn.wide{width:100%;}
+  .btn:disabled{opacity:0.35; cursor:not-allowed;}
+  .btn:disabled:hover{background:transparent; color:var(--ink);}
+
+  .player-list{border-top:1px solid var(--line);}
+  .player-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .player-row .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    width:20px;
+  }
+  .player-row input{
+    flex:1;
+    border:none;
+    border-bottom:1px solid var(--line);
+    background:transparent;
+    font-family:'Space Grotesk', sans-serif;
+    font-size:15px;
+    padding:6px 2px;
+    color:var(--ink);
+  }
+  .player-row input:focus{outline:none; border-bottom-color:var(--ink);}
+  .player-row .remove{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    background:none; border:none; cursor:pointer;
+  }
+  .player-row .remove:hover{color:var(--live);}
+  .add-player{
+    margin-top:12px;
+    font-size:13px;
+    color:var(--petrol);
+    background:none; border:none; cursor:pointer;
+    padding:0;
+  }
+
+  /* ---- Game ---- */
+  .session-bar{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:18px;
+  }
+  .stage{
+    border:1px solid var(--ink);
+    padding:26px 22px;
+    margin-bottom:20px;
+  }
+  .stage .whoami{
+    font-size:12px;
+    color:var(--petrol);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:6px;
+  }
+  .stage .consigne{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+  }
+  .stage .replique{
+    font-size:21px;
+    line-height:1.4;
+    margin:0 0 20px 0;
+  }
+  .waveform{
+    display:flex;
+    align-items:flex-end;
+    gap:3px;
+    height:48px;
+    margin-bottom:18px;
+  }
+  .waveform .bar{
+    flex:1;
+    background:var(--line);
+    min-height:3px;
+    transition:height .08s linear, background .15s;
+  }
+  .waveform.live .bar{background:var(--live);}
+  .waveform.ref .bar{background:var(--petrol);}
+  .controls{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .status-line{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:14px;
+    min-height:16px;
+  }
+  .status-line.live{color:var(--live);}
+
+  .judges{
+    border-top:1px solid var(--ink);
+    padding-top:14px;
+  }
+  .judge-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    opacity:0;
+    transform:translateY(4px);
+    transition:opacity .3s ease, transform .3s ease;
+  }
+  .judge-row.shown{opacity:1; transform:translateY(0);}
+  .judge-row .who{font-size:13px;}
+  .judge-row .who .role{color:var(--ink-soft); font-size:11px; display:block;}
+  .judge-row .comment{
+    font-size:12px;
+    color:var(--ink-soft);
+    flex:1;
+    padding:0 16px;
+    text-align:left;
+  }
+  .judge-row .score{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:16px;
+    color:var(--gold);
+    white-space:nowrap;
+  }
+  .total-row{
+    display:flex;
+    justify-content:space-between;
+    padding-top:14px;
+    font-size:15px;
+  }
+  .total-row .score{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+  }
+
+  /* ---- Scoreboard ---- */
+  table.scoreboard{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:24px;
+    font-size:13px;
+  }
+  table.scoreboard th{
+    text-align:left;
+    font-size:11px;
+    color:var(--ink-soft);
+    font-weight:400;
+    border-bottom:1px solid var(--ink);
+    padding-bottom:6px;
+  }
+  table.scoreboard td{
+    padding:8px 0;
+    border-bottom:1px solid var(--line);
+  }
+  table.scoreboard td.pts{
+    font-family:'IBM Plex Mono', monospace;
+    text-align:right;
+  }
+
+  /* ---- Results ---- */
+  .podium{
+    border-top:1px solid var(--ink);
+    padding-top:20px;
+  }
+  .podium-row{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .podium-row .rank{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:20px;
+    color:var(--ink-soft);
+    width:28px;
+  }
+  .podium-row.first .rank{color:var(--gold);}
+  .podium-row .name{flex:1; font-size:16px;}
+  .podium-row .pts{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:16px;
+  }
+
+  .hint{font-size:12px; color:var(--ink-soft); margin-top:8px;}
+  .top-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:24px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="masthead">
+    <h1>La Cabine</h1>
+    <div class="tag mono">JEU D'IMITATION VOCALE</div>
+  </div>
+
+  <!-- SETUP -->
+  <div class="screen active" id="screen-setup">
+    <div class="field">
+      <label>Mode</label>
+      <div class="mode-row">
+        <button class="btn" id="mode-solo" onclick="setMode('solo')">Solo</button>
+        <button class="btn" id="mode-multi" onclick="setMode('multi')">Multijoueur local</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Joueurs</label>
+      <div class="player-list" id="player-list"></div>
+      <button class="add-player" id="add-player-btn" onclick="addPlayer()">+ ajouter un joueur</button>
+    </div>
+
+    <div class="field">
+      <label>Nombre de manches</label>
+      <div class="mode-row" id="rounds-row">
+        <button class="btn round-btn" onclick="setRounds(3)">3</button>
+        <button class="btn round-btn selected" onclick="setRounds(5)">5</button>
+        <button class="btn round-btn" onclick="setRounds(8)">8</button>
+      </div>
+    </div>
+
+    <button class="btn primary wide" onclick="startGame()">Entrer en cabine</button>
+    <p class="hint">Le micro sera demandé au premier enregistrement. Rien n'est envoyé nulle part : tout reste dans cette page.</p>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="screen-game">
+    <div class="session-bar mono">
+      <span id="round-label">MANCHE 1 / 5</span>
+      <span id="turn-label">AU MICRO — JOUEUR 1</span>
+    </div>
+
+    <div class="stage">
+      <div class="whoami" id="player-turn"></div>
+      <div class="consigne" id="consigne"></div>
+      <p class="replique" id="replique-text"></p>
+
+      <div class="waveform ref" id="wave-ref">
+        <!-- bars injected -->
+      </div>
+
+      <div class="controls">
+        <button class="btn" id="btn-listen" onclick="playReference()">Écouter la référence</button>
+        <button class="btn" id="btn-record" onclick="toggleRecord()" disabled>Enregistrer</button>
+        <button class="btn" id="btn-playback" onclick="playRecording()" disabled>Réécouter ma prise</button>
+        <button class="btn primary" id="btn-judge" onclick="revealJudges()" disabled>Passer aux juges</button>
+      </div>
+
+      <div class="waveform live" id="wave-live" style="display:none;"></div>
+      <div class="status-line mono" id="status-line"></div>
+    </div>
+
+    <div class="judges" id="judges-panel" style="display:none;">
+      <div class="judge-row" id="judge-row-0">
+        <div class="who">La technicienne son<span class="role">rythme &amp; justesse</span></div>
+        <div class="comment"></div>
+        <div class="score mono"></div>
+      </div>
+      <div class="judge-row" id="judge-row-1">
+        <div class="who">Le réalisateur<span class="role">énergie &amp; engagement</span></div>
+        <div class="comment"></div>
+        <div class="score mono"></div>
+      </div>
+      <div class="judge-row" id="judge-row-2">
+        <div class="who">L'autrice<span class="role">fidélité au texte</span></div>
+        <div class="comment"></div>
+        <div class="score mono"></div>
+      </div>
+      <div class="total-row">
+        <span>Total de la prise</span>
+        <span class="score" id="round-total">— / 30</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn primary" onclick="nextTurn()" id="btn-next">Suivant</button>
+      </div>
+    </div>
+
+    <table class="scoreboard" id="scoreboard">
+      <thead><tr><th>Joueur</th><th style="text-align:right;">Points</th></tr></thead>
+      <tbody id="scoreboard-body"></tbody>
+    </table>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="screen-results">
+    <p class="hint" style="margin-bottom:4px;">Session terminée</p>
+    <div class="podium" id="podium"></div>
+    <div class="top-actions">
+      <button class="btn" onclick="restart()">Nouvelle session</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- Data ---------------- */
+const REPLIQUES = [
+  {text:"Mesdames et messieurs, le train de 8h12 n'arrivera jamais, et personne ne sait pourquoi.", consigne:"voix d'annonce de gare, lasse et résignée", rate:0.85, pitch:0.9},
+  {text:"Je jure fidélité à ce royaume, à ce donjon, et surtout à cette sieste que je vais faire.", consigne:"ton solennel de chevalier, puis chute molle", rate:0.9, pitch:0.75},
+  {text:"Alerte météo : une pluie de grenouilles est prévue entre 14h et 14h03, restez calmes.", consigne:"présentateur météo qui panique en silence", rate:1.1, pitch:1.1},
+  {text:"Non, non, non, je t'assure, le chat a mangé les preuves lui-même.", consigne:"chuchoté, complice, un peu essoufflé", rate:1.0, pitch:1.05},
+  {text:"Bienvenue dans ce donjon où absolument rien de dangereux ne va se passer.", consigne:"voix de guide touristique trop enthousiaste", rate:1.05, pitch:1.15},
+  {text:"On se calme, on respire, et on recommence la réunion depuis le début.", consigne:"manager exagérément zen, au bord du craquage", rate:0.8, pitch:0.95},
+  {text:"J'ai vu des choses que vous ne croiriez pas... comme mon relevé de compte.", consigne:"voix grave et dramatique, façon film noir", rate:0.8, pitch:0.7},
+  {text:"Le sort est jeté : la pizza sera partagée en parts strictement égales.", consigne:"ton de tribunal, très sérieux pour rien", rate:0.9, pitch:0.85},
+  {text:"Petit rappel amical : la fin du monde est reportée à la semaine prochaine.", consigne:"voix de standardiste douce et indifférente", rate:0.95, pitch:1.0},
+  {text:"Approchez, approchez, le spectacle va commencer, ou peut-être pas.", consigne:"bonimenteur de fête foraine fatigué", rate:1.0, pitch:0.9},
+  {text:"Capitaine, on a un problème : je crois qu'on a pris le mauvais bateau.", consigne:"marin paniqué qui essaie de garder son calme", rate:1.1, pitch:1.0},
+  {text:"Cette potion rendra invincible... ou alors elle donnera juste soif.", consigne:"alchimiste hésitant, peu sûr de lui", rate:0.9, pitch:0.95},
+];
+
+const JUDGE_COMMENTS = {
+  low:   ["On a connu plus convaincant.", "Le texte y était, l'intention un peu moins.", "C'est un début.", "Il faudra pousser davantage la prochaine fois."],
+  mid:   ["Correct, sans plus.", "On sent l'effort.", "Ça passe, avec de la marge de progression.", "Une prise honnête."],
+  high:  ["Voilà qui a du caractère.", "On y croit presque.", "Belle intention de jeu.", "Ça, c'est une vraie prise."],
+  top:   ["Excellent, rien à redire.", "La cabine applaudit.", "On garde celle-là pour le montage final.", "Impossible de faire mieux."]
+};
+
+/* ---------------- State ---------------- */
+let mode = 'multi';
+let players = [];
+let numRounds = 5;
+let order = [];        // sequence of {playerIndex}
+let turnIdx = 0;
+let scores = {};        // playerIndex -> total
+let currentReplique = null;
+let refDurationEstimate = 0;
+
+let audioCtx, analyser, mediaStream, mediaRecorder, recordedChunks = [];
+let recording = false;
+let recStart = 0;
+let recDuration = 0;
+let ampSamples = [];
+let recordedBlobUrl = null;
+let liveAnimId = null;
+
+/* ---------------- Setup screen ---------------- */
+function renderPlayerList(){
+  const list = document.getElementById('player-list');
+  list.innerHTML = '';
+  players.forEach((name, i) => {
+    const row = document.createElement('div');
+    row.className = 'player-row';
+    row.innerHTML = `
+      <span class="num mono">${String(i+1).padStart(2,'0')}</span>
+      <input type="text" value="${name}" oninput="players[${i}]=this.value" placeholder="Nom du joueur">
+      ${players.length > 1 ? `<button class="remove mono" onclick="removePlayer(${i})">retirer</button>` : ''}
+    `;
+    list.appendChild(row);
+  });
+  document.getElementById('add-player-btn').style.display = mode === 'solo' ? 'none' : 'block';
+}
+
+function addPlayer(){
+  players.push('Joueur ' + (players.length + 1));
+  renderPlayerList();
+}
+function removePlayer(i){
+  players.splice(i,1);
+  renderPlayerList();
+}
+function setMode(m){
+  mode = m;
+  document.getElementById('mode-solo').classList.toggle('selected', m==='solo');
+  document.getElementById('mode-multi').classList.toggle('selected', m==='multi');
+  if(m === 'solo'){ players = ['Moi']; }
+  else if(players.length < 2){ players = ['Joueur 1','Joueur 2']; }
+  renderPlayerList();
+}
+function setRounds(n){
+  numRounds = n;
+  document.querySelectorAll('.round-btn').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+}
+
+setMode('multi');
+
+/* ---------------- Game flow ---------------- */
+function shuffledRepliques(n){
+  const pool = [...REPLIQUES];
+  for(let i=pool.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [pool[i],pool[j]] = [pool[j],pool[i]];
+  }
+  const out = [];
+  while(out.length < n){ out.push(...pool); }
+  return out.slice(0,n);
+}
+
+function startGame(){
+  players = players.map((p,i) => p.trim() || ('Joueur ' + (i+1)));
+  scores = {};
+  players.forEach((_,i) => scores[i] = 0);
+
+  order = [];
+  for(let r=0;r<numRounds;r++){
+    for(let p=0;p<players.length;p++){
+      order.push({round:r, playerIndex:p});
+    }
+  }
+  turnIdx = 0;
+  buildWaveBars('wave-ref', 40);
+  buildWaveBars('wave-live', 40);
+  document.getElementById('screen-setup').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  loadTurn();
+}
+
+function buildWaveBars(id, count){
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  for(let i=0;i<count;i++){
+    const b = document.createElement('div');
+    b.className = 'bar';
+    b.style.height = '3px';
+    el.appendChild(b);
+  }
+}
+
+function loadTurn(){
+  const t = order[turnIdx];
+  currentReplique = shuffledRepliques(1)[0]; // fresh pick, but avoid immediate repeat if possible
+  // avoid identical back-to-back line
+  let tries = 0;
+  while(window.__lastLine === currentReplique.text && tries < 5){
+    currentReplique = shuffledRepliques(1)[0];
+    tries++;
+  }
+  window.__lastLine = currentReplique.text;
+
+  refDurationEstimate = estimateDuration(currentReplique.text, currentReplique.rate);
+
+  document.getElementById('round-label').textContent = `MANCHE ${t.round+1} / ${numRounds}`;
+  document.getElementById('turn-label').textContent = `AU MICRO — ${players[t.playerIndex].toUpperCase()}`;
+  document.getElementById('player-turn').textContent = players[t.playerIndex];
+  document.getElementById('consigne').textContent = currentReplique.consigne;
+  document.getElementById('replique-text').textContent = '« ' + currentReplique.text + ' »';
+
+  resetBars('wave-ref');
+  resetBars('wave-live');
+  document.getElementById('wave-live').style.display = 'none';
+  document.getElementById('status-line').textContent = '';
+  document.getElementById('status-line').classList.remove('live');
+
+  document.getElementById('btn-record').disabled = false;
+  document.getElementById('btn-record').textContent = 'Enregistrer';
+  document.getElementById('btn-playback').disabled = true;
+  document.getElementById('btn-judge').disabled = true;
+  document.getElementById('judges-panel').style.display = 'none';
+  document.querySelectorAll('.judge-row').forEach(r => r.classList.remove('shown'));
+
+  recordedChunks = [];
+  recordedBlobUrl = null;
+  ampSamples = [];
+  recDuration = 0;
+
+  renderScoreboard();
+}
+
+function resetBars(id){
+  document.querySelectorAll('#'+id+' .bar').forEach(b => b.style.height = '3px');
+}
+
+function estimateDuration(text, rate){
+  const words = text.split(/\s+/).length;
+  return (words / (2.6 * rate)); // seconds, rough speaking-rate model
+}
+
+/* ---------------- Reference playback (TTS) ---------------- */
+function playReference(){
+  if(!('speechSynthesis' in window)){
+    document.getElementById('status-line').textContent = 'Synthèse vocale non disponible sur ce navigateur.';
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(currentReplique.text);
+  utter.lang = 'fr-FR';
+  utter.rate = currentReplique.rate;
+  utter.pitch = currentReplique.pitch;
+
+  animateRefBars(refDurationEstimate);
+  document.getElementById('status-line').textContent = 'Lecture de la référence…';
+  utter.onend = () => {
+    document.getElementById('status-line').textContent = 'À vous — enregistrez votre prise.';
+  };
+  window.speechSynthesis.speak(utter);
+}
+
+function animateRefBars(durationSec){
+  const bars = document.querySelectorAll('#wave-ref .bar');
+  const start = performance.now();
+  const dur = Math.max(durationSec, 1) * 1000;
+  function frame(now){
+    const t = now - start;
+    if(t > dur){ resetBars('wave-ref'); return; }
+    bars.forEach((b,i) => {
+      const phase = (t/120) + i * 0.6;
+      const h = 3 + Math.abs(Math.sin(phase)) * 40 * Math.max(0, 1 - t/dur * 0.3);
+      b.style.height = h + 'px';
+    });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------------- Recording ---------------- */
+async function toggleRecord(){
+  if(!recording){
+    await startRecording();
+  } else {
+    stopRecording();
+  }
+}
+
+async function startRecording(){
+  try{
+    mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  }catch(e){
+    document.getElementById('status-line').textContent = 'Micro refusé ou indisponible — vérifiez les permissions.';
+    return;
+  }
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const source = audioCtx.createMediaStreamSource(mediaStream);
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512;
+  source.connect(analyser);
+
+  recordedChunks = [];
+  let options = {};
+  if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/webm')){
+    options = {mimeType:'audio/webm'};
+  }
+  mediaRecorder = new MediaRecorder(mediaStream, options);
+  mediaRecorder.ondataavailable = e => { if(e.data.size>0) recordedChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(recordedChunks, {type: mediaRecorder.mimeType || 'audio/webm'});
+    recordedBlobUrl = URL.createObjectURL(blob);
+    document.getElementById('btn-playback').disabled = false;
+    document.getElementById('btn-judge').disabled = false;
+  };
+  mediaRecorder.start();
+
+  recording = true;
+  recStart = performance.now();
+  ampSamples = [];
+  document.getElementById('btn-record').textContent = 'Arrêter';
+  document.getElementById('btn-listen').disabled = true;
+  document.getElementById('wave-live').style.display = 'flex';
+  document.getElementById('status-line').textContent = 'Enregistrement en cours…';
+  document.getElementById('status-line').classList.add('live');
+
+  liveWaveLoop();
+}
+
+function liveWaveLoop(){
+  const bars = document.querySelectorAll('#wave-live .bar');
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  function frame(){
+    if(!recording) return;
+    analyser.getByteTimeDomainData(data);
+    let sum = 0;
+    for(let i=0;i<data.length;i++){ const v = (data[i]-128)/128; sum += Math.abs(v); }
+    const avg = sum / data.length;
+    ampSamples.push(avg);
+    bars.forEach((b,i) => {
+      const idx = Math.floor((i/bars.length) * data.length);
+      const v = Math.abs((data[idx]-128)/128);
+      b.style.height = (3 + v*70) + 'px';
+    });
+    liveAnimId = requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function stopRecording(){
+  recording = false;
+  if(liveAnimId) cancelAnimationFrame(liveAnimId);
+  recDuration = (performance.now() - recStart) / 1000;
+  if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+  if(audioCtx) audioCtx.close();
+
+  document.getElementById('btn-record').textContent = 'Réenregistrer';
+  document.getElementById('btn-listen').disabled = false;
+  document.getElementById('status-line').classList.remove('live');
+  document.getElementById('status-line').textContent = `Prise enregistrée — ${recDuration.toFixed(1)} s.`;
+  resetBars('wave-live');
+}
+
+function playRecording(){
+  if(!recordedBlobUrl) return;
+  const audio = new Audio(recordedBlobUrl);
+  audio.play();
+}
+
+/* ---------------- Judging ---------------- */
+function computeBaseScore(){
+  // duration match (0-1)
+  const durRatio = refDurationEstimate > 0 ? Math.min(recDuration, refDurationEstimate) / Math.max(recDuration, refDurationEstimate, 0.01) : 0.5;
+
+  // dynamism: variance of amplitude samples (0-1, normalized)
+  let dynamism = 0.4;
+  if(ampSamples.length > 3){
+    const mean = ampSamples.reduce((a,b)=>a+b,0)/ampSamples.length;
+    const variance = ampSamples.reduce((a,b)=>a+(b-mean)*(b-mean),0)/ampSamples.length;
+    dynamism = Math.min(1, Math.sqrt(variance) * 12);
+  }
+
+  // presence: was there actually sound?
+  let presence = 0.3;
+  if(ampSamples.length > 0){
+    const mean = ampSamples.reduce((a,b)=>a+b,0)/ampSamples.length;
+    presence = Math.min(1, mean * 8);
+  }
+
+  const base = (durRatio*0.35 + dynamism*0.35 + presence*0.3);
+  return Math.max(0.05, Math.min(1, base));
+}
+
+function pickComment(score10){
+  let bucket;
+  if(score10 <= 3) bucket = JUDGE_COMMENTS.low;
+  else if(score10 <= 6) bucket = JUDGE_COMMENTS.mid;
+  else if(score10 <= 8) bucket = JUDGE_COMMENTS.high;
+  else bucket = JUDGE_COMMENTS.top;
+  return bucket[Math.floor(Math.random()*bucket.length)];
+}
+
+function revealJudges(){
+  const base = computeBaseScore(); // 0-1
+  document.getElementById('judges-panel').style.display = 'block';
+  document.getElementById('btn-judge').disabled = true;
+  document.getElementById('btn-record').disabled = true;
+
+  let total = 0;
+  const rows = [0,1,2];
+  rows.forEach((rowIdx, seq) => {
+    setTimeout(() => {
+      let s = base*10 + (Math.random()*2.4 - 1.2);
+      s = Math.max(0, Math.min(10, Math.round(s)));
+      total += s;
+      const row = document.getElementById('judge-row-'+rowIdx);
+      row.querySelector('.comment').textContent = pickComment(s);
+      row.querySelector('.score').textContent = s + ' / 10';
+      row.classList.add('shown');
+      if(seq === rows.length-1){
+        setTimeout(() => {
+          document.getElementById('round-total').textContent = total + ' / 30';
+          const t = order[turnIdx];
+          scores[t.playerIndex] += total;
+          renderScoreboard();
+        }, 250);
+      }
+    }, seq * 550);
+  });
+}
+
+/* ---------------- Turn progression ---------------- */
+function nextTurn(){
+  turnIdx++;
+  if(turnIdx >= order.length){
+    showResults();
+  } else {
+    loadTurn();
+  }
+}
+
+function renderScoreboard(){
+  const body = document.getElementById('scoreboard-body');
+  body.innerHTML = '';
+  const rows = players.map((name,i) => ({name, pts: scores[i]||0}))
+                       .sort((a,b) => b.pts - a.pts);
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.name}</td><td class="pts mono">${r.pts}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+/* ---------------- Results ---------------- */
+function showResults(){
+  document.getElementById('screen-game').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+  const podium = document.getElementById('podium');
+  podium.innerHTML = '';
+  const rows = players.map((name,i) => ({name, pts: scores[i]||0}))
+                       .sort((a,b) => b.pts - a.pts);
+  rows.forEach((r,i) => {
+    const div = document.createElement('div');
+    div.className = 'podium-row' + (i===0 ? ' first' : '');
+    div.innerHTML = `<span class="rank mono">${i+1}</span><span class="name">${r.name}</span><span class="pts mono">${r.pts} pts</span>`;
+    podium.appendChild(div);
+  });
+}
+
+function restart(){
+  document.getElementById('screen-results').classList.remove('active');
+  document.getElementById('screen-setup').classList.add('active');
+}
+</script>
+</body>
+</html>
