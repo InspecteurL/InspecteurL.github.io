@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -617,6 +616,8 @@ video {
   <div class="video-container" id="videoContainer">
     <button class="back-button" id="backButton">← Retour à la fiche</button>
     <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
+    <!-- AJOUT : élément audio séparé pour la superposition audio/vidéo -->
+    <audio id="audioTrack" style="display:none;"></audio>
     <iframe
   id="fallbackFrame"
   allow="autoplay; fullscreen"
@@ -649,6 +650,8 @@ video {
         </div>
       </div>
       <div class="controls-right">
+        <!-- AJOUT : bouton sélecteur de piste audio, masqué tant qu'aucune piste n'est déclarée -->
+        <span id="audioTrackBtn" class="material-symbols-outlined" style="display:none;" title="Piste audio">graphic_eq</span>
         <span id="subtitles" class="material-symbols-outlined">subtitles</span>
         <span id="source" class="material-symbols-outlined">cloud</span>
         <span id="settings" class="material-symbols-outlined">settings</span>
@@ -668,6 +671,9 @@ video {
     </div>
  
     <div id="subtitleMenu" class="menu"></div>
+
+    <!-- AJOUT : menu du sélecteur de piste audio -->
+    <div id="audioTrackMenu" class="menu"></div>
   </div>
  
 <div class="season-selector">
@@ -682,6 +688,15 @@ video {
   <button data-season="9">Saison 9</button>
 </div>
 <div class="cards-container" id="season-episodes">
+  <!--
+    AJOUT (exemple) : pour activer le sélecteur de piste audio sur un épisode,
+    ajoute l'attribut data-audio-tracks à sa carte, au format JSON, avec les
+    vrais liens audio_N/index.m3u8 que tu as trouvés pour cet épisode précis :
+
+    data-audio-tracks='[{"label":"VF","url":"https://.../audio_0/index.m3u8"},{"label":"VOSTFR","url":"https://.../audio_1/index.m3u8"}]'
+
+    Sans cet attribut, la carte fonctionne exactement comme avant (aucun changement).
+  -->
   <div class="card" data-season="1" data-episode="1" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-25urg/S01/E01/master.m3u8">
     <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/axt2TV2b3FAs1ZEg1mdKV1ZJnfW.jpg" alt="Épisode 1">
     <h3>Épisode 1</h3>
@@ -1542,7 +1557,7 @@ video {
     <h3>Épisode 9</h3>
   </div>
 
-  <div class="card" data-season="9" data-episode="10" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-zuz6o/S09/E10/master.m3u8">
+  <div class="card" data-season="9" data-episode="10" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-zuz6o/S09/E10/master.m3u8">
     <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/dMcPzhH0rScvMSejNluYtFYxISg.jpg" alt="Épisode 10">
     <h3>Épisode 10</h3>
   </div>
@@ -1751,6 +1766,147 @@ document.addEventListener('DOMContentLoaded', () => {
   const subtitleMenu = document.getElementById('subtitleMenu');
   const forwardBtn = document.getElementById('forward');
   const backwardBtn = document.getElementById('backward');
+
+  /* =====================================================
+     AJOUT : SUPERPOSITION VIDÉO MUETTE + PISTE AUDIO SÉPARÉE
+  ===================================================== */
+
+  const audioEl = document.getElementById('audioTrack');
+  const audioTrackBtn = document.getElementById('audioTrackBtn');
+  const audioTrackMenu = document.getElementById('audioTrackMenu');
+
+  let hlsAudioOverlay = null;
+  let currentAudioTracksList = [];
+  let audioDriftInterval = null;
+
+  function setupAudioOverlay(tracks) {
+
+    currentAudioTracksList = Array.isArray(tracks) ? tracks : [];
+
+    // Reconstruit le menu de sélection
+    audioTrackMenu.innerHTML = '';
+
+    currentAudioTracksList.forEach((track) => {
+      const btn = document.createElement('button');
+      btn.textContent = track.label || 'Piste audio';
+      btn.addEventListener('click', () => {
+        switchAudioOverlayTrack(track.url);
+        audioTrackMenu.style.display = 'none';
+      });
+      audioTrackMenu.appendChild(btn);
+    });
+
+    if (currentAudioTracksList.length > 0) {
+
+      audioTrackBtn.style.display = 'inline-block';
+
+      // On coupe le son embarqué de la vidéo : seul l'élément <audio> doit être entendu
+      video.muted = true;
+
+      switchAudioOverlayTrack(currentAudioTracksList[0].url);
+      startAudioSync();
+
+    } else {
+
+      audioTrackBtn.style.display = 'none';
+      stopAudioSync();
+
+      if (hlsAudioOverlay) {
+        hlsAudioOverlay.destroy();
+        hlsAudioOverlay = null;
+      }
+
+      audioEl.removeAttribute('src');
+      audioEl.load();
+
+      // Pas de piste séparée : on repasse sur le son natif de la vidéo
+      video.muted = false;
+    }
+  }
+
+  function switchAudioOverlayTrack(audioUrl) {
+
+    if (!audioUrl) return;
+
+    const t = video.currentTime;
+    const wasPlaying = !video.paused;
+
+    if (hlsAudioOverlay) {
+      hlsAudioOverlay.destroy();
+      hlsAudioOverlay = null;
+    }
+
+    if (audioUrl.endsWith('.m3u8') && typeof Hls !== 'undefined' && Hls.isSupported()) {
+
+      hlsAudioOverlay = new Hls();
+      hlsAudioOverlay.loadSource(audioUrl);
+      hlsAudioOverlay.attachMedia(audioEl);
+
+      hlsAudioOverlay.on(Hls.Events.MANIFEST_PARSED, () => {
+        audioEl.currentTime = t;
+        if (wasPlaying) {
+          audioEl.play().catch(err => console.warn('Lecture audio impossible :', err));
+        }
+      });
+
+      hlsAudioOverlay.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          console.error('Erreur sur la piste audio séparée :', data);
+        }
+      });
+
+    } else {
+
+      // Flux audio direct (mp3, aac...) ou HLS natif (Safari)
+      audioEl.src = audioUrl;
+      audioEl.currentTime = t;
+      if (wasPlaying) {
+        audioEl.play().catch(err => console.warn('Lecture audio impossible :', err));
+      }
+    }
+  }
+
+  function startAudioSync() {
+
+    stopAudioSync();
+
+    audioDriftInterval = setInterval(() => {
+
+      if (currentAudioTracksList.length === 0) return;
+
+      if (!video.paused && Math.abs(video.currentTime - audioEl.currentTime) > 0.3) {
+        audioEl.currentTime = video.currentTime;
+      }
+
+    }, 1000);
+  }
+
+  function stopAudioSync() {
+    clearInterval(audioDriftInterval);
+    audioDriftInterval = null;
+  }
+
+  // Synchronisation lecture / pause / seek entre la vidéo et l'audio séparé
+  video.addEventListener('play', () => {
+    if (currentAudioTracksList.length > 0) {
+      audioEl.play().catch(err => console.warn('Lecture audio impossible :', err));
+    }
+  });
+
+  video.addEventListener('pause', () => {
+    if (currentAudioTracksList.length > 0) {
+      audioEl.pause();
+    }
+  });
+
+  video.addEventListener('seeked', () => {
+    if (currentAudioTracksList.length > 0) {
+      audioEl.currentTime = video.currentTime;
+    }
+  });
+
+  audioTrackBtn.addEventListener('click', () => toggleMenu(audioTrackMenu));
+
  
   /* =====================================================
      FALLBACK
@@ -1801,6 +1957,9 @@ document.addEventListener('DOMContentLoaded', () => {
  
     video.removeAttribute('src');
     video.load();
+
+    // AJOUT : on coupe aussi la piste audio séparée à la fermeture
+    setupAudioOverlay([]);
  
     fallbackFrame.src = '';
     fallbackFrame.style.display = 'none';
@@ -1893,6 +2052,9 @@ document.addEventListener('DOMContentLoaded', () => {
       hls.destroy();
       hls = null;
     }
+
+    // AJOUT : le fallback iframe ne peut pas piloter notre superposition audio, on la désactive
+    setupAudioOverlay([]);
  
  
     /*
@@ -1994,6 +2156,16 @@ document.addEventListener('DOMContentLoaded', () => {
     currentFallbackSource = fallbackSrc;
  
     usingFallback = false;
+
+    // AJOUT : lecture des pistes audio séparées déclarées sur la carte (data-audio-tracks, JSON)
+    let audioTracks = [];
+    if (card && card.dataset.audioTracks) {
+      try {
+        audioTracks = JSON.parse(card.dataset.audioTracks);
+      } catch (e) {
+        console.error('data-audio-tracks invalide sur cette carte :', e);
+      }
+    }
  
  
     /*
@@ -2070,6 +2242,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 err
               );
             });
+
+            // AJOUT : active la superposition audio si des pistes sont déclarées
+            setupAudioOverlay(audioTracks);
  
           },
           { once: true }
@@ -2126,6 +2301,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 err
               );
             });
+
+            // AJOUT : active la superposition audio si des pistes sont déclarées
+            setupAudioOverlay(audioTracks);
  
           }
         );
@@ -2186,6 +2364,9 @@ document.addEventListener('DOMContentLoaded', () => {
         );
  
       });
+
+      // AJOUT : la superposition audio fonctionne aussi avec une source MP4 principale
+      setupAudioOverlay(audioTracks);
  
     }
   }
@@ -2462,6 +2643,12 @@ document.addEventListener('DOMContentLoaded', () => {
         parseFloat(
           volumeSlider.value
         );
+
+      // AJOUT : le volume s'applique aussi à la piste audio séparée
+      audioEl.volume =
+        parseFloat(
+          volumeSlider.value
+        );
  
       updateVolumeIcon();
  
@@ -2477,11 +2664,13 @@ document.addEventListener('DOMContentLoaded', () => {
  
         video.volume = 0;
         volumeSlider.value = 0;
+        audioEl.volume = 0;
  
       } else {
  
         video.volume = 1;
         volumeSlider.value = 1;
+        audioEl.volume = 1;
  
       }
  
@@ -2534,6 +2723,12 @@ document.addEventListener('DOMContentLoaded', () => {
             parseFloat(
               btn.dataset.speed
             );
+
+          // AJOUT : la vitesse s'applique aussi à la piste audio séparée
+          audioEl.playbackRate =
+            parseFloat(
+              btn.dataset.speed
+            );
  
           settingsMenu.style.display =
             'none';
@@ -2577,7 +2772,8 @@ document.addEventListener('DOMContentLoaded', () => {
     [
       settingsMenu,
       sourceMenu,
-      subtitleMenu
+      subtitleMenu,
+      audioTrackMenu
     ].forEach(m => {
  
       m.style.display = 'none';
@@ -2694,7 +2890,8 @@ document.addEventListener('DOMContentLoaded', () => {
     [
       settingsMenu,
       sourceMenu,
-      subtitleMenu
+      subtitleMenu,
+      audioTrackMenu
     ].forEach(menu => {
  
       menu.style.display = 'none';
