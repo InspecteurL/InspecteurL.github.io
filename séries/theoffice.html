@@ -1,0 +1,2999 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<title>The Office - BNZ</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+ 
+ 
+<style>
+/* --- Styles globaux --- */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: url('https://media.themoviedb.org/t/p/w1000_and_h563_face/jBVqLHlhqwlwXXSSuQjBRQlF1QS.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+  position: relative;
+  z-index: 0;
+}
+ 
+/* Overlay sombre */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: -1;
+}
+ 
+/* --- Navbar --- */
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #1c1c1c;
+}
+ 
+li {
+  float: left;
+}
+ 
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 20px;
+}
+ 
+li a:hover {
+  background-color: red;
+  border-radius: 5px;
+}
+ 
+/* Navbar responsive */
+#navbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+ 
+/* --- Conteneur des cartes --- */
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin: 20px 0;
+  padding: 0 20px;
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+ 
+/* Cartes individuelles */
+.card {
+  flex: 1 1 calc(20% - 20px);
+  max-width: 220px;
+  background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+  border-radius: 15px;
+  overflow: hidden;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+ 
+.card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  border-bottom: 2px solid #333;
+}
+ 
+.card:hover img {
+  transform: scale(1.05);
+}
+ 
+.card h3 {
+  margin: 10px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff416c;
+  text-shadow: 1px 1px 3px #000;
+}
+ 
+.card:hover {
+  transform: scale(1.08);
+  box-shadow: 0 10px 25px rgba(255,65,108,0.5);
+}
+ 
+/* --- Sélecteur de saison --- */
+.season-selector {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
+}
+ 
+.season-selector button {
+  background: linear-gradient(90deg, #ff416c, #ff4b2b);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+ 
+.season-selector button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(255,65,108,0.6);
+}
+ 
+.season-selector button.active {
+  box-shadow: 0 0 15px rgba(255,65,108,0.8);
+}
+ 
+/* --- Fiche du film --- */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+ 
+.fiche {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+ 
+.fiche img {
+  width: 300px;
+  border-radius: 10px;
+}
+ 
+.fiche-info {
+  flex: 1;
+}
+ 
+.fiche-info h1 {
+  margin-top: 0;
+}
+ 
+.fiche-info p {
+  line-height: 1.5;
+}
+ 
+/* --- Bouton regarder --- */
+.btn-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: #ff3d00;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+ 
+.btn-watch:hover {
+  background-color: #ff5722;
+}
+ 
+.btn-watch:hover .material-symbols-outlined {
+  transform: scale(1.2);
+}
+ 
+/* --- Conteneur du lecteur vidéo --- */
+.video-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow: hidden; /* important pour éviter les débordements */
+}
+ 
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: scale(1.15);
+  transform-origin: center center;
+}
+ 
+ 
+/* --- Bouton retour --- */
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  z-index: 1100;
+}
+ 
+.back-button:hover {
+  background: rgba(255, 65, 108, 0.8);
+}
+ 
+/* --- Barre de progression et contrôles --- */
+.progress-wrapper {
+  position: absolute;
+  bottom: 70px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 14px;
+  font-family: monospace;
+}
+ 
+.progress {
+  flex: 1;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+ 
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff4b2b, #ff416c);
+  border-radius: 6px;
+}
+ 
+.controls {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+ 
+.controls-left,
+.controls-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+ 
+.center-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  padding: 20px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+ 
+.center-play.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+ 
+.material-symbols-outlined {
+  cursor: pointer;
+  color: white;
+  font-size: 35px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 35;
+}
+ 
+/* Volume */
+.volume-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+ 
+#volume-slider {
+  width: 100px;
+  height: 5px;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+}
+ 
+#volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+ 
+#volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #ff416c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+ 
+/* Menu contextuel */
+.menu {
+  position: absolute;
+  bottom: 60px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+}
+ 
+.menu button {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+ 
+.menu button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+ 
+.hide {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.4s ease;
+}
+ 
+.controls,
+.progress-wrapper,
+#centerPlay,
+.back-button {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease;
+}
+ 
+/* --- Media Queries pour la responsivité --- */
+ 
+/* Tablettes */
+@media (max-width: 1024px) {
+  .card {
+    flex: 1 1 calc(33.333% - 20px);
+    max-width: 200px;
+  }
+ 
+  .fiche {
+    flex-direction: column;
+    align-items: center;
+  }
+ 
+  .fiche img {
+    width: 80%;
+    max-width: 300px;
+  }
+ 
+  .fiche-info {
+    text-align: center;
+  }
+ 
+  li {
+    float: none;
+    text-align: center;
+  }
+ 
+  li a {
+    font-size: 18px;
+  }
+}
+ 
+/* Mobiles */
+@media (max-width: 768px) {
+  .card {
+    flex: 1 1 calc(50% - 20px);
+    max-width: 180px;
+  }
+ 
+  .season-selector {
+    flex-direction: column;
+    gap: 10px;
+  }
+ 
+  .fiche img {
+    width: 100%;
+    max-width: 250px;
+  }
+ 
+  .fiche-info h1 {
+    font-size: 22px;
+  }
+ 
+  .fiche-info p {
+    font-size: 14px;
+  }
+ 
+  li a {
+    padding: 10px 12px;
+    font-size: 16px;
+  }
+}
+ 
+/* Très petits écrans */
+@media (max-width: 480px) {
+  .card {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+ 
+  .season-selector {
+    gap: 8px;
+  }
+ 
+  .fiche-info h1 {
+    font-size: 20px;
+  }
+ 
+  .fiche-info p {
+    font-size: 13px;
+  }
+}
+ 
+.vote-container {
+    display: flex;
+    gap: 1rem;
+    margin-top: 20px;
+  }
+ 
+  .vote-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: #f4f4f4;
+    padding: 10px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+ 
+  .vote-btn:hover {
+    background: #e9e9e9;
+    transform: translateY(-1px);
+  }
+ 
+  .vote-btn svg {
+    transition: fill 0.2s ease;
+  }
+ 
+  .vote-btn span {
+    font-weight: bold;
+    color: #333;
+    font-size: 16px;
+  }
+ 
+  .active-like {
+    background-color: #d6ebff !important;
+    box-shadow: 0 0 8px rgba(0, 128, 255, 0.4);
+  }
+ 
+  .active-like svg {
+    fill: #007bff;
+  }
+ 
+  .active-dislike {
+    background-color: #ffe2e2 !important;
+    box-shadow: 0 0 8px rgba(255, 80, 80, 0.4);
+  }
+ 
+  .active-dislike svg {
+    fill: #ff3333;
+  }
+ 
+ 
+  /* Lecteur de secours */
+#fallbackFrame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
+  display: none;
+  z-index: 1050;
+}
+ 
+#fallbackHoverZone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 90px;
+  z-index: 1090;
+  display: none;
+}
+ 
+.fallback-banner {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #ffb74d;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  z-index: 1100;
+  display: none;
+}
+ 
+</style>
+</head>
+<body>
+ <ul id="navbar">
+  <li><a class="active" href="https://inspecteurl.github.io/site/index.html">Home</a></li>
+  <li><a href="https://inspecteurl.github.io/site/compte.html">Votre Compte</a></li>
+  <li><a href="https://inspecteurl.github.io/site/mes-amis.html">Mes amis</a></li>
+  <li><a href="https://inspecteurl.github.io/site/accueil.html">Feuilleter</a></li>
+</ul>
+ 
+  <div class="container">
+    <div class="fiche">
+      <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/dg9e5fPRRId8PoBE0F6jl5y85Eu.jpg" alt="The Office (2005)">
+      <div class="fiche-info">
+        <h1>The Office (2005)</h1>
+        <p><strong>Genre:</strong> Comédie</p>
+        <p><strong>Réalisateur:</strong> Greg Daniels</p>
+        <p><strong>Acteurs:</strong> Rainn Wilson, John Krasinski, Steve Carell</p>
+        <p><strong>Synopsis:</strong> Cette comédie populaire décortique les mœurs des employés de l'entreprise de vente de papier Dunder Mifflin, avec en tête leur patron mégalo Michael Scott.</p>
+      </div>
+    </div>
+    <!-- --- Boutons Like / Dislike --- -->
+<div class="vote-container">
+  <button id="likeBtn" class="vote-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#555">
+      <path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/>
+    </svg>
+    <span id="likeCount">0</span>
+  </button>
+ 
+  <button id="dislikeBtn" class="vote-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#555">
+      <path d="M240-840h440v520L400-40l-50-50q-7-7-11.5-19t-4.5-23v-14l44-174H120q-32 0-56-24t-24-56v-80q0-7 2-15t4-15l120-282q9-20 30-34t44-14Zm360 80H240L120-480v80h360l-54 220 174-174v-406Zm0 406v-406 406Zm80 34v-80h120v-360H680v-80h200v520H680Z"/>
+    </svg>
+    <span id="dislikeCount">0</span>
+  </button>
+</div>
+  </div>
+ 
+  <!-- --- Lecteur vidéo --- -->
+  <div class="video-container" id="videoContainer">
+    <button class="back-button" id="backButton">← Retour à la fiche</button>
+    <video id="video" src="https://cinepizza.xyz/movies/Interstellar.mp4"></video>
+    <iframe
+  id="fallbackFrame"
+  allow="autoplay; fullscreen"
+></iframe>
+ 
+<div class="fallback-banner" id="fallbackBanner">
+  ⚠️ Lecture via serveur alternatif
+</div>
+ 
+<div id="fallbackHoverZone"></div>
+ 
+    <span id="centerPlay" class="material-symbols-outlined center-play">play_arrow</span>
+ 
+    <div class="progress-wrapper" id="progressWrapper">
+      <span id="currentTime">0:00</span>
+      <div class="progress" id="progress">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <span id="totalTime">0:00</span>
+    </div>
+ 
+    <div class="controls" id="controls">
+      <div class="controls-left">
+        <span id="backward" class="material-symbols-outlined">replay_10</span>
+        <span id="play" class="material-symbols-outlined">play_arrow</span>
+        <span id="forward" class="material-symbols-outlined">forward_10</span>
+        <div class="volume-container">
+          <span id="volume-icon" class="material-symbols-outlined">volume_up</span>
+          <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
+        </div>
+      </div>
+      <div class="controls-right">
+        <span id="subtitles" class="material-symbols-outlined">subtitles</span>
+        <span id="source" class="material-symbols-outlined">cloud</span>
+        <span id="settings" class="material-symbols-outlined">settings</span>
+        <span id="fullscreen" class="material-symbols-outlined">fullscreen</span>
+      </div>
+    </div>
+ 
+    <div id="settingsMenu" class="menu">
+      <button data-speed="0.5">0.5x</button>
+      <button data-speed="1">1x</button>
+      <button data-speed="1.5">1.5x</button>
+      <button data-speed="2">2x</button>
+    </div>
+ 
+    <div id="sourceMenu" class="menu">
+      <button data-src="https://cinepizza.xyz/movies/Interstellar.mp4">Interstellar</button>
+    </div>
+ 
+    <div id="subtitleMenu" class="menu"></div>
+  </div>
+ 
+<div class="season-selector">
+  <button data-season="1" class="active">Saison 1</button>
+  <button data-season="2">Saison 2</button>
+  <button data-season="3">Saison 3</button>
+  <button data-season="4">Saison 4</button>
+  <button data-season="5">Saison 5</button>
+  <button data-season="6">Saison 6</button>
+  <button data-season="7">Saison 7</button>
+  <button data-season="8">Saison 8</button>
+  <button data-season="9">Saison 9</button>
+</div>
+<div class="cards-container" id="season-episodes">
+  <div class="card" data-season="1" data-episode="1" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-25urg/S01/E01/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/axt2TV2b3FAs1ZEg1mdKV1ZJnfW.jpg" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
+
+  <div class="card" data-season="1" data-episode="2" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-mzwrn/S01/E02/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/frHasw3YEEkpNlDNzHZpFjJWwhk.jpg" alt="Épisode 2">
+    <h3>Épisode 2</h3>
+  </div>
+
+  <div class="card" data-season="1" data-episode="3" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-akx42/S01/E03/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/b92iKLwxKRGBjKQ2R5k7L9kCPPo.jpg" alt="Épisode 3">
+    <h3>Épisode 3</h3>
+  </div>
+
+  <div class="card" data-season="1" data-episode="4" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-y9l3z/S01/E04/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/9nZh7ikeLZfFYnYs6yf8Nc36fu.jpg" alt="Épisode 4">
+    <h3>Épisode 4</h3>
+  </div>
+
+  <div class="card" data-season="1" data-episode="5" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-7vjww/S01/E05/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/2retmsI3vrQupspr9i2ZB21PhhN.jpg" alt="Épisode 5">
+    <h3>Épisode 5</h3>
+  </div>
+
+  <div class="card" data-season="1" data-episode="6" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-b4udt/S01/E06/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/qZJcuMRsXV8fI3dif0OUH6Wu4KQ.jpg" alt="Épisode 6">
+    <h3>Épisode 6</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="1" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-hprx7/S02/E01/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/vwwXX5AhEKq3Yr51D6191fcakit.jpg" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="2" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-v9rq9/S02/E02/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/rjluK6WlsCwDeyacRZQqiepDier.jpg" alt="Épisode 2">
+    <h3>Épisode 2</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="3" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-0s5zi/S02/E03/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/mVu1VDUXme4qHFbwRUVFpSirKGr.jpg" alt="Épisode 3">
+    <h3>Épisode 3</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="4" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-43u2h/S02/E04/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/7lJIxk2icns4fvF9BZxVqouTmC5.jpg" alt="Épisode 4">
+    <h3>Épisode 4</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="5" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-grjza/S02/E05/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/3c8jrPD5VEDAcSFJvODvmKEKkbA.jpg" alt="Épisode 5">
+    <h3>Épisode 5</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="6" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-iepr2/S02/E06/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/qlY84x55AgHP8MgF334cfYY4V4N.jpg" alt="Épisode 6">
+    <h3>Épisode 6</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="7" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-p55qk/S02/E07/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/tbZLCiOSieveVEKQAv0KqS4DlL4.jpg" alt="Épisode 7">
+    <h3>Épisode 7</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="8" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-3h5cq/S02/E08/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/pRmU9vFVISV2lmOakicjxlTddfu.jpg" alt="Épisode 8">
+    <h3>Épisode 8</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="9" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-bw6v7/S02/E09/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/5fNTV64eajsQUuKggsi1nmOCph2.jpg" alt="Épisode 9">
+    <h3>Épisode 9</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="10" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-ltuta/S02/E10/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/cjD1kUGSQEjeR6W17XPnB4agrXp.jpg" alt="Épisode 10">
+    <h3>Épisode 10</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="11" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-3h5el/S02/E11/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/xY6wvdnZCSYx7oGGWXVowz4FNzB.jpg" alt="Épisode 11">
+    <h3>Épisode 11</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="12" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-w57jw/S02/E12/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/5NTV8FvG8avXckP345XWH1nPFSD.jpg" alt="Épisode 12">
+    <h3>Épisode 12</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="13" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-r5amd/S02/E13/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/bzAkJU70Yb2a4reQgT3Ps4CuFli.jpg" alt="Épisode 13">
+    <h3>Épisode 13</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="14" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-wzfbh/S02/E14/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/vWo8fGMegwO5FBrAcpelO6YqReb.jpg" alt="Épisode 14">
+    <h3>Épisode 14</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="15" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-c406h/S02/E15/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/xfZptE9tlSKlry0G49zg86AwKaw.jpg" alt="Épisode 15">
+    <h3>Épisode 15</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="16" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-bqpt3/S02/E16/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/zLUOJmzT6gSLELbBUTOKN7Csrf.jpg" alt="Épisode 16">
+    <h3>Épisode 16</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="17" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/sksLrHSl5Kso9OkMyYFb69WoFJU.jpg" alt="Épisode 17">
+    <h3>Épisode 17</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="18" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-vmby4/S02/E18/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/mdKJkq4Z1Gw39Aa4wNzfPAhmyHv.jpg" alt="Épisode 18">
+    <h3>Épisode 18</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="19" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-db42t/S02/E19/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/6SZ6kcpB1Sf9RGThruCiRYSC69y.jpg" alt="Épisode 19">
+    <h3>Épisode 19</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="20" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-su2wn/S02/E20/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/e2JsVFkqtvJahNJHc42Xck86en2.jpg" alt="Épisode 20">
+    <h3>Épisode 20</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="21" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-3z8i3/S02/E21/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/cKknrzfvCktHLbQVOSPVJgXWDZ7.jpg" alt="Épisode 21">
+    <h3>Épisode 21</h3>
+  </div>
+
+  <div class="card" data-season="2" data-episode="22" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-ite5u/S02/E22/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/qfneU9aQXDbK1RxBitIXrxmfqho.jpg" alt="Épisode 22">
+    <h3>Épisode 22</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="1" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-9cq90/S03/E01/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/jl407zcuAwBoV886jbD5aQs3gsl.jpg" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="2" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-c27ls/S03/E02/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/4S8RVY7MNkC8HwGfDr8tijsVOZp.jpg" alt="Épisode 2">
+    <h3>Épisode 2</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="3" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-xlqcd/S03/E03/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/yvtNK7aVaWV4pGtz2qkJl4YttvE.jpg" alt="Épisode 3">
+    <h3>Épisode 3</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="4" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/rlOYq6pAqvox2wAEdvPCBUjxRER.jpg" alt="Épisode 4">
+    <h3>Épisode 4</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="5" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-9vxf6/S03/E05/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/fwpQ0HJWU8khdFpLSk54XOIQqBH.jpg" alt="Épisode 5">
+    <h3>Épisode 5</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="6" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-6bp6v/S03/E06/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/mSPRenUgz0b5aBCZKMLBJYO2lqE.jpg" alt="Épisode 6">
+    <h3>Épisode 6</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="7" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-pqd36/S03/E07/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/pOZbUTTJTacJDbNubWhYuxyW9P9.jpg" alt="Épisode 7">
+    <h3>Épisode 7</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="8" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-4qpib/S03/E08/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/cuzJAM3crROLlOGaDGKrTJEaP0K.jpg" alt="Épisode 8">
+    <h3>Épisode 8</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="9" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-au3j3/S03/E09/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/tXSXCnQ1oV39SxqOSvnpOrJUGjx.jpg" alt="Épisode 9">
+    <h3>Épisode 9</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="10" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-4kbti/S03/E10/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/z9n8oabMUlhjlsGzU90cYtgYOza.jpg" alt="Épisode 10">
+    <h3>Épisode 10</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="11" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-rzath/S03/E11/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/95q4G7V6t9W4z6LLyuVmih23GWx.jpg" alt="Épisode 11">
+    <h3>Épisode 11</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="12" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-x0ipp/S03/E12/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/dItiNequ1e11xLaKDQHqCqnekvL.jpg" alt="Épisode 12">
+    <h3>Épisode 12</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="13" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-u5vo2/S03/E13/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/41EKAvwyjrnO3TNVy66por6T6QZ.jpg" alt="Épisode 13">
+    <h3>Épisode 13</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="14" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-t5l4p/S03/E14/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/Are3Iz2bsskzM9wJL07T8sDTbFO.jpg" alt="Épisode 14">
+    <h3>Épisode 14</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="15" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-yuk7y/S03/E15/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/k4P9afguWJex9Qm8nZiLPNOHVn5.jpg" alt="Épisode 15">
+    <h3>Épisode 15</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="16" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-f9bcu/S03/E16/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/zJL08z5uRGzjsQQ7UGoioeXxDkZ.jpg" alt="Épisode 16">
+    <h3>Épisode 16</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="17" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-q40t9/S03/E17/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/fXDugr6qOmyzSzI6UOSyOhg7hry.jpg" alt="Épisode 17">
+    <h3>Épisode 17</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="18" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-9pp0b/S03/E18/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/we2vld00NRE90E3qfILnz8Unanw.jpg" alt="Épisode 18">
+    <h3>Épisode 18</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="19" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-sorg4/S03/E19/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/5Q2YKJFmuglZNG0NmZUXqL3mjqV.jpg" alt="Épisode 19">
+    <h3>Épisode 19</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="20" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-6bgqd/S03/E20/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/dJLu6tuSWvY4LRv2GMZkUokkQki.jpg" alt="Épisode 20">
+    <h3>Épisode 20</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="21" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-x2dkd/S03/E21/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/2ZLuHIS4XLWIS8tiIDoRsyq3XOk.jpg" alt="Épisode 21">
+    <h3>Épisode 21</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="22" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-d30hy/S03/E22/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/k4XHC2EM0fGmAp0SDBq862nE9pG.jpg" alt="Épisode 22">
+    <h3>Épisode 22</h3>
+  </div>
+
+  <div class="card" data-season="3" data-episode="23" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-jsg1b/S03/E23/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/rCfz64QNR9U2ZYsvjb0iOJI6949.jpg" alt="Épisode 23">
+    <h3>Épisode 23</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="1" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-geadf/S04/E01/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/6Hf8dsQB5BYS1JFiM8FZF1GdAOr.jpg" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="2" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-rpitx/S04/E02/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/amUwePODTog37A9q6FNVAC8scTZ.jpg" alt="Épisode 2">
+    <h3>Épisode 2</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="3" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-j9hbr/S04/E03/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/vStj5UHaOsMVeMKFIeSbWk4Ouwd.jpg" alt="Épisode 3">
+    <h3>Épisode 3</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="4" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-c9sfr/S04/E04/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/9H6T1taKasivezrcT1MTdNTPWah.jpg" alt="Épisode 4">
+    <h3>Épisode 4</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="5" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-gmyhs/S04/E05/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/8Ta75t1XPJpOtOtfaOrAcD2yLWD.jpg" alt="Épisode 5">
+    <h3>Épisode 5</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="6" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-k8flw/S04/E06/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/otDNJG7cTAOnOzCCgCjtgi2PDI3.jpg" alt="Épisode 6">
+    <h3>Épisode 6</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="7" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-vxkkl/S04/E07/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/915umQxJx9xxpSYtOLa5qFKFLbh.jpg" alt="Épisode 7">
+    <h3>Épisode 7</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="8" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-mgn1y/S04/E08/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/uk9gVkXaqPzP1LmDVUTgiBTwCFs.jpg" alt="Épisode 8">
+    <h3>Épisode 8</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="9" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-qjf8r/S04/E09/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/57v9TNarlMz9pf6ZStEmt7jpYMM.jpg" alt="Épisode 9">
+    <h3>Épisode 9</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="10" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-7low2/S04/E10/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/mBZiRz5yRYKktorBLjDJldWNP5t.jpg" alt="Épisode 10">
+    <h3>Épisode 10</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="11" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-ie5rc/S04/E11/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/wMDAHVlVc0SmnlbaCKbgSDkn52a.jpg" alt="Épisode 11">
+    <h3>Épisode 11</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="12" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-zv5a5/S04/E12/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/lKnvFZbzK1QXdeLn80YjmINfBOI.jpg" alt="Épisode 12">
+    <h3>Épisode 12</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="13" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-1gzcs/S04/E13/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/5X4HKfoyzIYME6RYoiB3TJZtP4z.jpg" alt="Épisode 13">
+    <h3>Épisode 13</h3>
+  </div>
+
+  <div class="card" data-season="4" data-episode="14" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-e9mdx/S04/E14/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/x8wJrwP3P93oB3cIXwspAxWuKnU.jpg" alt="Épisode 14">
+    <h3>Épisode 14</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="1" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-evq5p/S05/E01/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/8mw057Hbn0HS3rBzfsFc35t2iR6.jpg" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="2" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-44i01/S05/E02/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/uHFPX3pK2jtcViZLED1esrKUZvj.jpg" alt="Épisode 2">
+    <h3>Épisode 2</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="3" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-2ybu8/S05/E03/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/bLMHG7d3LBdFqPuUYFrYa3CaNZE.jpg" alt="Épisode 3">
+    <h3>Épisode 3</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="4" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-kq82n/S05/E04/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/QvxYdiXt3hrmZOTL9HqQgbWuvg.jpg" alt="Épisode 4">
+    <h3>Épisode 4</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="5" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-nwzvr/S05/E05/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/jRuZRhElmBHivu4BCui4Gzidwrg.jpg" alt="Épisode 5">
+    <h3>Épisode 5</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="6" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-zuyfi/S05/E06/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/xxwv62e1JCllMd71U21xn9YGngN.jpg" alt="Épisode 6">
+    <h3>Épisode 6</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="7" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-bi8nn/S05/E07/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/KHAsjYxWqAvKsPh8OeS0diEwCi.jpg" alt="Épisode 7">
+    <h3>Épisode 7</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="8" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-1zdah/S05/E08/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/948tQLxoBvsSJ1GvHN0ltkhkpN1.jpg" alt="Épisode 8">
+    <h3>Épisode 8</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="9" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-r6a75/S05/E09/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/bsUeqc6zOCalANRvl7VfoJcj68n.jpg" alt="Épisode 9">
+    <h3>Épisode 9</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="10" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-v6oig/S05/E10/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/2w8SRRHbHiGIf7Uxr56W6oxfftQ.jpg" alt="Épisode 10">
+    <h3>Épisode 10</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="11" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-v2pfp/S05/E11/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/7Mfu31Ah9fyxLYLajdra9Pl4kKX.jpg" alt="Épisode 11">
+    <h3>Épisode 11</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="12" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-17wbf/S05/E12/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/2kwJKmCJ07GIE2z2luqCI26qS1j.jpg" alt="Épisode 12">
+    <h3>Épisode 12</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="13" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-if41c/S05/E13/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/vOW6G304cwyT7Uh2d31y8IHR4IN.jpg" alt="Épisode 13">
+    <h3>Épisode 13</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="14" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-cm4fa/S05/E14/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/gXzpQoTWv2a4OhNoOloDYQe8lhl.jpg" alt="Épisode 14">
+    <h3>Épisode 14</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="15" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-99eag/S05/E15/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/7fpiETDqoMLPkgiRr8IOAfHdogU.jpg" alt="Épisode 15">
+    <h3>Épisode 15</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="16" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-3k2yk/S05/E16/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/x5RaXCvLqTV5ZOQSRWvCZTTRQfw.jpg" alt="Épisode 16">
+    <h3>Épisode 16</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="17" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-0al7q/S05/E17/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/lr99LHHyiMvnEOQh783llLM8BIw.jpg" alt="Épisode 17">
+    <h3>Épisode 17</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="18" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-akip2/S05/E18/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/2Et0aBQg6micgSK88kXMWRvJmzU.jpg" alt="Épisode 18">
+    <h3>Épisode 18</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="19" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-ytndf/S05/E19/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/9PJhRC5SMXQlThatNMTf5ou4NPx.jpg" alt="Épisode 19">
+    <h3>Épisode 19</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="20" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-x3nf4/S05/E20/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/jdTNwsxyR63FpEgSJ0LlmQTcOCM.jpg" alt="Épisode 20">
+    <h3>Épisode 20</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="21" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-nqbcc/S05/E21/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/na2gN5eXk1MwNbBWDZmsJRLbtGX.jpg" alt="Épisode 21">
+    <h3>Épisode 21</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="22" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-ri4xc/S05/E22/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/lcUj8ZNGC3agExI7bjS0F6tN3Kz.jpg" alt="Épisode 22">
+    <h3>Épisode 22</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="23" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-bkinm/S05/E23/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/jOAVA3EHX9cJZWZpaDVkbZhBd9c.jpg" alt="Épisode 23">
+    <h3>Épisode 23</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="24" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-s6h1t/S05/E24/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/3FDbAunlvUBvmJa8b8dxAyk9Lin.jpg" alt="Épisode 24">
+    <h3>Épisode 24</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="25" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-g9e30/S05/E25/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/bx0J1oSJNxtMVuYfdAUGfWzH1zk.jpg" alt="Épisode 25">
+    <h3>Épisode 25</h3>
+  </div>
+
+  <div class="card" data-season="5" data-episode="26" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-oitwf/S05/E26/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/zMpnRyb5DAnizp5UHmLT94Afru1.jpg" alt="Épisode 26">
+    <h3>Épisode 26</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="1" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-ntxas/S06/E01/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/pWbVgfvhF7u0aFdhJJbzTQAOqdw.jpg" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="2" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-9kvwt/S06/E02/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/i6ShaUbd4F9sQqfKfs2zQuHXGmI.jpg" alt="Épisode 2">
+    <h3>Épisode 2</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="3" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-spkju/S06/E03/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/aQcBZoTjrScKTeBshUcs5OFNyUu.jpg" alt="Épisode 3">
+    <h3>Épisode 3</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="4" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-bq0sw/S06/E04/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/dMRxj9BYrcmHMsvLwbC6IIoJ5QJ.jpg" alt="Épisode 4">
+    <h3>Épisode 4</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="5" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-xnlkv/S06/E05/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/haQudolF7pDPsUaYxcuUWJKOueM.jpg" alt="Épisode 5">
+    <h3>Épisode 5</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="6" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/7gem2WvuueQCSZToxHrCAJ3wne1.jpg" alt="Épisode 6">
+    <h3>Épisode 6</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="7" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-0rqoy/S06/E07/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/pgTWGaBh8DKm2AHU8BRrEvu2WxQ.jpg" alt="Épisode 7">
+    <h3>Épisode 7</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="8" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-mzpnv/S06/E08/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/c6splVKmX2f7JOSreqSgrn8N9an.jpg" alt="Épisode 8">
+    <h3>Épisode 8</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="9" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-obpvo/S06/E09/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/dKyyCAdK3ynTa0V5GhGCDUZVpqu.jpg" alt="Épisode 9">
+    <h3>Épisode 9</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="10" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-x9ulh/S06/E10/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/3MDPYQJtNYOhwrU4gf8eRwpUrka.jpg" alt="Épisode 10">
+    <h3>Épisode 10</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="11" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-0x4lo/S06/E11/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/oCpspjTl50bBvzAvAe7EcFyjm5k.jpg" alt="Épisode 11">
+    <h3>Épisode 11</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="12" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-im4bx/S06/E12/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/91UtqA3zap0dXyyYVQNnPiHSUfr.jpg" alt="Épisode 12">
+    <h3>Épisode 12</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="13" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-015nt/S06/E13/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/nisOv4RtbvTWFSsN12tKwfTndma.jpg" alt="Épisode 13">
+    <h3>Épisode 13</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="14" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-owiya/S06/E14/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/1nqkoBwzBQotglrTaVdfvRyStVV.jpg" alt="Épisode 14">
+    <h3>Épisode 14</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="15" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-cw7ev/S06/E15/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/rUeCQBiSKMiaEvB8fnoRDl8rtb4.jpg" alt="Épisode 15">
+    <h3>Épisode 15</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="16" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-c9395/S06/E16/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/q0DrvhOk0dpaVXKn5nDVZcxQ1a9.jpg" alt="Épisode 16">
+    <h3>Épisode 16</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="17" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-29o75/S06/E17/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/4wjZb7YyWTB1Ao9BjRx8e7UIl7z.jpg" alt="Épisode 17">
+    <h3>Épisode 17</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="18" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-7y79j/S06/E18/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/56hRdwaPs3rKIJUSEL8RJFA3SgA.jpg" alt="Épisode 18">
+    <h3>Épisode 18</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="19" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-42acs/S06/E19/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/3pJIfZOXxReM3zOoJTv253tRbb3.jpg" alt="Épisode 19">
+    <h3>Épisode 19</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="20" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-ti799/S06/E20/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/z2956xSFqY2te3F1dWcREzK0h78.jpg" alt="Épisode 20">
+    <h3>Épisode 20</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="21" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-l6a71/S06/E21/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/cHGGrFJD8lyvWeqenTKLEcB1VqP.jpg" alt="Épisode 21">
+    <h3>Épisode 21</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="22" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-mn3ya/S06/E22/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/8RBNOu7JwQY8OBjquqnnYiVXMFk.jpg" alt="Épisode 22">
+    <h3>Épisode 22</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="23" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-8cve4/S06/E23/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/nGdklnVWRdmXpuckdyZTpvjwvt2.jpg" alt="Épisode 23">
+    <h3>Épisode 23</h3>
+  </div>
+
+  <div class="card" data-season="6" data-episode="24" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-8wke8/S06/E24/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/ediO7Y2iJDcdmoTEFkHeS3HPTVp.jpg" alt="Épisode 24">
+    <h3>Épisode 24</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="1" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-pt2im/S07/E01/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/pYQwCiNc9fFJ5k8HnSWgAstfnL0.jpg" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="2" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-f9y5y/S07/E02/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/zD85V6xL5uXGTaZ3KNGy3tARzq7.jpg" alt="Épisode 2">
+    <h3>Épisode 2</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="3" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-hpepy/S07/E03/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/6dOLWVZ2A0LH8EXyNkigRw3xgLp.jpg" alt="Épisode 3">
+    <h3>Épisode 3</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="4" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-9ohoq/S07/E04/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/cTnT11ycmBXEufPdMSfikF6UUkn.jpg" alt="Épisode 4">
+    <h3>Épisode 4</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="5" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-xopxe/S07/E05/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/iN7UPFwmTD4ZwMwPGMUZhdOnKIn.jpg" alt="Épisode 5">
+    <h3>Épisode 5</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="6" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-ztt2l/S07/E06/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/kVP86c3XsmDJ049fQ2rXDwYaNkj.jpg" alt="Épisode 6">
+    <h3>Épisode 6</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="7" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-hq94v/S07/E07/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/x83cMZMj61uJfPEX08I8rSr821V.jpg" alt="Épisode 7">
+    <h3>Épisode 7</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="8" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-ts92z/S07/E08/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/q1SVOVyAXrK6rpWlsWvKnk6Dloc.jpg" alt="Épisode 8">
+    <h3>Épisode 8</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="9" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-rgu4h/S07/E09/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/jCSdonSzdZAtGnixclPvZKSNebj.jpg" alt="Épisode 9">
+    <h3>Épisode 9</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="10" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-mmnsf/S07/E10/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/nDam3NabGFRxkNXIxmQQ404qQyw.jpg" alt="Épisode 10">
+    <h3>Épisode 10</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="11" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-ngx47/S07/E11/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/75EGbz4WbtF7B69XM5sqiT7yd1c.jpg" alt="Épisode 11">
+    <h3>Épisode 11</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="12" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-u04fc/S07/E12/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/aCHdu0UIK3gN2yYSUUxbUAbWZi3.jpg" alt="Épisode 12">
+    <h3>Épisode 12</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="13" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-b4ll1/S07/E13/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/K2OD2lVAerQU9dZgj1ldYp7S3t.jpg" alt="Épisode 13">
+    <h3>Épisode 13</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="14" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-iu9kw/S07/E14/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/5F7h0qUdYVUjvkwy4bZbGiVs6tR.jpg" alt="Épisode 14">
+    <h3>Épisode 14</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="15" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-hm52b/S07/E15/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/vqSiR9RXYxUnTZpzwJxLeY5QNcy.jpg" alt="Épisode 15">
+    <h3>Épisode 15</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="16" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-3j8o7/S07/E16/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/36Z8Z2jvkqE3Y7vUvyrxiC1dius.jpg" alt="Épisode 16">
+    <h3>Épisode 16</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="17" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-gx3gv/S07/E17/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/sd5tVOkHkN8WBMDZPeP0fE6MWx.jpg" alt="Épisode 17">
+    <h3>Épisode 17</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="18" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-aqvoz/S07/E18/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/yetKixYDsAZEPN482rylmvGfzEZ.jpg" alt="Épisode 18">
+    <h3>Épisode 18</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="19" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-t6u6u/S07/E19/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/tBdJz9IfjurFPH3ozwIMfAdFMCA.jpg" alt="Épisode 19">
+    <h3>Épisode 19</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="20" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-jkwj1/S07/E20/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/fHqE2jTn0vFaD790Mx2mXpz22GO.jpg" alt="Épisode 20">
+    <h3>Épisode 20</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="21" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-aqc31/S07/E21/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/wVujwT6sOy4VD59JNRg58dSgr3U.jpg" alt="Épisode 21">
+    <h3>Épisode 21</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="22" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-lox9z/S07/E22/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/153lz8Qno5rhCVj9Wi8jTmiPwo6.jpg" alt="Épisode 22">
+    <h3>Épisode 22</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="23" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-n8n6d/S07/E23/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/x02spA1t1rLwl2XRrdRNKOLv10Q.jpg" alt="Épisode 23">
+    <h3>Épisode 23</h3>
+  </div>
+
+  <div class="card" data-season="7" data-episode="24" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-zyicu/S07/E24/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/nNKvtqHwK7KSpG38WeUgQZuAvZ.jpg" alt="Épisode 24">
+    <h3>Épisode 24</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="1" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-qq8zt/S08/E01/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/qwnrgo2fLNL3Zzuybj2UIzyBZ0Z.jpg" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="2" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-d0k6l/S08/E02/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/8z9AFNZllKXiP10LvZW0lIllJJ3.jpg" alt="Épisode 2">
+    <h3>Épisode 2</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="3" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-3apfn/S08/E03/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/mnZZCEkc1cqolo1U60cB0NHBeU.jpg" alt="Épisode 3">
+    <h3>Épisode 3</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="4" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-i279w/S08/E04/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/5jKJcwsaNeiL5XhSQ8iASiFDWIx.jpg" alt="Épisode 4">
+    <h3>Épisode 4</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="5" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-1lmnt/S08/E05/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/18Qb60pxBFaQDb7kCxhqwBPcTCK.jpg" alt="Épisode 5">
+    <h3>Épisode 5</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="6" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-31x26/S08/E06/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/ub0InCZ9c9obEfHSsFl8HPKOcg5.jpg" alt="Épisode 6">
+    <h3>Épisode 6</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="7" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-wov3d/S08/E07/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/oITZxE31qxLZOvUIXXOJZNt3ZAJ.jpg" alt="Épisode 7">
+    <h3>Épisode 7</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="8" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-xzgea/S08/E08/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/kNRo8guMolaaumtZssQch8ErP6F.jpg" alt="Épisode 8">
+    <h3>Épisode 8</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="9" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-1mzmm/S08/E09/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/kHxz6IFDzgNeo5KZt3JGElukbnH.jpg" alt="Épisode 9">
+    <h3>Épisode 9</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="10" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-c2zz5/S08/E10/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/uyVT1YaxJuNhYnrfDFNdWiu65yY.jpg" alt="Épisode 10">
+    <h3>Épisode 10</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="11" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-12v8r/S08/E11/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/9o1nrhyZ9ytj9yMdsKp8h0BAqI7.jpg" alt="Épisode 11">
+    <h3>Épisode 11</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="12" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-qb6zo/S08/E12/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/cpyKfQa8IbewT9nKh5dxyvhHrpt.jpg" alt="Épisode 12">
+    <h3>Épisode 12</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="13" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-u2jry/S08/E13/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/pO4AvKEd0jSDnoY3LUaGpMU75Ze.jpg" alt="Épisode 13">
+    <h3>Épisode 13</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="14" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-nvl7j/S08/E14/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/81kHQLh0DUrJVlUINyX7cqmfSr5.jpg" alt="Épisode 14">
+    <h3>Épisode 14</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="15" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-uunhg/S08/E15/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/u6PMTaqsZm9EttcpKhB31bYuJjO.jpg" alt="Épisode 15">
+    <h3>Épisode 15</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="16" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/tUtHjbWt5FUJqGYibVNJP43pImi.jpg" alt="Épisode 16">
+    <h3>Épisode 16</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="17" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/rsRMZlYLx9tBQVNfcZiWFQxEOFh.jpg" alt="Épisode 17">
+    <h3>Épisode 17</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="18" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-zu4fc/S08/E18/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/kRthYgk84trb5gGtS6kO0LhzvXS.jpg" alt="Épisode 18">
+    <h3>Épisode 18</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="19" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-jybii/S08/E19/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/1KofdnTIguy5r9QaiWM99PZkdem.jpg" alt="Épisode 19">
+    <h3>Épisode 19</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="20" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-zmf6r/S08/E20/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/wErz8dAPlc5WsFWJGBWOt19gXJY.jpg" alt="Épisode 20">
+    <h3>Épisode 20</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="21" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/7UQJtATSIwVIACG351CjFOMU9Y1.jpg" alt="Épisode 21">
+    <h3>Épisode 21</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="22" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-3526k/S08/E22/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/baFG7yOX05mOgVfBaQ0Ifu5RsU0.jpg" alt="Épisode 22">
+    <h3>Épisode 22</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="23" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-ep056/S08/E23/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/iFV3oe7FO0IkRS5CfGrQ9ErTTWO.jpg" alt="Épisode 23">
+    <h3>Épisode 23</h3>
+  </div>
+
+  <div class="card" data-season="8" data-episode="24" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-4me8n/S08/E24/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/h2pkF8dBdUzMJDa7dOy0aI2FIL2.jpg" alt="Épisode 24">
+    <h3>Épisode 24</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="1" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-qp4k5/S09/E01/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/9XUFWn9fvuA1oo3DdAfb3A4ZEIo.jpg" alt="Épisode 1">
+    <h3>Épisode 1</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="2" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-en5fs/S09/E02/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/f3eB97S8bG6YMppV6rJDU3jCbZ5.jpg" alt="Épisode 2">
+    <h3>Épisode 2</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="3" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-u6zxz/S09/E03/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/fhlA5VjRYpdz9Lz240rBHkzdith.jpg" alt="Épisode 3">
+    <h3>Épisode 3</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="4" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-l0ijg/S09/E04/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/xXbmG475A38gxP7DUXDCdup6iSE.jpg" alt="Épisode 4">
+    <h3>Épisode 4</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="5" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-64pjm/S09/E05/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/rUEiF3dFXEH56LosjzJnCsQammN.jpg" alt="Épisode 5">
+    <h3>Épisode 5</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="6" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-i2lmo/S09/E06/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/1h3xA3zrcy2OVqPBY7tR3qgML2z.jpg" alt="Épisode 6">
+    <h3>Épisode 6</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="7" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-c4aak/S09/E07/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/80m3XUSqFfCMNw6GpWY2Q1KAesS.jpg" alt="Épisode 7">
+    <h3>Épisode 7</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="8" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-oipat/S09/E08/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/cjqRFwr2v91gq8qzfefil8egCPt.jpg" alt="Épisode 8">
+    <h3>Épisode 8</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="9" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-uqvlw/S09/E09/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/2Mf0l59K2OQ0I7q1oR06cIqo5zT.jpg" alt="Épisode 9">
+    <h3>Épisode 9</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="10" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-zuz6o/S09/E10/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/dMcPzhH0rScvMSejNluYtFYxISg.jpg" alt="Épisode 10">
+    <h3>Épisode 10</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="11" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-hatyg/S09/E11/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/gUtF2A9EfkdthCrlxTnqd0sXRpO.jpg" alt="Épisode 11">
+    <h3>Épisode 11</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="12" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-1hdsf/S09/E12/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/pfOP5WZIkDNifAfXwQ7H84ZrqTv.jpg" alt="Épisode 12">
+    <h3>Épisode 12</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="13" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-82ytk/S09/E13/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/y1RkiIw0eNhhH1wLzUyYYimlBVg.jpg" alt="Épisode 13">
+    <h3>Épisode 13</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="14" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-k06fe/S09/E14/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/zy4NJR9kqEelJ5teHPlAINBNnpE.jpg" alt="Épisode 14">
+    <h3>Épisode 14</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="15" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-jlfdv/S09/E15/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/8KtuuZvOqAyHyIB7l0gxf2XfgYN.jpg" alt="Épisode 15">
+    <h3>Épisode 15</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="16" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-yvms3/S09/E16/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/az40PKIrPtgqAAxRpsxFwvkDMBh.jpg" alt="Épisode 16">
+    <h3>Épisode 16</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="17" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-zz96z/S09/E17/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/rtTNNuGbkeLJxQ0XJegQ7J3TNma.jpg" alt="Épisode 17">
+    <h3>Épisode 17</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="18" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-dq4sd/S09/E18/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/aDdapd9idn06AAQsLVvaSDSrWlm.jpg" alt="Épisode 18">
+    <h3>Épisode 18</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="19" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-k789f/S09/E19/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/oAue77ie9C2MGFpwCbMIvoPvbNQ.jpg" alt="Épisode 19">
+    <h3>Épisode 19</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="20" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-gzbxy/S09/E20/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/ztEK1MtwwbG7D0jb95A59qxaS3G.jpg" alt="Épisode 20">
+    <h3>Épisode 20</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="21" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-fe6v7/S09/E21/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/viBmFStZIZMOXq71YDrBgqZEhDD.jpg" alt="Épisode 21">
+    <h3>Épisode 21</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="22" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-4hcay/S09/E22/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/m3Wcby9maE08RaH3mS7aAHw5hkM.jpg" alt="Épisode 22">
+    <h3>Épisode 22</h3>
+  </div>
+
+  <div class="card" data-season="9" data-episode="23" data-video="https://cinedonuts.xyz/series/Adolescence/S01/Adolescence-S01-E01.mp4" data-fallback="https://free.finepulfe.xyz/tv/2316-hewwl/S09/E23/master.m3u8">
+    <img src="https://media.themoviedb.org/t/p/w454_and_h254_face/1pJtFmAS3TJuWoCaUrY904pqNFE.jpg" alt="Épisode 23">
+    <h3>Épisode 23</h3>
+  </div>
+</div>
+ 
+ 
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+ 
+  <script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ 
+  const supabaseUrl = "https://wuagahavmbugmnuzsouf.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho";
+  const supabase = createClient(supabaseUrl, supabaseKey);
+ 
+  const movieId = "theoffice";
+  const likeBtn = document.getElementById("likeBtn");
+  const dislikeBtn = document.getElementById("dislikeBtn");
+  const likeCount = document.getElementById("likeCount");
+  const dislikeCount = document.getElementById("dislikeCount");
+ 
+  let userId = null;
+  let currentVote = null;
+ 
+  // --- Auth
+  async function initUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id || null;
+  }
+ 
+  // --- Charger les votes
+  async function loadVotes() {
+    const { data, error } = await supabase
+      .from("movie_likes")
+      .select("user_id, liked")
+      .eq("movie_id", movieId);
+ 
+    if (error) console.error(error);
+ 
+    const likes = data.filter(v => v.liked).length;
+    const dislikes = data.filter(v => !v.liked).length;
+    likeCount.textContent = likes;
+    dislikeCount.textContent = dislikes;
+ 
+    const userVote = data.find(v => v.user_id === userId);
+    currentVote = userVote ? (userVote.liked ? "like" : "dislike") : null;
+    updateVoteVisual();
+  }
+ 
+  // --- Visuel
+  function updateVoteVisual() {
+    likeBtn.classList.toggle("active-like", currentVote === "like");
+    dislikeBtn.classList.toggle("active-dislike", currentVote === "dislike");
+  }
+ 
+  // --- Like
+  likeBtn.addEventListener("click", async () => {
+    if (!userId) return alert("Connecte-toi pour voter !");
+    if (currentVote === "like") {
+      // Annuler le vote
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      currentVote = null;
+    } else {
+      // Supprimer vote précédent avant d'ajouter le nouveau
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      await supabase.from("movie_likes").insert({
+        movie_id: movieId,
+        user_id: userId,
+        liked: true
+      });
+      currentVote = "like";
+    }
+    updateVoteVisual();
+    loadVotes();
+  });
+ 
+  // --- Dislike
+  dislikeBtn.addEventListener("click", async () => {
+    if (!userId) return alert("Connecte-toi pour voter !");
+    if (currentVote === "dislike") {
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      currentVote = null;
+    } else {
+      await supabase.from("movie_likes").delete().eq("movie_id", movieId).eq("user_id", userId);
+      await supabase.from("movie_likes").insert({
+        movie_id: movieId,
+        user_id: userId,
+        liked: false
+      });
+      currentVote = "dislike";
+    }
+    updateVoteVisual();
+    loadVotes();
+  });
+ 
+  // --- Realtime
+  supabase
+    .channel("public:movie_likes")
+    .on("postgres_changes", { event: "*", schema: "public", table: "movie_likes" }, payload => {
+      if (payload.new?.movie_id === movieId || payload.old?.movie_id === movieId) {
+        loadVotes();
+      }
+    })
+    .subscribe();
+ 
+  // --- Init
+  await initUser();
+  loadVotes();
+</script>
+ 
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.8.0/+esm';
+ 
+  // Initialisation Supabase
+  const supabase = createClient(
+    'https://wuagahavmbugmnuzsouf.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+  );
+ 
+document.addEventListener('DOMContentLoaded', () => {
+ 
+  const cards = document.querySelectorAll('.card');
+ 
+  const videoContainer = document.getElementById('videoContainer');
+  const video = document.getElementById('video');
+  const backButton = document.getElementById('backButton');
+  const centerPlay = document.getElementById('centerPlay');
+  const controls = document.getElementById('controls');
+  const progressWrapper = document.getElementById('progressWrapper');
+  const progressBar = document.getElementById('progress-bar');
+  const currentTimeEl = document.getElementById('currentTime');
+  const totalTimeEl = document.getElementById('totalTime');
+  const playBtn = document.getElementById('play');
+  const volumeSlider = document.getElementById('volume-slider');
+  const volumeIcon = document.getElementById('volume-icon');
+  const settingsBtn = document.getElementById('settings');
+  const settingsMenu = document.getElementById('settingsMenu');
+  const sourceBtn = document.getElementById('source');
+  const sourceMenu = document.getElementById('sourceMenu');
+  const subtitleBtn = document.getElementById('subtitles');
+  const subtitleMenu = document.getElementById('subtitleMenu');
+  const forwardBtn = document.getElementById('forward');
+  const backwardBtn = document.getElementById('backward');
+ 
+  /* =====================================================
+     FALLBACK
+  ===================================================== */
+ 
+  const fallbackFrame = document.getElementById('fallbackFrame');
+  const fallbackBanner = document.getElementById('fallbackBanner');
+  const fallbackHoverZone = document.getElementById('fallbackHoverZone');
+ 
+  const LOAD_TIMEOUT_MS = 8000;
+ 
+  let hls = null;
+  let loadTimeoutId = null;
+  let fallbackBtnHideTimeout = null;
+ 
+  let currentCard = null;
+  let currentMainSource = null;
+  let currentFallbackSource = null;
+ 
+  let usingFallback = false;
+ 
+ 
+  /* =====================================================
+     OUVERTURE
+  ===================================================== */
+ 
+  function openVideo() {
+    videoContainer.style.display = 'flex';
+    showControls();
+  }
+ 
+ 
+  /* =====================================================
+     FERMETURE
+  ===================================================== */
+ 
+  function closeVideo() {
+ 
+    clearTimeout(loadTimeoutId);
+    clearTimeout(fallbackBtnHideTimeout);
+ 
+    video.pause();
+ 
+    if (hls) {
+      hls.destroy();
+      hls = null;
+    }
+ 
+    video.removeAttribute('src');
+    video.load();
+ 
+    fallbackFrame.src = '';
+    fallbackFrame.style.display = 'none';
+ 
+    fallbackHoverZone.style.display = 'none';
+    fallbackBanner.style.display = 'none';
+ 
+    video.style.display = '';
+ 
+    controls.classList.remove('hide');
+    progressWrapper.classList.remove('hide');
+    centerPlay.classList.remove('hide');
+    backButton.classList.remove('hide');
+ 
+    usingFallback = false;
+ 
+    videoContainer.style.display = 'none';
+ 
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+ 
+    /*
+     * Supabase :
+     * on efface l'activité quand le lecteur est fermé.
+     */
+    if (typeof clearCurrentActivity === 'function') {
+      clearCurrentActivity();
+    }
+  }
+ 
+  backButton.addEventListener('click', closeVideo);
+ 
+ 
+  /* =====================================================
+     TIMEOUT
+  ===================================================== */
+ 
+  function armLoadTimeout() {
+ 
+    clearTimeout(loadTimeoutId);
+ 
+    loadTimeoutId = setTimeout(() => {
+ 
+      if (!usingFallback) {
+        switchToFallbackPlayer('timeout');
+      }
+ 
+    }, LOAD_TIMEOUT_MS);
+  }
+ 
+  function disarmLoadTimeout() {
+    clearTimeout(loadTimeoutId);
+  }
+ 
+ 
+  /* =====================================================
+     FALLBACK
+  ===================================================== */
+ 
+  function switchToFallbackPlayer(reason) {
+ 
+    if (usingFallback) return;
+ 
+    if (!currentFallbackSource) {
+ 
+      console.error(
+        'Aucun fallback disponible pour cet épisode.'
+      );
+ 
+      return;
+    }
+ 
+    usingFallback = true;
+ 
+    disarmLoadTimeout();
+ 
+    console.warn(
+      'Fallback activé :',
+      reason,
+      currentFallbackSource
+    );
+ 
+ 
+    /*
+     * Détruire HLS principal
+     */
+ 
+    if (hls) {
+      hls.destroy();
+      hls = null;
+    }
+ 
+ 
+    /*
+     * Arrêter lecteur principal
+     */
+ 
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+ 
+    video.style.display = 'none';
+ 
+ 
+    /*
+     * Masquer contrôles lecteur principal
+     */
+ 
+    controls.classList.add('hide');
+    progressWrapper.classList.add('hide');
+    centerPlay.classList.add('hide');
+ 
+ 
+    /*
+     * Afficher iframe fallback
+     */
+ 
+    fallbackFrame.src =
+      'https://www.m3u8player.online/embed/m3u8?url=' +
+      encodeURIComponent(currentFallbackSource);
+ 
+    fallbackFrame.style.display = 'block';
+ 
+    fallbackHoverZone.style.display = 'block';
+ 
+ 
+    /*
+     * Message fallback
+     */
+ 
+    fallbackBanner.textContent =
+      '⚠️ Lecture via serveur alternatif';
+ 
+    fallbackBanner.style.display = 'block';
+ 
+    setTimeout(() => {
+      fallbackBanner.style.display = 'none';
+    }, 4000);
+ 
+ 
+    /*
+     * Bouton retour
+     */
+ 
+    showFallbackBackButton();
+  }
+ 
+ 
+  /* =====================================================
+     BOUTON RETOUR FALLBACK
+  ===================================================== */
+ 
+  function showFallbackBackButton() {
+ 
+    backButton.classList.remove('hide');
+ 
+    clearTimeout(fallbackBtnHideTimeout);
+ 
+    fallbackBtnHideTimeout = setTimeout(() => {
+ 
+      if (usingFallback) {
+        backButton.classList.add('hide');
+      }
+ 
+    }, 3000);
+  }
+ 
+ 
+  fallbackHoverZone.addEventListener(
+    'mousemove',
+    showFallbackBackButton
+  );
+ 
+  fallbackHoverZone.addEventListener(
+    'mouseenter',
+    showFallbackBackButton
+  );
+ 
+ 
+  /* =====================================================
+     LECTEUR PRINCIPAL + FALLBACK
+  ===================================================== */
+ 
+  function playMovie(src, fallbackSrc, card) {
+ 
+    currentCard = card;
+ 
+    currentMainSource = src;
+ 
+    currentFallbackSource = fallbackSrc;
+ 
+    usingFallback = false;
+ 
+ 
+    /*
+     * Activité Supabase
+     */
+ 
+    if (typeof updateCurrentActivity === 'function') {
+      updateCurrentActivity(card);
+    }
+ 
+ 
+    /*
+     * Ouvrir lecteur
+     */
+ 
+    openVideo();
+ 
+ 
+    /*
+     * Nettoyage ancien lecteur
+     */
+ 
+    if (hls) {
+      hls.destroy();
+      hls = null;
+    }
+ 
+    fallbackFrame.src = '';
+    fallbackFrame.style.display = 'none';
+ 
+    fallbackHoverZone.style.display = 'none';
+    fallbackBanner.style.display = 'none';
+ 
+    video.style.display = '';
+ 
+    video.removeAttribute('src');
+    video.load();
+ 
+ 
+    /*
+     * Lancer timeout
+     */
+ 
+    armLoadTimeout();
+ 
+ 
+    /*
+     * SOURCE HLS
+     */
+ 
+    if (src.endsWith('.m3u8')) {
+ 
+      /*
+       * HLS natif
+       */
+ 
+      if (
+        video.canPlayType(
+          'application/vnd.apple.mpegurl'
+        )
+      ) {
+ 
+        video.src = src;
+ 
+        video.addEventListener(
+          'loadedmetadata',
+          () => {
+ 
+            disarmLoadTimeout();
+ 
+            video.play().catch(err => {
+              console.warn(
+                'Lecture impossible :',
+                err
+              );
+            });
+ 
+          },
+          { once: true }
+        );
+ 
+ 
+        video.addEventListener(
+          'error',
+          () => {
+ 
+            if (!usingFallback) {
+              switchToFallbackPlayer(
+                'native-hls-error'
+              );
+            }
+ 
+          },
+          { once: true }
+        );
+ 
+ 
+      }
+ 
+      /*
+       * HLS.js
+       */
+ 
+      else if (
+        typeof Hls !== 'undefined' &&
+        Hls.isSupported()
+      ) {
+ 
+        hls = new Hls({
+          maxBufferLength: 60,
+          maxMaxBufferLength: 120,
+          enableWorker: true
+        });
+ 
+ 
+        hls.loadSource(src);
+ 
+        hls.attachMedia(video);
+ 
+ 
+        hls.on(
+          Hls.Events.MANIFEST_PARSED,
+          () => {
+ 
+            disarmLoadTimeout();
+ 
+            video.play().catch(err => {
+              console.warn(
+                'Lecture impossible :',
+                err
+              );
+            });
+ 
+          }
+        );
+ 
+ 
+        hls.on(
+          Hls.Events.ERROR,
+          (event, data) => {
+ 
+            if (!data.fatal) return;
+ 
+            console.error(
+              'Erreur HLS principale :',
+              data
+            );
+ 
+            switchToFallbackPlayer(
+              data.details || 'hls-error'
+            );
+ 
+          }
+        );
+ 
+      }
+ 
+      /*
+       * Navigateur sans support HLS
+       */
+ 
+      else {
+ 
+        switchToFallbackPlayer(
+          'hls-not-supported'
+        );
+ 
+      }
+ 
+    }
+ 
+ 
+    /*
+     * SOURCE MP4
+     */
+ 
+    else {
+ 
+      video.src = src;
+ 
+      video.play().catch(err => {
+ 
+        console.warn(
+          'Impossible de lancer le MP4 principal :',
+          err
+        );
+ 
+        switchToFallbackPlayer(
+          'mp4-play-error'
+        );
+ 
+      });
+ 
+    }
+  }
+ 
+ 
+  /* =====================================================
+     ERREUR VIDEO PRINCIPALE
+  ===================================================== */
+ 
+  video.addEventListener('error', () => {
+ 
+    if (!usingFallback) {
+ 
+      console.error(
+        'Erreur du lecteur principal.'
+      );
+ 
+      switchToFallbackPlayer(
+        'video-error'
+      );
+    }
+ 
+  });
+ 
+ 
+  /* =====================================================
+     CARTES ÉPISODES
+  ===================================================== */
+ 
+  cards.forEach(card => {
+ 
+    card.addEventListener('click', () => {
+ 
+      const videoSrc =
+        card.dataset.video;
+ 
+      const fallbackSrc =
+        card.dataset.fallback;
+ 
+ 
+      if (!videoSrc) {
+ 
+        console.error(
+          'Aucune source principale pour cet épisode.'
+        );
+ 
+        return;
+      }
+ 
+ 
+      if (!fallbackSrc) {
+ 
+        console.warn(
+          'Aucun fallback pour cet épisode.'
+        );
+ 
+      }
+ 
+ 
+      /*
+       * Saison / épisode
+       */
+ 
+      currentSeason =
+        parseInt(
+          card.dataset.season || '1',
+          10
+        );
+ 
+      currentEpisodeIndex =
+        parseInt(
+          card.dataset.episode || '1',
+          10
+        );
+ 
+ 
+      /*
+       * Lancer lecteur
+       */
+ 
+      playMovie(
+        videoSrc,
+        fallbackSrc,
+        card
+      );
+ 
+    });
+ 
+  });
+ 
+ 
+  /* =====================================================
+     PLAY / PAUSE
+  ===================================================== */
+ 
+  function togglePlay() {
+ 
+    if (usingFallback) return;
+ 
+    if (video.paused) {
+ 
+      video.play().catch(console.warn);
+ 
+    } else {
+ 
+      video.pause();
+ 
+    }
+  }
+ 
+ 
+  playBtn.addEventListener(
+    'click',
+    togglePlay
+  );
+ 
+  centerPlay.addEventListener(
+    'click',
+    togglePlay
+  );
+ 
+ 
+  video.addEventListener('play', () => {
+ 
+    playBtn.textContent = 'pause';
+    centerPlay.textContent = 'pause';
+ 
+    showControls();
+ 
+  });
+ 
+ 
+  video.addEventListener('pause', () => {
+ 
+    playBtn.textContent = 'play_arrow';
+    centerPlay.textContent = 'play_arrow';
+ 
+    centerPlay.classList.remove('hide');
+ 
+    showControls();
+ 
+  });
+ 
+ 
+  /* =====================================================
+     AVANCE / RECUL
+  ===================================================== */
+ 
+  forwardBtn.addEventListener('click', () => {
+ 
+    if (
+      usingFallback ||
+      isNaN(video.duration)
+    ) return;
+ 
+    video.currentTime =
+      Math.min(
+        video.currentTime + 10,
+        video.duration
+      );
+ 
+  });
+ 
+ 
+  backwardBtn.addEventListener('click', () => {
+ 
+    if (
+      usingFallback ||
+      isNaN(video.duration)
+    ) return;
+ 
+    video.currentTime =
+      Math.max(
+        video.currentTime - 10,
+        0
+      );
+ 
+  });
+ 
+ 
+  /* =====================================================
+     TEMPS
+  ===================================================== */
+ 
+  function formatTime(sec) {
+ 
+    if (!isFinite(sec)) {
+      return '0:00';
+    }
+ 
+    const m =
+      Math.floor(sec / 60);
+ 
+    const s =
+      Math.floor(sec % 60);
+ 
+    return `${m}:${s
+      .toString()
+      .padStart(2, '0')}`;
+  }
+ 
+ 
+  video.addEventListener(
+    'timeupdate',
+    () => {
+ 
+      if (
+        usingFallback ||
+        !isFinite(video.duration) ||
+        video.duration <= 0
+      ) return;
+ 
+ 
+      const percent =
+        (video.currentTime /
+          video.duration) * 100;
+ 
+ 
+      progressBar.style.width =
+        percent + '%';
+ 
+ 
+      currentTimeEl.textContent =
+        formatTime(video.currentTime);
+ 
+ 
+      totalTimeEl.textContent =
+        formatTime(video.duration);
+ 
+    }
+  );
+ 
+ 
+  /* =====================================================
+     BARRE DE PROGRESSION
+  ===================================================== */
+ 
+  progressWrapper.addEventListener(
+    'click',
+    e => {
+ 
+      if (
+        usingFallback ||
+        !isFinite(video.duration) ||
+        video.duration <= 0
+      ) return;
+ 
+ 
+      const rect =
+        progressWrapper.getBoundingClientRect();
+ 
+ 
+      const pos =
+        (e.clientX - rect.left) /
+        rect.width;
+ 
+ 
+      video.currentTime =
+        pos * video.duration;
+ 
+    }
+  );
+ 
+ 
+  /* =====================================================
+     VOLUME
+  ===================================================== */
+ 
+  volumeSlider.addEventListener(
+    'input',
+    () => {
+ 
+      video.volume =
+        parseFloat(
+          volumeSlider.value
+        );
+ 
+      updateVolumeIcon();
+ 
+    }
+  );
+ 
+ 
+  volumeIcon.addEventListener(
+    'click',
+    () => {
+ 
+      if (video.volume > 0) {
+ 
+        video.volume = 0;
+        volumeSlider.value = 0;
+ 
+      } else {
+ 
+        video.volume = 1;
+        volumeSlider.value = 1;
+ 
+      }
+ 
+      updateVolumeIcon();
+ 
+    }
+  );
+ 
+ 
+  function updateVolumeIcon() {
+ 
+    if (video.volume === 0) {
+ 
+      volumeIcon.textContent =
+        'volume_off';
+ 
+    } else if (video.volume < 0.5) {
+ 
+      volumeIcon.textContent =
+        'volume_down';
+ 
+    } else {
+ 
+      volumeIcon.textContent =
+        'volume_up';
+ 
+    }
+  }
+ 
+ 
+  /* =====================================================
+     SETTINGS
+  ===================================================== */
+ 
+  settingsBtn.addEventListener(
+    'click',
+    () => toggleMenu(settingsMenu)
+  );
+ 
+ 
+  settingsMenu
+    .querySelectorAll('button')
+    .forEach(btn => {
+ 
+      btn.addEventListener(
+        'click',
+        () => {
+ 
+          video.playbackRate =
+            parseFloat(
+              btn.dataset.speed
+            );
+ 
+          settingsMenu.style.display =
+            'none';
+ 
+        }
+      );
+ 
+    });
+ 
+ 
+  /* =====================================================
+     SOURCE
+  ===================================================== */
+ 
+  sourceBtn.addEventListener(
+    'click',
+    () => toggleMenu(sourceMenu)
+  );
+ 
+ 
+  /* =====================================================
+     SOUS-TITRES
+  ===================================================== */
+ 
+  subtitleBtn.addEventListener(
+    'click',
+    () => toggleMenu(subtitleMenu)
+  );
+ 
+ 
+  /* =====================================================
+     MENUS
+  ===================================================== */
+ 
+  function toggleMenu(menu) {
+ 
+    const isVisible =
+      menu.style.display === 'flex';
+ 
+ 
+    [
+      settingsMenu,
+      sourceMenu,
+      subtitleMenu
+    ].forEach(m => {
+ 
+      m.style.display = 'none';
+ 
+    });
+ 
+ 
+    if (!isVisible) {
+      menu.style.display = 'flex';
+    }
+ 
+  }
+ 
+ 
+  /* =====================================================
+     FULLSCREEN
+  ===================================================== */
+ 
+  document
+    .getElementById('fullscreen')
+    .addEventListener('click', () => {
+ 
+      if (!document.fullscreenElement) {
+ 
+        videoContainer
+          .requestFullscreen()
+          .catch(console.warn);
+ 
+      } else {
+ 
+        document
+          .exitFullscreen()
+          .catch(console.warn);
+ 
+      }
+ 
+    });
+ 
+ 
+  /* =====================================================
+     CONTRÔLES AUTO-HIDE
+  ===================================================== */
+ 
+  let hideTimeout;
+ 
+  video.controls = false;
+ 
+ 
+  function showControls() {
+ 
+    if (usingFallback) {
+ 
+      showFallbackBackButton();
+ 
+      return;
+    }
+ 
+ 
+    controls.classList.remove('hide');
+ 
+    progressWrapper.classList.remove('hide');
+ 
+    backButton.classList.remove('hide');
+ 
+ 
+    if (video.paused) {
+ 
+      centerPlay.classList.remove('hide');
+ 
+    } else {
+ 
+      centerPlay.classList.add('hide');
+ 
+    }
+ 
+ 
+    document.body.style.cursor =
+      'default';
+ 
+ 
+    clearTimeout(hideTimeout);
+ 
+ 
+    hideTimeout =
+      setTimeout(
+        hideControls,
+        3000
+      );
+ 
+  }
+ 
+ 
+  function hideControls() {
+ 
+    if (usingFallback) return;
+ 
+ 
+    if (!video.paused) {
+      centerPlay.classList.add('hide');
+    }
+ 
+ 
+    controls.classList.add('hide');
+ 
+    progressWrapper.classList.add('hide');
+ 
+    backButton.classList.add('hide');
+ 
+ 
+    document.body.style.cursor =
+      'none';
+ 
+ 
+    [
+      settingsMenu,
+      sourceMenu,
+      subtitleMenu
+    ].forEach(menu => {
+ 
+      menu.style.display = 'none';
+ 
+    });
+ 
+  }
+ 
+ 
+  document.addEventListener(
+    'mousemove',
+    showControls
+  );
+ 
+  document.addEventListener(
+    'keydown',
+    showControls
+  );
+ 
+  video.addEventListener(
+    'click',
+    showControls
+  );
+ 
+ 
+  showControls();
+ 
+});
+ 
+ 
+ 
+/* =========================================================
+   SÉLECTEUR DE SAISONS
+========================================================= */
+ 
+const seasonButtons =
+  document.querySelectorAll(
+    '.season-selector button'
+  );
+ 
+const allCards =
+  document.querySelectorAll(
+    '.cards-container .card'
+  );
+ 
+ 
+seasonButtons.forEach(btn => {
+ 
+  btn.addEventListener('click', () => {
+ 
+    seasonButtons.forEach(b =>
+      b.classList.remove('active')
+    );
+ 
+    btn.classList.add('active');
+ 
+    const season =
+      btn.dataset.season;
+ 
+ 
+    allCards.forEach(card => {
+ 
+      if (
+        card.dataset.season === season
+      ) {
+ 
+        card.style.display = 'block';
+ 
+      } else {
+ 
+        card.style.display = 'none';
+ 
+      }
+ 
+    });
+ 
+  });
+ 
+});
+ 
+ 
+/* =========================================================
+   SAISON ACTIVE AU CHARGEMENT
+========================================================= */
+ 
+window.addEventListener(
+  'DOMContentLoaded',
+  () => {
+ 
+    const activeButton =
+      document.querySelector(
+        '.season-selector button.active'
+      );
+ 
+    if (!activeButton) return;
+ 
+    const activeSeason =
+      activeButton.dataset.season;
+ 
+ 
+    allCards.forEach(card => {
+ 
+      card.style.display =
+        card.dataset.season === activeSeason
+          ? 'block'
+          : 'none';
+ 
+    });
+ 
+  }
+);
+ 
+ 
+ 
+/*************************************************
+ * ACTIVITÉ SUPABASE
+ *************************************************/
+ 
+const ANIME_TITLE = "The Office (2005)";
+ 
+let currentSeason = 1;
+let currentEpisodeIndex = null;
+let userId = null;
+ 
+ 
+/*************************************************
+ * SESSION UTILISATEUR
+ *************************************************/
+ 
+async function fetchSession() {
+ 
+  if (
+    typeof supabase === 'undefined'
+  ) {
+ 
+    console.error(
+      'Supabase n’est pas disponible.'
+    );
+ 
+    return null;
+  }
+ 
+ 
+  const {
+    data: sessionData,
+    error
+  } =
+    await supabase.auth.getSession();
+ 
+ 
+  if (error) {
+ 
+    console.error(
+      "Erreur session Supabase:",
+      error
+    );
+ 
+    return null;
+  }
+ 
+ 
+  const session =
+    sessionData?.session;
+ 
+ 
+  if (!session) {
+ 
+    console.warn(
+      "Pas de session (non connecté)."
+    );
+ 
+    return null;
+  }
+ 
+ 
+  return session.user.id;
+}
+ 
+ 
+(async () => {
+ 
+  userId =
+    await fetchSession();
+ 
+})();
+ 
+ 
+ 
+/*************************************************
+ * MISE À JOUR ACTIVITÉ
+ *************************************************/
+ 
+async function updateCurrentActivity(
+  episodeCard
+) {
+ 
+  if (!userId) return;
+ 
+ 
+  const episodeTitle =
+    episodeCard
+      .querySelector("h3")
+      ?.textContent || "";
+ 
+ 
+  const match =
+    episodeTitle.match(/\d+/);
+ 
+ 
+  const episodeNumber =
+    match
+      ? parseInt(match[0], 10)
+      : null;
+ 
+ 
+  const episodeImage =
+    episodeCard
+      .querySelector("img")
+      ?.src || null;
+ 
+ 
+  const {
+    error
+  } =
+    await supabase
+      .from("profiles")
+      .update({
+ 
+        currently_watching:
+          ANIME_TITLE,
+ 
+        episode_number:
+          episodeNumber,
+ 
+        episode_image:
+          episodeImage,
+ 
+        current_season:
+          currentSeason
+ 
+      })
+      .eq("id", userId);
+ 
+ 
+  if (error) {
+ 
+    console.error(
+      "Erreur update activité:",
+      error
+    );
+ 
+  }
+ 
+}
+ 
+ 
+ 
+/*************************************************
+ * EFFACER ACTIVITÉ
+ *************************************************/
+ 
+async function clearCurrentActivity() {
+ 
+  if (!userId) return;
+ 
+ 
+  const {
+    error
+  } =
+    await supabase
+      .from("profiles")
+      .update({
+ 
+        currently_watching: null,
+ 
+        episode_number: null,
+ 
+        episode_image: null,
+ 
+        current_season: null
+ 
+      })
+      .eq("id", userId);
+ 
+ 
+  if (error) {
+ 
+    console.error(
+      "Erreur clear activité:",
+      error
+    );
+ 
+  }
+ 
+}
+ 
+ 
+</script>
+ 
+<script src="https://inspecteurl.github.io/films/script.js"></script>
+</body>
+</html>
