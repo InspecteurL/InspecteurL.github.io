@@ -6531,7 +6531,7 @@ async function clearCurrentActivity() {
       : '';
  
     const episodesCards = valid.map(ep => {
-      const label = ep.titre ? escapeHtml(ep.titre) : `Épisode ${escapeHtml(String(ep.episode || ''))}`;
+      const label = `Épisode ${escapeHtml(String(ep.episode || ''))}`;
       return `  <div class="card" data-season="${escapeAttr(String(ep.season || '1'))}" data-episode="${escapeAttr(String(ep.episode || ''))}" data-video="${escapeAttr(ep.video)}" data-fallback="${escapeAttr(ep.fallback || '')}">
     <img src="${escapeAttr(ep.image || '')}" alt="${escapeAttr(label)}">
     <h3>${label}</h3>
