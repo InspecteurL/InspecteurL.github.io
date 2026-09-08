@@ -1369,15 +1369,10 @@ document.addEventListener("DOMContentLoaded", () => {
       label: "DrmPlayer",
       buildUrl: (src) =>
         "https://drmplayer.net/player.php?url=" + encodeURIComponent(src)
-    },
-    anylayer: {
-      label: "AnyPlayer",
-      buildUrl: (src) =>
-        "https://m3u8-player.cc/player.html?url=" + encodeURIComponent(src)
     }
   };
 
-  const FALLBACK_ORDER = ["bradmax", "m3u8player", "drmplayer" "anyplayer"];
+  const FALLBACK_ORDER = ["bradmax", "m3u8player", "drmplayer"];
 
   // ==================================================
   // 🕵️ AUTO-DÉTECTION DE LA SOURCE VIDÉO (aucune coopération
@@ -1578,7 +1573,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.HC_reportPlayerFailure = reportFailure;
   });
 })();
-
 
 
 
