@@ -904,17 +904,18 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==================================================
 // 🎉 WATCH PARTY — Visionnage synchronisé (HorizonCiné)
 // ==================================================
-// À COLLER À LA SUITE de ton script.js existant.
-// Utilise Supabase Realtime (broadcast + presence) : aucune
-// nouvelle table nécessaire, tout transite en temps réel.
+// À COLLER À LA SUITE de ton script.js existant (remplace l'ancienne
+// version du module watch party si tu l'avais déjà collée).
 //
-// Fonctionnalités :
-//   - Créer une salle → génère un code à 6 caractères
-//   - Rejoindre une salle avec un code
-//   - Sync automatique du play / pause / seek entre participants
-//   - Correction de dérive toutes les 5s
-//   - Chat texte intégré
-//   - Compteur de participants connectés
+// Nouveautés de cette version :
+//   - Bouton de lancement déplacé en bas à gauche pour ne plus
+//     chevaucher le bouton "retour à la fiche"
+//   - Mode "hôte uniquement" (activé par défaut) : seul le créateur
+//     de la salle contrôle play / pause / avance-recule, tout le
+//     monde suit automatiquement — impossible pour un invité de
+//     désynchroniser la lecture
+//   - Le créateur peut décocher ce mode pour repasser en contrôle
+//     libre (n'importe qui peut piloter la lecture)
 // ==================================================
 
 (function () {
@@ -944,7 +945,7 @@ document.addEventListener("DOMContentLoaded", () => {
       style.textContent = `
         .wp-launcher {
           position: absolute;
-          top: 20px;
+          bottom: 20px;
           left: 20px;
           z-index: 99999;
         }
@@ -963,10 +964,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         .wp-panel {
           position: absolute;
-          top: 70px;
+          bottom: 70px;
           left: 20px;
           width: 280px;
-          max-height: 420px;
+          max-height: 460px;
           background: rgba(15,15,15,.92);
           backdrop-filter: blur(10px);
           border-radius: 14px;
@@ -997,7 +998,7 @@ document.addEventListener("DOMContentLoaded", () => {
           font-size: 16px;
         }
 
-        .wp-panel-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+        .wp-panel-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
 
         .wp-btn-primary {
           background: #e50914;
@@ -1016,6 +1017,15 @@ document.addEventListener("DOMContentLoaded", () => {
           border-radius: 8px;
           cursor: pointer;
           font-weight: bold;
+        }
+
+        .wp-checkbox {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
+          opacity: .9;
+          cursor: pointer;
         }
 
         .wp-join-row { display: flex; gap: 6px; }
@@ -1048,10 +1058,20 @@ document.addEventListener("DOMContentLoaded", () => {
           font-size: 12px;
         }
 
+        .wp-role {
+          display: inline-block;
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: bold;
+          background: rgba(255,255,255,.1);
+        }
+        .wp-role.wp-role-host { background: #e50914; }
+
         .wp-participants { opacity: .8; font-size: 13px; }
 
         .wp-chat {
-          height: 140px;
+          height: 120px;
           overflow-y: auto;
           background: rgba(255,255,255,.05);
           border-radius: 8px;
@@ -1100,6 +1120,10 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <div class="wp-panel-body" id="wpBodyHome">
         <button id="wpCreateBtn" class="wp-btn-primary">Créer une salle</button>
+        <label class="wp-checkbox">
+          <input type="checkbox" id="wpHostOnlyToggle" checked />
+          Mode hôte uniquement (seul toi contrôles la lecture)
+        </label>
         <div class="wp-join-row">
           <input id="wpCodeInput" maxlength="6" placeholder="CODE" />
           <button id="wpJoinBtn">Rejoindre</button>
@@ -1107,6 +1131,7 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <div class="wp-panel-body" id="wpBodyRoom" style="display:none;">
         <div class="wp-room-code">Code : <b id="wpRoomCodeLabel"></b> <button id="wpCopyBtn">Copier</button></div>
+        <div><span class="wp-role" id="wpRoleLabel">Spectateur</span></div>
         <div class="wp-participants">👥 <span id="wpCount">1</span> connecté(s)</div>
         <div class="wp-chat" id="wpChat"></div>
         <div class="wp-chat-input">
@@ -1121,11 +1146,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const openBtn = document.getElementById("wpOpenBtn");
     const closeBtn = document.getElementById("wpCloseBtn");
     const createBtn = document.getElementById("wpCreateBtn");
+    const hostOnlyToggle = document.getElementById("wpHostOnlyToggle");
     const joinBtn = document.getElementById("wpJoinBtn");
     const codeInput = document.getElementById("wpCodeInput");
     const bodyHome = document.getElementById("wpBodyHome");
     const bodyRoom = document.getElementById("wpBodyRoom");
     const roomCodeLabel = document.getElementById("wpRoomCodeLabel");
+    const roleLabel = document.getElementById("wpRoleLabel");
     const copyBtn = document.getElementById("wpCopyBtn");
     const countLabel = document.getElementById("wpCount");
     const chatBox = document.getElementById("wpChat");
@@ -1139,6 +1166,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let channel = null;
     let ignoreNextEvent = false;
     let currentRoomCode = null;
+    let isHost = false;
+    let hostOnly = true;
+    let lastHostState = { time: 0, playing: false, src: null };
 
     function genCode() {
       return Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -1160,14 +1190,35 @@ document.addEventListener("DOMContentLoaded", () => {
         payload: {
           time: video.currentTime,
           playing: !video.paused,
-          src: video.currentSrc
+          src: video.currentSrc,
+          hostOnly
         }
       });
     }
 
-    async function joinRoom(code, isCreator) {
+    function applyRemoteState(payload) {
+      ignoreNextEvent = true;
+      if (payload.src && video.src !== payload.src) {
+        video.src = payload.src;
+        video.load();
+      }
+      if (Math.abs(video.currentTime - payload.time) > 1) {
+        video.currentTime = payload.time;
+      }
+      if (payload.playing && video.paused) video.play().catch(() => {});
+      if (!payload.playing && !video.paused) video.pause();
+      setTimeout(() => (ignoreNextEvent = false), 300);
+    }
+
+    function revertToHostState() {
+      applyRemoteState(lastHostState);
+    }
+
+    async function joinRoom(code, isCreator, hostOnlyPref = true) {
       const supabase = await getSupabase();
       currentRoomCode = code;
+      isHost = isCreator;
+      hostOnly = isCreator ? hostOnlyPref : true; // valeur par défaut tant que le host n'a pas encore diffusé
       const myId = Math.random().toString(36).slice(2, 10);
 
       channel = supabase.channel(`watchparty-${code}`, {
@@ -1176,17 +1227,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       channel
         .on("broadcast", { event: "sync" }, ({ payload }) => {
-          ignoreNextEvent = true;
-          if (payload.src && video.src !== payload.src) {
-            video.src = payload.src;
-            video.load();
-          }
-          if (Math.abs(video.currentTime - payload.time) > 1.5) {
-            video.currentTime = payload.time;
-          }
-          if (payload.playing && video.paused) video.play().catch(() => {});
-          if (!payload.playing && !video.paused) video.pause();
-          setTimeout(() => (ignoreNextEvent = false), 300);
+          hostOnly = payload.hostOnly;
+          lastHostState = { time: payload.time, playing: payload.playing, src: payload.src };
+          if (!isHost) applyRemoteState(payload);
+          roleLabel.textContent = isHost
+            ? "Hôte"
+            : hostOnly
+            ? "Spectateur (lecture verrouillée)"
+            : "Spectateur (contrôle libre)";
+          roleLabel.classList.toggle("wp-role-host", isHost);
         })
         .on("broadcast", { event: "chat" }, ({ payload }) => {
           addChatMessage(payload.author, payload.text, false);
@@ -1195,12 +1244,22 @@ document.addEventListener("DOMContentLoaded", () => {
           const state = channel.presenceState();
           countLabel.textContent = Object.keys(state).length;
         })
+        .on("presence", { event: "join" }, () => {
+          // Un nouvel arrivant : l'hôte lui envoie l'état courant + le mode
+          if (isHost) broadcastState();
+        })
         .subscribe(async (status) => {
           if (status === "SUBSCRIBED") {
             await channel.track({ joined_at: Date.now() });
             bodyHome.style.display = "none";
             bodyRoom.style.display = "block";
             roomCodeLabel.textContent = code;
+            roleLabel.textContent = isHost
+              ? "Hôte"
+              : hostOnly
+              ? "Spectateur (lecture verrouillée)"
+              : "Spectateur (contrôle libre)";
+            roleLabel.classList.toggle("wp-role-host", isHost);
             addChatMessage(
               "🎬",
               isCreator ? "Salle créée ! Partage le code." : "Tu as rejoint la salle."
@@ -1214,17 +1273,24 @@ document.addEventListener("DOMContentLoaded", () => {
     ["play", "pause", "seeked"].forEach((evt) => {
       video.addEventListener(evt, () => {
         if (ignoreNextEvent || !channel) return;
-        broadcastState();
+        if (isHost) {
+          broadcastState();
+        } else if (hostOnly) {
+          // Mode hôte uniquement : on annule toute tentative de contrôle de l'invité
+          revertToHostState();
+        } else {
+          broadcastState();
+        }
       });
     });
 
-    // Correction de dérive toutes les 5s pendant la lecture
+    // Correction de dérive toutes les 5s (uniquement l'hôte "fait autorité")
     setInterval(() => {
-      if (channel && !video.paused) broadcastState();
+      if (channel && isHost && !video.paused) broadcastState();
     }, 5000);
 
     // ---------- Boutons ----------
-    createBtn.onclick = () => joinRoom(genCode(), true);
+    createBtn.onclick = () => joinRoom(genCode(), true, hostOnlyToggle.checked);
 
     joinBtn.onclick = () => {
       const code = codeInput.value.trim().toUpperCase();
@@ -1253,6 +1319,8 @@ document.addEventListener("DOMContentLoaded", () => {
     leaveBtn.onclick = () => {
       if (channel) channel.unsubscribe();
       channel = null;
+      isHost = false;
+      hostOnly = true;
       bodyHome.style.display = "block";
       bodyRoom.style.display = "none";
       chatBox.innerHTML = "";
