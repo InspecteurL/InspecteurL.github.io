@@ -1335,34 +1335,19 @@ document.addEventListener("DOMContentLoaded", () => {
 // 🔀 SÉLECTEUR DE LECTEUR FALLBACK (HorizonCiné)
 // ==================================================
 // À COLLER À LA SUITE de ton script.js existant.
+// AUCUNE MODIFICATION nécessaire sur les 251 pages de films/
+// séries/animes : la détection de la source vidéo est 100%
+// automatique (voir bloc "AUTO-DÉTECTION" plus bas).
 //
-// Affiche une barre de choix de lecteur (toujours visible) sur
-// chaque fiche film/série/anime :
+// Barre de sélection toujours visible :
 //   - Principal (ton lecteur hls.js habituel)
 //   - BradMax
 //   - M3U8Player
 //   - DrmPlayer
 //
-// Si le lecteur principal échoue, la barre se met en évidence
-// (pulsation rouge) ET bascule automatiquement sur le premier
-// fallback (BradMax), sans empêcher l'utilisateur de changer
-// manuellement à tout moment.
-//
-// ⚠️ INTÉGRATION REQUISE :
-// Ce module a besoin de connaître l'URL .m3u8 de la vidéo en cours.
-// Deux façons de la lui fournir (fais l'une des deux) :
-//
-//   1) Si ton code définit déjà une variable globale avec l'URL
-//      courante, expose-la simplement ainsi quelque part :
-//         window.currentFallbackSource = tonUrlM3u8;
-//
-//   2) Dans le handler d'erreur FATAL de ton hls.js existant,
-//      appelle en plus :
-//         window.HC_reportPlayerFailure();
-//      (ça déclenche la mise en évidence + le switch auto vers
-//      BradMax, à la place de ton ancien fallback automatique
-//      vers m3u8player.online — tu peux donc supprimer cet
-//      ancien code si tu veux éviter les doublons).
+// Si le lecteur principal échoue (erreur native <video> ou appel
+// manuel à window.HC_reportPlayerFailure()), la barre pulse en
+// rouge et bascule automatiquement sur BradMax.
 // ==================================================
 
 (function () {
@@ -1389,12 +1374,92 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const FALLBACK_ORDER = ["bradmax", "m3u8player", "drmplayer"];
 
+  // ==================================================
+  // 🕵️ AUTO-DÉTECTION DE LA SOURCE VIDÉO (aucune coopération
+  // requise de la part du code existant de chaque page)
+  // ==================================================
+
+  // 1) On intercepte hls.js : quel que soit l'endroit du site où
+  //    `hls.loadSource(url)` est appelé, on mémorise cette URL.
+  //    hls.js remplace ensuite video.src par un blob:// interne,
+  //    donc c'est ICI qu'on doit intercepter l'URL réelle.
+  function patchHls() {
+    if (typeof Hls === "undefined" || Hls.__hcPatched) return;
+    const origLoadSource = Hls.prototype.loadSource;
+    Hls.prototype.loadSource = function (url) {
+      if (url && !url.startsWith("blob:")) window.__hcSource = url;
+      return origLoadSource.call(this, url);
+    };
+    Hls.__hcPatched = true;
+  }
+  patchHls();
+  if (typeof Hls === "undefined") {
+    const hlsWatcher = setInterval(() => {
+      if (typeof Hls !== "undefined") {
+        patchHls();
+        clearInterval(hlsWatcher);
+      }
+    }, 200);
+    setTimeout(() => clearInterval(hlsWatcher), 15000);
+  }
+
+  // 2) On intercepte aussi l'affectation directe video.src = "..."
+  //    (cas des vidéos MP4 directes ou HLS natif Safari).
+  try {
+    const proto = HTMLMediaElement.prototype;
+    const desc = Object.getOwnPropertyDescriptor(proto, "src");
+    if (desc && desc.set && !proto.__hcSrcPatched) {
+      Object.defineProperty(proto, "src", {
+        configurable: true,
+        get: desc.get,
+        set: function (value) {
+          if (value && typeof value === "string" && !value.startsWith("blob:")) {
+            window.__hcSource = value;
+          }
+          return desc.set.call(this, value);
+        }
+      });
+      proto.__hcSrcPatched = true;
+    }
+  } catch (e) {
+    console.warn("HC: patch video.src impossible", e);
+  }
+
+  // 3) On écoute les clics sur les cartes d'épisode. La plupart de
+  //    tes pages stockent déjà l'URL de secours propre à l'épisode
+  //    dans data-fallback — on la capture au clic, elle est
+  //    prioritaire sur la source "principale" générique.
+  document.addEventListener(
+    "click",
+    (e) => {
+      const card = e.target.closest("[data-fallback]");
+      if (card && card.dataset.fallback) {
+        window.__hcEpisodeFallback = card.dataset.fallback;
+      }
+    },
+    true
+  );
+
+  function getSourceUrl() {
+    const candidates = [
+      window.currentFallbackSource, // si une page le définit explicitement, priorité absolue
+      window.__hcEpisodeFallback,   // fallback propre à l'épisode cliqué (data-fallback)
+      window.__hcSource,            // source interceptée via hls.loadSource / video.src
+      document.getElementById("video")?.currentSrc,
+      document.getElementById("video")?.src
+    ];
+    return candidates.find((u) => u && typeof u === "string" && !u.startsWith("blob:")) || "";
+  }
+
+  // ==================================================
+  // UI
+  // ==================================================
+
   document.addEventListener("DOMContentLoaded", () => {
     const video = document.getElementById("video");
     const container = document.getElementById("videoContainer");
     if (!video || !container) return; // pas sur une page de lecture
 
-    // ---------- CSS ----------
     if (!document.getElementById("playersel-css")) {
       const style = document.createElement("style");
       style.id = "playersel-css";
@@ -1426,18 +1491,12 @@ document.addEventListener("DOMContentLoaded", () => {
           white-space: nowrap;
         }
         .ps-bar button:hover { background: rgba(255,255,255,.18); color: white; }
-        .ps-bar button.ps-active {
-          background: #e50914;
-          color: white;
-        }
-        .ps-bar.ps-alert {
-          animation: psPulse 1s ease-in-out 3;
-        }
+        .ps-bar button.ps-active { background: #e50914; color: white; }
+        .ps-bar.ps-alert { animation: psPulse 1s ease-in-out 3; }
         @keyframes psPulse {
           0%, 100% { box-shadow: 0 0 0 rgba(229,9,20,0); }
           50% { box-shadow: 0 0 18px rgba(229,9,20,.9); }
         }
-
         .ps-frame {
           position: absolute;
           inset: 0;
@@ -1445,7 +1504,7 @@ document.addEventListener("DOMContentLoaded", () => {
           height: 100%;
           border: none;
           display: none;
-          z-index: 50;
+          z-index: 1080;
           background: black;
         }
         .ps-frame.ps-visible { display: block; }
@@ -1453,7 +1512,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.head.appendChild(style);
     }
 
-    // ---------- UI ----------
     const bar = document.createElement("div");
     bar.className = "ps-bar";
     bar.innerHTML = `
@@ -1471,16 +1529,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let current = "main";
 
-    function getSourceUrl() {
-      return (
-        window.currentFallbackSource ||
-        (window.hls && window.hls.url) ||
-        video.currentSrc ||
-        video.src ||
-        ""
-      );
-    }
-
     function setActiveButton(key) {
       bar.querySelectorAll("button").forEach((b) => {
         b.classList.toggle("ps-active", b.dataset.player === key);
@@ -1495,14 +1543,12 @@ document.addEventListener("DOMContentLoaded", () => {
         frame.classList.remove("ps-visible");
         frame.src = "about:blank";
         video.style.display = "";
-        video.load();
-        video.play().catch(() => {});
         return;
       }
 
       const src = getSourceUrl();
       if (!src) {
-        alert("Impossible de récupérer l'URL de la vidéo pour ce lecteur.");
+        alert("Impossible de trouver l'URL de la vidéo pour ce lecteur.");
         return;
       }
 
@@ -1516,23 +1562,17 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", () => switchTo(btn.dataset.player));
     });
 
-    // ---------- Détection d'échec du lecteur principal ----------
     function reportFailure() {
-      if (current !== "main") return; // déjà sur un fallback, rien à faire
+      if (current !== "main") return;
       bar.classList.add("ps-alert");
       setTimeout(() => bar.classList.remove("ps-alert"), 3000);
-      switchTo(FALLBACK_ORDER[0]); // bascule auto vers BradMax
+      switchTo(FALLBACK_ORDER[0]);
     }
 
-    // Détection basique via l'event natif <video error>
     video.addEventListener("error", reportFailure);
-
-    // Point d'entrée manuel à appeler depuis ton handler hls.js fatal
     window.HC_reportPlayerFailure = reportFailure;
   });
 })();
-
-
 
 
 
