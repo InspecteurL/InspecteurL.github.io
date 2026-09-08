@@ -1263,7 +1263,206 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+// ==================================================
+// 🔀 SÉLECTEUR DE LECTEUR FALLBACK (HorizonCiné)
+// ==================================================
+// À COLLER À LA SUITE de ton script.js existant.
+//
+// Affiche une barre de choix de lecteur (toujours visible) sur
+// chaque fiche film/série/anime :
+//   - Principal (ton lecteur hls.js habituel)
+//   - BradMax
+//   - M3U8Player
+//   - DrmPlayer
+//
+// Si le lecteur principal échoue, la barre se met en évidence
+// (pulsation rouge) ET bascule automatiquement sur le premier
+// fallback (BradMax), sans empêcher l'utilisateur de changer
+// manuellement à tout moment.
+//
+// ⚠️ INTÉGRATION REQUISE :
+// Ce module a besoin de connaître l'URL .m3u8 de la vidéo en cours.
+// Deux façons de la lui fournir (fais l'une des deux) :
+//
+//   1) Si ton code définit déjà une variable globale avec l'URL
+//      courante, expose-la simplement ainsi quelque part :
+//         window.currentFallbackSource = tonUrlM3u8;
+//
+//   2) Dans le handler d'erreur FATAL de ton hls.js existant,
+//      appelle en plus :
+//         window.HC_reportPlayerFailure();
+//      (ça déclenche la mise en évidence + le switch auto vers
+//      BradMax, à la place de ton ancien fallback automatique
+//      vers m3u8player.online — tu peux donc supprimer cet
+//      ancien code si tu veux éviter les doublons).
+// ==================================================
 
+(function () {
+  const PLAYERS = {
+    main: { label: "Principal" },
+    bradmax: {
+      label: "BradMax",
+      buildUrl: (src) =>
+        "https://bradm.ax/build/202606/10/e1c1f29d59fb2a341df6fe3103a41b06338c2049/index.html" +
+        "?mediaUrl=" + encodeURIComponent(src) +
+        "&autoplay=1"
+    },
+    m3u8player: {
+      label: "M3U8Player",
+      buildUrl: (src) =>
+        "https://www.m3u8player.online/embed/m3u8?url=" + encodeURIComponent(src)
+    },
+    drmplayer: {
+      label: "DrmPlayer",
+      buildUrl: (src) =>
+        "https://drmplayer.net/player.php?url=" + encodeURIComponent(src)
+    }
+  };
+
+  const FALLBACK_ORDER = ["bradmax", "m3u8player", "drmplayer"];
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const video = document.getElementById("video");
+    const container = document.getElementById("videoContainer");
+    if (!video || !container) return; // pas sur une page de lecture
+
+    // ---------- CSS ----------
+    if (!document.getElementById("playersel-css")) {
+      const style = document.createElement("style");
+      style.id = "playersel-css";
+      style.textContent = `
+        .ps-bar {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          z-index: 99999;
+          display: flex;
+          gap: 6px;
+          background: rgba(15,15,15,.75);
+          backdrop-filter: blur(8px);
+          padding: 6px;
+          border-radius: 12px;
+          font-family: sans-serif;
+          transition: box-shadow .3s ease;
+        }
+        .ps-bar button {
+          background: rgba(255,255,255,.08);
+          color: #ccc;
+          border: none;
+          padding: 7px 12px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all .2s ease;
+          white-space: nowrap;
+        }
+        .ps-bar button:hover { background: rgba(255,255,255,.18); color: white; }
+        .ps-bar button.ps-active {
+          background: #e50914;
+          color: white;
+        }
+        .ps-bar.ps-alert {
+          animation: psPulse 1s ease-in-out 3;
+        }
+        @keyframes psPulse {
+          0%, 100% { box-shadow: 0 0 0 rgba(229,9,20,0); }
+          50% { box-shadow: 0 0 18px rgba(229,9,20,.9); }
+        }
+
+        .ps-frame {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          border: none;
+          display: none;
+          z-index: 50;
+          background: black;
+        }
+        .ps-frame.ps-visible { display: block; }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // ---------- UI ----------
+    const bar = document.createElement("div");
+    bar.className = "ps-bar";
+    bar.innerHTML = `
+      <button data-player="main" class="ps-active">Principal</button>
+      ${FALLBACK_ORDER.map(
+        (key) => `<button data-player="${key}">${PLAYERS[key].label}</button>`
+      ).join("")}
+    `;
+    container.appendChild(bar);
+
+    const frame = document.createElement("iframe");
+    frame.className = "ps-frame";
+    frame.allowFullscreen = true;
+    container.appendChild(frame);
+
+    let current = "main";
+
+    function getSourceUrl() {
+      return (
+        window.currentFallbackSource ||
+        (window.hls && window.hls.url) ||
+        video.currentSrc ||
+        video.src ||
+        ""
+      );
+    }
+
+    function setActiveButton(key) {
+      bar.querySelectorAll("button").forEach((b) => {
+        b.classList.toggle("ps-active", b.dataset.player === key);
+      });
+    }
+
+    function switchTo(key) {
+      current = key;
+      setActiveButton(key);
+
+      if (key === "main") {
+        frame.classList.remove("ps-visible");
+        frame.src = "about:blank";
+        video.style.display = "";
+        video.load();
+        video.play().catch(() => {});
+        return;
+      }
+
+      const src = getSourceUrl();
+      if (!src) {
+        alert("Impossible de récupérer l'URL de la vidéo pour ce lecteur.");
+        return;
+      }
+
+      video.pause();
+      video.style.display = "none";
+      frame.src = PLAYERS[key].buildUrl(src);
+      frame.classList.add("ps-visible");
+    }
+
+    bar.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => switchTo(btn.dataset.player));
+    });
+
+    // ---------- Détection d'échec du lecteur principal ----------
+    function reportFailure() {
+      if (current !== "main") return; // déjà sur un fallback, rien à faire
+      bar.classList.add("ps-alert");
+      setTimeout(() => bar.classList.remove("ps-alert"), 3000);
+      switchTo(FALLBACK_ORDER[0]); // bascule auto vers BradMax
+    }
+
+    // Détection basique via l'event natif <video error>
+    video.addEventListener("error", reportFailure);
+
+    // Point d'entrée manuel à appeler depuis ton handler hls.js fatal
+    window.HC_reportPlayerFailure = reportFailure;
+  });
+})();
 
 
 
