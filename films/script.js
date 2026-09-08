@@ -901,7 +901,364 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 
+// ==================================================
+// 🎉 WATCH PARTY — Visionnage synchronisé (HorizonCiné)
+// ==================================================
+// À COLLER À LA SUITE de ton script.js existant.
+// Utilise Supabase Realtime (broadcast + presence) : aucune
+// nouvelle table nécessaire, tout transite en temps réel.
+//
+// Fonctionnalités :
+//   - Créer une salle → génère un code à 6 caractères
+//   - Rejoindre une salle avec un code
+//   - Sync automatique du play / pause / seek entre participants
+//   - Correction de dérive toutes les 5s
+//   - Chat texte intégré
+//   - Compteur de participants connectés
+// ==================================================
 
+(function () {
+  // ---------- Client Supabase partagé (évite les doublons) ----------
+  function getSupabase() {
+    if (!window.__sbClientPromise) {
+      window.__sbClientPromise = import("https://esm.sh/@supabase/supabase-js@2").then(
+        ({ createClient }) =>
+          createClient(
+            "https://wuagahavmbugmnuzsouf.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho"
+          )
+      );
+    }
+    return window.__sbClientPromise;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const video = document.getElementById("video");
+    const container = document.getElementById("videoContainer");
+    if (!video || !container) return; // pas sur une page de lecture
+
+    // ---------- CSS ----------
+    if (!document.getElementById("watchparty-css")) {
+      const style = document.createElement("style");
+      style.id = "watchparty-css";
+      style.textContent = `
+        .wp-launcher {
+          position: absolute;
+          top: 20px;
+          left: 20px;
+          z-index: 99999;
+        }
+        .wp-launcher button {
+          background: rgba(0,0,0,.65);
+          color: white;
+          border: none;
+          padding: 10px 16px;
+          border-radius: 10px;
+          font-weight: bold;
+          cursor: pointer;
+          font-family: sans-serif;
+          transition: background .2s ease;
+        }
+        .wp-launcher button:hover { background: rgba(0,0,0,.85); }
+
+        .wp-panel {
+          position: absolute;
+          top: 70px;
+          left: 20px;
+          width: 280px;
+          max-height: 420px;
+          background: rgba(15,15,15,.92);
+          backdrop-filter: blur(10px);
+          border-radius: 14px;
+          color: white;
+          font-family: sans-serif;
+          font-size: 14px;
+          z-index: 99999;
+          display: none;
+          flex-direction: column;
+          overflow: hidden;
+          box-shadow: 0 10px 30px rgba(0,0,0,.5);
+        }
+        .wp-panel.visible { display: flex; }
+
+        .wp-panel-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 14px;
+          font-weight: bold;
+          background: rgba(255,255,255,.05);
+        }
+        .wp-panel-header button {
+          background: none;
+          border: none;
+          color: #ccc;
+          cursor: pointer;
+          font-size: 16px;
+        }
+
+        .wp-panel-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+
+        .wp-btn-primary {
+          background: #e50914;
+          color: white;
+          border: none;
+          padding: 10px;
+          border-radius: 8px;
+          font-weight: bold;
+          cursor: pointer;
+        }
+        .wp-btn-danger {
+          background: transparent;
+          border: 1px solid #e50914;
+          color: #e50914;
+          padding: 8px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: bold;
+        }
+
+        .wp-join-row { display: flex; gap: 6px; }
+        .wp-join-row input {
+          flex: 1;
+          padding: 8px;
+          border-radius: 8px;
+          border: none;
+          background: rgba(255,255,255,.1);
+          color: white;
+          text-transform: uppercase;
+        }
+        .wp-join-row button {
+          background: rgba(255,255,255,.15);
+          border: none;
+          color: white;
+          padding: 8px 12px;
+          border-radius: 8px;
+          cursor: pointer;
+        }
+
+        .wp-room-code { display: flex; align-items: center; gap: 8px; }
+        .wp-room-code button {
+          background: rgba(255,255,255,.15);
+          border: none;
+          color: white;
+          padding: 4px 8px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 12px;
+        }
+
+        .wp-participants { opacity: .8; font-size: 13px; }
+
+        .wp-chat {
+          height: 140px;
+          overflow-y: auto;
+          background: rgba(255,255,255,.05);
+          border-radius: 8px;
+          padding: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .wp-msg { font-size: 13px; line-height: 1.4; }
+        .wp-msg-self { color: #ff6b6b; }
+
+        .wp-chat-input { display: flex; gap: 6px; }
+        .wp-chat-input input {
+          flex: 1;
+          padding: 8px;
+          border-radius: 8px;
+          border: none;
+          background: rgba(255,255,255,.1);
+          color: white;
+        }
+        .wp-chat-input button {
+          background: #e50914;
+          border: none;
+          color: white;
+          width: 36px;
+          border-radius: 8px;
+          cursor: pointer;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // ---------- UI : bouton lanceur ----------
+    const launcher = document.createElement("div");
+    launcher.className = "wp-launcher";
+    launcher.innerHTML = `<button id="wpOpenBtn">🎉 Watch Party</button>`;
+    container.appendChild(launcher);
+
+    // ---------- UI : panneau ----------
+    const panel = document.createElement("div");
+    panel.className = "wp-panel";
+    panel.innerHTML = `
+      <div class="wp-panel-header">
+        <span>Watch Party</span>
+        <button id="wpCloseBtn">✕</button>
+      </div>
+      <div class="wp-panel-body" id="wpBodyHome">
+        <button id="wpCreateBtn" class="wp-btn-primary">Créer une salle</button>
+        <div class="wp-join-row">
+          <input id="wpCodeInput" maxlength="6" placeholder="CODE" />
+          <button id="wpJoinBtn">Rejoindre</button>
+        </div>
+      </div>
+      <div class="wp-panel-body" id="wpBodyRoom" style="display:none;">
+        <div class="wp-room-code">Code : <b id="wpRoomCodeLabel"></b> <button id="wpCopyBtn">Copier</button></div>
+        <div class="wp-participants">👥 <span id="wpCount">1</span> connecté(s)</div>
+        <div class="wp-chat" id="wpChat"></div>
+        <div class="wp-chat-input">
+          <input id="wpChatInput" placeholder="Écrire un message..." />
+          <button id="wpSendBtn">➤</button>
+        </div>
+        <button id="wpLeaveBtn" class="wp-btn-danger">Quitter la salle</button>
+      </div>
+    `;
+    container.appendChild(panel);
+
+    const openBtn = document.getElementById("wpOpenBtn");
+    const closeBtn = document.getElementById("wpCloseBtn");
+    const createBtn = document.getElementById("wpCreateBtn");
+    const joinBtn = document.getElementById("wpJoinBtn");
+    const codeInput = document.getElementById("wpCodeInput");
+    const bodyHome = document.getElementById("wpBodyHome");
+    const bodyRoom = document.getElementById("wpBodyRoom");
+    const roomCodeLabel = document.getElementById("wpRoomCodeLabel");
+    const copyBtn = document.getElementById("wpCopyBtn");
+    const countLabel = document.getElementById("wpCount");
+    const chatBox = document.getElementById("wpChat");
+    const chatInput = document.getElementById("wpChatInput");
+    const sendBtn = document.getElementById("wpSendBtn");
+    const leaveBtn = document.getElementById("wpLeaveBtn");
+
+    openBtn.onclick = () => panel.classList.toggle("visible");
+    closeBtn.onclick = () => panel.classList.remove("visible");
+
+    let channel = null;
+    let ignoreNextEvent = false;
+    let currentRoomCode = null;
+
+    function genCode() {
+      return Math.random().toString(36).slice(2, 8).toUpperCase();
+    }
+
+    function addChatMessage(author, text, self = false) {
+      const line = document.createElement("div");
+      line.className = "wp-msg" + (self ? " wp-msg-self" : "");
+      line.innerHTML = `<b>${author} :</b> ${text}`;
+      chatBox.appendChild(line);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function broadcastState() {
+      if (!channel) return;
+      channel.send({
+        type: "broadcast",
+        event: "sync",
+        payload: {
+          time: video.currentTime,
+          playing: !video.paused,
+          src: video.currentSrc
+        }
+      });
+    }
+
+    async function joinRoom(code, isCreator) {
+      const supabase = await getSupabase();
+      currentRoomCode = code;
+      const myId = Math.random().toString(36).slice(2, 10);
+
+      channel = supabase.channel(`watchparty-${code}`, {
+        config: { presence: { key: myId }, broadcast: { self: false } }
+      });
+
+      channel
+        .on("broadcast", { event: "sync" }, ({ payload }) => {
+          ignoreNextEvent = true;
+          if (payload.src && video.src !== payload.src) {
+            video.src = payload.src;
+            video.load();
+          }
+          if (Math.abs(video.currentTime - payload.time) > 1.5) {
+            video.currentTime = payload.time;
+          }
+          if (payload.playing && video.paused) video.play().catch(() => {});
+          if (!payload.playing && !video.paused) video.pause();
+          setTimeout(() => (ignoreNextEvent = false), 300);
+        })
+        .on("broadcast", { event: "chat" }, ({ payload }) => {
+          addChatMessage(payload.author, payload.text, false);
+        })
+        .on("presence", { event: "sync" }, () => {
+          const state = channel.presenceState();
+          countLabel.textContent = Object.keys(state).length;
+        })
+        .subscribe(async (status) => {
+          if (status === "SUBSCRIBED") {
+            await channel.track({ joined_at: Date.now() });
+            bodyHome.style.display = "none";
+            bodyRoom.style.display = "block";
+            roomCodeLabel.textContent = code;
+            addChatMessage(
+              "🎬",
+              isCreator ? "Salle créée ! Partage le code." : "Tu as rejoint la salle."
+            );
+            if (isCreator) broadcastState();
+          }
+        });
+    }
+
+    // ---------- Sync sur actions locales ----------
+    ["play", "pause", "seeked"].forEach((evt) => {
+      video.addEventListener(evt, () => {
+        if (ignoreNextEvent || !channel) return;
+        broadcastState();
+      });
+    });
+
+    // Correction de dérive toutes les 5s pendant la lecture
+    setInterval(() => {
+      if (channel && !video.paused) broadcastState();
+    }, 5000);
+
+    // ---------- Boutons ----------
+    createBtn.onclick = () => joinRoom(genCode(), true);
+
+    joinBtn.onclick = () => {
+      const code = codeInput.value.trim().toUpperCase();
+      if (code.length < 4) return alert("Entre un code valide.");
+      joinRoom(code, false);
+    };
+
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(currentRoomCode);
+      copyBtn.textContent = "Copié !";
+      setTimeout(() => (copyBtn.textContent = "Copier"), 1500);
+    };
+
+    sendBtn.onclick = sendChat;
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendChat();
+    });
+    function sendChat() {
+      const text = chatInput.value.trim();
+      if (!text || !channel) return;
+      channel.send({ type: "broadcast", event: "chat", payload: { author: "Moi", text } });
+      addChatMessage("Moi", text, true);
+      chatInput.value = "";
+    }
+
+    leaveBtn.onclick = () => {
+      if (channel) channel.unsubscribe();
+      channel = null;
+      bodyHome.style.display = "block";
+      bodyRoom.style.display = "none";
+      chatBox.innerHTML = "";
+    };
+  });
+})();
 
 
 
