@@ -1334,25 +1334,18 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==================================================
 // 🔀 SÉLECTEUR DE LECTEUR FALLBACK (HorizonCiné)
 // ==================================================
-// À COLLER À LA SUITE de ton script.js existant.
-// AUCUNE MODIFICATION nécessaire sur les 251 pages de films/
-// séries/animes : la détection de la source vidéo est 100%
-// automatique (voir bloc "AUTO-DÉTECTION" plus bas).
-//
-// Barre de sélection toujours visible :
-//   - Principal (ton lecteur hls.js habituel)
+// Lecteurs disponibles :
+//   - Principal
 //   - BradMax
 //   - M3U8Player
+//   - M3U8 Player CC
 //   - DrmPlayer
-//
-// Si le lecteur principal échoue (erreur native <video> ou appel
-// manuel à window.HC_reportPlayerFailure()), la barre pulse en
-// rouge et bascule automatiquement sur BradMax.
 // ==================================================
 
 (function () {
   const PLAYERS = {
     main: { label: "Principal" },
+
     bradmax: {
       label: "BradMax",
       buildUrl: (src) =>
@@ -1360,39 +1353,63 @@ document.addEventListener("DOMContentLoaded", () => {
         "?mediaUrl=" + encodeURIComponent(src) +
         "&autoplay=1"
     },
+
     m3u8player: {
       label: "M3U8Player",
       buildUrl: (src) =>
-        "https://www.m3u8player.online/embed/m3u8?url=" + encodeURIComponent(src)
+        "https://www.m3u8player.online/embed/m3u8?url=" +
+        encodeURIComponent(src)
     },
+
+    m3u8playercc: {
+      label: "M3U8 Player CC",
+      buildUrl: (src) =>
+        "https://m3u8-player.cc/player.html?url=" +
+        encodeURIComponent(src) +
+        "&autoplay=1"
+    },
+
     drmplayer: {
       label: "DrmPlayer",
       buildUrl: (src) =>
-        "https://drmplayer.net/player.php?url=" + encodeURIComponent(src)
+        "https://drmplayer.net/player.php?url=" +
+        encodeURIComponent(src)
     }
   };
 
-  const FALLBACK_ORDER = ["bradmax", "m3u8player", "drmplayer"];
+  const FALLBACK_ORDER = [
+    "bradmax",
+    "m3u8player",
+    "m3u8playercc",
+    "drmplayer"
+  ];
 
   // ==================================================
-  // 🕵️ AUTO-DÉTECTION DE LA SOURCE VIDÉO (aucune coopération
-  // requise de la part du code existant de chaque page)
+  // 🕵️ AUTO-DÉTECTION DE LA SOURCE VIDÉO
   // ==================================================
 
-  // 1) On intercepte hls.js : quel que soit l'endroit du site où
-  //    `hls.loadSource(url)` est appelé, on mémorise cette URL.
-  //    hls.js remplace ensuite video.src par un blob:// interne,
-  //    donc c'est ICI qu'on doit intercepter l'URL réelle.
   function patchHls() {
     if (typeof Hls === "undefined" || Hls.__hcPatched) return;
+
     const origLoadSource = Hls.prototype.loadSource;
+
     Hls.prototype.loadSource = function (url) {
-      if (url && !url.startsWith("blob:")) window.__hcSource = url;
+      if (
+        url &&
+        typeof url === "string" &&
+        !url.startsWith("blob:")
+      ) {
+        window.__hcSource = url;
+      }
+
       return origLoadSource.call(this, url);
     };
+
     Hls.__hcPatched = true;
   }
+
   patchHls();
+
   if (typeof Hls === "undefined") {
     const hlsWatcher = setInterval(() => {
       if (typeof Hls !== "undefined") {
@@ -1400,39 +1417,51 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(hlsWatcher);
       }
     }, 200);
+
     setTimeout(() => clearInterval(hlsWatcher), 15000);
   }
 
-  // 2) On intercepte aussi l'affectation directe video.src = "..."
-  //    (cas des vidéos MP4 directes ou HLS natif Safari).
+  // ==================================================
+  // 🎥 INTERCEPTION DE video.src
+  // ==================================================
+
   try {
     const proto = HTMLMediaElement.prototype;
     const desc = Object.getOwnPropertyDescriptor(proto, "src");
+
     if (desc && desc.set && !proto.__hcSrcPatched) {
       Object.defineProperty(proto, "src", {
         configurable: true,
         get: desc.get,
+
         set: function (value) {
-          if (value && typeof value === "string" && !value.startsWith("blob:")) {
+          if (
+            value &&
+            typeof value === "string" &&
+            !value.startsWith("blob:")
+          ) {
             window.__hcSource = value;
           }
+
           return desc.set.call(this, value);
         }
       });
+
       proto.__hcSrcPatched = true;
     }
   } catch (e) {
     console.warn("HC: patch video.src impossible", e);
   }
 
-  // 3) On écoute les clics sur les cartes d'épisode. La plupart de
-  //    tes pages stockent déjà l'URL de secours propre à l'épisode
-  //    dans data-fallback — on la capture au clic, elle est
-  //    prioritaire sur la source "principale" générique.
+  // ==================================================
+  // 🎬 CAPTURE DU FALLBACK PAR ÉPISODE
+  // ==================================================
+
   document.addEventListener(
     "click",
     (e) => {
       const card = e.target.closest("[data-fallback]");
+
       if (card && card.dataset.fallback) {
         window.__hcEpisodeFallback = card.dataset.fallback;
       }
@@ -1440,29 +1469,44 @@ document.addEventListener("DOMContentLoaded", () => {
     true
   );
 
+  // ==================================================
+  // 🔎 RÉCUPÉRATION DE LA SOURCE
+  // ==================================================
+
   function getSourceUrl() {
     const candidates = [
-      window.currentFallbackSource, // si une page le définit explicitement, priorité absolue
-      window.__hcEpisodeFallback,   // fallback propre à l'épisode cliqué (data-fallback)
-      window.__hcSource,            // source interceptée via hls.loadSource / video.src
+      window.currentFallbackSource,
+      window.__hcEpisodeFallback,
+      window.__hcSource,
       document.getElementById("video")?.currentSrc,
       document.getElementById("video")?.src
     ];
-    return candidates.find((u) => u && typeof u === "string" && !u.startsWith("blob:")) || "";
+
+    return (
+      candidates.find(
+        (u) =>
+          u &&
+          typeof u === "string" &&
+          !u.startsWith("blob:")
+      ) || ""
+    );
   }
 
   // ==================================================
-  // UI
+  // 🎨 UI
   // ==================================================
 
   document.addEventListener("DOMContentLoaded", () => {
     const video = document.getElementById("video");
     const container = document.getElementById("videoContainer");
-    if (!video || !container) return; // pas sur une page de lecture
+
+    if (!video || !container) return;
 
     if (!document.getElementById("playersel-css")) {
       const style = document.createElement("style");
+
       style.id = "playersel-css";
+
       style.textContent = `
         .ps-bar {
           position: absolute;
@@ -1478,6 +1522,7 @@ document.addEventListener("DOMContentLoaded", () => {
           font-family: sans-serif;
           transition: box-shadow .3s ease;
         }
+
         .ps-bar button {
           background: rgba(255,255,255,.08);
           color: #ccc;
@@ -1490,13 +1535,31 @@ document.addEventListener("DOMContentLoaded", () => {
           transition: all .2s ease;
           white-space: nowrap;
         }
-        .ps-bar button:hover { background: rgba(255,255,255,.18); color: white; }
-        .ps-bar button.ps-active { background: #e50914; color: white; }
-        .ps-bar.ps-alert { animation: psPulse 1s ease-in-out 3; }
-        @keyframes psPulse {
-          0%, 100% { box-shadow: 0 0 0 rgba(229,9,20,0); }
-          50% { box-shadow: 0 0 18px rgba(229,9,20,.9); }
+
+        .ps-bar button:hover {
+          background: rgba(255,255,255,.18);
+          color: white;
         }
+
+        .ps-bar button.ps-active {
+          background: #e50914;
+          color: white;
+        }
+
+        .ps-bar.ps-alert {
+          animation: psPulse 1s ease-in-out 3;
+        }
+
+        @keyframes psPulse {
+          0%, 100% {
+            box-shadow: 0 0 0 rgba(229,9,20,0);
+          }
+
+          50% {
+            box-shadow: 0 0 18px rgba(229,9,20,.9);
+          }
+        }
+
         .ps-frame {
           position: absolute;
           inset: 0;
@@ -1507,35 +1570,85 @@ document.addEventListener("DOMContentLoaded", () => {
           z-index: 1080;
           background: black;
         }
-        .ps-frame.ps-visible { display: block; }
+
+        .ps-frame.ps-visible {
+          display: block;
+        }
       `;
+
       document.head.appendChild(style);
     }
 
+    // ==================================================
+    // 🔘 BARRE DES LECTEURS
+    // ==================================================
+
     const bar = document.createElement("div");
+
     bar.className = "ps-bar";
+
     bar.innerHTML = `
-      <button data-player="main" class="ps-active">Principal</button>
+      <button data-player="main" class="ps-active">
+        Principal
+      </button>
+
       ${FALLBACK_ORDER.map(
-        (key) => `<button data-player="${key}">${PLAYERS[key].label}</button>`
+        (key) =>
+          `<button data-player="${key}">
+            ${PLAYERS[key].label}
+          </button>`
       ).join("")}
     `;
+
     container.appendChild(bar);
 
+    // ==================================================
+    // 🖼️ IFRAME FALLBACK
+    // ==================================================
+
     const frame = document.createElement("iframe");
+
     frame.className = "ps-frame";
     frame.allowFullscreen = true;
+
+    // Important pour certains lecteurs externes
+    frame.setAttribute(
+      "allow",
+      "autoplay; fullscreen; picture-in-picture"
+    );
+
     container.appendChild(frame);
 
     let current = "main";
 
+    // ==================================================
+    // 🔴 BOUTON ACTIF
+    // ==================================================
+
     function setActiveButton(key) {
-      bar.querySelectorAll("button").forEach((b) => {
-        b.classList.toggle("ps-active", b.dataset.player === key);
+      bar.querySelectorAll("button").forEach((button) => {
+        button.classList.toggle(
+          "ps-active",
+          button.dataset.player === key
+        );
       });
     }
 
+    // ==================================================
+    // 🔄 CHANGEMENT DE LECTEUR
+    // ==================================================
+
     function switchTo(key) {
+      const src = getSourceUrl();
+
+      // On vérifie la source avant de changer l'état du bouton.
+      if (key !== "main" && !src) {
+        alert(
+          "Impossible de trouver l'URL de la vidéo pour ce lecteur."
+        );
+        return;
+      }
+
       current = key;
       setActiveButton(key);
 
@@ -1546,30 +1659,42 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const src = getSourceUrl();
-      if (!src) {
-        alert("Impossible de trouver l'URL de la vidéo pour ce lecteur.");
-        return;
-      }
-
       video.pause();
       video.style.display = "none";
+
       frame.src = PLAYERS[key].buildUrl(src);
       frame.classList.add("ps-visible");
     }
 
+    // ==================================================
+    // 🖱️ CLICS SUR LES LECTEURS
+    // ==================================================
+
     bar.querySelectorAll("button").forEach((btn) => {
-      btn.addEventListener("click", () => switchTo(btn.dataset.player));
+      btn.addEventListener("click", () => {
+        switchTo(btn.dataset.player);
+      });
     });
+
+    // ==================================================
+    // 🚨 ÉCHEC DU LECTEUR PRINCIPAL
+    // ==================================================
 
     function reportFailure() {
       if (current !== "main") return;
+
       bar.classList.add("ps-alert");
-      setTimeout(() => bar.classList.remove("ps-alert"), 3000);
+
+      setTimeout(() => {
+        bar.classList.remove("ps-alert");
+      }, 3000);
+
+      // Premier fallback = BradMax
       switchTo(FALLBACK_ORDER[0]);
     }
 
     video.addEventListener("error", reportFailure);
+
     window.HC_reportPlayerFailure = reportFailure;
   });
 })();
