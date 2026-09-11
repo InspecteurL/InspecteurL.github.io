@@ -3847,18 +3847,8 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
 </body>
 </html>`;
 
-      generateBtn.addEventListener('click', () => {
-    // ⬇️ AJOUT : on ne traite pas ici les séries / animes,
-    // c'est le script de gestion des épisodes qui s'en occupe.
-    const currentType = document.getElementById('eType').value;
-    const currentGenre = document.getElementById('eGenre').value;
-    if (currentType === 'Série' || currentGenre === 'Anime') {
-      return;
-    }
-
     const templateInput = document.getElementById('templateInput');
-    if (!templateInput) { alert("Le modèle de page (onglet 'Ajouter un film') est introuvable."); return; }
-
+    templateInput.value = DEFAULT_TEMPLATE;
 
     const overlay = document.getElementById('adminOverlay');
     const openBtn = document.getElementById('adminOpenBtn');
@@ -4094,22 +4084,22 @@ page = page.replace(
   const pageCodeBox = document.getElementById('ePageCode');
   const snippetBox = document.getElementById('eCatalogSnippet');
   const eDureeInput = document.getElementById('eDuree');
-const eDureeAutoBtn = document.getElementById('eDureeAuto');
+  const eDureeAutoBtn = document.getElementById('eDureeAuto');
 
   eDureeAutoBtn.addEventListener('click', async () => {
-  const h1 = document.getElementById('eTitreAffiche').value.trim();
-  if (!h1) { alert("Le titre est vide."); return; }
-  const { titre, annee } = extraireTitreEtAnnee(h1);
-  const isSeries = document.getElementById('eType').value === 'Série';
-  eDureeAutoBtn.textContent = '...';
-  const duree = await fetchDureeOMDb(titre, annee, isSeries);
-  eDureeAutoBtn.textContent = '🔎 Auto';
-  if (duree) {
-    eDureeInput.value = duree;
-  } else {
-    alert("Durée introuvable automatiquement, complète-la à la main.");
-  }
-});
+    const h1 = document.getElementById('eTitreAffiche').value.trim();
+    if (!h1) { alert("Le titre est vide."); return; }
+    const { titre, annee } = extraireTitreEtAnnee(h1);
+    const isSeries = document.getElementById('eType').value === 'Série';
+    eDureeAutoBtn.textContent = '...';
+    const duree = await fetchDureeOMDb(titre, annee, isSeries);
+    eDureeAutoBtn.textContent = '🔎 Auto';
+    if (duree) {
+      eDureeInput.value = duree;
+    } else {
+      alert("Durée introuvable automatiquement, complète-la à la main.");
+    }
+  });
 
   let currentHref = '';
 
@@ -4213,6 +4203,14 @@ const eDureeAutoBtn = document.getElementById('eDureeAuto');
   });
 
   generateBtn.addEventListener('click', () => {
+    // ⬇️ AJOUT : on ne traite pas ici les séries / animes,
+    // c'est le script de gestion des épisodes qui s'en occupe.
+    const currentType = document.getElementById('eType').value;
+    const currentGenre = document.getElementById('eGenre').value;
+    if (currentType === 'Série' || currentGenre === 'Anime') {
+      return;
+    }
+
     const templateInput = document.getElementById('templateInput');
     if (!templateInput) { alert("Le modèle de page (onglet 'Ajouter un film') est introuvable."); return; }
 
@@ -4268,9 +4266,9 @@ const eDureeAutoBtn = document.getElementById('eDureeAuto');
     );
 
     page = page.replace(
-  '<p><strong>Durée:</strong> 2h05</p>',
-  duree ? `<p><strong>Durée:</strong> ${escapeHtml(duree)}</p>` : ''
-);
+      '<p><strong>Durée:</strong> 2h05</p>',
+      duree ? `<p><strong>Durée:</strong> ${escapeHtml(duree)}</p>` : ''
+    );
     page = page.replace("const MOVIE_ID      = 'doubtfire';", `const MOVIE_ID      = '${escapeJsString(movieId)}';`);
     page = page.replace(
       "const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/788-0xgdv/master.m3u8';",
@@ -4287,7 +4285,7 @@ const eDureeAutoBtn = document.getElementById('eDureeAuto');
     const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
 
     const dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
-const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
+    const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
   <a href="${href}"><img src="${posterUrl}" alt="${escapeAttr(h1)}"></a>
   <h2>${escapeHtml(h1)}</h2>
   <span>${spanText}</span>${dureeSpan}${badge}
