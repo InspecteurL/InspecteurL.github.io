@@ -3859,10 +3859,6 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     const templateInput = document.getElementById('templateInput');
     if (!templateInput) { alert("Le modèle de page (onglet 'Ajouter un film') est introuvable."); return; }
 
-    const h1 = document.getElementById('eTitreAffiche').value.trim();
-    // ... reste du code inchangé
-    const templateInput = document.getElementById('templateInput');
-    templateInput.value = DEFAULT_TEMPLATE;
 
     const overlay = document.getElementById('adminOverlay');
     const openBtn = document.getElementById('adminOpenBtn');
