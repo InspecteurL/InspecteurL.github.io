@@ -2653,9 +2653,131 @@ details.admin-template textarea {
 
   <div id="noResults">Aucun résultat trouvé.</div>
 
-<!-- ===== SCRIPT ADMIN : GÉNÉRATEUR DE FICHE FILM (AJOUT) ===== -->
-<script>
-(function () {
+  <script>
+  let activeType = 'Tous';
+  let activeGenre = 'Tous';
+
+  function filterType(type) {
+    activeType = type;
+    const buttons = document.querySelectorAll('.type-filters button');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    applyFilters();
+  }
+
+  function filterMovies(genre) {
+    activeGenre = genre;
+    const buttons = document.querySelectorAll('.filters button');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    applyFilters();
+  }
+
+  function searchMovies() {
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const movies = document.querySelectorAll('.movieimg');
+    let visibleCount = 0;
+
+    movies.forEach(movie => {
+      const title = (movie.dataset.title || '').toLowerCase();
+      const sub = (movie.dataset.subgenre || '').toLowerCase();
+      const type = movie.dataset.type;
+      const genre = movie.dataset.genre;
+
+      const matchType = (activeType === 'Tous' || type === activeType);
+      const matchGenre = (activeGenre === 'Tous' || genre === activeGenre);
+      const matchSearch = (title.includes(input) || sub.includes(input));
+
+      if (matchType && matchGenre && matchSearch) {
+        movie.style.display = '';
+        visibleCount++;
+      } else {
+        movie.style.display = 'none';
+      }
+    });
+
+    document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+</script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search);
+  const searchQuery = params.get("search");
+
+  const items = document.querySelectorAll(".movieimg");
+  if (!searchQuery || !items.length) return;
+
+  const normalize = text =>
+    text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+  const query = normalize(searchQuery);
+
+  items.forEach(item => {
+    const fullText = normalize(
+      `
+      ${item.dataset.title || ""}
+      ${item.dataset.genre || ""}
+      ${item.dataset.type || ""}
+      ${item.innerText || ""}
+      `
+    );
+
+    item.style.display = fullText.includes(query) ? "block" : "none";
+  });
+});
+
+  </script>
+
+  <script>
+  // ⚠️ Mets ta clé OMDb ici (celle que tu as déjà créée sur omdbapi.com)
+  const OMDB_API_KEY = "e35ff862";
+
+  // Récupère la durée d'un film/série via OMDb.
+  // title : titre du film (sans l'année)
+  // year  : année (peut être vide/null)
+  // isSeries : true si c'est une série/anime en épisodes, false si film
+  // Retourne une chaîne du type "2h49" ou "24min", ou null si introuvable.
+  async function fetchDureeOMDb(title, year, isSeries) {
+  if (!OMDB_API_KEY || OMDB_API_KEY === "COLLE_TA_CLE_OMDB_ICI") {   // ← le test reste inchangé
+    alert("Pense à coller ta clé OMDb dans le script (OMDB_API_KEY).");
+    return null;
+  }
+    try {
+      const type = isSeries ? "series" : "movie";
+      let url = `https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&type=${type}&t=${encodeURIComponent(title)}`;
+      if (year) url += `&y=${year}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.Response === "False") return null;
+      const match = /(\d+)\s*min/.exec(data.Runtime || "");
+      if (!match) return null;
+      const minutes = parseInt(match[1], 10);
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return h > 0 ? `${h}h${m.toString().padStart(2, "0")}` : `${m}min`;
+    } catch (e) {
+      console.error("Erreur OMDb :", e);
+      return null;
+    }
+  }
+
+  // Extrait le titre (sans l'année) et l'année depuis "Madame Doubtfire (1993)"
+  function extraireTitreEtAnnee(h1) {
+    const m = /^(.*?)\s*\((\d{4})\)\s*$/.exec(h1.trim());
+    if (m) return { titre: m[1], annee: m[2] };
+    return { titre: h1.trim(), annee: null };
+  }
+</script>
+  <!-- ===== SCRIPT ADMIN : GÉNÉRATEUR DE FICHE FILM ===== -->
+  <script>
+  (function () {
     // Change ce mot de passe avant de mettre le site en ligne
     const ADMIN_PASSWORD = "horizon2026";
 
@@ -3719,8 +3841,8 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     }).subscribe();
   initUser().then(loadVotes);
 });
-</scr` + `ipt>
-<script src="https://inspecteurl.github.io/films/script.js"></scr` + `ipt>
+</scr + ipt>
+<script src="https://inspecteurl.github.io/films/script.js"></scr + ipt>
 
 </body>
 </html>`;
@@ -3739,188 +3861,214 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     const snippetBox = document.getElementById('catalogSnippet');
     const copyBtn = document.getElementById('copySnippetBtn');
     const dureeInput = document.getElementById('fDuree');
-    const dureeAutoBtn = document.getElementById('fDureeAuto');
+const dureeAutoBtn = document.getElementById('fDureeAuto');
 
     dureeAutoBtn.addEventListener('click', async () => {
-        const h1 = document.getElementById('fTitreAffiche').value.trim();
-        if (!h1) { alert("Remplis d'abord le titre affiché."); return; }
-        const { titre, annee } = extraireTitreEtAnnee(h1);
-        const isSeries = typeSelect.value === 'Série';
-        dureeAutoBtn.textContent = '...';
-        const duree = await fetchDureeOMDb(titre, annee, isSeries);
-        dureeAutoBtn.textContent = '🔎 Auto';
-        if (duree) {
-            dureeInput.value = duree;
-        } else {
-            alert("Durée introuvable automatiquement, complète-la à la main.");
-        }
-    });
+  const h1 = document.getElementById('fTitreAffiche').value.trim();
+  if (!h1) { alert("Remplis d'abord le titre affiché."); return; }
+  const { titre, annee } = extraireTitreEtAnnee(h1);
+  const isSeries = typeSelect.value === 'Série';
+  dureeAutoBtn.textContent = '...';
+  const duree = await fetchDureeOMDb(titre, annee, isSeries);
+  dureeAutoBtn.textContent = '🔎 Auto';
+  if (duree) {
+    dureeInput.value = duree;
+  } else {
+    alert("Durée introuvable automatiquement, complète-la à la main.");
+  }
+});
 
     openBtn.addEventListener('click', () => {
-        const pass = prompt("Mot de passe admin :");
-        if (pass !== ADMIN_PASSWORD) {
-            if (pass !== null) alert("Mot de passe incorrect.");
-            return;
-        }
-        overlay.classList.add('open');
+      const pass = prompt("Mot de passe admin :");
+      if (pass !== ADMIN_PASSWORD) {
+        if (pass !== null) alert("Mot de passe incorrect.");
+        return;
+      }
+      overlay.classList.add('open');
     });
 
     closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
     overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.remove('open');
+      if (e.target === overlay) overlay.classList.remove('open');
     });
 
     genreSelect.addEventListener('change', () => {
-        subgenreField.style.display = genreSelect.value === 'Anime' ? 'block' : 'none';
+      subgenreField.style.display = genreSelect.value === 'Anime' ? 'block' : 'none';
     });
 
     function slugify(str) {
-        return str
-            .toLowerCase()
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '')
-            .trim();
+      return str
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '')
+        .trim();
     }
 
     function escapeAttr(str) {
-        return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+      return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
     }
 
     function escapeJsString(str) {
-        return String(str || '')
-            .replace(/\\/g, '\\\\')
-            .replace(/'/g, "\\'")
-            .replace(/"/g, '\\"')
-            .replace(/\r/g, '\\r')
-            .replace(/\n/g, '\\n');
-    }
+  return String(str || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n');
+}
 
     function escapeHtml(str) {
-        return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     function folderFor(type, genre) {
-        if (genre === 'Anime') return 'animes';
-        return type === 'Série' ? 'séries' : 'films';
+      if (genre === 'Anime') return 'animes';
+      return type === 'Série' ? 'séries' : 'films';
     }
 
+    // Auto-suggestion du nom de fichier à partir du titre
     document.getElementById('fTitreAffiche').addEventListener('blur', () => {
-        const slugField = document.getElementById('fSlug');
-        if (!slugField.value) {
-            const raw = document.getElementById('fTitreAffiche').value.replace(/\(\d{4}\)/, '');
-            slugField.value = slugify(raw);
-        }
+      const slugField = document.getElementById('fSlug');
+      if (!slugField.value) {
+        const raw = document.getElementById('fTitreAffiche').value.replace(/\(\d{4}\)/, '');
+        slugField.value = slugify(raw);
+      }
     });
 
     generateBtn.addEventListener('click', () => {
-        const h1 = document.getElementById('fTitreAffiche').value.trim();
-        const type = typeSelect.value;
-        const genre = genreSelect.value;
-        const subgenre = document.getElementById('fSubgenre').value;
-        const genreTexte = document.getElementById('fGenreTexte').value.trim();
-        const realisateur = document.getElementById('fRealisateur').value.trim();
-        const acteurs = document.getElementById('fActeurs').value.trim();
-        const synopsis = document.getElementById('fSynopsis').value.trim();
-        const duree = dureeInput.value.trim();
-        const bgUrl = document.getElementById('fBackground').value.trim();
-        const posterUrl = document.getElementById('fPoster').value.trim();
-        let slug = document.getElementById('fSlug').value.trim();
-        const movieId = document.getElementById('fMovieId').value.trim();
-        const fallbackSourceUrl = document.getElementById('fFallbackSource').value.trim();
-        const provisoire = document.getElementById('fProvisoire').checked;
+      const h1 = document.getElementById('fTitreAffiche').value.trim();
+      const type = typeSelect.value;
+      const genre = genreSelect.value;
+      const subgenre = document.getElementById('fSubgenre').value;
+      const genreTexte = document.getElementById('fGenreTexte').value.trim();
+      const realisateur = document.getElementById('fRealisateur').value.trim();
+      const acteurs = document.getElementById('fActeurs').value.trim();
+      const synopsis = document.getElementById('fSynopsis').value.trim();
+      const duree = dureeInput.value.trim();
+      const bgUrl = document.getElementById('fBackground').value.trim();
+      const posterUrl = document.getElementById('fPoster').value.trim();
+let slug = document.getElementById('fSlug').value.trim();
 
-        if (!h1 || !slug || !bgUrl || !posterUrl || !movieId || !fallbackSourceUrl) {
-            alert("Merci de remplir au minimum : titre, image de fond, affiche, nom de fichier, Movie ID et URL source fallback.");
-            return;
-        }
-        slug = slugify(slug);
+const movieId = document.getElementById('fMovieId').value.trim();
+const fallbackSourceUrl = document.getElementById('fFallbackSource').value.trim();
 
-        const pageTitle = h1.replace(/\s*\(\d{4}\)\s*$/, '') + ' - BNZ';
-        let page = templateInput.value;
+const provisoire = document.getElementById('fProvisoire').checked;
 
-        page = page.replace('<title>Madame Doubtfire - BNZ</title>', `<title>${escapeHtml(pageTitle)}</title>`);
-        page = page.replace(
-            "url('https://media.themoviedb.org/t/p/w1000_and_h563_face/kGTh0zOTBRqmKr3UfpLlsGFvSDT.jpg')",
-            `url('${bgUrl}')`
-        );
-        page = page.replace(
-            'src="https://media.themoviedb.org/t/p/w440_and_h660_face/60qcTr0iIZvcYfWrLDUbWxO7nPS.jpg" alt="Titanic Poster"',
-            `src="${posterUrl}" alt="${escapeAttr(h1)}"`
-        );
-        page = page.replace('<h1>Madame Doubtfire (1993)</h1>', `<h1>${escapeHtml(h1)}</h1>`);
-        page = page.replace(
-            '<p><strong>Genre:</strong> Comédie, Drame et Familial</p>',
-            `<p><strong>Genre:</strong> ${escapeHtml(genreTexte)}</p>`
-        );
-        page = page.replace(
-            '<p><strong>Réalisateur:</strong> Chris Columbus</p>',
-            `<p><strong>Réalisateur:</strong> ${escapeHtml(realisateur)}</p>`
-        );
-        page = page.replace(
-            '<p><strong>Acteurs:</strong> Robin Williams, Sally Field, Lisa Jakub</p>',
-            `<p><strong>Acteurs:</strong> ${escapeHtml(acteurs)}</p>`
-        );
-        page = page.replace(
-            "<p><strong>Synopsis:</strong> Privé, à la suite de son divorce, de ses trois enfants qu'il adore, Daniel Hillard, doubleur de dessins animés, met en œuvre tous ses talents d'acteur et d'imitateur et se transforme en respectable gouvernante irlandaise. Lorsque Mme Doubtfire se présente dans la famille Hillard, elle est acceptée à l'unanimité.</p>",
-            `<p><strong>Synopsis:</strong> ${escapeHtml(synopsis)}</p>`
-        );
-        page = page.replace(
-            '<p><strong>Durée:</strong> 2h05</p>',
-            duree ? `<p><strong>Durée:</strong> ${escapeHtml(duree)}</p>` : ''
-        );
-        page = page.replace(
-            "const MOVIE_ID      = 'doubtfire';",
-            `const MOVIE_ID      = '${escapeJsString(movieId)}';`
-        );
-        page = page.replace(
-            "const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/788-0xgdv/master.m3u8';",
-            `const FALLBACK_SOURCE_URL = '${escapeJsString(fallbackSourceUrl)}';`
-        );
+      if (
+  !h1 ||
+  !slug ||
+  !bgUrl ||
+  !posterUrl ||
+  !movieId ||
+  !fallbackSourceUrl
+) {
+  alert(
+    "Merci de remplir au minimum : titre, image de fond, affiche, nom de fichier, Movie ID et URL source fallback."
+  );
+  return;
+}
+      slug = slugify(slug);
 
-        const blob = new Blob([page], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = slug + '.html';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+      const pageTitle = h1.replace(/\s*\(\d{4}\)\s*$/, '') + ' - BNZ';
 
-        const folder = folderFor(type, genre);
-        const href = `https://inspecteurl.github.io/${folder}/${slug}.html`;
-        const dataTypeAttr = genre === 'Anime' ? '' : ` data-type="${escapeAttr(type)}"`;
-        const subgenreAttr = genre === 'Anime' ? ` data-subgenre="${escapeAttr(subgenre)}"` : '';
-        const spanText = genre === 'Anime' ? `Anime — ${escapeHtml(subgenre)}` : escapeHtml(genre);
-        const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
-        const dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
-        const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
+      let page = templateInput.value;
+
+      page = page.replace(
+        '<title>Madame Doubtfire - BNZ</title>',
+        `<title>${escapeHtml(pageTitle)}</title>`
+      );
+      page = page.replace(
+        "url('https://media.themoviedb.org/t/p/w1000_and_h563_face/kGTh0zOTBRqmKr3UfpLlsGFvSDT.jpg')",
+        `url('${bgUrl}')`
+      );
+      page = page.replace(
+        'src="https://media.themoviedb.org/t/p/w440_and_h660_face/60qcTr0iIZvcYfWrLDUbWxO7nPS.jpg" alt="Titanic Poster"',
+        `src="${posterUrl}" alt="${escapeAttr(h1)}"`
+      );
+      page = page.replace(
+        '<h1>Madame Doubtfire (1993)</h1>',
+        `<h1>${escapeHtml(h1)}</h1>`
+      );
+      page = page.replace(
+        '<p><strong>Genre:</strong> Comédie, Drame et Familial</p>',
+        `<p><strong>Genre:</strong> ${escapeHtml(genreTexte)}</p>`
+      );
+      page = page.replace(
+        '<p><strong>Réalisateur:</strong> Chris Columbus</p>',
+        `<p><strong>Réalisateur:</strong> ${escapeHtml(realisateur)}</p>`
+      );
+      page = page.replace(
+        '<p><strong>Acteurs:</strong> Robin Williams, Sally Field, Lisa Jakub</p>',
+        `<p><strong>Acteurs:</strong> ${escapeHtml(acteurs)}</p>`
+      );
+      page = page.replace(
+        "<p><strong>Synopsis:</strong> Privé, à la suite de son divorce, de ses trois enfants qu'il adore, Daniel Hillard, doubleur de dessins animés, met en œuvre tous ses talents d'acteur et d'imitateur et se transforme en respectable gouvernante irlandaise. Lorsque Mme Doubtfire se présente dans la famille Hillard, elle est acceptée à l'unanimité.</p>",
+        `<p><strong>Synopsis:</strong> ${escapeHtml(synopsis)}</p>`
+      );
+
+      page = page.replace(
+  '<p><strong>Durée:</strong> 2h05</p>',
+  duree ? `<p><strong>Durée:</strong> ${escapeHtml(duree)}</p>` : ''
+);
+
+      page = page.replace(
+  "const MOVIE_ID      = 'doubtfire';",
+  `const MOVIE_ID      = '${escapeJsString(movieId)}';`
+);
+
+page = page.replace(
+  "const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/788-0xgdv/master.m3u8';",
+  `const FALLBACK_SOURCE_URL = '${escapeJsString(fallbackSourceUrl)}';`
+);
+
+      // Téléchargement du fichier
+      const blob = new Blob([page], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = slug + '.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      // Construction du snippet catalogue
+      const folder = folderFor(type, genre);
+      const href = `https://inspecteurl.github.io/${folder}/${slug}.html`;
+      const dataTypeAttr = genre === 'Anime' ? '' : ` data-type="${escapeAttr(type)}"`;
+      const subgenreAttr = genre === 'Anime' ? ` data-subgenre="${escapeAttr(subgenre)}"` : '';
+      const spanText = genre === 'Anime' ? `Anime — ${escapeHtml(subgenre)}` : escapeHtml(genre);
+      const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
+
+     const dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
+      const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
   <a href="${href}"><img src="${posterUrl}" alt="${escapeAttr(h1)}"></a>
   <h2>${escapeHtml(h1)}</h2>
   <span>${spanText}</span>${dureeSpan}${badge}
 </div>`;
-
-        snippetBox.value = snippet;
-        output.classList.add('show');
-
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = snippet;
-        document.getElementById('movieGrid').appendChild(wrapper.firstElementChild);
-        applyFilters();
+ 
+      snippetBox.value = snippet;
+      output.classList.add('show');
+ 
+      // Aperçu live immédiat dans la grille (non persistant, juste pour visualiser)
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = snippet;
+      document.getElementById('movieGrid').appendChild(wrapper.firstElementChild);
+      applyFilters();
     });
+ 
 
     copyBtn.addEventListener('click', () => {
-        snippetBox.select();
-        navigator.clipboard.writeText(snippetBox.value).then(() => {
-            copyBtn.textContent = 'Copié !';
-            setTimeout(() => (copyBtn.textContent = 'Copier le code'), 1500);
-        });
+      snippetBox.select();
+      navigator.clipboard.writeText(snippetBox.value).then(() => {
+        copyBtn.textContent = 'Copié !';
+        setTimeout(() => (copyBtn.textContent = 'Copier le code'), 1500);
+      });
     });
-})();
-</script>
+  })();
+  </script>
 
-<!-- ===== SCRIPT ADMIN : MODIFICATION DE FICHE (avec le correctif) ===== -->
-<script>
+  <script>
 (function () {
   const ADMIN_PASSWORD = "horizon2026"; // même mot de passe
 
@@ -3936,22 +4084,22 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
   const pageCodeBox = document.getElementById('ePageCode');
   const snippetBox = document.getElementById('eCatalogSnippet');
   const eDureeInput = document.getElementById('eDuree');
-  const eDureeAutoBtn = document.getElementById('eDureeAuto');
+const eDureeAutoBtn = document.getElementById('eDureeAuto');
 
   eDureeAutoBtn.addEventListener('click', async () => {
-    const h1 = document.getElementById('eTitreAffiche').value.trim();
-    if (!h1) { alert("Le titre est vide."); return; }
-    const { titre, annee } = extraireTitreEtAnnee(h1);
-    const isSeries = document.getElementById('eType').value === 'Série';
-    eDureeAutoBtn.textContent = '...';
-    const duree = await fetchDureeOMDb(titre, annee, isSeries);
-    eDureeAutoBtn.textContent = '🔎 Auto';
-    if (duree) {
-      eDureeInput.value = duree;
-    } else {
-      alert("Durée introuvable automatiquement, complète-la à la main.");
-    }
-  });
+  const h1 = document.getElementById('eTitreAffiche').value.trim();
+  if (!h1) { alert("Le titre est vide."); return; }
+  const { titre, annee } = extraireTitreEtAnnee(h1);
+  const isSeries = document.getElementById('eType').value === 'Série';
+  eDureeAutoBtn.textContent = '...';
+  const duree = await fetchDureeOMDb(titre, annee, isSeries);
+  eDureeAutoBtn.textContent = '🔎 Auto';
+  if (duree) {
+    eDureeInput.value = duree;
+  } else {
+    alert("Durée introuvable automatiquement, complète-la à la main.");
+  }
+});
 
   let currentHref = '';
 
@@ -4054,16 +4202,7 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     }
   });
 
-  // ---- ICI LE CORRECTIF (déjà présent, à conserver tel quel) ----
   generateBtn.addEventListener('click', () => {
-    // ⬇️ On ne traite pas ici les séries / animes,
-    // c'est le script de gestion des épisodes qui s'en occupe.
-    const currentType = document.getElementById('eType').value;
-    const currentGenre = document.getElementById('eGenre').value;
-    if (currentType === 'Série' || currentGenre === 'Anime') {
-      return;
-    }
-
     const templateInput = document.getElementById('templateInput');
     if (!templateInput) { alert("Le modèle de page (onglet 'Ajouter un film') est introuvable."); return; }
 
@@ -4119,9 +4258,9 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     );
 
     page = page.replace(
-      '<p><strong>Durée:</strong> 2h05</p>',
-      duree ? `<p><strong>Durée:</strong> ${escapeHtml(duree)}</p>` : ''
-    );
+  '<p><strong>Durée:</strong> 2h05</p>',
+  duree ? `<p><strong>Durée:</strong> ${escapeHtml(duree)}</p>` : ''
+);
     page = page.replace("const MOVIE_ID      = 'doubtfire';", `const MOVIE_ID      = '${escapeJsString(movieId)}';`);
     page = page.replace(
       "const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/788-0xgdv/master.m3u8';",
@@ -4138,7 +4277,7 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
 
     const dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
-    const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
+const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}>
   <a href="${href}"><img src="${posterUrl}" alt="${escapeAttr(h1)}"></a>
   <h2>${escapeHtml(h1)}</h2>
   <span>${spanText}</span>${dureeSpan}${badge}
@@ -4174,6 +4313,7 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
   });
 })();
 </script>
+
 <!--
 ==================================================================================
  AJOUT : GESTION DES ÉPISODES POUR LES SÉRIES (admin catalogue.html)
