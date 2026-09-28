@@ -23,6 +23,7 @@
   --primary: #3b82f6;
   --primary-hover: #2563eb;
   --danger: #dc2626;
+  --gold: #fbbf24;
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -44,11 +45,14 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background: radial-gradient(circle at top, #1a1a22, var(--bg-main));
   color: var(--text-main);
+  min-height: 100vh;
 }
 
 a, a:visited {
@@ -118,6 +122,7 @@ header {
   background: var(--bg-input);
   color: var(--text-main);
   font-size: 14px;
+  font-family: inherit;
   transition: var(--transition);
 }
 
@@ -129,7 +134,7 @@ header {
 }
 
 .suggestion-form select,
-.suggestion-form button {
+.suggestion-form button.submit-btn {
   padding: 10px 16px;
   border-radius: var(--radius-sm);
   font-weight: 600;
@@ -142,16 +147,283 @@ header {
   border: 1px solid var(--border-soft);
 }
 
-.suggestion-form button {
+.suggestion-form button.submit-btn {
   background: linear-gradient(135deg, var(--primary), #60a5fa);
   color: #fff;
   border: none;
   transition: var(--transition);
 }
 
-.suggestion-form button:hover {
+.suggestion-form button.submit-btn:hover {
   transform: translateY(-1px);
   background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+}
+
+/* ---------- Étape 1 : choix du type ---------- */
+
+.form-title {
+  margin: 0 0 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.type-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.type-card {
+  cursor: pointer;
+  text-align: center;
+  padding: 26px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-soft);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.15)),
+    var(--bg-card);
+  color: var(--text-main);
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.type-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59,130,246,.25), 0 20px 40px rgba(0,0,0,.5);
+}
+
+.type-card .ico { font-size: 38px; display: block; margin-bottom: 10px; }
+.type-card .ttl { font-size: 17px; font-weight: 700; display: block; }
+.type-card .sub { font-size: 12.5px; color: var(--text-muted); display: block; margin-top: 6px; line-height: 1.4; }
+
+@media (max-width: 560px) {
+  .type-choice { grid-template-columns: 1fr; }
+}
+
+/* ---------- Étape 2 : formulaire ---------- */
+
+.form-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  padding: 4px 0;
+}
+.link-btn:hover { color: var(--text-main); }
+
+.type-pill {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(59,130,246,.18);
+  color: #bfdbfe;
+  border: 1px solid rgba(59,130,246,.35);
+}
+
+/* ---------- Recherche de contenu ---------- */
+
+.search-wrap { position: relative; }
+
+.search-wrap input {
+  width: 100%;
+  padding: 13px 14px 13px 42px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.search-wrap::before {
+  content: "🔍";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  opacity: .8;
+}
+
+.media-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.media-tabs button {
+  background: var(--bg-input);
+  color: var(--text-muted);
+  border: 1px solid var(--border-soft);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.media-tabs button.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: transparent;
+}
+
+.search-status {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 18px 0;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 4px;
+  margin-bottom: 4px;
+}
+
+.result-card {
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  transition: var(--transition);
+  text-align: left;
+  padding: 0;
+  color: var(--text-main);
+  font-family: inherit;
+}
+
+.result-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 10px 24px rgba(0,0,0,.5);
+}
+
+.poster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+  background: #2a2a34;
+}
+
+.poster-empty {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  background: linear-gradient(135deg, #2a2a34, #1f1f27);
+}
+
+.result-info { padding: 8px 9px 10px; }
+.result-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.result-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+.kind-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-right: 4px;
+}
+.kind-Film  { background: #b45309; color: #fef3c7; }
+.kind-Série { background: #0e7490; color: #cffafe; }
+.kind-Anime { background: #be185d; color: #fce7f3; }
+
+/* ---------- Aperçu du contenu choisi ---------- */
+
+.media-preview {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-card);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.media-preview .bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: .18;
+  filter: blur(2px);
+}
+
+.media-preview > *:not(.bg) { position: relative; }
+.media-preview .poster,
+.media-preview .poster-empty { width: 110px; flex-shrink: 0; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+
+.media-details h3 { margin: 0 0 6px; font-size: 18px; }
+.media-details .facts { font-size: 12.5px; color: var(--text-muted); margin-bottom: 8px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.media-details .facts .star { color: var(--gold); font-weight: 700; }
+.media-details .overview {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #d1d5db;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+.media-preview .change-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  border: 1px solid var(--border-soft);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+@media (max-width: 560px) {
+  .media-preview .poster,
+  .media-preview .poster-empty { width: 80px; }
 }
 
 /* ============================= */
@@ -189,12 +461,7 @@ header {
   position: absolute;
   inset: auto 0 0 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255,255,255,.08),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
 }
 
 /* ============================= */
@@ -209,6 +476,8 @@ header {
   justify-content: space-between;
   margin-bottom: 10px;
 }
+
+.badges { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
 .meta {
   font-size: 12px;
@@ -234,11 +503,21 @@ header {
     0 4px 12px rgba(0,0,0,.4);
 }
 
-.status-Attente   { background: #7c3aed; color: #f5ebff; }
-.status-Planifié  { background: #1e40af; color: #dbeafe; }
-.status-En-cours  { background: #6d28d9; color: #ede9fe; }
-.status-Terminé   { background: #15803d; color: #dcfce7; }
-.status-Refusé    { background: #991b1b; color: #fee2e2; }
+.status-en-attente { background: #7c3aed; color: #f5ebff; }
+.status-planifie   { background: #1e40af; color: #dbeafe; }
+.status-en-cours   { background: #b45309; color: #fef3c7; }
+.status-termine    { background: #15803d; color: #dcfce7; }
+.status-refuse     { background: #991b1b; color: #fee2e2; }
+
+.type-badge {
+  padding: 5px 10px;
+  font-size: 11px;
+  border-radius: 999px;
+  font-weight: 600;
+  background: rgba(255,255,255,.07);
+  color: #d1d5db;
+  border: 1px solid var(--border-soft);
+}
 
 /* ============================= */
 /*            CONTENT            */
@@ -250,6 +529,47 @@ header {
   letter-spacing: .15px;
   font-size: 15px;
   margin: 0 0 12px;
+}
+
+.media-card {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: rgba(0,0,0,.25);
+  border: 1px solid var(--border-soft);
+  margin-bottom: 12px;
+}
+.media-card .bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: .15;
+  filter: blur(2px);
+}
+.media-card > *:not(.bg) { position: relative; }
+.media-card .poster,
+.media-card .poster-empty { width: 100px; flex-shrink: 0; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); }
+.media-card h3 { margin: 0 0 6px; font-size: 17px; }
+.media-card .facts { font-size: 12.5px; color: var(--text-muted); margin-bottom: 8px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.media-card .facts .star { color: var(--gold); font-weight: 700; }
+.media-card .overview {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #d1d5db;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 560px) {
+  .media-card .poster,
+  .media-card .poster-empty { width: 76px; }
 }
 
 /* ============================= */
@@ -306,9 +626,7 @@ button:active {
   margin-bottom: 6px;
 }
 
-.comment strong {
-  color: #fff;
-}
+.comment strong { color: #fff; }
 
 .comment time {
   color: var(--text-muted);
@@ -386,9 +704,7 @@ button:active {
   color: #fff;
 }
 
-.danger:hover {
-  background: #b91c1c !important;
-}
+.danger:hover { background: #b91c1c !important; }
 
 /* ============================= */
 /*          FOCUS STATES         */
@@ -420,51 +736,64 @@ button:focus-visible {
   padding: 40px;
   color: var(--text-muted);
 }
-
-.loading::after {
-  content: "…";
-  animation: dots 1.4s infinite;
-}
-
-@keyframes dots {
-  0%   { content: ""; }
-  33%  { content: "."; }
-  66%  { content: ".."; }
-  100% { content: "..."; }
-}
-
   </style>
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    /* ========= Config Supabase ========= */
+    /* ========= Config ========= */
+    // Clé gratuite TMDB : https://www.themoviedb.org/settings/api  (clé "API Key (v3 auth)")
+    const OMDB_KEY = 'e35ff862';
+
     const supabase = createClient(
       'https://wuagahavmbugmnuzsouf.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
     );
 
     /* ========= DOM ========= */
-    const suggestionsList = document.getElementById('suggestionsList');
-    const suggestionForm  = document.getElementById('suggestionForm');
-    const suggestionText  = document.getElementById('suggestionText');
-    const initialStatus   = document.getElementById('initialStatus');
-    const filterStatus    = document.getElementById('filterStatus');
-    const totalCount      = document.getElementById('totalCount');
-    const emptyMessage    = document.getElementById('emptyMessage');
-    const currentUserInfo = document.getElementById('currentUserInfo');
+    const $ = id => document.getElementById(id);
+    const suggestionsList = $('suggestionsList');
+    const suggestionForm  = $('suggestionForm');
+    const suggestionText  = $('suggestionText');
+    const initialStatus   = $('initialStatus');
+    const initialStatusWrapper = $('initialStatusWrapper');
+    const filterStatus    = $('filterStatus');
+    const filterType      = $('filterType');
+    const totalCount      = $('totalCount');
+    const emptyMessage    = $('emptyMessage');
+    const currentUserInfo = $('currentUserInfo');
+
+    const stepChoice    = $('stepChoice');
+    const formTypeLabel = $('formTypeLabel');
+    const contentPicker = $('contentPicker');
+    const searchInput   = $('searchInput');
+    const mediaTabs     = $('mediaTabs');
+    const searchStatus  = $('searchStatus');
+    const resultsGrid   = $('resultsGrid');
+    const mediaPreview  = $('mediaPreview');
+    const searchArea    = $('searchArea');
 
     /* ========= État ========= */
-    let suggestions = [];  // {id,text,status,created_at,author_pseudo,author_email,comments:[]}
+    let suggestions = [];
     let currentUser = null;
     let isAdmin = false;
     let loading = false;
 
+    let formType = null;        // 'improvement' | 'content'
+    let selectedMedia = null;
+    let searchResults = [];
+    let mediaFilter = 'all';    // all | Film | Série | Anime
+    let searchTimer = null;
+    let searchToken = 0;
+
     /* ========= Utils ========= */
     function escapeHtml(str='') {
-      return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+      return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
     }
     function formatDate(d) {
       return new Date(d).toLocaleString('fr-FR',{dateStyle:'short', timeStyle:'short'});
+    }
+    function slug(str='') {
+      return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-');
     }
     const STATUSES = ['En Attente','Planifié','En cours','Terminé','Refusé'];
 
@@ -476,9 +805,7 @@ button:focus-visible {
 
     function setLoading(state) {
       loading = state;
-      if (state) {
-        suggestionsList.innerHTML = '<div class="loading">Chargement...</div>';
-      }
+      if (state) suggestionsList.innerHTML = '<div class="loading">Chargement...</div>';
     }
 
     /* ========= Auth / User local ========= */
@@ -507,10 +834,159 @@ button:focus-visible {
         isAdmin = currentUser.email === 'lolovp.portrets41@gmail.com';
         currentUserInfo.innerHTML = `Connecté : <strong>${escapeHtml(currentUser.pseudo)}</strong>${isAdmin?'<span class="admin-badge">ADMIN</span>':''}`;
       }
+      if (!isAdmin && initialStatusWrapper) initialStatusWrapper.remove();
+    }
 
-      if (!isAdmin && initialStatusWrapper) {
-        initialStatusWrapper.remove();
+    /* ========= TMDB ========= */
+    const IMG = 'http://img.omdbapi.com/?apikey=[yourkey]&';
+
+    function kindOf(r) {
+      const isAnime = (r.genre_ids || []).includes(16) && r.original_language === 'ja';
+      if (isAnime) return 'Anime';
+      return r.media_type === 'movie' ? 'Film' : 'Série';
+    }
+
+    function toMedia(r) {
+      const date = r.release_date || r.first_air_date || '';
+      return {
+        omdb_id: r.id,
+        media_type: r.media_type,
+        kind: kindOf(r),
+        title: r.title || r.name || 'Sans titre',
+        original_title: r.original_title || r.original_name || '',
+        year: date ? date.slice(0,4) : '',
+        date,
+        poster: r.poster_path || null,
+        backdrop: r.backdrop_path || null,
+        rating: r.vote_average ? Math.round(r.vote_average * 10) / 10 : null,
+        overview: r.overview || '',
+        country: (r.origin_country || []).join(', ')
+      };
+    }
+
+    async function searchOMDB(query) {
+      const token = ++searchToken;
+      if (!OMDB_KEY || OMDB_KEY.startsWith('COLLE_')) {
+        searchStatus.textContent = "⚠️ Clé OMDB manquante : ajoute-la dans le code (constante OMDB_KEY).";
+        searchStatus.hidden = false;
+        return;
       }
+      searchStatus.textContent = 'Recherche en cours…';
+      searchStatus.hidden = false;
+      try {
+        const url = `https://api.themoviedb.org/3/search/multi?api_key=${OMDB_KEY}&language=fr-FR&include_adult=false&query=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json();
+        if (token !== searchToken) return; // recherche périmée
+        searchResults = (json.results || [])
+          .filter(r => r.media_type === 'movie' || r.media_type === 'tv')
+          .map(toMedia);
+        renderResults();
+      } catch (e) {
+        if (token !== searchToken) return;
+        console.error(e);
+        searchStatus.textContent = 'Erreur pendant la recherche. Réessaie.';
+        searchStatus.hidden = false;
+      }
+    }
+
+    function posterHTML(path, size='w342') {
+      return path
+        ? `<img class="poster" loading="lazy" src="${IMG}${size}${escapeHtml(path)}" alt="">`
+        : `<div class="poster-empty">🎬</div>`;
+    }
+
+    function factsHTML(m) {
+      return `
+        <span class="kind-tag kind-${escapeHtml(m.kind)}">${escapeHtml(m.kind)}</span>
+        ${m.year ? `<span>📅 ${escapeHtml(m.year)}</span>` : ''}
+        ${m.rating ? `<span class="star">★ ${escapeHtml(m.rating)}</span>` : ''}
+        ${m.country ? `<span>🌍 ${escapeHtml(m.country)}</span>` : ''}
+      `;
+    }
+
+    function renderResults() {
+      const list = searchResults.filter(m => mediaFilter === 'all' || m.kind === mediaFilter);
+      resultsGrid.innerHTML = '';
+      if (!list.length) {
+        searchStatus.textContent = searchInput.value.trim() ? 'Aucun résultat.' : '';
+        searchStatus.hidden = !searchStatus.textContent;
+        return;
+      }
+      searchStatus.hidden = true;
+      list.slice(0, 24).forEach(m => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'result-card';
+        btn.innerHTML = `
+          ${posterHTML(m.poster, 'w342')}
+          <div class="result-info">
+            <div class="result-title">${escapeHtml(m.title)}</div>
+            <div class="result-meta"><span class="kind-tag kind-${escapeHtml(m.kind)}">${escapeHtml(m.kind)}</span>${escapeHtml(m.year)}</div>
+          </div>`;
+        btn.addEventListener('click', () => selectMedia(m));
+        resultsGrid.appendChild(btn);
+      });
+    }
+
+    function selectMedia(m) {
+      selectedMedia = m;
+      searchArea.hidden = true;
+      mediaPreview.hidden = false;
+      mediaPreview.innerHTML = `
+        ${m.backdrop ? `<div class="bg" style="background-image:url('${IMG}w780${escapeHtml(m.backdrop)}')"></div>` : ''}
+        ${posterHTML(m.poster, 'w342')}
+        <div class="media-details">
+          <h3>${escapeHtml(m.title)}</h3>
+          <div class="facts">${factsHTML(m)}</div>
+          ${m.overview ? `<p class="overview">${escapeHtml(m.overview)}</p>` : ''}
+        </div>
+        <button type="button" class="change-btn" id="changeMedia">Changer</button>
+      `;
+      $('changeMedia').addEventListener('click', clearMedia);
+      suggestionText.placeholder = 'Un petit mot pour appuyer ta suggestion (facultatif)…';
+    }
+
+    function clearMedia() {
+      selectedMedia = null;
+      mediaPreview.hidden = true;
+      mediaPreview.innerHTML = '';
+      searchArea.hidden = false;
+      searchInput.focus();
+    }
+
+    /* ========= Étapes du formulaire ========= */
+    function chooseType(type) {
+      formType = type;
+      stepChoice.hidden = true;
+      suggestionForm.hidden = false;
+
+      if (type === 'improvement') {
+        formTypeLabel.textContent = '💡 Amélioration du site';
+        contentPicker.hidden = true;
+        suggestionText.placeholder = 'Exprime ta suggestion d\'amélioration…';
+        suggestionText.required = true;
+      } else {
+        formTypeLabel.textContent = '🎬 Contenu (film, série, anime)';
+        contentPicker.hidden = false;
+        suggestionText.placeholder = 'Un petit mot pour appuyer ta suggestion (facultatif)…';
+        suggestionText.required = false;
+        clearMedia();
+        searchInput.value = '';
+        searchResults = [];
+        resultsGrid.innerHTML = '';
+        searchStatus.hidden = true;
+        setTimeout(() => searchInput.focus(), 50);
+      }
+    }
+
+    function resetForm() {
+      formType = null;
+      selectedMedia = null;
+      suggestionText.value = '';
+      suggestionForm.hidden = true;
+      stepChoice.hidden = false;
     }
 
     /* ========= Chargement / Persistance Supabase ========= */
@@ -544,38 +1020,26 @@ button:focus-visible {
         }
       }
 
-      suggestions = data.map(s => ({
-        ...s,
-        comments: commentsMap[s.id] || []
-      }));
-
+      suggestions = data.map(s => ({ ...s, comments: commentsMap[s.id] || [] }));
       setLoading(false);
       render();
     }
 
     /* ========= Ajout suggestion ========= */
-    async function addSuggestion(text, status) {
-      const {
-        data: { user },
-        error: userError
-      } = await supabase.auth.getUser();
+    async function addSuggestion(text, status, type, media) {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
 
       let payload;
-
       if (user && !userError) {
-        // Utilisateur connecté
         payload = {
-          text,
-          status,
+          text, status, type, media,
           author_pseudo: currentUser?.pseudo || user.user_metadata?.username || user.email?.split('@')[0],
           author_email: currentUser?.email || user.email,
           user_id: user.id
         };
       } else {
-        // Invité
         payload = {
-          text,
-          status,
+          text, status, type, media,
           author_pseudo: "Invité",
           author_email: null,
           user_id: null
@@ -590,23 +1054,18 @@ button:focus-visible {
 
       if (error) {
         alert('Erreur ajout: ' + error.message);
-        return;
+        return false;
       }
 
       data.comments = [];
       suggestions.unshift(data);
       render();
+      return true;
     }
 
     async function updateSuggestionStatus(id, newStatus) {
-      const { error } = await supabase
-        .from('suggestions')
-        .update({ status: newStatus })
-        .eq('id', id);
-      if (error) {
-        alert('Erreur statut: '+error.message);
-        return;
-      }
+      const { error } = await supabase.from('suggestions').update({ status: newStatus }).eq('id', id);
+      if (error) { alert('Erreur statut: '+error.message); return; }
       const s = suggestions.find(s => s.id === id);
       if (s) s.status = newStatus;
       render();
@@ -614,23 +1073,16 @@ button:focus-visible {
 
     async function deleteSuggestion(id) {
       const { error } = await supabase.from('suggestions').delete().eq('id', id);
-      if (error) {
-        alert('Erreur suppression: ' + error.message);
-        return;
-      }
+      if (error) { alert('Erreur suppression: ' + error.message); return; }
       suggestions = suggestions.filter(s => s.id !== id);
       render();
     }
 
     /* ========= Ajout commentaire ========= */
     async function addComment(suggestionId, text) {
-      const {
-        data: { user },
-        error: userError
-      } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
 
       let payload;
-
       if (user && !userError) {
         payload = {
           suggestion_id: suggestionId,
@@ -649,28 +1101,37 @@ button:focus-visible {
         };
       }
 
-      const { data, error } = await supabase
-        .from('comments')
-        .insert(payload)
-        .select()
-        .single();
-
-      if (error) {
-        alert('Erreur commentaire: ' + error.message);
-        return;
-      }
+      const { data, error } = await supabase.from('comments').insert(payload).select().single();
+      if (error) { alert('Erreur commentaire: ' + error.message); return; }
 
       const s = suggestions.find(s => s.id === suggestionId);
-      if (s) {
-        s.comments.push(data);
-        render();
-      }
+      if (s) { s.comments.push(data); render(); }
     }
 
     /* ========= Rendu ========= */
+    function mediaCardHTML(m) {
+      return `
+        <div class="media-card">
+          ${m.backdrop ? `<div class="bg" style="background-image:url('${IMG}w780${escapeHtml(m.backdrop)}')"></div>` : ''}
+          ${posterHTML(m.poster, 'w342')}
+          <div>
+            <h3>${escapeHtml(m.title)}</h3>
+            <div class="facts">${factsHTML(m)}</div>
+            ${m.overview ? `<p class="overview">${escapeHtml(m.overview)}</p>` : ''}
+          </div>
+        </div>`;
+    }
+
     function render() {
       const fStatus = filterStatus.value;
-      let list = fStatus ? suggestions.filter(s => s.status === fStatus) : suggestions;
+      const fType = filterType.value;
+      let list = suggestions.filter(s => {
+        const isContent = s.type === 'content' && s.media;
+        if (fStatus && s.status !== fStatus) return false;
+        if (fType === 'improvement' && isContent) return false;
+        if (fType && fType !== 'improvement' && (!isContent || s.media.kind !== fType)) return false;
+        return true;
+      });
 
       suggestionsList.innerHTML = '';
       totalCount.textContent = `${list.length} suggestion${list.length>1?'s':''}`;
@@ -679,25 +1140,27 @@ button:focus-visible {
       list.forEach(s => {
         const div = document.createElement('div');
         div.className = 'suggestion';
-        const badgeClass = 'status-' + s.status.replace(' ','\\ ');
-
-        const canModerate = isAdmin;
+        const badgeClass = 'status-' + slug(s.status || '');
+        const isContent = s.type === 'content' && s.media;
+        const typeLabel = isContent ? '🎬 Contenu' : '💡 Amélioration';
 
         div.innerHTML = `
           <div class="suggestion-header">
-            <div>
+            <div class="badges">
               <span class="status-badge ${badgeClass}">${escapeHtml(s.status)}</span>
+              <span class="type-badge">${typeLabel}</span>
             </div>
             <div class="meta">
               ${s.author_pseudo ? 'Par <strong>'+escapeHtml(s.author_pseudo)+'</strong>' : '<strong>Utilisateur</strong>'}
               ${s.created_at ? ' • <time>'+formatDate(s.created_at)+'</time>' : ''}
             </div>
           </div>
-          <p class="content">${escapeHtml(s.text)}</p>
+          ${isContent ? mediaCardHTML(s.media) : ''}
+          ${(!isContent || (s.text && s.text !== s.media.title)) ? `<p class="content">${escapeHtml(s.text)}</p>` : ''}
 
           <div class="actions" data-id="${s.id}">
-            ${canModerate ? statusButtonsHTML(s.status) : ''}
-            ${canModerate ? '<button data-action="delete" class="danger">Supprimer</button>' : ''}
+            ${isAdmin ? statusButtonsHTML(s.status) : ''}
+            ${isAdmin ? '<button data-action="delete" class="danger">Supprimer</button>' : ''}
           </div>
 
           <div class="comment-section">
@@ -740,23 +1203,55 @@ button:focus-visible {
           if (action === 'delete' && isAdmin) {
             if (confirm('Supprimer cette suggestion ?')) deleteSuggestion(id);
           } else if (action?.startsWith('status-') && isAdmin) {
-            const newStatus = action.replace('status-','');
-            updateSuggestionStatus(id, newStatus);
+            updateSuggestionStatus(id, action.replace('status-',''));
           }
         });
       });
     }
 
     /* ========= Events ========= */
-    suggestionForm.addEventListener('submit', e => {
+    document.querySelectorAll('[data-type]').forEach(btn => {
+      btn.addEventListener('click', () => chooseType(btn.dataset.type));
+    });
+    $('backToChoice').addEventListener('click', resetForm);
+
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      const q = searchInput.value.trim();
+      if (q.length < 2) {
+        searchToken++;
+        searchResults = [];
+        resultsGrid.innerHTML = '';
+        searchStatus.hidden = true;
+        return;
+      }
+      searchTimer = setTimeout(() => searchOMDB(q), 350);
+    });
+
+    mediaTabs.addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      mediaFilter = b.dataset.kind;
+      mediaTabs.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      renderResults();
+    });
+
+    suggestionForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const text = suggestionText.value.trim();
-      if (!text) return;
-      addSuggestion(text, initialStatus.value);
-      suggestionText.value = '';
+      const note = suggestionText.value.trim();
+      const status = isAdmin ? initialStatus.value : 'En Attente';
+
+      if (formType === 'improvement') {
+        if (!note) return;
+        if (await addSuggestion(note, status, 'improvement', null)) resetForm();
+      } else if (formType === 'content') {
+        if (!selectedMedia) { alert('Choisis d\'abord un film, une série ou un anime dans les résultats.'); return; }
+        if (await addSuggestion(note || selectedMedia.title, status, 'content', selectedMedia)) resetForm();
+      }
     });
 
     filterStatus.addEventListener('change', render);
+    filterType.addEventListener('change', render);
 
     /* ========= Initialisation ========= */
     detectLocalUser();
@@ -770,27 +1265,77 @@ button:focus-visible {
     <div><a href="https://inspecteurl.github.io/site/index.html">← Retour</a></div>
     <div id="currentUserInfo"></div>
   </header>
-   <h1>Suggestions</h1>
-  
+  <h1>Suggestions</h1>
+
   <div class="container">
     <div class="board-header">
       <div class="filter-bar">
         <select id="filterStatus">
-          <option value="">Filtrer par statut</option>
+          <option value="">Tous les statuts</option>
+          <option value="En Attente">En Attente</option>
           <option value="Planifié">Planifié</option>
           <option value="En cours">En cours</option>
           <option value="Terminé">Terminé</option>
           <option value="Refusé">Refusé</option>
+        </select>
+        <select id="filterType">
+          <option value="">Tous les types</option>
+          <option value="improvement">💡 Améliorations</option>
+          <option value="Film">🎬 Films</option>
+          <option value="Série">📺 Séries</option>
+          <option value="Anime">🌸 Animes</option>
         </select>
       </div>
       <div id="totalCount">Suggestions : 0</div>
     </div>
 
     <div class="suggestion-form">
-      <form id="suggestionForm">
+
+      <!-- Étape 1 : choix du type -->
+      <div id="stepChoice">
+        <p class="form-title">Que veux-tu suggérer ?</p>
+        <div class="type-choice">
+          <button type="button" class="type-card" data-type="improvement">
+            <span class="ico">💡</span>
+            <span class="ttl">Amélioration du site</span>
+            <span class="sub">Une idée de fonctionnalité, un bug, un changement de design…</span>
+          </button>
+          <button type="button" class="type-card" data-type="content">
+            <span class="ico">🎬</span>
+            <span class="ttl">Contenu à ajouter</span>
+            <span class="sub">Un film, une série ou un anime que tu aimerais voir sur le site</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 2 : formulaire -->
+      <form id="suggestionForm" hidden>
+        <div class="form-top">
+          <button type="button" class="link-btn" id="backToChoice">← Changer de type</button>
+          <span class="type-pill" id="formTypeLabel"></span>
+        </div>
+
+        <div id="contentPicker" hidden>
+          <div id="searchArea">
+            <div class="search-wrap">
+              <input type="search" id="searchInput" placeholder="Cherche un film, une série ou un anime…" autocomplete="off" />
+            </div>
+            <div class="media-tabs" id="mediaTabs">
+              <button type="button" class="active" data-kind="all">Tout</button>
+              <button type="button" data-kind="Film">🎬 Films</button>
+              <button type="button" data-kind="Série">📺 Séries</button>
+              <button type="button" data-kind="Anime">🌸 Animes</button>
+            </div>
+            <div class="search-status" id="searchStatus" hidden></div>
+            <div class="results-grid" id="resultsGrid"></div>
+          </div>
+          <div class="media-preview" id="mediaPreview" hidden></div>
+        </div>
+
         <textarea id="suggestionText" placeholder="Exprime ta suggestion..."></textarea>
+
         <div class="row">
-          <!-- NOTE: wrapper pour pouvoir retirer facilement le select si non-admin -->
+          <!-- wrapper retiré automatiquement pour les non-admins -->
           <div id="initialStatusWrapper">
             <select id="initialStatus">
               <option value="En Attente">En Attente</option>
@@ -800,7 +1345,7 @@ button:focus-visible {
               <option value="Refusé">Refusé</option>
             </select>
           </div>
-          <button type="submit">Ajouter</button>
+          <button type="submit" class="submit-btn">Envoyer ma suggestion</button>
         </div>
       </form>
     </div>
