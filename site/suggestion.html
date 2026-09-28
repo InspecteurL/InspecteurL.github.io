@@ -741,7 +741,7 @@ button:focus-visible {
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     /* ========= Config ========= */
-    // Clé gratuite TMDB : https://www.themoviedb.org/settings/api  (clé "API Key (v3 auth)")
+    // Clé gratuite OMDb : https://www.omdbapi.com/apikey.aspx (1000 requêtes/jour en gratuit)
     const OMDB_KEY = 'e35ff862';
 
     const supabase = createClient(
@@ -837,94 +837,99 @@ button:focus-visible {
       if (!isAdmin && initialStatusWrapper) initialStatusWrapper.remove();
     }
 
-    /* ========= TMDB ========= */
-    const IMG = 'http://img.omdbapi.com/?apikey=[yourkey]&';
+    /* ========= OMDb ========= */
+    const detailed = new Set();   // imdbID dont la fiche détaillée est déjà chargée
 
-    function kindOf(r) {
-      const isAnime = (r.genre_ids || []).includes(16) && r.original_language === 'ja';
-      if (isAnime) return 'Anime';
-      return r.media_type === 'movie' ? 'Film' : 'Série';
+    function cleanPoster(p) {
+      return p && p !== 'N/A' ? p.replace(/^http:/, 'https:') : null;
     }
 
-    function toMedia(r) {
-      const date = r.release_date || r.first_air_date || '';
+    function baseMedia(r) {
+      const poster = cleanPoster(r.Poster);
       return {
-        omdb_id: r.id,
-        media_type: r.media_type,
-        kind: kindOf(r),
-        title: r.title || r.name || 'Sans titre',
-        original_title: r.original_title || r.original_name || '',
-        year: date ? date.slice(0,4) : '',
-        date,
-        poster: r.poster_path || null,
-        backdrop: r.backdrop_path || null,
-        rating: r.vote_average ? Math.round(r.vote_average * 10) / 10 : null,
-        overview: r.overview || '',
-        country: (r.origin_country || []).join(', ')
+        imdb_id: r.imdbID,
+        media_type: r.Type,                       // movie | series
+        kind: r.Type === 'series' ? 'Série' : 'Film',
+        title: r.Title || 'Sans titre',
+        year: r.Year || '',
+        poster,
+        backdrop: poster,                         // sert de fond flouté
+        rating: null,
+        overview: '',
+        country: '',
+        genre: ''
       };
     }
 
-    async function searchOMDB(query) {
-  const token = ++searchToken;
-
-  if (!OMDB_KEY || OMDB_KEY.startsWith('COLLE_')) {
-    searchStatus.textContent =
-      "⚠️ Clé OMDb manquante : ajoute-la dans la constante OMDB_KEY.";
-    searchStatus.hidden = false;
-    return;
-  }
-
-  searchStatus.textContent = 'Recherche en cours…';
-  searchStatus.hidden = false;
-
-  try {
-    const url =
-      `https://www.omdbapi.com/?apikey=${encodeURIComponent(OMDB_KEY)}` +
-      `&s=${encodeURIComponent(query)}`;
-
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      throw new Error('HTTP ' + res.status);
+    // Charge la fiche complète (synopsis, note, pays, genre) et détecte les animes
+    async function fetchDetails(m) {
+      if (detailed.has(m.imdb_id)) return m;
+      try {
+        const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_KEY}&i=${encodeURIComponent(m.imdb_id)}&plot=short`);
+        const d = await res.json();
+        if (d.Response === 'True') {
+          const ok = v => v && v !== 'N/A';
+          m.rating   = ok(d.imdbRating) ? parseFloat(d.imdbRating) : null;
+          m.overview = ok(d.Plot) ? d.Plot : '';
+          m.country  = ok(d.Country) ? d.Country.split(',')[0].trim() : '';
+          m.genre    = ok(d.Genre) ? d.Genre : '';
+          const jp = /Japan/i.test(d.Country || '') || /Japanese/i.test(d.Language || '');
+          if (/Animation/i.test(m.genre) && jp) m.kind = 'Anime';
+          if (!m.poster && ok(d.Poster)) { m.poster = cleanPoster(d.Poster); m.backdrop = m.poster; }
+        }
+        detailed.add(m.imdb_id);
+      } catch (e) { console.error(e); }
+      return m;
     }
 
-    const json = await res.json();
-
-    if (token !== searchToken) return;
-
-    // OMDb renvoie Response: "False" lorsqu'il n'y a aucun résultat
-    if (json.Response === 'False') {
-      searchResults = [];
-
-      searchStatus.textContent =
-        json.Error || 'Aucun résultat.';
-
+    async function searchOMDb(query) {
+      const token = ++searchToken;
+      if (!OMDB_KEY || OMDB_KEY.startsWith('COLLE_')) {
+        searchStatus.textContent = "⚠️ Clé OMDb manquante : ajoute-la dans le code (constante OMDB_KEY).";
+        searchStatus.hidden = false;
+        return;
+      }
+      searchStatus.textContent = 'Recherche en cours…';
       searchStatus.hidden = false;
+      try {
+        const jsons = await Promise.all([1, 2].map(page =>
+          fetch(`https://www.omdbapi.com/?apikey=${OMDB_KEY}&s=${encodeURIComponent(query)}&page=${page}`)
+            .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        ));
+        if (token !== searchToken) return; // recherche périmée
 
-      renderResults();
-      return;
+        const err = jsons[0];
+        if (err.Response === 'False' && err.Error && !/not found/i.test(err.Error)) {
+          throw new Error(err.Error);
+        }
+
+        const seen = new Set();
+        searchResults = jsons
+          .flatMap(j => j.Search || [])
+          .filter(r => (r.Type === 'movie' || r.Type === 'series') && !seen.has(r.imdbID) && seen.add(r.imdbID))
+          .map(baseMedia);
+        await applyFilter();
+      } catch (e) {
+        if (token !== searchToken) return;
+        console.error(e);
+        searchStatus.textContent = 'Erreur pendant la recherche : ' + e.message;
+        searchStatus.hidden = false;
+      }
     }
 
-    searchResults = (json.Search || [])
-      .map(toMedia);
+    // L'onglet Anime a besoin des fiches détaillées (genre + pays) pour trier
+    async function applyFilter() {
+      if (mediaFilter === 'Anime' && searchResults.length) {
+        searchStatus.textContent = 'Détection des animes…';
+        searchStatus.hidden = false;
+        await Promise.all(searchResults.map(fetchDetails));
+      }
+      renderResults();
+    }
 
-    renderResults();
-
-  } catch (e) {
-    if (token !== searchToken) return;
-
-    console.error('Erreur OMDb:', e);
-
-    searchStatus.textContent =
-      'Erreur pendant la recherche. Réessaie.';
-
-    searchStatus.hidden = false;
-  }
-}
-
-    function posterHTML(path, size='w342') {
+    function posterHTML(path) {
       return path
-        ? `<img class="poster" loading="lazy" src="${IMG}${size}${escapeHtml(path)}" alt="">`
+        ? `<img class="poster" loading="lazy" referrerpolicy="no-referrer" src="${escapeHtml(path)}" alt="">`
         : `<div class="poster-empty">🎬</div>`;
     }
 
@@ -951,7 +956,7 @@ button:focus-visible {
         btn.type = 'button';
         btn.className = 'result-card';
         btn.innerHTML = `
-          ${posterHTML(m.poster, 'w342')}
+          ${posterHTML(m.poster)}
           <div class="result-info">
             <div class="result-title">${escapeHtml(m.title)}</div>
             <div class="result-meta"><span class="kind-tag kind-${escapeHtml(m.kind)}">${escapeHtml(m.kind)}</span>${escapeHtml(m.year)}</div>
@@ -961,13 +966,17 @@ button:focus-visible {
       });
     }
 
-    function selectMedia(m) {
+    async function selectMedia(m) {
+      searchStatus.textContent = 'Chargement de la fiche…';
+      searchStatus.hidden = false;
+      await fetchDetails(m);
+      searchStatus.hidden = true;
       selectedMedia = m;
       searchArea.hidden = true;
       mediaPreview.hidden = false;
       mediaPreview.innerHTML = `
-        ${m.backdrop ? `<div class="bg" style="background-image:url('${IMG}w780${escapeHtml(m.backdrop)}')"></div>` : ''}
-        ${posterHTML(m.poster, 'w342')}
+        ${m.backdrop ? `<div class="bg" style="background-image:url('${escapeHtml(m.backdrop)}')"></div>` : ''}
+        ${posterHTML(m.poster)}
         <div class="media-details">
           <h3>${escapeHtml(m.title)}</h3>
           <div class="facts">${factsHTML(m)}</div>
@@ -1143,8 +1152,8 @@ button:focus-visible {
     function mediaCardHTML(m) {
       return `
         <div class="media-card">
-          ${m.backdrop ? `<div class="bg" style="background-image:url('${IMG}w780${escapeHtml(m.backdrop)}')"></div>` : ''}
-          ${posterHTML(m.poster, 'w342')}
+          ${m.backdrop ? `<div class="bg" style="background-image:url('${escapeHtml(m.backdrop)}')"></div>` : ''}
+          ${posterHTML(m.poster)}
           <div>
             <h3>${escapeHtml(m.title)}</h3>
             <div class="facts">${factsHTML(m)}</div>
@@ -1256,7 +1265,7 @@ button:focus-visible {
         searchStatus.hidden = true;
         return;
       }
-      searchTimer = setTimeout(() => searchOMDB(q), 350);
+      searchTimer = setTimeout(() => searchOMDb(q), 350);
     });
 
     mediaTabs.addEventListener('click', e => {
@@ -1264,7 +1273,7 @@ button:focus-visible {
       if (!b) return;
       mediaFilter = b.dataset.kind;
       mediaTabs.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
-      renderResults();
+      applyFilter();
     });
 
     suggestionForm.addEventListener('submit', async e => {
