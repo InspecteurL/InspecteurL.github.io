@@ -865,31 +865,62 @@ button:focus-visible {
     }
 
     async function searchOMDB(query) {
-      const token = ++searchToken;
-      if (!OMDB_KEY || OMDB_KEY.startsWith('COLLE_')) {
-        searchStatus.textContent = "⚠️ Clé OMDB manquante : ajoute-la dans le code (constante OMDB_KEY).";
-        searchStatus.hidden = false;
-        return;
-      }
-      searchStatus.textContent = 'Recherche en cours…';
-      searchStatus.hidden = false;
-      try {
-        const url = `https://api.themoviedb.org/3/search/multi?api_key=${OMDB_KEY}&language=fr-FR&include_adult=false&query=${encodeURIComponent(query)}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const json = await res.json();
-        if (token !== searchToken) return; // recherche périmée
-        searchResults = (json.results || [])
-          .filter(r => r.media_type === 'movie' || r.media_type === 'tv')
-          .map(toMedia);
-        renderResults();
-      } catch (e) {
-        if (token !== searchToken) return;
-        console.error(e);
-        searchStatus.textContent = 'Erreur pendant la recherche. Réessaie.';
-        searchStatus.hidden = false;
-      }
+  const token = ++searchToken;
+
+  if (!OMDB_KEY || OMDB_KEY.startsWith('COLLE_')) {
+    searchStatus.textContent =
+      "⚠️ Clé OMDb manquante : ajoute-la dans la constante OMDB_KEY.";
+    searchStatus.hidden = false;
+    return;
+  }
+
+  searchStatus.textContent = 'Recherche en cours…';
+  searchStatus.hidden = false;
+
+  try {
+    const url =
+      `https://www.omdbapi.com/?apikey=${encodeURIComponent(OMDB_KEY)}` +
+      `&s=${encodeURIComponent(query)}`;
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error('HTTP ' + res.status);
     }
+
+    const json = await res.json();
+
+    if (token !== searchToken) return;
+
+    // OMDb renvoie Response: "False" lorsqu'il n'y a aucun résultat
+    if (json.Response === 'False') {
+      searchResults = [];
+
+      searchStatus.textContent =
+        json.Error || 'Aucun résultat.';
+
+      searchStatus.hidden = false;
+
+      renderResults();
+      return;
+    }
+
+    searchResults = (json.Search || [])
+      .map(toMedia);
+
+    renderResults();
+
+  } catch (e) {
+    if (token !== searchToken) return;
+
+    console.error('Erreur OMDb:', e);
+
+    searchStatus.textContent =
+      'Erreur pendant la recherche. Réessaie.';
+
+    searchStatus.hidden = false;
+  }
+}
 
     function posterHTML(path, size='w342') {
       return path
