@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Suggestions</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
 /* ============================= */
 /*        DESIGN TOKENS          */
@@ -65,6 +66,27 @@ h1 {
   margin: 32px 0;
   font-weight: 700;
   letter-spacing: .4px;
+}
+
+/* ============================= */
+/*        MATERIAL ICONS         */
+/* ============================= */
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.2em;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  vertical-align: -0.2em;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'liga';
 }
 
 /* ============================= */
@@ -337,6 +359,7 @@ header {
   align-items: center;
   justify-content: center;
   font-size: 34px;
+  color: var(--text-muted);
   background: linear-gradient(135deg, #2a2a34, #1f1f27);
 }
 
@@ -930,15 +953,15 @@ button:focus-visible {
     function posterHTML(path) {
       return path
         ? `<img class="poster" loading="lazy" referrerpolicy="no-referrer" src="${escapeHtml(path)}" alt="">`
-        : `<div class="poster-empty">🎬</div>`;
+        : `<div class="poster-empty"><span class="material-symbols-outlined">movie</span></div>`;
     }
 
     function factsHTML(m) {
       return `
         <span class="kind-tag kind-${escapeHtml(m.kind)}">${escapeHtml(m.kind)}</span>
-        ${m.year ? `<span>📅 ${escapeHtml(m.year)}</span>` : ''}
+        ${m.year ? `<span><span class="material-symbols-outlined">calendar_month</span> ${escapeHtml(m.year)}</span>` : ''}
         ${m.rating ? `<span class="star">★ ${escapeHtml(m.rating)}</span>` : ''}
-        ${m.country ? `<span>🌍 ${escapeHtml(m.country)}</span>` : ''}
+        ${m.country ? `<span><span class="material-symbols-outlined">planet</span> ${escapeHtml(m.country)}</span>` : ''}
       `;
     }
 
@@ -1003,12 +1026,12 @@ button:focus-visible {
       suggestionForm.hidden = false;
 
       if (type === 'improvement') {
-        formTypeLabel.textContent = '💡 Amélioration du site';
+        formTypeLabel.innerHTML = '<span class="material-symbols-outlined">settings</span> Amélioration du site';
         contentPicker.hidden = true;
         suggestionText.placeholder = 'Exprime ta suggestion d\'amélioration…';
         suggestionText.required = true;
       } else {
-        formTypeLabel.textContent = '🎬 Contenu (film, série, anime)';
+        formTypeLabel.innerHTML = '<span class="material-symbols-outlined">movie</span> Contenu (film, série, anime)';
         contentPicker.hidden = false;
         suggestionText.placeholder = 'Un petit mot pour appuyer ta suggestion (facultatif)…';
         suggestionText.required = false;
@@ -1182,7 +1205,9 @@ button:focus-visible {
         div.className = 'suggestion';
         const badgeClass = 'status-' + slug(s.status || '');
         const isContent = s.type === 'content' && s.media;
-        const typeLabel = isContent ? '🎬 Contenu' : '💡 Amélioration';
+        const typeLabel = isContent
+          ? '<span class="material-symbols-outlined">movie</span> Contenu'
+          : '<span class="material-symbols-outlined">settings</span> Amélioration';
 
         div.innerHTML = `
           <div class="suggestion-header">
@@ -1320,10 +1345,10 @@ button:focus-visible {
         </select>
         <select id="filterType">
           <option value="">Tous les types</option>
-          <option value="improvement">💡 Améliorations</option>
-          <option value="Film">🎬 Films</option>
-          <option value="Série">📺 Séries</option>
-          <option value="Anime">🌸 Animes</option>
+          <option value="improvement">Améliorations</option>
+          <option value="Film">Films</option>
+          <option value="Série">Séries</option>
+          <option value="Anime">Animes</option>
         </select>
       </div>
       <div id="totalCount">Suggestions : 0</div>
@@ -1336,12 +1361,12 @@ button:focus-visible {
         <p class="form-title">Que veux-tu suggérer ?</p>
         <div class="type-choice">
           <button type="button" class="type-card" data-type="improvement">
-            <span class="ico">💡</span>
+            <span class="ico"><span class="material-symbols-outlined">settings</span></span>
             <span class="ttl">Amélioration du site</span>
             <span class="sub">Une idée de fonctionnalité, un bug, un changement de design…</span>
           </button>
           <button type="button" class="type-card" data-type="content">
-            <span class="ico">🎬</span>
+            <span class="ico"><span class="material-symbols-outlined">movie</span></span>
             <span class="ttl">Contenu à ajouter</span>
             <span class="sub">Un film, une série ou un anime que tu aimerais voir sur le site</span>
           </button>
@@ -1362,7 +1387,7 @@ button:focus-visible {
             </div>
             <div class="media-tabs" id="mediaTabs">
               <button type="button" class="active" data-kind="all">Tout</button>
-              <button type="button" data-kind="Film">🎬 Films</button>
+              <button type="button" data-kind="Film"><span class="material-symbols-outlined">movie</span> Films</button>
               <button type="button" data-kind="Série">📺 Séries</button>
               <button type="button" data-kind="Anime">🌸 Animes</button>
             </div>
