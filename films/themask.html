@@ -647,14 +647,14 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
 });
 
 
-  // ===== Mode inactivité =====
+ // ===== Mode inactivité =====
 const IDLE_DELAY_MS = 30000;
-const IDLE_M3U8_URL = 'https://inspecteurl.github.io/stockage/video-1791048506535.ts';
+// Soit un ID de vidéo YouTube (ex: 'dQw4w9WgXcQ'), soit un lien direct .mp4 / .webm
+const IDLE_VIDEO = 'https://inspecteurl.github.io/stockage/themask-idle.mp4';
 
 const idleBg = document.getElementById('idleBg');
 let idleTimer = null;
 let isIdle = false;
-let idleHls = null;
 
 function isWatching() {
   return videoContainer.style.display === 'flex';
@@ -662,36 +662,22 @@ function isWatching() {
 
 function buildIdleMedia() {
   if (idleBg.firstChild) return;
-  const v = document.createElement('video');
-  v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
-  v.controls = false;
-  idleBg.appendChild(v);
-
-  if (window.Hls && Hls.isSupported()) {
-    idleHls = new Hls({ maxBufferLength: 20, enableWorker: true });
-    idleHls.loadSource(IDLE_M3U8_URL);
-    idleHls.attachMedia(v);
-    idleHls.on(Hls.Events.MANIFEST_PARSED, () => v.play().catch(() => {}));
-    idleHls.on(Hls.Events.ERROR, (e, data) => {
-      if (data.fatal) {
-        // Si le flux ne marche pas, on abandonne le mode vidéo et on garde l'image de fond
-        destroyIdleMedia();
-        idleBg.classList.remove('active');
-      }
-    });
-  } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
-    v.src = IDLE_M3U8_URL;
-    v.addEventListener('loadedmetadata', () => v.play().catch(() => {}), { once: true });
+  if (/\.(mp4|webm)(\?|$)/i.test(IDLE_VIDEO)) {
+    const v = document.createElement('video');
+    v.src = IDLE_VIDEO;
+    v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
+    idleBg.appendChild(v);
+    v.play().catch(() => {});
+  } else {
+    const f = document.createElement('iframe');
+    f.src = `https://www.youtube.com/embed/${IDLE_VIDEO}?autoplay=1&mute=1&controls=0&loop=1&playlist=${IDLE_VIDEO}&modestbranding=1&playsinline=1&rel=0&disablekb=1`;
+    f.allow = 'autoplay; encrypted-media';
+    idleBg.appendChild(f);
   }
 }
 
-function destroyIdleMedia() {
-  if (idleHls) { idleHls.destroy(); idleHls = null; }
-  idleBg.innerHTML = '';
-}
-
 function enterIdle() {
-  if (isWatching()) { armIdleTimer(); return; }   // pas de mode inactif pendant le film
+  if (isWatching()) { armIdleTimer(); return; }   // on ne touche à rien pendant le film
   isIdle = true;
   buildIdleMedia();
   document.body.classList.add('idle');
@@ -702,7 +688,9 @@ function exitIdle() {
   isIdle = false;
   document.body.classList.remove('idle');
   idleBg.classList.remove('active');
-  setTimeout(() => { if (!isIdle) destroyIdleMedia(); }, 800);  // après le fondu
+  setTimeout(() => {                               // on coupe la vidéo une fois le fondu fini
+    if (!isIdle) idleBg.innerHTML = '';
+  }, 800);
 }
 
 function armIdleTimer() {
