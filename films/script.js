@@ -1,3 +1,22 @@
+// ===== Remplacement global du fallback mort (m3u8player.online → bradm.ax) =====
+(function () {
+  const desc = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, 'src');
+  if (!desc || !desc.set) return;
+
+  function rewriteFallback(url) {
+    if (typeof url !== 'string') return url;
+    const m = url.match(/^https?:\/\/(?:www\.)?m3u8player\.online\/embed\/m3u8\?url=(.*)$/i);
+    return m ? 'https://bradm.ax/?mediaUrl=' + m[1] : url;   // m[1] est déjà encodé par la page
+  }
+
+  Object.defineProperty(HTMLIFrameElement.prototype, 'src', {
+    get: desc.get,
+    set(v) { desc.set.call(this, rewriteFallback(v)); },
+    configurable: true,
+    enumerable: desc.enumerable
+  });
+})();
+
 const HOST_MAP = {
   "cinetacos.xyz": "cinecake.xyz",
   "cinechicken.xyz": "cinecake.xyz",
