@@ -197,10 +197,39 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
   .material-symbols-outlined { font-size: 28px; }
   .center-play { font-size: 60px; padding: 15px; }
 }
+
+  /* Mode inactivité */
+#idleBg {
+  position: fixed; inset: 0;
+  z-index: -1;
+  opacity: 0; pointer-events: none;
+  background: #000;
+  overflow: hidden;
+  transition: opacity 0.8s ease;
+}
+#idleBg.active { opacity: 1; }
+#idleBg video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+#idleBg iframe {
+  position: absolute; top: 50%; left: 50%;
+  width: 100vw; height: 56.25vw;      /* ratio 16:9 */
+  min-height: 100vh; min-width: 177.78vh;
+  transform: translate(-50%, -50%);
+  border: none;
+  pointer-events: none;               /* sinon l'iframe "mange" les mouvements de souris */
+}
+.container, nav { transition: opacity 0.6s ease; }
+body.idle .container,
+body.idle nav {
+  opacity: 0;
+  pointer-events: none;
+}
 </style>
 </head>
 <body>
-
+<div id="idleBg"></div>
 <ul id="navbar">
   <li><a class="active" href="https://inspecteurl.github.io/site/index.html">Home</a></li>
   <li><a href="https://inspecteurl.github.io/site/compte.html">Votre Compte</a></li>
@@ -616,6 +645,67 @@ import("https://esm.sh/@supabase/supabase-js@2").then(({ createClient }) => {
     }).subscribe();
   initUser().then(loadVotes);
 });
+
+  // ===== Mode inactivité =====
+const IDLE_DELAY_MS = 30000;
+// Soit un ID de vidéo YouTube (ex: 'dQw4w9WgXcQ'), soit un lien direct .mp4 / .webm
+const IDLE_VIDEO = 'https://clip.cafe/the-mask-1994/just-you-know-s45/';
+
+const idleBg = document.getElementById('idleBg');
+let idleTimer = null;
+let isIdle = false;
+
+function isWatching() {
+  return videoContainer.style.display === 'flex';
+}
+
+function buildIdleMedia() {
+  if (idleBg.firstChild) return;
+  if (/\.(mp4|webm)(\?|$)/i.test(IDLE_VIDEO)) {
+    const v = document.createElement('video');
+    v.src = IDLE_VIDEO;
+    v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
+    idleBg.appendChild(v);
+    v.play().catch(() => {});
+  } else {
+    const f = document.createElement('iframe');
+    f.src = `https://www.youtube.com/embed/${IDLE_VIDEO}?autoplay=1&mute=1&controls=0&loop=1&playlist=${IDLE_VIDEO}&modestbranding=1&playsinline=1&rel=0&disablekb=1`;
+    f.allow = 'autoplay; encrypted-media';
+    idleBg.appendChild(f);
+  }
+}
+
+function enterIdle() {
+  if (isWatching()) { armIdleTimer(); return; }   // on ne touche à rien pendant le film
+  isIdle = true;
+  buildIdleMedia();
+  document.body.classList.add('idle');
+  idleBg.classList.add('active');
+}
+
+function exitIdle() {
+  isIdle = false;
+  document.body.classList.remove('idle');
+  idleBg.classList.remove('active');
+  setTimeout(() => {                               // on coupe la vidéo une fois le fondu fini
+    if (!isIdle) idleBg.innerHTML = '';
+  }, 800);
+}
+
+function armIdleTimer() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(enterIdle, IDLE_DELAY_MS);
+}
+
+function onUserActivity() {
+  if (isIdle) exitIdle();
+  armIdleTimer();
+}
+
+['mousemove', 'mousedown', 'keydown', 'touchstart', 'wheel'].forEach(evt =>
+  document.addEventListener(evt, onUserActivity, { passive: true })
+);
+armIdleTimer();
 </script>
 </body>
 </html>
