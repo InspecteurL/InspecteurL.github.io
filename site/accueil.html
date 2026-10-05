@@ -49,7 +49,7 @@
 
 
             <div class="profile">
-                <a href="https://inspecteurl.github.io/site/compte.html"<img src="https://i.pravatar.cc/40" alt="Profile"></a>
+                <a href="https://inspecteurl.github.io/site/compte.html"><img src="https://i.pravatar.cc/40" alt="Profile"></a>
             </div>
         </div>
     </div>
@@ -1621,6 +1621,104 @@ body {
     color: #fff;
 }
 
+    /* =========================================================
+   📱 RESPONSIVE MOBILE
+   ========================================================= */
+@media (max-width: 768px) {
+
+  /* ---------- HEADER ---------- */
+  .header { padding: 8px 12px; }
+
+  .header-container {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .logo { order: 1; }
+  .logo img { height: 30px; }
+
+  .search-premium {
+    order: 2;
+    position: static;          /* les suggestions se calent sur le header */
+    flex: 1;
+    width: auto;
+    height: 40px;
+    padding: 0 12px;
+  }
+  .search-premium input { font-size: 14px; min-width: 0; }
+
+  .profile { order: 3; }
+  .profile img { width: 32px; height: 32px; border-radius: 50%; }
+
+  /* Menu : une ligne qu'on fait défiler du doigt */
+  .nav {
+    order: 4;
+    width: 100%;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav ul { gap: 18px; white-space: nowrap; padding-bottom: 2px; }
+  .nav ul li a { font-size: 0.9rem; }
+
+  /* Suggestions de recherche pleine largeur */
+  .search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 8px;
+    right: 8px;
+    max-height: 60vh;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero { margin-top: 105px; height: 380px; }
+  .hero-slide { padding: 20px 16px 28px; }
+  .hero-content h1 { font-size: 1.4rem; margin-bottom: 8px; }
+  .hero-content p {
+    font-size: 0.85rem;
+    max-width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .hero-content .btn { display: inline-block; padding: 8px 16px; font-size: 0.9rem; }
+  .hero button.prev, .hero button.next { padding: 6px 10px; font-size: 1rem; }
+  .hero button.prev { left: 8px; }
+  .hero button.next { right: 8px; }
+
+  /* ---------- CARROUSELS ---------- */
+  .catalog { padding: 24px 0 8px 14px; }
+  .catalog h2 { font-size: 1.15rem; margin-bottom: 10px; padding-right: 14px; }
+
+  .carousel { padding: 0; }
+  .carousel-inner {
+    gap: 10px;
+    padding-right: 14px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+  .carousel-inner > * { scroll-snap-align: start; flex: 0 0 auto; }
+
+  .movie-card { width: 130px; }
+  .movie-card h3 { font-size: 0.8rem; bottom: 18px; }
+  .movie-card p  { font-size: 0.62rem; }
+  .movie-card .rating { font-size: 0.65rem; padding: 2px 5px; }
+
+  /* Pas de survol sur téléphone : on montre note + dégradé en permanence */
+  .movie-card:not(.coming-soon) .overlay {
+    opacity: 1;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 55%);
+  }
+  .movie-card:not(.coming-soon) .overlay button { display: none; }
+
+  /* Cartes "Prochainement" : compte à rebours toujours visible */
+  .movie-card.coming-soon .coming-overlay { opacity: 1; }
+  .countdown { font-size: 0.7rem; text-align: center; padding: 0 6px; }
+
+  .movie-card:hover { transform: none; }
+}
 </style>
 <script src="custom.js"></script>
     <script>
