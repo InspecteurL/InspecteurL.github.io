@@ -463,6 +463,88 @@ details.admin-template textarea {
   color: var(--text-muted);
   opacity: 0.85;
 }
+
+    /* =========================================================
+   📱 RESPONSIVE MOBILE — CATALOGUE
+   ========================================================= */
+@media (max-width: 768px) {
+
+  /* ---------- NAVBAR : une ligne qu'on fait défiler ---------- */
+  #navbar {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  #navbar::-webkit-scrollbar { display: none; }
+  #navbar li { float: none; flex: 0 0 auto; }
+  #navbar li a { font-size: 15px; padding: 12px 14px; }
+
+  /* ---------- EN-TÊTE ---------- */
+  header { padding: 1.2rem 1rem 0.5rem; }
+  header h1 { font-size: 1.6rem; }
+  header p { font-size: 0.9rem; }
+  #catalogueCounter { font-size: 0.8rem; margin: 6px 0 14px !important; }
+
+  /* ---------- FILTRES : défilent horizontalement ---------- */
+  .filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 0 12px 4px;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .filters button,
+  .type-filters button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  /* ---------- GRILLE : plusieurs affiches par ligne ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    padding: 0 10px 2rem;
+  }
+
+  .movieimg {
+    width: auto;
+    flex: none;
+    border-radius: var(--radius-md);
+  }
+  .movieimg:hover { transform: none; }
+
+  .movieimg img {
+    height: auto;
+    aspect-ratio: 2 / 3;
+  }
+
+  .movieimg h2 {
+    font-size: 0.75rem;
+    padding: 0 6px;
+    margin: 0.4rem 0 0.15rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .movieimg span {
+    font-size: 0.65rem;
+    padding: 0 6px;
+    margin-bottom: 0.4rem;
+  }
+  .movieimg .duree { margin-top: -0.2rem; }
+  .badge-provisoire { font-size: 0.6em; }
+
+  /* ---------- ADMIN : modales adaptées ---------- */
+  .admin-overlay { padding: 1rem 0.5rem; }
+  .admin-modal { padding: 1.2rem 1rem 1.5rem; }
+  .admin-row { flex-direction: column; gap: 0; }
+}
 </style>
 </head>
 <body>
