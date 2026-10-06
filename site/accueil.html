@@ -18,6 +18,7 @@
 
 <header class="header">
     <div class="container header-container">
+        <button class="burger" id="burgerBtn" aria-label="Ouvrir le menu"><i class="fas fa-bars"></i></button>
         <div class="logo">
             <a href="#"><img src="https://inspecteurl.github.io/site/HORZONCINE.png" alt="HotFlix Logo"></a>
         </div>
@@ -1624,43 +1625,69 @@ body {
     /* =========================================================
    📱 RESPONSIVE MOBILE
    ========================================================= */
-@media (max-width: 768px) {
+/* à placer AVANT le @media (max-width: 768px) */
+.burger { display: none; }
+    
+    @media (max-width: 768px) {
 
-  /* ---------- HEADER ---------- */
+   /* ---------- HEADER (dans le @media) ---------- */
   .header { padding: 8px 12px; }
+  .header-container { flex-wrap: nowrap; gap: 8px; }
 
-  .header-container {
-    flex-wrap: wrap;
-    gap: 8px;
+  .burger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    order: 1;
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
+    background: rgba(255,255,255,0.08);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
   }
 
-  .logo { order: 1; }
-  .logo img { height: 30px; }
+  .logo { order: 2; flex: 0 0 auto; }
+  .logo img { height: 28px; max-width: 90px; object-fit: contain; }
 
   .search-premium {
-    order: 2;
-    position: static;          /* les suggestions se calent sur le header */
+    order: 3;
+    position: static;
     flex: 1;
+    min-width: 0;
     width: auto;
     height: 40px;
     padding: 0 12px;
   }
   .search-premium input { font-size: 14px; min-width: 0; }
 
-  .profile { order: 3; }
+  .profile { order: 4; flex: 0 0 auto; }
   .profile img { width: 32px; height: 32px; border-radius: 50%; }
 
-  /* Menu : une ligne qu'on fait défiler du doigt */
+  /* Menu déroulant */
   .nav {
-    order: 4;
-    width: 100%;
-    overflow-x: auto;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(10,10,10,0.97);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 16px 30px rgba(0,0,0,0.6);
   }
-  .nav::-webkit-scrollbar { display: none; }
-  .nav ul { gap: 18px; white-space: nowrap; padding-bottom: 2px; }
-  .nav ul li a { font-size: 0.9rem; }
+  .nav.open { display: block; }
+  .nav ul { flex-direction: column; gap: 0; }
+  .nav ul li a {
+    display: block;
+    padding: 15px 20px;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav ul li a::after { display: none; }
 
   /* Suggestions de recherche pleine largeur */
   .search-suggestions {
@@ -1672,7 +1699,7 @@ body {
   }
 
   /* ---------- HERO ---------- */
-  .hero { margin-top: 105px; height: 380px; }
+  .hero { margin-top: 64px; height: 380px; }
   .hero-slide { padding: 20px 16px 28px; }
   .hero-content h1 { font-size: 1.4rem; margin-bottom: 8px; }
   .hero-content p {
@@ -1897,7 +1924,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 
+<script>
+(function () {
+  const burger = document.getElementById('burgerBtn');
+  const menu = document.querySelector('.header .nav');
+  if (!burger || !menu) return;
 
+  const setIcon = open => {
+    burger.innerHTML = open ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+  };
+
+  burger.addEventListener('click', e => {
+    e.stopPropagation();
+    setIcon(menu.classList.toggle('open'));
+  });
+
+  // Clic en dehors du menu = on le ferme
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.nav')) {
+      menu.classList.remove('open');
+      setIcon(false);
+    }
+  });
+})();
+</script>
 </body>
 </html>
 
