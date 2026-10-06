@@ -463,42 +463,80 @@ details.admin-template textarea {
   color: var(--text-muted);
   opacity: 0.85;
 }
-
+.burger { display: none; }
+.genre-select-wrap { display: none; }
     /* =========================================================
    📱 RESPONSIVE MOBILE — CATALOGUE
    ========================================================= */
 @media (max-width: 768px) {
 
-  /* ---------- NAVBAR : une ligne qu'on fait défiler ---------- */
-  #navbar {
+   /* ---------- NAVBAR : menu déroulant ---------- */
+  .topbar { position: relative; margin: 0 -1rem; }
+
+  .burger {
     display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    scrollbar-width: none;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-nav);
+    border: none;
+    color: var(--text-main);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
   }
-  #navbar::-webkit-scrollbar { display: none; }
-  #navbar li { float: none; flex: 0 0 auto; }
-  #navbar li a { font-size: 15px; padding: 12px 14px; }
+
+  #navbar {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1500;
+    flex-direction: column;
+    box-shadow: 0 16px 30px rgba(0,0,0,0.6);
+  }
+  #navbar.open { display: flex; }
+  #navbar li { float: none; width: 100%; }
+  #navbar li a {
+    text-align: left;
+    padding: 14px 20px;
+    font-size: 1rem;
+    border-radius: 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
 
   /* ---------- EN-TÊTE ---------- */
-  header { padding: 1.2rem 1rem 0.5rem; }
-  header h1 { font-size: 1.6rem; }
+  header { padding: 0 1rem 0.5rem; }
+  header h1 { font-size: 1.6rem; margin-top: 1.2rem; }
   header p { font-size: 0.9rem; }
   #catalogueCounter { font-size: 0.8rem; margin: 6px 0 14px !important; }
 
-  /* ---------- FILTRES : défilent horizontalement ---------- */
-  .filters {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    justify-content: flex-start;
-    padding: 0 12px 4px;
-    scrollbar-width: none;
+  /* ---------- GENRES : menu déroulant au lieu des boutons ---------- */
+  .filters { display: none; }
+
+  .genre-select-wrap { display: block; margin: 0 12px 1.2rem; }
+
+  #genreSelect {
+    width: 100%;
+    padding: 0.7rem 2.4rem 0.7rem 1rem;
+    border-radius: 14px;
+    border: 1px solid var(--border-soft);
+    background-color: var(--bg-input);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23f5f5f7' stroke-width='2'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    color: var(--text-main);
+    font-size: 1rem;
+    font-family: inherit;
+    appearance: none;
+    -webkit-appearance: none;
   }
-  .filters::-webkit-scrollbar { display: none; }
-  .filters button,
+  #genreSelect option { background: #1f1f28; color: #fff; }
+
   .type-filters button {
-    flex: 0 0 auto;
-    white-space: nowrap;
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
   }
@@ -549,6 +587,11 @@ details.admin-template textarea {
 </head>
 <body>
   <header>
+      <div class="topbar">
+    <button class="burger" id="burgerBtn" aria-label="Menu">
+      <span class="material-symbols-outlined">menu</span>
+      <span>Menu</span>
+    </button>
     <ul id="navbar">
       <li><a href="https://inspecteurl.github.io/site/index.html">Home</a></li>
 <li><a href="https://inspecteurl.github.io/site/communaute.html">Communauté</a></li>
@@ -573,7 +616,26 @@ details.admin-template textarea {
   <button onclick="filterType('Série')">Séries <span class="material-symbols-outlined">tv</span></button>
 </div>
 
-  
+  <div class="genre-select-wrap">
+  <select id="genreSelect" aria-label="Choisir un genre">
+    <option value="Tous">Tous les genres</option>
+    <option>Romance</option>
+    <option>Science-Fiction</option>
+    <option>Animation</option>
+    <option>Action</option>
+    <option>Thriller</option>
+    <option>Drame</option>
+    <option>Aventure</option>
+    <option>Comédie</option>
+    <option>Fantastique</option>
+    <option>Anime</option>
+    <option>Documentaire</option>
+    <option>Horreur</option>
+    <option>Western</option>
+    <option>Crime</option>
+    <option>Réalité</option>
+  </select>
+</div>
 
   <!-- Filtres par GENRE -->
   <div class="filters">
@@ -5066,6 +5128,7 @@ video {
     font-size: 18px;
   }
 }
+
  
 /* Mobiles */
 @media (max-width: 768px) {
@@ -7111,6 +7174,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const grid = document.getElementById('movieGrid');
   if (grid) catalogueObserver.observe(grid, { childList: true });
 });
+</script>
+  <script>
+(function () {
+  // Menu burger
+  const burger = document.getElementById('burgerBtn');
+  const menu = document.getElementById('navbar');
+  const icon = burger.querySelector('.material-symbols-outlined');
+
+  burger.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = menu.classList.toggle('open');
+    icon.textContent = open ? 'close' : 'menu';
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#navbar')) {
+      menu.classList.remove('open');
+      icon.textContent = 'menu';
+    }
+  });
+
+  // Menu déroulant des genres (réutilise ton système de filtres)
+  const sel = document.getElementById('genreSelect');
+  sel.addEventListener('change', () => {
+    activeGenre = sel.value;
+    applyFilters();
+  });
+})();
 </script>
 </body>
 </html>
