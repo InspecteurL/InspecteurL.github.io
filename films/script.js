@@ -900,7 +900,131 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 })();
 
+// ==================================================
+// 📱 MOBILE : navbar en menu déroulant + ajustements fiche / lecteur
+// ==================================================
+document.addEventListener("DOMContentLoaded", () => {
+  const nav = document.querySelector("nav");
+  if (!nav || nav.dataset.mobileReady) return;
+  nav.dataset.mobileReady = "1";
 
+  // ---------- CSS ----------
+  if (!document.getElementById("mobile-fiche-css")) {
+    const style = document.createElement("style");
+    style.id = "mobile-fiche-css";
+    style.textContent = `
+      /* PC : le conteneur est "invisible", la navbar reste identique */
+      .nav-menu { display: contents; }
+      .nav-burger { display: none; }
+
+      @media (max-width: 768px) {
+
+        /* ----- NAVBAR : logo + burger, liens dans un menu déroulant ----- */
+        nav {
+          justify-content: space-between;
+          gap: 0;
+          padding: 10px 16px;
+        }
+        .nav-logo { position: static; font-size: 20px; }
+
+        .nav-burger {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          background: rgba(255,255,255,.08);
+          border: 1px solid rgba(255,255,255,.15);
+          border-radius: 8px;
+          color: #fff;
+          font-size: 20px;
+          cursor: pointer;
+        }
+
+        .nav-menu {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          flex-direction: column;
+          background: rgba(10,10,10,.98);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-bottom: 1px solid rgba(255,255,255,.1);
+          box-shadow: 0 16px 30px rgba(0,0,0,.6);
+        }
+        .nav-menu.open { display: flex; }
+        .nav-menu a {
+          display: block;
+          padding: 15px 20px;
+          font-size: 16px;
+          border-bottom: 1px solid rgba(255,255,255,.06);
+        }
+        .nav-menu a:last-child { border-bottom: none; }
+        .nav-menu a::after { display: none; }
+        .nav-menu a.active { color: #fff; border-left: 3px solid #e50914; }
+
+        /* ----- FICHE ----- */
+        .container { padding: 14px; }
+        .fiche-info p { overflow-wrap: anywhere; }
+        .vote-container { justify-content: center; }
+
+        /* ----- LECTEUR : overlays recalés pour petit écran ----- */
+        .overlay-btn { right: 12px; bottom: 170px; min-width: 170px; padding: 10px 12px; }
+        .skip-intro { right: 12px; bottom: 250px; }
+        .player-settings { top: 64px; right: 10px; width: 160px; font-size: 12px; }
+        .episode-info {
+          top: 64px;
+          max-width: 88vw;
+          white-space: normal;
+          text-align: center;
+          font-size: 14px;
+          padding: 8px 14px;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ---------- Structure : liens rangés dans un conteneur ----------
+  const logo = nav.querySelector(".nav-logo");
+  const menu = document.createElement("div");
+  menu.className = "nav-menu";
+  menu.id = "navMenu";
+  [...nav.children].forEach(el => { if (el !== logo) menu.appendChild(el); });
+  nav.appendChild(menu);
+
+  // ---------- Bouton burger ----------
+  const burger = document.createElement("button");
+  burger.type = "button";
+  burger.className = "nav-burger";
+  burger.textContent = "☰";
+  burger.setAttribute("aria-label", "Ouvrir le menu");
+  burger.setAttribute("aria-expanded", "false");
+  burger.setAttribute("aria-controls", "navMenu");
+  nav.appendChild(burger);
+
+  function setOpen(open) {
+    menu.classList.toggle("open", open);
+    burger.textContent = open ? "✕" : "☰";
+    burger.setAttribute("aria-expanded", String(open));
+  }
+
+  burger.addEventListener("click", e => {
+    e.stopPropagation();
+    setOpen(!menu.classList.contains("open"));
+  });
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".nav-menu")) setOpen(false);
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") setOpen(false);
+  });
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 768) setOpen(false);
+  });
+});
 
 
 
