@@ -1622,6 +1622,15 @@ body {
     color: #fff;
 }
 
+    /* Avatar du header */
+.profile img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+}
     /* =========================================================
    📱 RESPONSIVE MOBILE
    ========================================================= */
@@ -1946,6 +1955,43 @@ document.addEventListener("DOMContentLoaded", async () => {
       setIcon(false);
     }
   });
+})();
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(async function () {
+  const img = document.querySelector('.profile img');
+  if (!img || typeof supabase === 'undefined') return;
+
+  const placeholder = img.src;           // l'avatar pravatar actuel
+  img.style.visibility = 'hidden';       // évite le "flash" du placeholder
+
+  try {
+    const sb = supabase.createClient(
+      'https://wuagahavmbugmnuzsouf.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho'
+    );
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      const { data } = await sb
+        .from('profiles')
+        .select('avatar_url, username')
+        .eq('id', session.user.id)
+        .single();
+
+      if (data?.avatar_url) {
+        // si l'image ne charge pas, on revient au placeholder
+        img.onerror = () => { img.onerror = null; img.src = placeholder; };
+        img.src = data.avatar_url;
+        img.alt = data.username || 'Profil';
+      }
+    }
+  } catch (e) {
+    console.warn('Avatar : impossible de charger le profil', e);
+  } finally {
+    img.style.visibility = 'visible';
+  }
 })();
 </script>
 </body>
