@@ -110,6 +110,72 @@
     .toast.error{background:var(--accent2);color:#fff;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
     .loading{text-align:center;padding:2rem;color:var(--muted);font-size:.875rem;}
+
+    /* =========================================================
+   📱 RESPONSIVE MOBILE — FORUM
+   ========================================================= */
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; padding: 1rem; gap: 1rem; }
+  .sidebar { display: none; }
+
+  .forum-header { margin-bottom: 1rem; gap: .5rem; }
+  .forum-title { font-size: 1.6rem; letter-spacing: 2px; }
+  .btn-new-thread { padding: .5rem 1rem; font-size: .8rem; white-space: nowrap; }
+
+  /* Catégories : une ligne qu'on fait glisser */
+  .categories {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -1rem 1rem;
+    padding: 0 1rem;
+  }
+  .categories::-webkit-scrollbar { display: none; }
+  .cat-btn { flex: 0 0 auto; padding: .4rem .9rem; }
+
+  .new-thread-box { padding: .7rem; }
+  .new-thread-btn {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Fils de discussion */
+  .thread-card { padding: .85rem; gap: .7rem; }
+  .thread-card:hover { transform: none; }
+  .vote-col { min-width: 28px; }
+  .vote-btn { padding: 4px 6px; font-size: 1rem; }
+  .thread-title { font-size: .9rem; overflow-wrap: anywhere; }
+  .thread-preview {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Détail d'un fil */
+  .detail-card { padding: 1rem; }
+  .detail-title { font-size: 1.4rem; }
+  .detail-body { font-size: .88rem; overflow-wrap: anywhere; }
+
+  /* Commentaires */
+  .comment-input-wrap { gap: .5rem; }
+  .comment-input { font-size: 16px; min-width: 0; }
+  .btn-comment { padding: .5rem .8rem; }
+  .comment-item { padding: .75rem; }
+  .comment-header { flex-wrap: wrap; }
+  .comment-text { overflow-wrap: anywhere; }
+
+  /* Modale "Nouveau fil" */
+  .modal-overlay { padding: 1rem .75rem; }
+  .modal { padding: 1.25rem; }
+  .fg input, .fg textarea, .fg select { font-size: 16px; }
+  .modal-btns button { flex: 1; }
+
+  .toast { max-width: 90vw; text-align: center; white-space: normal; bottom: 1.2rem; }
+}
   </style>
 </head>
 <body>
