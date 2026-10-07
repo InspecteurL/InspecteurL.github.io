@@ -57,7 +57,7 @@
 </header>
 
 <!-- HERO SLIDER -->
-<section class="hero">
+<section class="hero loading">
     <div class="slides">
         <div class="hero-slide active" style="background-image:url('https://media.themoviedb.org/t/p/w1000_and_h563_face/v2nvvwbWOAEPQeq8wsvUkhb1HI1.jpg');">
             <div class="hero-content">
@@ -1755,6 +1755,22 @@ body {
 
   .movie-card:hover { transform: none; }
 }
+
+    /* Hero : masqué pendant le tirage au sort.
+   Sécurité : il réapparaît tout seul après 4 s quoi qu'il arrive */
+.hero .slides { transition: opacity .5s ease; }
+.hero.loading .slides { opacity: 0; animation: heroReveal 0s 4s forwards; }
+@keyframes heroReveal { to { opacity: 1; } }
+
+/* PC : synopsis limité à 4 lignes (sur mobile c'est déjà 3) */
+@media (min-width: 769px) {
+  .hero-content p {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
 </style>
 <script src="custom.js"></script>
     <script>
@@ -1991,6 +2007,115 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.warn('Avatar : impossible de charger le profil', e);
   } finally {
     img.style.visibility = 'visible';
+  }
+})();
+</script>
+
+    <script>
+(async function () {
+  const NB_SLIDES = 5;   // nombre de slides affichés
+  const NB_ESSAIS = 7;   // fiches testées (marge si certaines ne chargent pas)
+
+  const hero = document.querySelector('.hero');
+  const container = document.querySelector('.hero .slides');
+  if (!hero || !container) return;
+
+  const shuffle = arr => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  // 1) Liste des fiches du catalogue (hors "Provisoire")
+  async function getCatalogue() {
+    const res = await fetch('https://inspecteurl.github.io/site/catalogue.html');
+    const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+    return [...doc.querySelectorAll('#movieGrid .movieimg')]
+      .filter(el => !el.querySelector('.badge-provisoire'))
+      .map(el => el.querySelector('a')?.getAttribute('href'))
+      .filter(Boolean)
+      .map(href => new URL(href, 'https://inspecteurl.github.io/site/').href);
+  }
+
+  // 2) Infos d'une fiche : fond, titre, synopsis, durée
+  async function loadFiche(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const html = await res.text();
+
+    const bg = (html.match(/background:\s*url\(['"]?([^'")]+)['"]?\)\s*no-repeat/) || [])[1];
+    if (!bg) throw new Error('pas d\'image de fond');
+
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const h1 = doc.querySelector('.fiche-info h1')?.textContent.trim();
+    if (!h1) throw new Error('pas de titre');
+
+    let synopsis = '', duree = '';
+    doc.querySelectorAll('.fiche-info p').forEach(p => {
+      const strong = p.querySelector('strong');
+      if (!strong) return;
+      const label = strong.textContent.trim().toLowerCase();
+      const value = p.textContent.replace(strong.textContent, '').trim();
+      if (label.startsWith('synopsis')) synopsis = value;
+      else if (label.startsWith('durée')) duree = value;
+    });
+
+    return { url, bg, duree, synopsis, title: h1.replace(/\s*\(\d{4}\)\s*$/, '') };
+  }
+
+  // 3) Construction d'un slide (même structure que ton HTML actuel)
+  function buildSlide(f, active) {
+    const slide = document.createElement('div');
+    slide.className = 'hero-slide' + (active ? ' active' : '');
+    slide.style.backgroundImage = `url("${f.bg}")`;
+
+    const content = document.createElement('div');
+    content.className = 'hero-content';
+
+    const h1 = document.createElement('h1');
+    h1.textContent = f.title + ' ';
+    if (f.duree) {
+      const pill = document.createElement('span');
+      pill.className = 'rating';
+      pill.textContent = f.duree;
+      h1.appendChild(pill);
+    }
+
+    const p = document.createElement('p');
+    p.textContent = f.synopsis;
+
+    const a = document.createElement('a');
+    a.className = 'btn';
+    a.href = f.url;
+    a.textContent = 'Regarder Maintenant';
+
+    content.append(h1, p, a);
+    slide.appendChild(content);
+    return slide;
+  }
+
+  try {
+    const urls = shuffle(await getCatalogue()).slice(0, NB_ESSAIS);
+    const results = await Promise.allSettled(urls.map(loadFiche));
+    const fiches = results
+      .filter(r => r.status === 'fulfilled')
+      .map(r => r.value)
+      .slice(0, NB_SLIDES);
+
+    // Si le tirage a marché, on remplace les slides et on "rebranche" le slider
+    if (fiches.length >= 3) {
+      container.replaceChildren(...fiches.map((f, i) => buildSlide(f, i === 0)));
+      slides = document.querySelectorAll('.hero-slide');
+      current = 0;
+    }
+    // sinon : on garde tes 3 slides d'origine
+  } catch (e) {
+    console.warn('Hero aléatoire : on garde les slides par défaut', e);
+  } finally {
+    hero.classList.remove('loading');
   }
 })();
 </script>
