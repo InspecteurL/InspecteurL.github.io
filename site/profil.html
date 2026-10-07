@@ -139,6 +139,82 @@
     .toast.error{background:var(--accent2);color:#fff;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
     @media(max-width:600px){.profile-header{flex-wrap:wrap;}.profile-stats{gap:1rem;}.action-btns{flex-wrap:wrap;}}
+
+    /* =========================================================
+   📱 RESPONSIVE MOBILE — PROFIL
+   ========================================================= */
+@media (max-width: 768px) {
+  .wrapper { padding: 0 1rem; }
+
+  .profile-banner { height: 150px; }
+  .banner-overlay { height: 80px; }
+
+  /* En-tête : tout en colonne, centré */
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    margin-top: -45px;
+    padding-bottom: 1.25rem;
+  }
+  .avatar { width: 90px; height: 90px; font-size: 2.2rem; }
+
+  .profile-info { width: 100%; padding-bottom: 0; }
+  .profile-name { font-size: 1.7rem; overflow-wrap: anywhere; }
+  .profile-bio { max-width: 100%; margin: 0 auto; }
+  .profile-watching { justify-content: center; flex-wrap: wrap; }
+
+  .profile-actions { width: 100%; align-items: center; gap: .9rem; padding-bottom: 0; }
+  .action-btns { justify-content: center; }
+  .btn-edit, .btn-follow, .btn-discuter { padding: .55rem 1.2rem; font-size: .85rem; }
+
+  .profile-stats {
+    width: 100%;
+    justify-content: space-around;
+    gap: 0;
+    padding-top: .9rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Onglets : défilent horizontalement */
+  .tabs {
+    margin-top: 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex: 1 0 auto;
+    padding: .7rem .8rem;
+    font-size: .74rem;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .tab-pane { padding: 1.2rem 0; }
+
+  /* Contenu des onglets */
+  .watching-card { padding: 1rem; gap: .8rem; }
+  .wt-title { overflow-wrap: anywhere; }
+
+  .search-catalogue input { font-size: 16px; }
+  .sr-info { min-width: 0; }
+  .sr-set-btn { padding: .4rem .6rem; }
+
+  .activity-item { padding: .85rem; }
+  .activity-item:hover { transform: none; }
+  .act-text { overflow-wrap: anywhere; }
+
+  .user-item { padding: .75rem; gap: .7rem; }
+  .user-name-link { overflow-wrap: anywhere; }
+
+  /* Modale "Modifier le profil" */
+  .modal { width: 92%; padding: 1.25rem; max-height: 90vh; overflow-y: auto; }
+  .fg input, .fg textarea { font-size: 16px; }
+  .modal-btns button { flex: 1; }
+
+  .toast { max-width: 90vw; text-align: center; white-space: normal; bottom: 1.2rem; }
+}
   </style>
 </head>
 <body>
