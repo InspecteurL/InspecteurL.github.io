@@ -6,615 +6,238 @@
 	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <style>
-    body{
-	margin: 0;
-	padding: 0;
-	background-color: #0e6cc4;
-	overflow-x:hidden;
-	overflow-y:hidden;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-header{
-	height: 3em;
-	position: fixed;
-	width: 100%;
-	top: 0;
-	left: 0;
-	z-index: 999;
+body {
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
 }
 
-header div{
-	height: 100%;
-	display: inline-block;
-}
-
-#plus{
-	width: 3em;
-	background-image: url("https://s20.postimg.org/9jdjr9lml/plus.png");
-	background-size: contain;
-	background-repeat: no-repeat;
-	background-position: center;
-	float: left;
-}
-
-#info{
-	width: 3em;
-	background-image: url("https://i.postimg.cc/m2x13xDd/info.png");
-	background-size: contain;
-	background-repeat: no-repeat;
-	background-position: center;
-	float: left;
-}
-
-#textInfo{
-	color: white;
-	font-family: arial;
-	width: 25%;
-	float: left;
-	line-height: 3em;
-}
-
-#friends{
-	width: 3em;
-	background-image: url("https://i.postimg.cc/vHwbv8v1/friends.png");
-	background-size: contain;
-	background-repeat: no-repeat;
-	background-position: center;
-	float: left;
-}
-
-#user{
-	margin-left: 1em;
-	width: 3em;
-	background-image: url("https://s20.postimg.org/yvwsexlfh/user.png");
-	background-size: 140%;
-	background-repeat: no-repeat;
-	background-position: center;
-	float: left;
-}
-
-#userName{
-	color: white;
-	font-family: arial;
-	width: 25%;
-	float: left;
-	line-height: 3em;
-}
-
-#trophies{
-	margin-left: 1em;
-	width: 3em;
-	background-image: url("https://i.postimg.cc/wTKmp1Cx/trophy.png");
-	background-size: contain;
-	background-repeat: no-repeat;
-	background-position: center;
-	float: left;
-}
-
-#clock{
-	font-family: arial;
-	line-height: 3em;
-	float: right;
-	margin-right: 1em;
-	color: white;;
-}
-
-/*ENF OF HEADER********************************/
-
-#games{
-	width: 1120em;
-	position: absolute;
-	top: .5em;
-	left: 0;
-	padding: 5em;
-	z-index: 99;
-	
-}
-
-.squareGame{
-	height: 11em;
-	width: 11em;
-	vertical-align: top;
-	display: inline-block;
-	transition: 0.3s ease;
-}
-
-.squareGame:hover{
-	height: 16.5em;
-	width: 15em;
-	border: 3px solid white;
-	cursor: pointer;
-}
-
-.squareGame:hover .imgGame{
-	height: 85%;
-}
-
-.imgGame{
-	height: 100%;
-	background-size: 100%;
-	background-repeat: no-repeat;
-	background-position: center;
-}
-
-.gameText{
-	color: white;
-	font-family: arial;
-	text-align: center;
-	line-height: 2.4em;
-	background-color: rgba(255,255,255,.2);
-}
-
-.gameTitle{
-	position: absolute;
-	color: white;
-	font-size: 1.2em;
-	font-family: Arial;
-	transform: translate(13.2em,-1.5em);
-}
-/*SQUARE IMAGE*****************************************/
-
-.ascii{
-	font-weight: bold;
-}
-
-.ps{
-	background-image: url("https://i.postimg.cc/c1pRT9TJ/ps.png");
-}
-
-.new{
-	background-image: url("https://i.postimg.cc/X7SSnLHG/new.png");
-}
-
-.overwatch{
-	background-image: url("https://www.gifsgratuits.fr/argent/argent2%20(5).gif");
-}
-
-.rocketLeague{
-	background-image: url("https://i.redd.it/ikjmfjp2f6of1.jpeg");
-}
-
-.cod{
-	background-image: url("https://i1.sndcdn.com/artworks-UToGAccMmMp0CoqZ-VkaacA-t500x500.jpg");
-}
-
-.furi{
-	background-image: url("https://i.pinimg.com/736x/10/bb/03/10bb034c7b5ca3d9d5e20b83c09250ff.jpg");
-}
-
-.youtube{
-	background-image: url("https://i.pinimg.com/control1/736x/5d/26/8d/5d268d0a52276ff70db5c803f0dd0458.jpg");
-}
-
-.bro{
-	background-image: url("https://i.postimg.cc/Dykz0PJb/bro.png");
-}
-
-.outlast{
-	background-image: url("https://i.postimg.cc/8PQ5xhLw/outlast.png");
-}
-
-.storeGame{
-	background-size: 100%;
-	background-repeat: no-repeat;
-	background-position: center;
-}
-
-#god{
-	background-image: url("https://m.media-amazon.com/images/I/31Y-I5VZChL.png");
-}
-
-#raider{
-	background-image: url("https://i.pinimg.com/control1/736x/54/47/b1/5447b18f3ff226459b66481a3a684808.jpg");
-}
-
-#codi{
-	background-image: url("https://i.pinimg.com/1200x/a2/c0/12/a2c012bf932eace272f2dcd20fabc271.jpg");
-}
-
-#mafia{
-	background-image: url("https://i.pinimg.com/736x/38/34/8a/38348a9ed76b838cd3150f3e585c5665.jpg");
-}
-
-#destiny{
-	background-image: url("https://i.pinimg.com/1200x/80/b6/b6/80b6b647fbd4929f1f5ad0affeab7e21.jpg");
-}
-
-#bt1{
-	background-image: url("https://i.pinimg.com/736x/c6/3e/9e/c63e9ee1a9694c2d4f6319e5355ee87b.jpg");
-}
-
-#lg{
-	background-image: url("https://i.pinimg.com/736x/3a/4a/d9/3a4ad980e9f3d15fe80075800917b57d.jpg");
-}
-
-#per{
-	background-image: url("https://i.pinimg.com/1200x/8d/0b/54/8d0b54292b821e90772edc9a784ac449.jpg");
-}
-
-/*store*/
-
-#store{
-	padding: 1em;
-	padding-top: 6em;
-	margin-top: -3em;
-	width: 60em;
-	height: 25em;
-	padding-left: 12em;
-}
-
-#store div{
-	float: left;
-	border: 3px solid rgba(245,245,245,1);
-	width: 12em;
-	height: 12em;
-	display: inline-block;
-}
-
-#store div:hover{
-	transform: scale(1.1, 1.1);
-	box-shadow: 0px 5px 10px 3px rgba(45,45,45,.7);
-	transition: 0.3s ease;
-}
-
-/*waves****************************/
-
-
-.box {
-	position: fixed;
-	top: 0;
-	transform: rotate(80deg);
-	left: 0;
-}
-
-.wave {
-	position: fixed;
-	top: 0;
-	left: 0;
-  opacity: .4;
-  position: absolute;
-  top: 3%;
-  left: 10%;
-  background: #0af;
-  width: 1500px;
-  height: 1300px;
-  margin-left: -150px;
-  margin-top: -250px;
-  transform-origin: 50% 48%;
-  border-radius: 43%;
-  animation: drift 7000ms infinite linear;
-}
-
-.wave.-three {
-  animation: drift 7500ms infinite linear;
-	position: fixed;
-	background-color: #77daff;
-}
-
-.wave.-two {
-  animation: drift 3000ms infinite linear;
-  opacity: .1;
-  background: black;
-	position: fixed;
-}
-
-.box:after {
-  content: '';
-  display: block;
-  left: 0;
-  top: 0;
+main {
+  position: relative;
   width: 100%;
   height: 100%;
-  z-index: 11;
-  transform: translate3d(0, 0, 0);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
 }
 
-@keyframes drift {
-  from { transform: rotate(0deg); }
-  from { transform: rotate(360deg); }
+.item {
+  width: 200px;
+  height: 300px;
+  list-style-type: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  background-position: center;
+  background-size: cover;
+  border-radius: 20px;
+  box-shadow: 0 20px 30px rgba(255,255,255,0.3) inset;
+  transition: transform 0.1s, left 0.75s, top 0.75s, width 0.75s, height 0.75s;
+
+  &:nth-child(1), &:nth-child(2) {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+    border-radius: 0;
+    box-shadow: none;
+    opacity: 1;
+  }
+
+  &:nth-child(3) { left: 50%; }
+  &:nth-child(4) { left: calc(50% + 220px); }
+  &:nth-child(5) { left: calc(50% + 440px); }
+  &:nth-child(6) { left: calc(50% + 660px); opacity: 0; }
 }
 
-/*LOADING SPACE*/
+.content {
+  width: min(30vw,400px);
+  position: absolute;
+  top: 50%;
+  left: 3rem;
+  transform: translateY(-50%);
+  font: 400 0.85rem helvetica,sans-serif;
+  color: white;
+  text-shadow: 0 3px 8px rgba(0,0,0,0.5);
+  opacity: 0;
+  display: none;
 
-.contain {
-	animation-delay: 4s;
-	z-index: 1000;
-	position: fixed;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	right: 0;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -ms-flex-flow: row nowrap;
-  flex-flow: row nowrap;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
+  & .title {
+    font-family: 'arial-black';
+    text-transform: uppercase;
+  }
 
-  background: #25a7d7;
-  background: -webkit-linear-gradient(#25a7d7, #2962FF);
-  background: linear-gradient(#25a7d7, #25a7d7);
+  & .description {
+    line-height: 1.7;
+    margin: 1rem 0 1.5rem;
+    font-size: 0.8rem;
+  }
+
+  & button {
+    width: fit-content;
+    background-color: rgba(0,0,0,0.1);
+    color: white;
+    border: 2px solid white;
+    border-radius: 0.25rem;
+    padding: 0.75rem;
+    cursor: pointer;
+  }
 }
 
-.icon {
-  width: 100px;
-  height: 100px;
-  margin: 0 5px;
+.item:nth-of-type(2) .content {
+  display: block;
+  animation: show 0.75s ease-in-out 0.3s forwards;
 }
 
-/*Animation*/
-.icon:nth-child(2) img {-webkit-animation-delay: 0.2s;animation-delay: 0.2s}
-.icon:nth-child(3) img {-webkit-animation-delay: 0.3s;animation-delay: 0.3s}
-.icon:nth-child(4) img {-webkit-animation-delay: 0.4s;animation-delay: 0.4s}
-
-.icon img {
-  -webkit-animation: anim 2s ease infinite;
-  animation: anim 2s ease infinite;
-  -webkit-transform: scale(0,0) rotateZ(180deg);
-  transform: scale(0,0) rotateZ(180deg);
-}
-
-@-webkit-keyframes anim{
+@keyframes show {
   0% {
-    -webkit-transform: scale(0,0) rotateZ(-90deg);
-    transform: scale(0,0) rotateZ(-90deg);opacity:0
+    filter: blur(5px);
+    transform: translateY(calc(-50% + 75px));
   }
-  30% {
-    -webkit-transform: scale(1,1) rotateZ(0deg);
-    transform: scale(1,1) rotateZ(0deg);opacity:1
-  }
-  50% {
-    -webkit-transform: scale(1,1) rotateZ(0deg);
-    transform: scale(1,1) rotateZ(0deg);opacity:1
-  }
-  80% {
-    -webkit-transform: scale(0,0) rotateZ(90deg);
-    transform: scale(0,0) rotateZ(90deg);opacity:0
+  100% {
+    opacity: 1;
+    filter: blur(0);
   }
 }
 
-@keyframes anim{
-  0% {
-    -webkit-transform: scale(0,0) rotateZ(-90deg);
-    transform: scale(0,0) rotateZ(-90deg);opacity:0
+.nav {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  user-select: none;
+
+  & .btn {
+    background-color: rgba(255,255,255,0.5);
+    color: rgba(0,0,0,0.7);
+    border: 2px solid rgba(0,0,0,0.6);
+    margin: 0 0.25rem;
+    padding: 0.75rem;
+    border-radius: 50%;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(255,255,255,0.3);
+    }
   }
-  30% {
-    -webkit-transform: scale(1,1) rotateZ(0deg);transform: scale(1,1) rotateZ(0deg);opacity:1
+}
+
+@media (width > 650px) and (width < 900px) {
+  .content {
+    & .title        { font-size: 1rem; }
+    & .description  { font-size: 0.7rem; }
+    & button        { font-size: 0.7rem; }
   }
-  50% {
-    -webkit-transform: scale(1,1) rotateZ(0deg);
-    transform: scale(1,1) rotateZ(0deg);opacity:1
+  .item {
+    width: 160px;
+    height: 270px;
+
+    &:nth-child(3) { left: 50%; }
+    &:nth-child(4) { left: calc(50% + 170px); }
+    &:nth-child(5) { left: calc(50% + 340px); }
+    &:nth-child(6) { left: calc(50% + 510px); opacity: 0; }
   }
-  80% {
-    -webkit-transform: scale(0,0) rotateZ(90deg);
-    transform: scale(0,0) rotateZ(90deg);opacity:0
+}
+
+@media (width < 650px) {
+  .content {
+    & .title        { font-size: 0.9rem; }
+    & .description  { font-size: 0.65rem; }
+    & button        { font-size: 0.7rem; }
+  }
+  .item {
+    width: 130px;
+    height: 220px;
+
+    &:nth-child(3) { left: 50%; }
+    &:nth-child(4) { left: calc(50% + 140px); }
+    &:nth-child(5) { left: calc(50% + 280px); }
+    &:nth-child(6) { left: calc(50% + 420px); opacity: 0; }
   }
 }
   </style>
 </head>
 <body>
-  <header>
-		<div id="plus"></div>
-		<div id="info"></div>
-		<div id="textInfo">Horizonciné Update V 1.2.3</div>
-		<div id="friends"></div>
-		<div id="user"></div>
-		<div id="userName">Lolovp</div>
-		<div id="trophies"></div>
-		<div id="clock">10:02 PM</div>
-	</header>
+<main>
+  <ul class='slider'>
+    <li class='item' style="background-image: url('https://cdn.mos.cms.futurecdn.net/dP3N4qnEZ4tCTCLq59iysd.jpg')">
+      <div class='content'>
+        <h2 class='title'>"Lossless Youths"</h2>
+        <p class='description'> Lorem ipsum, dolor sit amet consectetur
+        adipisicing elit. Tempore fuga voluptatum, iure corporis inventore
+        praesentium nisi. Id laboriosam ipsam enim.  </p>
+        <button>Read More</button>
+      </div>
+    </li>
+    <li class='item' style="background-image: url('https://i.redd.it/tc0aqpv92pn21.jpg')">
+      <div class='content'>
+        <h2 class='title'>"Estrange Bond"</h2>
+        <p class='description'> Lorem ipsum, dolor sit amet consectetur
+        adipisicing elit. Tempore fuga voluptatum, iure corporis inventore
+        praesentium nisi. Id laboriosam ipsam enim.  </p>
+        <button>Read More</button>
+      </div>
+    </li>
+    <li class='item' style="background-image: url('https://wharferj.files.wordpress.com/2015/11/bio_north.jpg')">
+      <div class='content'>
+        <h2 class='title'>"The Gate Keeper"</h2>
+        <p class='description'> Lorem ipsum, dolor sit amet consectetur
+        adipisicing elit. Tempore fuga voluptatum, iure corporis inventore
+        praesentium nisi. Id laboriosam ipsam enim.  </p>
+        <button>Read More</button>
+      </div>
+    </li>
+    <li class='item' style="background-image: url('https://images7.alphacoders.com/878/878663.jpg')">
+      <div class='content'>
+        <h2 class='title'>"Last Trace Of Us"</h2>
+        <p class='description'>
+          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Tempore fuga voluptatum, iure corporis inventore praesentium nisi. Id laboriosam ipsam enim.
+        </p>
+        <button>Read More</button>
+      </div>
+    </li>
+    <li class='item' style="background-image: url('https://theawesomer.com/photos/2017/07/simon_stalenhag_the_electric_state_6.jpg')">
+      <div class='content'>
+        <h2 class='title'>"Urban Decay"</h2>
+        <p class='description'>
+          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Tempore fuga voluptatum, iure corporis inventore praesentium nisi. Id laboriosam ipsam enim.
+        </p>
+        <button>Read More</button>
+      </div>
+    </li>
+    <li class='item' style="background-image: url('https://da.se/app/uploads/2015/09/simon-december1994.jpg')">
+      <div class='content'>
+        <h2 class='title'>"The Migration"</h2>
+        <p class='description'> Lorem ipsum, dolor sit amet consectetur
+        adipisicing elit. Tempore fuga voluptatum, iure corporis inventore
+        praesentium nisi. Id laboriosam ipsam enim.  </p>
+        <button>Read More</button>
+      </div>
+    </li>
+  </ul>
+  <nav class='nav'>
+    <ion-icon class='btn prev' name="arrow-back-outline"></ion-icon>
+    <ion-icon class='btn next' name="arrow-forward-outline"></ion-icon>
+  </nav>
+</main>
+<script> 
+	const slider = document.querySelector('.slider');
 
+function activate(e) {
+  const items = document.querySelectorAll('.item');
+  e.target.matches('.next') && slider.append(items[0])
+  e.target.matches('.prev') && slider.prepend(items[items.length-1]);
+}
 
-	<div id="games">
-		<div class="squareGame animated bounceInLeft">
-			<div class="imgGame ps"></div>
-			<div class="gameText">Start</div>
-			<span class="gameTitle">Horizonciné</span>
-			<div id="store">
-				<a href="https://inspecteurl.github.io/site/forum.html">
-				<div id="god" class="storeGame"></div></a>
-				<a href="https://inspecteurl.github.io/site/communaute.html">
-				<div id="raider" class="storeGame"></div></a>
-				<a href="https://inspecteurl.github.io/site/accueil.html">
-				<div id="codi" class="storeGame"></div></a>
-				<a href="https://inspecteurl.github.io/site/catalogue.html">
-				<div id="mafia" class="storeGame"></div></a>
-				<a href="https://inspecteurl.github.io/site/profil.html">
-				<div id="destiny" class="storeGame"></div></a>
-				<a href="https://inspecteurl.github.io/site/suggestion.html">
-				<div id="bt1" class="storeGame"></div></a>
-				<a href="https://inspecteurl.github.io/films/themask.html">
-				<div id="lg" class="storeGame"></div></a>
-				<a href="https://inspecteurl.github.io/s%C3%A9ries/lupin.html">
-				<div id="per" class="storeGame"></div></a>
-			</div>
-		</div>
-		<div class="squareGame animated bounceInLeft">
-			<div class="imgGame new"></div>
-			<div class="gameText ascii">▼</div>
-			<span class="gameTitle">What's New</span>
-		</div>
-		<a href="https://inspecteurl.github.io/site/paris-foot.html">
-			<div class="squareGame animated bounceInLeft">
-			<div class="imgGame overwatch"></div>
-			<div class="gameText">Start</div>
-			<span class="gameTitle">Parier-Football</span>
-		</div></a>
-		<a href="https://inspecteurl.github.io/jeu/trouve-la-regle.html">
-			<div class="squareGame animated bounceInLeft">
-			<div class="imgGame rocketLeague"></div>
-			<div class="gameText">Start</div>
-			<span class="gameTitle">Trouve la règle</span>
-		</div></a>
-		<a href="https://inspecteurl.github.io/jeu/jeu.html">
-			<div class="squareGame animated bounceInLeft">
-			<div class="imgGame cod"></div>
-			<div class="gameText">Start</div>
-			<span class="gameTitle">Undercover</span>
-		</div></a>
-		<a href="https://inspecteurL.github.io/jeu/anime-cards.html">
-		<div class="squareGame animated bounceInLeft">
-			<div class="imgGame furi"></div>
-			<div class="gameText">Start</div>
-			<span class="gameTitle">Anime-Cards</span>
-		</div></a>
-		<a href="https://inspecteurl.github.io/jeu/casino.html">
-		<div class="squareGame animated bounceInLeft">
-			<div class="imgGame youtube"></div>
-			<div class="gameText">Start</div>
-			<span class="gameTitle">Casino</span>
-		</div></a>
-		<div class="squareGame animated bounceInLeft">
-			<div class="imgGame bro"></div>
-			<div class="gameText">Start</div>
-			<span class="gameTitle">BroForce</span>
-		</div>
-		<div class="squareGame animated bounceInLeft">
-			<div class="imgGame outlast"></div>
-			<div class="gameText">Start</div>
-			<span class="gameTitle">Outlast 2</span>
-		</div>
-	</div>
-
-	<div class='box'>
-	  <div class='wave -one'></div>
-	  <div class='wave -two'></div>
-	  <div class='wave -three'></div>
-	</div>
-</body>
-<script>
-/*PS4 Interface Version 1.0.0
-  thanks to
-  https://codepen.io/Kapilnemo/pen/bwYoPZ
-  and
-  https://codepen.io/rstacruz/pen/oxJqNv
-*/
-
-$(document).ready(function(){
-		$(".gameText").hide();
-		$('.gameTitle').hide();
-		$('#store').hide();
-		timeout();
-
-		// Variables for current position
-		var x, y;
-
-		function handleMouse(e) {
-		  // Verify that x and y already have some value
-		  if (x && y) {
-		    // Scroll window by difference between current and previous positions
-		    window.scrollBy(e.clientX - x, e.clientY - y);
-		  }
-
-		  // Store current position
-		  x = e.clientX;
-		  y = e.clientY;
-		}
-
-		// Assign handleMouse to mouse movement events
-		document.onmousemove = handleMouse;
-
-		 $(window).scroll(function(){
-	        if ($(this).scrollTop() > 10) {
-	            $('header').css("background-color","rgba(34,123,165,.8)");
-	        } else {
-	            $('header').css("background-color","rgba(255,255,255,0)");
-	        }
-	    });
-	});
-
-	
-	var time = 0;
-
-	function timeout() {
-	    setTimeout(function () {
-	    	if(time===0){
-				$("#textInfo").text("Rocket League new content!");
-				$("#textInfo").addClass("animated slideInDown");
-				time++;
-			}else
-				if(time===1){
-				$("#textInfo").text("Outlast 2 Demo Downloaded");
-				$("#textInfo").addClass("animated slideInDown");
-				time++;
-			}else
-				if(time===2){
-				$("#textInfo").text("Overwatch Update V 1.2.3");
-				$("#textInfo").addClass("animated slideInDown");
-				time=0;
-			}
-			setTimeout(function () {
-				$("#textInfo").removeClass("animated slideInDown");
-	    	}, 1000);
-	        timeout();
-	    }, 4000);
-	}
-
-	$(".squareGame").hover(
-		function(){
-			$(this).find('.gameText').show();
-			$(this).find('.gameTitle').show();
-			$(this).find('#store').show();
-		},
-		function(){
-			$(this).find('.gameText').hide();
-			$(this).find('.gameTitle').hide();
-			$(this).find('#store').hide();
-		}
-	);
-
-function init() {
-	  'use strict'
-	  function select(a) {
-	    return document.querySelector(a);
-	  }
-	  var randomNum = Math.floor((Math.random() * 24) + 1),
-	      triangle = select('.triangle img'),
-	      circle = select('.circle img'),
-	      cross = select('.cross img'),
-	      box = select('.boxi img'),
-	      link = 'http://kapilnemo.free.fr/codepen/playstation-loading/',
-	      order = [
-	        [1,2,3,4],
-	        [1,2,4,3],
-	        [1,3,2,4],
-	        [1,3,4,2],
-	        [1,4,2,3],
-	        [1,4,3,2],
-	        [2,1,3,4],
-	        [2,1,4,3],
-	        [2,3,1,4],
-	        [2,3,4,1],
-	        [2,4,1,3],
-	        [2,4,3,1],
-	        [3,1,2,4],
-	        [3,1,4,2],
-	        [3,2,1,4],
-	        [3,2,4,1],
-	        [3,4,1,2],
-	        [3,4,2,1],
-	        [4,1,2,3],
-	        [4,1,3,2],
-	        [4,2,1,3],
-	        [4,2,3,1],
-	        [4,3,1,2],
-	        [4,3,2,1]
-	      ];
-
-	  triangle.src = link + order[randomNum][0] + ".png";
-	  circle.src = link + order[randomNum][1] + ".png";
-	  cross.src = link + order[randomNum][2] + ".png";
-	  box.src = link + order[randomNum][3] + ".png";
-
-
-	}
-	window.setInterval(init, 2000);
-          </script>
-</body>
-</html>
-
+document.addEventListener('click',activate,false);
+</script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
