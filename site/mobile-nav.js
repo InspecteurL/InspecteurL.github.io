@@ -1,3 +1,4 @@
+
 /* mobile-nav.js (v2) : menu déroulant mobile pour les pages avec <nav> */
 (function () {
   const nav = document.querySelector('nav');
