@@ -189,6 +189,69 @@ main {
   color: black;
   transform: scale(1.05);
 }
+
+	  /* =========================================================
+   📱 RESPONSIVE MOBILE — HUB DES JEUX
+   ========================================================= */
+@media (max-width: 768px) {
+  body { height: 100vh; height: 100dvh; }
+
+  /* Texte du jeu actif : pleine largeur, dans la zone libre au-dessus des vignettes */
+  .content {
+    width: auto;
+    left: 1.25rem;
+    right: 1.25rem;
+    top: calc(50% - 90px);
+    z-index: 1;
+    max-height: calc(100% - 20rem);
+    overflow-y: auto;
+  }
+  .content .title { font-size: 1.25rem; }
+  .content .description { font-size: .78rem; line-height: 1.55; margin: .7rem 0 1.1rem; }
+  .content button { font-size: .85rem; padding: .7rem 1.2rem; }
+
+  /* Voile sombre derrière le texte pour qu'il reste lisible sur la photo */
+  .item:nth-child(2)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,.6), rgba(0,0,0,.35) 55%, rgba(0,0,0,.8));
+    pointer-events: none;
+  }
+
+  /* Vignettes : alignées en bas de l'écran */
+  .item:nth-child(n+3) {
+    top: calc(100% - 150px - 5.5rem);
+    transform: none;
+    width: 100px;
+    height: 150px;
+    border-radius: 14px;
+  }
+  .item:nth-child(3) { left: 1rem; }
+  .item:nth-child(4) { left: calc(1rem + 110px); }
+  .item:nth-child(5) { left: calc(1rem + 220px); }
+  .item:nth-child(6) { left: calc(1rem + 330px); opacity: 0; }
+
+  /* Flèches et bouton retour */
+  .nav { bottom: 1.4rem; }
+  .nav .btn { font-size: 22px; padding: .8rem; margin: 0 .5rem; }
+  .back-button { top: 12px; left: 12px; padding: 8px 14px; font-size: 14px; }
+}
+
+/* Téléphone en mode paysage : tout plus compact */
+@media (max-width: 900px) and (max-height: 480px) {
+  .item:nth-child(n+3) { width: 80px; height: 110px; top: calc(100% - 110px - 1rem); }
+  .item:nth-child(3) { left: calc(100% - 270px - 1rem); }
+  .item:nth-child(4) { left: calc(100% - 180px - 1rem); }
+  .item:nth-child(5) { left: calc(100% - 90px - 1rem); }
+  .item:nth-child(6) { left: 100%; opacity: 0; }
+
+  .content { top: calc(50% - 39px); max-height: calc(100% - 12rem); }
+  .content .title { font-size: 1rem; }
+  .content .description { font-size: .7rem; line-height: 1.45; margin: .5rem 0 .8rem; }
+
+  .nav { bottom: auto; top: .75rem; left: auto; right: .75rem; transform: none; }
+}
   </style>
 </head>
 <body>
@@ -247,3 +310,23 @@ document.addEventListener('click',activate,false);
 </script>
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script>
+let touchStartX = null;
+const hub = document.querySelector('main');
+
+hub.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+}, { passive: true });
+
+hub.addEventListener('touchend', e => {
+  if (touchStartX === null) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  touchStartX = null;
+  if (Math.abs(dx) < 50) return;               // simple appui : on ignore
+  const items = document.querySelectorAll('.item');
+  if (dx < 0) slider.append(items[0]);          // glisser vers la gauche = suivant
+  else slider.prepend(items[items.length - 1]); // vers la droite = précédent
+}, { passive: true });
+</script>
+</body>
+</html>
