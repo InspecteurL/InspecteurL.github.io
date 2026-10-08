@@ -225,6 +225,34 @@ button:disabled{opacity:.35;cursor:not-allowed;}
 .host-validate-card .card-title{color:var(--danger);}
 
 .vote-status{font-size:11px;color:var(--muted);text-align:center;margin-top:8px;letter-spacing:.5px;}
+
+  /* =========================================================
+   📱 RESPONSIVE MOBILE — TROUVE LA RÈGLE
+   ========================================================= */
+@media (max-width: 768px) {
+  body {
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: calc(var(--nav-height) + 20px);
+  }
+  h1 { margin-bottom: 24px; }
+  .card { padding: 18px 14px; }
+  input, textarea { font-size: 16px; }   /* évite le zoom auto sur iPhone */
+
+  .flap-tile { width: 38px; height: 50px; }
+  .flap-tile .flap-char { font-size: 21px; }
+  .life-pip { width: 34px; height: 44px; }
+
+  .chat-area { max-height: 200px; }
+  .msg { max-width: 92%; }
+  .chat-input-row button { padding: 13px 14px; }
+
+  .btn-buzzer { font-size: 14px; padding: 20px 14px; letter-spacing: 1px; }
+  .voice-bar { padding: 10px 12px; }
+
+  .overlay-icon { font-size: 56px; }
+  .overlay-title { font-size: 22px; }
+}
 </style>
 </head>
 <body>
