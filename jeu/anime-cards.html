@@ -1242,6 +1242,64 @@
   0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   100% { opacity: 0; transform: translate(calc(-50% + var(--px)), calc(-50% + var(--py))) scale(0.3); }
 }
+
+  /* =========================================================
+   📱 RESPONSIVE MOBILE — ANIME-CARDS
+   ========================================================= */
+@media (max-width: 768px) {
+
+  /* ---------- NAV : passe sur deux lignes ---------- */
+  .nav { flex-wrap: wrap; gap: 10px; padding: 10px 12px; }
+  .nav-left { gap: 12px; flex-wrap: wrap; }
+  .nav-title { font-size: 16px; }
+  .nav-back { font-size: 12px; }
+  .nav > div:last-child { margin-left: auto; }   /* solde + boutons son */
+  .nav-balance { font-size: 13px; padding: 6px 10px; }
+  .music-toggle-btn { padding: 6px 10px; }
+
+  /* ---------- ONGLETS ---------- */
+  .banniere-tabs { padding: 16px 12px 0; gap: 8px; }
+  .tab-btn { padding: 9px 14px; font-size: 12px; }
+  .sub-tab-marche { margin: 0; padding: 8px 12px; font-size: 11px; }
+
+  /* ---------- PACKS ---------- */
+  .pack-grid-wrap { padding: 18px 12px 0; }
+  .pack-zone { padding: 28px 14px 40px; }
+  .pack-art { width: 170px; height: 238px; }
+  .pack-open-stage { width: 170px; height: 238px; }
+
+  /* ---------- COLLECTION / MARCHÉ ---------- */
+  .collection-section { padding: 28px 14px 70px; }
+  .collection-header { flex-direction: column; align-items: stretch; }
+  .filters { width: 100%; }
+  .filters select { flex: 1; min-width: 0; font-size: 16px; }
+
+  .card-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+  .card-item:hover { transform: none; }
+  .card-item .card-nom { font-size: 11.5px; }
+
+  /* Boutons Vendre / Marché / Acheter / Offre : empilés */
+  .card-item .card-info div[style*="display:flex"] { flex-direction: column; }
+
+  /* ---------- MODALES ---------- */
+  .price-modal-box { padding: 18px; }
+  .price-modal-input { font-size: 16px; }
+  .bulk-recap-box { padding: 20px; }
+
+  .bulk-sell-bar { padding: 12px 14px; justify-content: center; text-align: center; }
+  .bulk-sell-actions { width: 100%; }
+  .bulk-sell-actions .pull-btn { flex: 1; }
+
+  /* ---------- REVEAL DES CARTES ---------- */
+  .reveal-card-3d { width: 180px; height: 252px; }
+  .reveal-glow-bg { width: 420px; height: 420px; }
+  .suspense-mark { top: -56px; font-size: 46px; }
+  .reveal-strip { max-width: 92vw; }
+
+  .recap-grid { max-height: 48vh; }
+  .recap-card { width: 92px; }
+  .recap-card img { height: 84px; }
+}
 </style>
 </head>
 <body>
