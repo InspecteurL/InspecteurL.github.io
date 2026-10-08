@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Paris Foot — HorizonCiné</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -213,7 +214,7 @@ header p {
     text-shadow: 0 0 16px rgba(232, 184, 75, 0.5);
 }
 
-nav {
+.tabs-nav {
     max-width: 760px;
     margin: 0 auto 28px;
     display: flex;
@@ -224,7 +225,7 @@ nav {
     border: 1px solid var(--border);
 }
 
-nav button {
+.tabs-nav button {
     flex: 1;
     background: var(--card);
     border: none;
@@ -240,12 +241,12 @@ nav button {
     transition: var(--transition);
 }
 
-nav button:hover {
+.tabs-nav button:hover {
     color: var(--text);
     background: var(--surface);
 }
 
-nav button.active {
+.tabs-nav button.active {
     background: var(--card);
     color: var(--accent);
     border: 1px solid var(--accent);
@@ -600,6 +601,60 @@ select:focus, input:focus {
         width: 100%;
     }
 }
+
+   /* =========================================================
+   📱 RESPONSIVE MOBILE — PARIS FOOT
+   ========================================================= */
+@media (max-width: 640px) {
+  body { padding: 12px 10px 70px; }
+  header { margin-bottom: 24px; }
+  header p { font-size: .72rem; }
+
+  #balanceBar { padding: 14px 16px; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  #userLabel { font-size: .8rem; overflow-wrap: anywhere; }
+
+  /* Onglets : défilent horizontalement si besoin */
+  .tabs-nav { overflow-x: auto; scrollbar-width: none; margin-bottom: 20px; }
+  .tabs-nav::-webkit-scrollbar { display: none; }
+  .tabs-nav button {
+    flex: 1 0 auto;
+    padding: 12px 14px;
+    font-size: .72rem;
+    letter-spacing: .5px;
+    white-space: nowrap;
+  }
+
+  /* Matchs */
+  .match { padding: 14px; margin-bottom: 14px; }
+  .match:hover { transform: none; }
+  .match-top { gap: 8px; }
+  .team { font-size: .82rem; line-height: 1.25; overflow-wrap: anywhere; }
+  .score { font-size: 1.6rem; }
+
+  /* Formulaire de pari */
+  .bet-form { margin: 16px -14px -14px; padding: 14px; }
+  .bet-form select,
+  .bet-form input[type="number"],
+  .bet-form input[type="text"] { width: 100%; min-width: 0; font-size: 16px; }
+  select, input[type="number"], input[type="text"] { font-size: 16px; }
+
+  /* Mes paris : une "carte" par pari */
+  #content table { border-spacing: 0 10px; }
+  #content table tbody tr { flex-wrap: wrap; gap: 6px 10px; padding: 14px; }
+  #content table tbody tr:hover { transform: none; }
+  #content table tbody td:nth-child(1),
+  #content table tbody td:nth-child(2) { flex: 1 1 100%; }
+  #content table tbody td:nth-child(3),
+  #content table tbody td:nth-child(4) { margin: 0; }
+  #content table tbody td:nth-child(5) { width: auto; margin-left: auto; text-align: right; }
+
+  /* Classement */
+  #content .rank { padding: 12px 14px; }
+  #content .rank:hover { transform: none; }
+
+  /* Notifications : pleine largeur */
+  #toastContainer { top: 12px; left: 12px; right: 12px; max-width: none; }
+}
 </style>
 </head>
 <body>
@@ -632,7 +687,7 @@ select:focus, input:focus {
     </div>
   </div>
 
-  <nav>
+  <nav class="tabs-nav">.
     <button id="tabBet" class="active" onclick="switchTab('bet')">Parier</button>
     <button id="tabMine" onclick="switchTab('mine')">Mes paris</button>
     <button id="tabBoard" onclick="switchTab('board')">Classement</button>
