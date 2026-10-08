@@ -1300,6 +1300,24 @@
   .recap-card { width: 92px; }
   .recap-card img { height: 84px; }
 }
+
+  /* Marché : les cartes s'agrandissent pour contenir les boutons */
+@media (max-width: 768px) {
+  #vendreGrid .card-item,
+  #annoncesGrid .card-item { aspect-ratio: auto; }
+
+  #vendreGrid .card-item img,
+  #annoncesGrid .card-item img { height: auto; aspect-ratio: 1 / 1; }
+
+  #vendreGrid .card-info,
+  #annoncesGrid .card-info { gap: 4px; }
+
+  #vendreGrid .card-info div[style*="display:flex"] > button,
+  #annoncesGrid .card-info div[style*="display:flex"] > button {
+    flex: none !important;
+    width: 100%;
+  }
+}
 </style>
 </head>
 <body>
