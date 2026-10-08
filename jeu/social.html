@@ -244,6 +244,46 @@
   .result-scores { display: flex; justify-content: center; gap: 30px; margin: 16px 0; }
   .result-score-block { font-size: 13px; }
   .result-score-block .score-num { font-family: var(--font-display); font-size: 22px; }
+
+  /* =========================================================
+   📱 RESPONSIVE MOBILE — JOUEURS
+   ========================================================= */
+@media (max-width: 768px) {
+  .nav { padding: 12px 14px; }
+  .nav-left { gap: 12px; }
+  .nav-title { font-size: 17px; }
+  .nav-balance { font-size: 13px; padding: 6px 10px; }
+
+  .tabs-main { padding: 16px 12px 0; gap: 8px; }
+  .tab-main { flex: 1 1 auto; padding: 9px 14px; font-size: 12px; text-align: center; }
+
+  .content-section { padding: 20px 14px 70px; }
+
+  .search-bar input { font-size: 16px; min-width: 0; }
+  .player-row { padding: 10px 12px; gap: 10px; }
+  .player-name { overflow-wrap: anywhere; }
+
+  .panel-actions { flex-wrap: wrap; }
+  .panel-actions .btn { flex: 1 1 140px; }
+  .collection-filters .filter-select { flex: 1; min-width: 0; font-size: 16px; }
+  .card-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+
+  /* Modales */
+  .modal-overlay { padding: 12px; }
+  .modal-box { padding: 18px; }
+  .trade-columns { grid-template-columns: 1fr; gap: 14px; }
+  .mini-card-grid { max-height: 220px; }
+  .modal-actions { flex-wrap: wrap; }
+  .modal-actions .btn { flex: 1; }
+  .challenge-input { flex-wrap: wrap; }
+  .challenge-input input { font-size: 16px; }
+
+  /* Listes d'échanges et de duels */
+  .list-item { padding: 12px; }
+  .list-item-actions { flex-wrap: wrap; }
+  .result-title { font-size: 22px; }
+  .result-scores { gap: 16px; }
+}
 </style>
 </head>
 <body>
