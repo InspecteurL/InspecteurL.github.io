@@ -20,7 +20,7 @@ self.addEventListener('fetch', e => {
   // Pages : réseau d'abord, copie en cache si on est hors-ligne
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-cache' })
         .then(res => {
           const copie = res.clone();
           caches.open(CACHE).then(c => c.put(req, copie));
