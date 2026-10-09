@@ -18,6 +18,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HorizonCiné">
+    <script>
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    window.__pwaPrompt = e;                              // on garde le signal pour plus tard
+    window.dispatchEvent(new Event('pwa-prompt-ready')); // et on prévient le script du bas
+  });
+</script>
 </head>
 <body>
 
@@ -41,7 +48,6 @@
   <button class="install-main" id="installBtn">
     <i class="fas fa-download"></i> Installer l'application
   </button>
-  <button class="install-close" id="installClose" aria-label="Fermer">&times;</button>
 </div>
 
 <div class="ios-help" id="iosHelp" hidden>
@@ -1289,18 +1295,10 @@ body {
   border: none;
   color: #fff;
   font: 600 14px 'Poppins', sans-serif;
-  padding: 11px 8px 11px 18px;
+  padding: 11px 18px;
   cursor: pointer;
 }
-.install-close {
-  background: none;
-  border: none;
-  color: rgba(255,255,255,.8);
-  font-size: 20px;
-  line-height: 1;
-  padding: 8px 14px 8px 6px;
-  cursor: pointer;
-}
+
 
 /* Mode d'emploi iPhone / iPad */
 .ios-help {
@@ -1792,11 +1790,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 })();
 </script>
 
-    <script>
+<script>
 (function () {
   const box = document.getElementById('installPrompt');
   const btn = document.getElementById('installBtn');
-  const closeBtn = document.getElementById('installClose');
   const iosHelp = document.getElementById('iosHelp');
   if (!box || !btn) return;
 
@@ -1812,45 +1809,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.navigator.standalone === true;
   if (estInstallee) return;
 
-  // 3) Refusé récemment : on laisse tranquille pendant 7 jours
-  const DISMISS_KEY = 'horizoncine_install_dismissed';
-  try {
-    const t = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10);
-    if (t && Date.now() - t < 7 * 24 * 3600 * 1000) return;
-  } catch (e) {}
-
-  let deferredPrompt = null;
   const show = () => { box.hidden = false; };
   const hide = () => { box.hidden = true; };
 
-  // Chrome, Edge, Opera, Samsung Internet, Android : installation en un clic
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    show();
-  });
-  window.addEventListener('appinstalled', () => { deferredPrompt = null; hide(); });
+  // 3) Chrome, Edge, Opera, Samsung Internet, Android
+  //    (le signal a peut-être déjà été capté dans le <head>)
+  if (window.__pwaPrompt) show();
+  window.addEventListener('pwa-prompt-ready', show);
+  window.addEventListener('appinstalled', () => { window.__pwaPrompt = null; hide(); });
 
-  // iPhone / iPad : pas d'installation automatique, on affiche un mode d'emploi
+  // 4) iPhone / iPad : pas d'installation automatique, on affiche un mode d'emploi
   const estIOS =
     /iphone|ipad|ipod/i.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   if (estIOS) show();
 
+  // 5) Le bouton ne disparaît que lorsqu'on clique dessus
   btn.addEventListener('click', async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      hide();
+    hide();
+    if (window.__pwaPrompt) {
+      const evt = window.__pwaPrompt;
+      window.__pwaPrompt = null;
+      evt.prompt();
+      await evt.userChoice;
     } else if (estIOS && iosHelp) {
       iosHelp.hidden = false;
     }
-  });
-
-  closeBtn.addEventListener('click', () => {
-    hide();
-    try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch (e) {}
   });
 
   if (iosHelp) {
