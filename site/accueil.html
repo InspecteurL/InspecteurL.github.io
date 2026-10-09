@@ -10,9 +10,15 @@
 
 <!-- Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel ="shortcut-icon" href="https://inspecteurl.github.io/site/favicon.png">
+<link rel="icon" href="https://inspecteurl.github.io/site/favicon.png">
 <!-- CSS -->
 <link rel="stylesheet" href="custom.css">
+    <link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HorizonCiné">
 </head>
 <body>
 
@@ -1243,6 +1249,78 @@ body {
     overflow: hidden;
   }
 }
+
+    /* Bouton "Installer l'application" */
+.install-prompt {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  background: #e50914;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.55);
+  overflow: hidden;
+}
+.install-prompt[hidden] { display: none; }
+.install-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #fff;
+  font: 600 14px 'Poppins', sans-serif;
+  padding: 11px 8px 11px 18px;
+  cursor: pointer;
+}
+.install-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.8);
+  font-size: 20px;
+  line-height: 1;
+  padding: 8px 14px 8px 6px;
+  cursor: pointer;
+}
+
+/* Mode d'emploi iPhone / iPad */
+.ios-help {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0,0,0,.8);
+}
+.ios-help[hidden] { display: none; }
+.ios-help-box {
+  width: 100%;
+  max-width: 420px;
+  padding: 22px;
+  background: #15151c;
+  border: 1px solid #2a2a3d;
+  border-radius: 16px;
+}
+.ios-help-box h3 { margin-bottom: 12px; }
+.ios-help-box ol { padding-left: 20px; margin-bottom: 16px; line-height: 1.9; }
+.ios-help-box button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #e50914;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .install-prompt { right: 12px; bottom: 12px; }
+}
 </style>
 <script src="custom.js"></script>
     <script>
@@ -1696,6 +1774,94 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 })();
 </script>
+
+    <script>
+(function () {
+  const box = document.getElementById('installPrompt');
+  const btn = document.getElementById('installBtn');
+  const closeBtn = document.getElementById('installClose');
+  const iosHelp = document.getElementById('iosHelp');
+  if (!box || !btn) return;
+
+  // 1) Service worker (nécessaire pour que le navigateur propose l'installation)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .catch(err => console.warn('Service worker non enregistré :', err));
+  }
+
+  // 2) Déjà installée / ouverte en mode application : on n'affiche rien
+  const estInstallee =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+  if (estInstallee) return;
+
+  // 3) Refusé récemment : on laisse tranquille pendant 7 jours
+  const DISMISS_KEY = 'horizoncine_install_dismissed';
+  try {
+    const t = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10);
+    if (t && Date.now() - t < 7 * 24 * 3600 * 1000) return;
+  } catch (e) {}
+
+  let deferredPrompt = null;
+  const show = () => { box.hidden = false; };
+  const hide = () => { box.hidden = true; };
+
+  // Chrome, Edge, Opera, Samsung Internet, Android : installation en un clic
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    show();
+  });
+  window.addEventListener('appinstalled', () => { deferredPrompt = null; hide(); });
+
+  // iPhone / iPad : pas d'installation automatique, on affiche un mode d'emploi
+  const estIOS =
+    /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (estIOS) show();
+
+  btn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      hide();
+    } else if (estIOS && iosHelp) {
+      iosHelp.hidden = false;
+    }
+  });
+
+  closeBtn.addEventListener('click', () => {
+    hide();
+    try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch (e) {}
+  });
+
+  if (iosHelp) {
+    iosHelp.addEventListener('click', e => {
+      if (e.target === iosHelp || e.target.closest('[data-close]')) iosHelp.hidden = true;
+    });
+  }
+})();
+</script>
+    
+    <div class="install-prompt" id="installPrompt" hidden>
+  <button class="install-main" id="installBtn">
+    <i class="fas fa-download"></i> Installer l'application
+  </button>
+  <button class="install-close" id="installClose" aria-label="Fermer">&times;</button>
+</div>
+
+<div class="ios-help" id="iosHelp" hidden>
+  <div class="ios-help-box">
+    <h3>Installer HorizonCiné</h3>
+    <ol>
+      <li>Appuie sur le bouton <strong>Partager</strong> <i class="fas fa-arrow-up-from-bracket"></i> de Safari</li>
+      <li>Choisis <strong>« Sur l'écran d'accueil »</strong></li>
+      <li>Valide avec <strong>Ajouter</strong></li>
+    </ol>
+    <button data-close>OK</button>
+  </div>
+</div>
 </body>
 </html>
 
