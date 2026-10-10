@@ -53,7 +53,11 @@
 <div class="ios-help" id="iosHelp" hidden>
   <div class="ios-help-box">
     <h3>Installer HorizonCiné</h3>
-    <ol id="installSteps"></ol>
+    <ol>
+      <li>Appuie sur le bouton <strong>Partager</strong> <i class="fas fa-arrow-up-from-bracket"></i> de Safari</li>
+      <li>Choisis <strong>« Sur l'écran d'accueil »</strong></li>
+      <li>Valide avec <strong>Ajouter</strong></li>
+    </ol>
     <button data-close>OK</button>
   </div>
 </div>
@@ -1790,8 +1794,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 (function () {
   const box = document.getElementById('installPrompt');
   const btn = document.getElementById('installBtn');
-  const help = document.getElementById('iosHelp');
-  const steps = document.getElementById('installSteps');
+  const iosHelp = document.getElementById('iosHelp');
   if (!box || !btn) return;
 
   // 1) Service worker (nécessaire pour que le navigateur propose l'installation)
@@ -1806,37 +1809,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.navigator.standalone === true;
   if (estInstallee) return;
 
-  const ua = navigator.userAgent;
-  const estIOS =
-    /iphone|ipad|ipod/i.test(ua) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const estMobile = estIOS || /android/i.test(ua);
-
   const show = () => { box.hidden = false; };
   const hide = () => { box.hidden = true; };
 
-  // 3) Navigateurs qui envoient le signal d'installation (Chrome, Edge, Opera...)
+  // 3) Chrome, Edge, Opera, Samsung Internet, Android
+  //    (le signal a peut-être déjà été capté dans le <head>)
   if (window.__pwaPrompt) show();
   window.addEventListener('pwa-prompt-ready', show);
   window.addEventListener('appinstalled', () => { window.__pwaPrompt = null; hide(); });
 
-  // 4) Téléphones sans signal : iPhone tout de suite, Android après 2,5 s
+  // 4) iPhone / iPad : pas d'installation automatique, on affiche un mode d'emploi
+  const estIOS =
+    /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   if (estIOS) show();
-  else if (estMobile) setTimeout(show, 2500);
 
-  // 5) Mode d'emploi adapté au téléphone
-  function ouvrirAide() {
-    steps.innerHTML = estIOS
-      ? `<li>Appuie sur le bouton <strong>Partager</strong> <i class="fas fa-arrow-up-from-bracket"></i> de Safari</li>
-         <li>Choisis <strong>« Sur l'écran d'accueil »</strong></li>
-         <li>Valide avec <strong>Ajouter</strong></li>`
-      : `<li>Ouvre cette page dans <strong>Chrome</strong> (si tu viens d'un lien dans une autre appli : menu <strong>⋮</strong> → « Ouvrir dans Chrome »)</li>
-         <li>Appuie sur le menu <strong>⋮</strong> du navigateur</li>
-         <li>Choisis <strong>« Installer l'application »</strong> (ou « Ajouter à l'écran d'accueil »)</li>`;
-    help.hidden = false;
-  }
-
-  // 6) Le bouton ne disparaît que lorsqu'on clique dessus
+  // 5) Le bouton ne disparaît que lorsqu'on clique dessus
   btn.addEventListener('click', async () => {
     hide();
     if (window.__pwaPrompt) {
@@ -1844,14 +1832,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       window.__pwaPrompt = null;
       evt.prompt();
       await evt.userChoice;
-    } else if (estMobile) {
-      ouvrirAide();
+    } else if (estIOS && iosHelp) {
+      iosHelp.hidden = false;
     }
   });
 
-  if (help) {
-    help.addEventListener('click', e => {
-      if (e.target === help || e.target.closest('[data-close]')) help.hidden = true;
+  if (iosHelp) {
+    iosHelp.addEventListener('click', e => {
+      if (e.target === iosHelp || e.target.closest('[data-close]')) iosHelp.hidden = true;
     });
   }
 })();
@@ -1860,7 +1848,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 </body>
 </html>
-
 
 
 
