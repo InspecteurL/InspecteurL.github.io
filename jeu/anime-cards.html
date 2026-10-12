@@ -1318,6 +1318,161 @@
     width: 100%;
   }
 }
+
+/* =========================================================
+   ⚽ PACK FOOTBALL — design de carte spécial (raretés conservées)
+   Activé automatiquement quand cards.anime = 'Football'
+   ========================================================= */
+.fb-card {
+  --fb-1: #7a4e32; --fb-2: #c9916a; --fb-3: #4a2f1d; --fb-ink: #fff4e8;
+  position: absolute;
+  inset: 0;
+  container-type: inline-size;
+  clip-path: polygon(0 5%, 14% 0, 86% 0, 100% 5%, 100% 90%, 50% 100%, 0 90%);
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgba(255,255,255,0.35), transparent 60%),
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.07) 0 6%, transparent 6% 12%),
+    linear-gradient(160deg, var(--fb-2), var(--fb-1) 55%, var(--fb-3));
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,0.28), inset 0 0 22px rgba(0,0,0,0.35);
+  color: var(--fb-ink);
+  font-family: var(--font-display);
+  overflow: hidden;
+  user-select: none;
+}
+.fb-card.fb-inline { position: relative; inset: auto; width: 100%; aspect-ratio: 5 / 7; }
+
+.fb-r-commune    { --fb-1: #7a4e32; --fb-2: #c9916a; --fb-3: #4a2f1d; --fb-ink: #fff4e8; }
+.fb-r-rare       { --fb-1: #5b7098; --fb-2: #b9c6dd; --fb-3: #2f3f5e; --fb-ink: #0d1626; }
+.fb-r-epique     { --fb-1: #4b1d94; --fb-2: #b06cff; --fb-3: #210a4d; --fb-ink: #ffffff; }
+.fb-r-legendaire { --fb-1: #b9791a; --fb-2: #f6da86; --fb-3: #6b430a; --fb-ink: #2a1a02; }
+.fb-r-mythique {
+  --fb-ink: #1a0820;
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgba(255,255,255,0.45), transparent 60%),
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.12) 0 6%, transparent 6% 12%),
+    linear-gradient(135deg, #ff6fd8, #7cf0ff, #ffe66d, #ff6fd8, #7cf0ff);
+  background-size: auto, auto, 300% 300%;
+  animation: fbHolo 5s ease-in-out infinite alternate;
+}
+@keyframes fbHolo {
+  from { background-position: 0 0, 0 0, 0% 50%; }
+  to   { background-position: 0 0, 0 0, 100% 50%; }
+}
+
+.fb-photo {
+  position: absolute;
+  left: 28%; right: 0; top: 6%; height: 50%;
+  background-size: cover;
+  background-position: center top;
+  -webkit-mask-image: linear-gradient(#000 72%, transparent);
+          mask-image: linear-gradient(#000 72%, transparent);
+}
+.fb-left {
+  position: absolute;
+  left: 9%; top: 11%; width: 19%;
+  text-align: center;
+  line-height: 1;
+}
+.fb-ovr { font-size: 17cqw; font-weight: 700; }
+.fb-pos {
+  font-size: 6.5cqw;
+  letter-spacing: 0.08em;
+  margin-top: 2cqw;
+  padding-top: 2cqw;
+  border-top: 1px solid currentColor;
+}
+.fb-name {
+  position: absolute;
+  left: 6%; right: 6%; top: 56%;
+  text-align: center;
+  font-size: 8.6cqw;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.25);
+}
+.fb-club {
+  position: absolute;
+  left: 6%; right: 6%; top: 66.5%;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 4.8cqw;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fb-stats {
+  position: absolute;
+  left: 12%; right: 12%; top: 73%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: center;
+  border-top: 1px solid rgba(0,0,0,0.25);
+  padding-top: 1.5cqw;
+}
+.fb-stat b { display: block; font-size: 8cqw; font-weight: 700; line-height: 1.1; }
+.fb-stat span { font-size: 4.2cqw; letter-spacing: 0.12em; opacity: 0.8; }
+.fb-rarity {
+  position: absolute;
+  left: 0; right: 0; bottom: 5.5%;
+  text-align: center;
+  font-size: 4.2cqw;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+/* Collection : l'item devient transparent, seule la carte en forme d'écusson reste */
+.card-item.fb-item {
+  border: none;
+  background: transparent;
+  overflow: visible;
+}
+.card-item.fb-item:hover { box-shadow: none; filter: brightness(1.12); }
+.fb-item .card-qte { top: 12%; right: 8%; z-index: 4; }
+.fb-item .new-badge { z-index: 5; }
+
+/* Reveal : pas de cadre rectangulaire, halo qui suit la forme de la carte */
+.card-face.face-front.fb-front {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  filter: drop-shadow(0 0 14px var(--rarity-color));
+}
+.card-face.face-front.fb-front.foil::after {
+  clip-path: polygon(0 5%, 14% 0, 86% 0, 100% 5%, 100% 90%, 50% 100%, 0 90%);
+}
+.card-face.face-front.fb-front.pity-tag::before { top: 4%; right: 12%; }
+
+/* Récap */
+.recap-card.fb-recap {
+  border: none;
+  background: transparent;
+  overflow: visible;
+}
+.recap-card.fb-recap.best { box-shadow: none; filter: drop-shadow(0 0 10px var(--rarity-color)); }
+
+/* Marché : la carte foot remplace l'image, les boutons restent dessous */
+.card-item.fb-market {
+  aspect-ratio: auto;
+  border: none;
+  background: transparent;
+  overflow: visible;
+}
+.fb-market .rarity-tag { display: none; }
+.fb-market .card-nom { display: none; }
+.fb-market .card-info {
+  background: var(--bg-panel);
+  border-radius: 6px;
+  margin-top: 4px;
+  gap: 4px;
+}
+.fb-market .card-qte { top: 12%; right: 8%; z-index: 4; }
 </style>
 </head>
 <body>
@@ -1420,6 +1575,10 @@
     <div class="pack-grid-item" data-banniere="Oshi no Ko" data-glow="rgba(80,200,140,0.5)" data-cost1="30" data-cost10="300" data-image="oshipack.png">
       <div class="pack-grid-art"><img src="oshipack.png" alt="" onerror="this.remove()"><div class="pack-grid-symbol">Oshi no Ko</div></div>
       <div class="pack-grid-name">Oshi no Ko</div>
+    </div>
+    <div class="pack-grid-item" data-banniere="Football" data-glow="rgba(60,200,90,0.55)" data-cost1="50" data-cost10="500" data-image="">
+      <div class="pack-grid-art"><div class="pack-grid-symbol">Football</div></div>
+      <div class="pack-grid-name">Football</div>
     </div>
   </div>
 </div>
@@ -1621,6 +1780,57 @@ const RARITY_COLORS = {
 };
 
 let activeBanniere = 'standard';
+
+// ============================================
+// PACK FOOTBALL : helpers de rendu
+// ============================================
+const FB_PACK = 'Football';
+function estCarteFoot(c) { return !!c && c.anime === FB_PACK; }
+// Les cartes renvoyées par le tirage peuvent ne pas contenir les stats : on retrouve la fiche complète
+function carteComplete(c) { return (c && allCards.find(x => x.id === c.id)) || c; }
+function carteParNom(nom) { return allCards.find(x => x.nom === nom); }
+function ovrFoot(c) {
+  const a = c.attaque || 0, d = c.defense || 0, v = c.vitesse || 0;
+  switch (c.poste) {
+    case 'GAR': return Math.round(d * 0.9 + v * 0.1);
+    case 'DEF': return Math.round(d * 0.6 + v * 0.2 + a * 0.2);
+    case 'MIL': return Math.round(a * 0.45 + d * 0.25 + v * 0.3);
+    default:    return Math.round(a * 0.55 + v * 0.35 + d * 0.10);
+  }
+}
+function htmlCarteFoot(c, opts = {}) {
+  const masque = !!opts.masque;
+  const nomJoueur = String(c.nom || '').split(' – ')[0];
+  const club = [c.club, c.periode].filter(Boolean).join(' · ');
+  const val = (x) => masque ? '?' : (x ?? '–');
+  // Les noms longs rétrécissent au lieu d'être coupés
+  const n = nomJoueur.length;
+  const tailleNom = n > 17 ? 6.2 : n > 14 ? 7.0 : n > 11 ? 8.0 : 8.6;
+  return `
+    <div class="fb-card fb-r-${c.rarete} ${opts.inline ? 'fb-inline' : ''}">
+      <div class="fb-photo" style="background-image:url('${c.image_url}')"></div>
+      <div class="fb-left">
+        <div class="fb-ovr">${masque ? '?' : ovrFoot(c)}</div>
+        <div class="fb-pos">${masque ? '' : (c.poste || '')}</div>
+      </div>
+      <div class="fb-name" style="font-size:${tailleNom}cqw">${masque ? '???' : nomJoueur}</div>
+      <div class="fb-club">${masque ? '' : club}</div>
+      <div class="fb-stats">
+        <div class="fb-stat"><b>${val(c.attaque)}</b><span>ATT</span></div>
+        <div class="fb-stat"><b>${val(c.defense)}</b><span>DEF</span></div>
+        <div class="fb-stat"><b>${val(c.vitesse)}</b><span>VIT</span></div>
+      </div>
+      <div class="fb-rarity">${c.rarete}</div>
+    </div>`;
+}
+function htmlItemFootCollection(c) {
+  return `
+    <div class="card-item fb-item ${c.quantite === 0 ? 'locked' : ''}" style="--rarity-color: ${RARITY_COLORS[c.rarete]};">
+      ${htmlCarteFoot(c, { masque: c.quantite === 0 })}
+      ${c.quantite > 1 ? `<div class="card-qte">x${c.quantite}</div>` : ''}
+      ${c.estNouvelle ? `<div class="new-badge" onclick="retirerBadgeNew('${c.userCardId}', event)">NEW</div>` : ''}
+    </div>`;
+}
   const PACK_IMAGES = {};
 let allCards = [];
 
@@ -2115,8 +2325,13 @@ async function afficherReveal(cartes) {
       }
     }
 
-    cardFront.className = `card-face face-front ${isFoil ? 'foil' : ''} ${carte.isPity ? 'pity-tag' : ''}`;
-    cardFront.innerHTML = `
+    const carteFull = carteComplete(carte);
+    const estFoot = estCarteFoot(carteFull);
+    cardFront.className = `card-face face-front ${estFoot ? 'fb-front' : ''} ${isFoil ? 'foil' : ''} ${carte.isPity ? 'pity-tag' : ''}`;
+    cardFront.innerHTML = estFoot ? `
+      ${htmlCarteFoot(carteFull)}
+      ${carte.isNew ? '<div class="new-badge">NEW</div>' : ''}
+    ` : `
       <img src="${carte.image_url}" alt="${carte.nom}">
       ${carte.isNew ? '<div class="new-badge">NEW</div>' : ''}
       <div class="r-info">
@@ -2182,7 +2397,11 @@ function afficherRecap(cartes) {
     .map(r => `<span class="recap-tag" style="--rarity-color: var(--c-${r});">${comptage[r]} ${r}${comptage[r] > 1 ? 's' : ''}</span>`)
     .join('');
 
-  recapGrid.innerHTML = cartes.map(c => `
+  recapGrid.innerHTML = cartes.map(c => estCarteFoot(carteComplete(c)) ? `
+    <div class="recap-card fb-recap ${c.id === meilleure.id ? 'best' : ''}" style="--rarity-color: var(--c-${c.rarete});">
+      ${htmlCarteFoot(carteComplete(c), { inline: true })}
+    </div>
+  ` : `
     <div class="recap-card ${c.id === meilleure.id ? 'best' : ''}" style="--rarity-color: var(--c-${c.rarete});">
       <img src="${c.image_url}" alt="${c.nom}">
       <div class="recap-card-nom">${c.nom}</div>
@@ -2280,7 +2499,7 @@ function renderCollection() {
   }
   empty.style.display = 'none';
 
-  grid.innerHTML = cartesAffichees.map(c => `
+  grid.innerHTML = cartesAffichees.map(c => estCarteFoot(c) ? htmlItemFootCollection(c) : `
     <div class="card-item ${c.quantite === 0 ? 'locked' : ''}" style="--rarity-color: ${RARITY_COLORS[c.rarete]};">
       <div class="rarity-tag">${c.rarete}</div>
       ${c.quantite > 1 ? `<div class="card-qte">x${c.quantite}</div>` : ''}
@@ -2340,6 +2559,7 @@ const PACK_DESCRIPTIONS = {
   'Fire Force' : 'Cartes Fire Force uniquement.',
   'Mob Psycho 100' : 'Cartes Mob Psycho 100 uniquement.',
   'Oshi no Ko' : 'Cartes Oshi no Ko uniquement.',
+  'Football' : 'Joueurs de foot à différentes périodes de leur carrière : même joueur, raretés et stats différentes selon l\'époque.',
 };
 
 function appliquerBanniere(btn) {
@@ -2492,7 +2712,7 @@ async function chargerCartesVendables() {
   const { data: { user } } = await sb.auth.getUser();
   const { data } = await sb
     .from('user_cards')
-    .select('id, quantite, card:cards(id, nom, anime, rarete, image_url)')
+    .select('id, quantite, card:cards(id, nom, anime, rarete, image_url, attaque, defense, vitesse, club, periode, poste)')
     .eq('user_id', user.id)
     .gt('quantite', 0);
 
@@ -2517,14 +2737,14 @@ const animeFiltre = document.getElementById('marketFilterAnime').value;
     const prix = MARKET_PRICES[c.rarete] || {};
     const estSelectionnee = selectionVente.has(uc.id);
     return `
-      <div class="card-item ${selectionModeVente ? 'select-mode' : ''} ${estSelectionnee ? 'vente-selected' : ''}"
+      <div class="card-item ${estCarteFoot(c) ? 'fb-market' : ''} ${selectionModeVente ? 'select-mode' : ''} ${estSelectionnee ? 'vente-selected' : ''}"
            style="--rarity-color:${RARITY_COLORS[c.rarete]};"
            onclick="clicCarteVente('${uc.id}', event)">
         <div class="rarity-tag">${c.rarete}</div>
         ${uc.quantite > 1 ? `<div class="card-qte">x${uc.quantite}</div>` : ''}
         <div class="select-checkbox"></div>
         ${estSelectionnee && selectionVente.get(uc.id).quantite < uc.quantite ? `<div class="card-qte" style="top:auto;bottom:34px;background:var(--c-legendaire);color:#1a1204;">Vend x${selectionVente.get(uc.id).quantite}</div>` : ''}
-        <img src="${c.image_url}" alt="${c.nom}">
+        ${estCarteFoot(c) ? htmlCarteFoot(c, { inline: true }) : `<img src="${c.image_url}" alt="${c.nom}">`}
         <div class="card-info">
           <div class="card-nom">${c.nom}</div>
           <div class="card-anime">${c.anime}</div>
@@ -2727,10 +2947,10 @@ const animeFiltre = document.getElementById('marketFilterAnime').value;
 .map(l => {
     const estMoi = user && l.seller_id === user.id;
     return `
-      <div class="card-item" style="--rarity-color:${RARITY_COLORS[l.rarete]};">
+      <div class="card-item ${(l.anime === 'Football' && carteParNom(l.nom)) ? 'fb-market' : ''}" style="--rarity-color:${RARITY_COLORS[l.rarete]};">
         <div class="rarity-tag">${l.rarete}</div>
         ${estMoi ? `<div class="card-qte" style="background:var(--c-legendaire);color:#1a1204;">TON ANNONCE</div>` : ''}
-        <img src="${l.image_url}" alt="${l.nom}">
+        ${(l.anime === 'Football' && carteParNom(l.nom)) ? htmlCarteFoot(carteParNom(l.nom), { inline: true }) : `<img src="${l.image_url}" alt="${l.nom}">`}
         <div class="card-info">
           <div class="card-nom">${l.nom}</div>
           <div class="card-anime">${l.prix} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></div>
