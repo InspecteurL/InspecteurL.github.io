@@ -1474,6 +1474,52 @@
   gap: 4px;
 }
 .fb-market .card-qte { top: 12%; right: 8%; z-index: 4; }
+
+  .btn-mark-seen {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-mark-seen:hover { border-color: var(--c-legendaire); color: var(--c-legendaire); }
+
+.card-item:not(.locked) { cursor: zoom-in; }
+
+.card-viewer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(4,5,8,0.94);
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 14px;
+  z-index: 120; padding: 20px; cursor: zoom-out;
+}
+.card-viewer-overlay.active { display: flex; }
+.card-viewer-card {
+  width: min(340px, 80vw);
+  cursor: default;
+  animation: viewerIn 0.22s ease-out;
+}
+@keyframes viewerIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.card-viewer-card.classic {
+  background: var(--bg-panel);
+  border: 2px solid var(--rarity-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 60px -10px var(--rarity-color);
+}
+.card-viewer-card.classic img { width: 100%; max-height: 62vh; object-fit: cover; display: block; }
+.card-viewer-card.classic .v-info { padding: 12px 14px; }
+.card-viewer-card.classic .v-nom { font-family: var(--font-display); font-size: 20px; }
+.card-viewer-card.classic .v-anime { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+.card-viewer-card.classic .v-rarete { font-size: 11px; color: var(--rarity-color); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; }
+.card-viewer-card.foot { filter: drop-shadow(0 0 18px var(--rarity-color)); }
+.card-viewer-hint { font-size: 12px; color: var(--ink-dim); }
 </style>
 </head>
 <body>
@@ -1614,6 +1660,7 @@
       <div class="collection-count" id="collectionCount">0 carte obtenue</div>
     </div>
     <div class="filters">
+       <button class="btn-mark-seen" id="btnMarkAllSeen" style="display:none;">Tout marquer comme vu</button>
       <select id="filterRarete">
         <option value="">Toutes raretés</option>
         <option value="commune">Commune</option>
@@ -1715,7 +1762,10 @@
     <button class="reveal-close" id="revealClose" style="display:none;">Continuer</button>
   </div>
 </div>
-
+<div class="card-viewer-overlay" id="cardViewerOverlay">
+  <div id="cardViewerContent"></div>
+  <div class="card-viewer-hint">Clique n'importe où pour fermer</div>
+</div>
 <div class="flip-flash" id="flipFlash"></div>
 
   <div class="recap-overlay" id="recapOverlay">
@@ -1826,7 +1876,7 @@ function htmlCarteFoot(c, opts = {}) {
 }
 function htmlItemFootCollection(c) {
   return `
-    <div class="card-item fb-item ${c.quantite === 0 ? 'locked' : ''}" style="--rarity-color: ${RARITY_COLORS[c.rarete]};">
+  <div class="card-item fb-item ${c.quantite === 0 ? 'locked' : ''}" style="--rarity-color: ${RARITY_COLORS[c.rarete]};" onclick="ouvrirApercuCarte('${c.id}')">
       ${htmlCarteFoot(c, { masque: c.quantite === 0 })}
       ${c.quantite > 1 ? `<div class="card-qte">x${c.quantite}</div>` : ''}
       ${c.estNouvelle ? `<div class="new-badge" onclick="retirerBadgeNew('${c.userCardId}', event)">NEW</div>` : ''}
@@ -2492,6 +2542,8 @@ function renderCollection() {
 
   document.getElementById('collectionCount').textContent =
     `${nbObtenues} / ${allCards.length} cartes obtenues`;
+  document.getElementById('btnMarkAllSeen').style.display =
+  allCards.some(c => c.estNouvelle) ? 'inline-block' : 'none';
 
   if (cartesAffichees.length === 0) {
     grid.innerHTML = '';
@@ -2501,7 +2553,7 @@ function renderCollection() {
   empty.style.display = 'none';
 
   grid.innerHTML = cartesAffichees.map(c => estCarteFoot(c) ? htmlItemFootCollection(c) : `
-    <div class="card-item ${c.quantite === 0 ? 'locked' : ''}" style="--rarity-color: ${RARITY_COLORS[c.rarete]};">
+  <div class="card-item ${c.quantite === 0 ? 'locked' : ''}" style="--rarity-color: ${RARITY_COLORS[c.rarete]};" onclick="ouvrirApercuCarte('${c.id}')">
       <div class="rarity-tag">${c.rarete}</div>
       ${c.quantite > 1 ? `<div class="card-qte">x${c.quantite}</div>` : ''}
       ${c.estNouvelle ? `<div class="new-badge" onclick="retirerBadgeNew('${c.userCardId}', event)">NEW</div>` : ''}
@@ -2539,6 +2591,53 @@ document.getElementById('marketFilterAnime').addEventListener('change', () => {
   if (active === 'vendre') chargerCartesVendables();
   if (active === 'annonces') chargerAnnonces();
 });
+
+  // ---- Tout marquer comme vu ----
+async function marquerToutVu() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const { error } = await sb
+    .from('user_cards')
+    .update({ est_nouvelle: false })
+    .eq('user_id', user.id)
+    .eq('est_nouvelle', true);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  allCards.forEach(c => { c.estNouvelle = false; });
+  renderCollection();
+}
+document.getElementById('btnMarkAllSeen').addEventListener('click', marquerToutVu);
+
+// ---- Aperçu en grand ----
+function ouvrirApercuCarte(cardId) {
+  const c = allCards.find(x => String(x.id) === String(cardId));
+  if (!c || c.quantite === 0) return;
+  const content = document.getElementById('cardViewerContent');
+  const rarityVar = RARITY_COLORS[c.rarete];
+
+  if (estCarteFoot(c)) {
+    content.innerHTML = `<div class="card-viewer-card foot" style="--rarity-color:${rarityVar};" onclick="event.stopPropagation()">${htmlCarteFoot(c, { inline: true })}</div>`;
+  } else {
+    content.innerHTML = `
+      <div class="card-viewer-card classic" style="--rarity-color:${rarityVar};" onclick="event.stopPropagation()">
+        <img src="${c.image_url}" alt="${c.nom}">
+        <div class="v-info">
+          <div class="v-nom">${c.nom}</div>
+          <div class="v-anime">${c.anime}</div>
+          <div class="v-rarete">${c.rarete}</div>
+        </div>
+      </div>`;
+  }
+  document.getElementById('cardViewerOverlay').classList.add('active');
+
+  // Voir la carte = la marquer comme vue
+  if (c.estNouvelle && c.userCardId) retirerBadgeNew(c.userCardId);
+}
+function fermerApercuCarte() {
+  document.getElementById('cardViewerOverlay').classList.remove('active');
+}
+window.ouvrirApercuCarte = ouvrirApercuCarte;
+document.getElementById('cardViewerOverlay').addEventListener('click', fermerApercuCarte);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fermerApercuCarte(); });
 
 // ============================================
 // BANNIÈRES
