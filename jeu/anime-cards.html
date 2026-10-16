@@ -2807,6 +2807,16 @@ async function chargerPrixMarche() {
     MARKET_PRICES[p.rarete] = { instant: p.prix_instant, min: p.prix_marche_min, max: p.prix_marche_max };
   });
 }
+  const BONUS_PRIX_FOOT = 1.15;
+function prixMarcheCarte(card) {
+  const base = MARKET_PRICES[card.rarete] || {};
+  const k = estCarteFoot(card) ? BONUS_PRIX_FOOT : 1;
+  return {
+    instant: Math.round((base.instant || 0) * k),
+    min: Math.round((base.min || 0) * k),
+    max: Math.round((base.max || 0) * k),
+  };
+}
 
 async function chargerCartesVendables() {
   const { data: { user } } = await sb.auth.getUser();
@@ -2834,7 +2844,7 @@ const animeFiltre = document.getElementById('marketFilterAnime').value;
 )
 .map(uc => {
     const c = uc.card;
-    const prix = MARKET_PRICES[c.rarete] || {};
+    const prix = prixMarcheCarte(c);
     const estSelectionnee = selectionVente.has(uc.id);
     return `
       <div class="card-item ${estCarteFoot(c) ? 'fb-market' : ''} ${selectionModeVente ? 'select-mode' : ''} ${estSelectionnee ? 'vente-selected' : ''}"
@@ -2885,13 +2895,14 @@ async function clicCarteVente(userCardId, event) {
     quantiteAVendre = q;
   }
 
-  const prix = MARKET_PRICES[uc.card.rarete] || {};
-  selectionVente.set(userCardId, {
-    nom: uc.card.nom,
-    rarete: uc.card.rarete,
-    quantite: quantiteAVendre,
-    prixUnitaire: prix.instant || 0,
-  });
+ const prix = prixMarcheCarte(uc.card);
+selectionVente.set(userCardId, {
+  nom: uc.card.nom,
+  rarete: uc.card.rarete,
+  foot: estCarteFoot(uc.card),
+  quantite: quantiteAVendre,
+  prixUnitaire: prix.instant || 0,
+});
   cardEl.classList.add('vente-selected');
   updateBulkSellBar();
   chargerCartesVendables(); // pour afficher le badge de quantité choisie
@@ -2930,26 +2941,23 @@ document.getElementById('btnAnnulerSelectionVente').addEventListener('click', an
 document.getElementById('btnOuvrirRecapVente').addEventListener('click', () => {
   if (selectionVente.size === 0) return;
 
-  const groupes = {};
-  let total = 0;
-  selectionVente.forEach(item => {
-    const key = item.rarete;
-    groupes[key] = groupes[key] || { count: 0, prixUnitaire: item.prixUnitaire, total: 0 };
-    groupes[key].count += item.quantite;
-    groupes[key].total += item.quantite * item.prixUnitaire;
-    total += item.quantite * item.prixUnitaire;
-  });
+const groupes = {};
+let total = 0;
+selectionVente.forEach(item => {
+  const key = item.rarete + (item.foot ? '|foot' : '');
+  groupes[key] = groupes[key] || { rarete: item.rarete, foot: item.foot, count: 0, prixUnitaire: item.prixUnitaire, total: 0 };
+  groupes[key].count += item.quantite;
+  groupes[key].total += item.quantite * item.prixUnitaire;
+  total += item.quantite * item.prixUnitaire;
+});
 
-  const ordreRarete = ['mythique', 'legendaire', 'epique', 'rare', 'commune'];
-  const lignes = ordreRarete
-    .filter(r => groupes[r])
-    .map(r => {
-      const g = groupes[r];
-      return `<div class="bulk-recap-line" style="--rarity-color: var(--c-${r});">
-        <span>${g.count} ${r}${g.count > 1 ? 's' : ''} × ${g.prixUnitaire}</span>
-        <span>${g.total} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></span>
-      </div>`;
-    }).join('');
+const ordreRarete = ['mythique', 'legendaire', 'epique', 'rare', 'commune'];
+const lignes = Object.values(groupes)
+  .sort((a, b) => ordreRarete.indexOf(a.rarete) - ordreRarete.indexOf(b.rarete) || (a.foot ? 1 : 0) - (b.foot ? 1 : 0))
+  .map(g => `<div class="bulk-recap-line" style="--rarity-color: var(--c-${g.rarete});">
+      <span>${g.count} ${g.rarete}${g.count > 1 ? 's' : ''}${g.foot ? ' ⚽' : ''} × ${g.prixUnitaire}</span>
+      <span>${g.total} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></span>
+    </div>`).join('');
 
   document.getElementById('bulkRecapLines').innerHTML = lignes;
   document.getElementById('bulkRecapTotal').innerHTML = `${total} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span>`;
