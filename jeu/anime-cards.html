@@ -1520,6 +1520,29 @@
 .card-viewer-card.classic .v-rarete { font-size: 11px; color: var(--rarity-color); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; }
 .card-viewer-card.foot { filter: drop-shadow(0 0 18px var(--rarity-color)); }
 .card-viewer-hint { font-size: 12px; color: var(--ink-dim); }
+
+  /* Les filtres de flou sur toute la page sont très coûteux : fond opaque à la place */
+.nav { backdrop-filter: none; background: rgba(11,14,20,0.97); }
+.bulk-sell-bar { backdrop-filter: none; background: rgba(19,24,38,0.99); }
+
+/* Le halo du reveal est déjà un dégradé, le blur(20px) sur 600x600 ne sert à rien */
+.reveal-glow-bg { filter: none; }
+
+/* Les cartes hors écran ne sont plus calculées ni dessinées */
+.card-item, .recap-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 220px;
+}
+
+/* Animation holo des mythiques : seulement dans l'aperçu et le reveal, pas dans les grilles */
+.card-item .fb-r-mythique,
+.recap-card .fb-r-mythique { animation: none; }
+
+/* Le badge NEW animait un box-shadow en boucle (repaint permanent) : on anime l'opacité */
+@keyframes newBadgePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
 </style>
 </head>
 <body>
@@ -2557,7 +2580,7 @@ function renderCollection() {
       <div class="rarity-tag">${c.rarete}</div>
       ${c.quantite > 1 ? `<div class="card-qte">x${c.quantite}</div>` : ''}
       ${c.estNouvelle ? `<div class="new-badge" onclick="retirerBadgeNew('${c.userCardId}', event)">NEW</div>` : ''}
-      <img src="${c.image_url}" alt="${c.nom}">
+      <img src="${c.image_url}" alt="${c.nom}" loading="lazy" decoding="async">
       <div class="card-info">
         <div class="card-nom">${c.quantite > 0 ? c.nom : '???'}</div>
         <div class="card-anime">${c.quantite > 0 ? c.anime : ''}</div>
@@ -2581,14 +2604,14 @@ document.getElementById('filterAnime').addEventListener('change', renderCollecti
   document.getElementById('marketFilterRarete').addEventListener('change', () => {
   const active = document.querySelector('.sub-tab-marche.active').dataset.sub;
 
-  if (active === 'vendre') chargerCartesVendables();
+  if (active === 'vendre') renderCartesVendables()
   if (active === 'annonces') chargerAnnonces();
 });
 
 document.getElementById('marketFilterAnime').addEventListener('change', () => {
   const active = document.querySelector('.sub-tab-marche.active').dataset.sub;
 
-  if (active === 'vendre') chargerCartesVendables();
+  if (active === 'vendre') renderCartesVendables()
   if (active === 'annonces') chargerAnnonces();
 });
 
@@ -2827,8 +2850,12 @@ async function chargerCartesVendables() {
     .gt('quantite', 0);
 
   cartesVendablesData = data || [];
+  renderCartesVendables();
+}
+
+function renderCartesVendables() {
   const rareteFiltre = document.getElementById('marketFilterRarete').value;
-const animeFiltre = document.getElementById('marketFilterAnime').value;
+  const animeFiltre = document.getElementById('marketFilterAnime').value;
 
   const grid = document.getElementById('vendreGrid');
   if (cartesVendablesData.length === 0) {
@@ -2836,17 +2863,16 @@ const animeFiltre = document.getElementById('marketFilterAnime').value;
     return;
   }
 
-  
- grid.innerHTML = cartesVendablesData
-.filter(uc =>
-  (!rareteFiltre || uc.card.rarete === rareteFiltre) &&
-  (!animeFiltre || uc.card.anime === animeFiltre)
-)
-.map(uc => {
-    const c = uc.card;
-    const prix = prixMarcheCarte(c);
-    const estSelectionnee = selectionVente.has(uc.id);
-    return `
+  grid.innerHTML = cartesVendablesData
+    .filter(uc =>
+      (!rareteFiltre || uc.card.rarete === rareteFiltre) &&
+      (!animeFiltre || uc.card.anime === animeFiltre)
+    )
+    .map(uc => {
+      const c = uc.card;
+      const prix = prixMarcheCarte(c);
+      const estSelectionnee = selectionVente.has(uc.id);
+      return `
       <div class="card-item ${estCarteFoot(c) ? 'fb-market' : ''} ${selectionModeVente ? 'select-mode' : ''} ${estSelectionnee ? 'vente-selected' : ''}"
            style="--rarity-color:${RARITY_COLORS[c.rarete]};"
            onclick="clicCarteVente('${uc.id}', event)">
@@ -2854,7 +2880,7 @@ const animeFiltre = document.getElementById('marketFilterAnime').value;
         ${uc.quantite > 1 ? `<div class="card-qte">x${uc.quantite}</div>` : ''}
         <div class="select-checkbox"></div>
         ${estSelectionnee && selectionVente.get(uc.id).quantite < uc.quantite ? `<div class="card-qte" style="top:auto;bottom:34px;background:var(--c-legendaire);color:#1a1204;">Vend x${selectionVente.get(uc.id).quantite}</div>` : ''}
-        ${estCarteFoot(c) ? htmlCarteFoot(c, { inline: true }) : `<img src="${c.image_url}" alt="${c.nom}">`}
+        ${estCarteFoot(c) ? htmlCarteFoot(c, { inline: true }) : `<img src="${c.image_url}" alt="${c.nom}" loading="lazy" decoding="async">`}
         <div class="card-info">
           <div class="card-nom">${c.nom}</div>
           <div class="card-anime">${c.anime}</div>
@@ -2864,7 +2890,7 @@ const animeFiltre = document.getElementById('marketFilterAnime').value;
           </div>
         </div>
       </div>`;
-  }).join('');
+    }).join('');
 }
 
 async function clicCarteVente(userCardId, event) {
@@ -2878,7 +2904,7 @@ async function clicCarteVente(userCardId, event) {
     selectionVente.delete(userCardId);
     cardEl.classList.remove('vente-selected');
     updateBulkSellBar();
-    chargerCartesVendables(); // pour rafraîchir le badge de quantité choisie
+    renderCartesVendables() // pour rafraîchir le badge de quantité choisie
     return;
   }
 
@@ -2905,7 +2931,7 @@ selectionVente.set(userCardId, {
 });
   cardEl.classList.add('vente-selected');
   updateBulkSellBar();
-  chargerCartesVendables(); // pour afficher le badge de quantité choisie
+  renderCartesVendables() // pour afficher le badge de quantité choisie
 }
 window.clicCarteVente = clicCarteVente;
 
@@ -2922,7 +2948,7 @@ function annulerSelectionVente() {
   document.getElementById('btnToggleSelectVente').classList.remove('active');
   document.getElementById('btnToggleSelectVente').textContent = 'Sélectionner plusieurs';
   updateBulkSellBar();
-  chargerCartesVendables();
+  renderCartesVendables()
 }
 
 document.getElementById('btnToggleSelectVente').addEventListener('click', () => {
@@ -2932,7 +2958,7 @@ document.getElementById('btnToggleSelectVente').addEventListener('click', () => 
     selectionModeVente = true;
     document.getElementById('btnToggleSelectVente').classList.add('active');
     document.getElementById('btnToggleSelectVente').textContent = 'Annuler la sélection';
-    chargerCartesVendables();
+    renderCartesVendables()
   }
 });
 
@@ -3058,7 +3084,7 @@ const animeFiltre = document.getElementById('marketFilterAnime').value;
       <div class="card-item ${(l.anime === 'Football' && carteParNom(l.nom)) ? 'fb-market' : ''}" style="--rarity-color:${RARITY_COLORS[l.rarete]};">
         <div class="rarity-tag">${l.rarete}</div>
         ${estMoi ? `<div class="card-qte" style="background:var(--c-legendaire);color:#1a1204;">TON ANNONCE</div>` : ''}
-        ${(l.anime === 'Football' && carteParNom(l.nom)) ? htmlCarteFoot(carteParNom(l.nom), { inline: true }) : `<img src="${l.image_url}" alt="${l.nom}">`}
+        ${(l.anime === 'Football' && carteParNom(l.nom)) ? htmlCarteFoot(carteParNom(l.nom), { inline: true }) : `<img src="${c.image_url}" alt="${c.nom}" loading="lazy" decoding="async">`}
         <div class="card-info">
           <div class="card-nom">${l.nom}</div>
           <div class="card-anime">${l.prix} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></div>
