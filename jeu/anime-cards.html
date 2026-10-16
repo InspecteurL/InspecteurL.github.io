@@ -1712,6 +1712,9 @@
 </div>
   <div class="status-msg" id="statusMsg"></div>
 </div>
+  <button class="btn-free-draw" id="btnTestAdmin" style="display:none; margin-top:10px; background:#2a3350; color:var(--ink);">
+  🛠 Tirage test (admin)
+</button>
 
 <div class="collection-section">
   <div class="collection-header">
@@ -3374,12 +3377,47 @@ function afficherBadge(id, count) {
     el.style.display = 'none';
   }
 }
+  // ============================================
+// TIRAGE TEST ADMIN (simulation, rien n'est enregistré)
+// ============================================
+const ADMIN_USER_ID = 'b341b986-b829-4979-b5d1-4ba6ea0b1979';
+const CARTE_TEST_ID = 'be341d5e-0751-46dc-8003-dbec1c8a7a3a';
+
+async function tirageTestAdmin() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user || user.id !== ADMIN_USER_ID) return;
+
+  const cible = allCards.find(c => String(c.id) === CARTE_TEST_ID);
+  if (!cible) { alert('Carte test introuvable (is_active = true ?)'); return; }
+
+  const autres = allCards
+    .filter(c => estCarteFoot(c) && String(c.id) !== CARTE_TEST_ID)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 9);
+
+  // La carte cible arrive en dernier pour le suspense
+  const cartes = [...autres, cible].map(c => ({ ...c, isNew: false, isPity: false }));
+
+  const btn = document.getElementById('btnTestAdmin');
+  btn.disabled = true;
+  try {
+    await afficherOuverturePack(cartes);
+    await afficherReveal(cartes);
+  } finally {
+    btn.disabled = false;
+  }
+}
+document.getElementById('btnTestAdmin').addEventListener('click', tirageTestAdmin);
+  
 // ============================================
 // INIT
 // ============================================
 (async function init() {
   const session = await getSessionOrRedirect();
   if (!session) return;
+  if (session.user.id === ADMIN_USER_ID) {
+  document.getElementById('btnTestAdmin').style.display = 'inline-block';
+}
 
   const btnActifParDefaut = document.querySelector('#banniereTabs .pack-grid-item.active');
   if (btnActifParDefaut) {
