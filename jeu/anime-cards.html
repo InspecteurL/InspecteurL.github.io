@@ -1544,31 +1544,83 @@
   50% { opacity: 0.6; }
 }
 
-  /* ---------- VIDÉO MYTHIQUE FOOT ---------- */
+/* ---------- VIDÉO MYTHIQUE FOOT : lumière éblouissante ---------- */
 .mythic-video-overlay {
   position: fixed; inset: 0; z-index: 130;
   display: none; align-items: center; justify-content: center;
+  overflow: hidden; background: transparent;
 }
 .mythic-video-overlay.active { display: flex; }
+
+/* Cœur lumineux qui grossit depuis le centre */
+.mythic-glow, .mythic-rays {
+  position: absolute; left: 50%; top: 50%;
+  width: 220vmax; height: 220vmax;
+  margin: -110vmax 0 0 -110vmax;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0; transform: scale(0);
+  will-change: transform, opacity;
+}
+.mythic-glow {
+  background: radial-gradient(circle,
+    #fff 0%, #fff 12%,
+    rgba(255,248,220,0.95) 22%,
+    rgba(255,215,150,0.6) 36%,
+    rgba(255,150,230,0.25) 52%,
+    transparent 68%);
+}
+/* Rayons de lumière qui tournent */
+.mythic-rays {
+  background: repeating-conic-gradient(from 0deg, rgba(255,255,255,0.9) 0deg 4deg, transparent 4deg 15deg);
+  -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 55%);
+          mask-image: radial-gradient(circle, #000 0%, transparent 55%);
+}
+.mythic-video-overlay.white-grow .mythic-glow  { animation: mythicGlow 1.9s cubic-bezier(0.55, 0, 0.85, 0.4) forwards; }
+.mythic-video-overlay.white-grow .mythic-rays  { animation: mythicRays 1.9s ease-in forwards; }
+.mythic-video-overlay.white-grow .mythic-white { animation: mythicFlash 1.9s ease-in forwards; }
+
+@keyframes mythicGlow {
+  0%   { transform: scale(0);   opacity: 0; }
+  15%  { opacity: 1; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+@keyframes mythicRays {
+  0%   { transform: scale(0) rotate(0deg);    opacity: 0; }
+  40%  { opacity: 0.9; }
+  100% { transform: scale(1.1) rotate(70deg); opacity: 0; }
+}
+
+/* Flash final qui sature tout l'écran */
 .mythic-white {
   position: absolute; inset: 0;
   background: #fff;
-  clip-path: circle(0% at 50% 50%);
-  transition: background 0.9s ease;
+  opacity: 0;
 }
-.mythic-video-overlay.white-grow .mythic-white {
-  clip-path: circle(150% at 50% 50%);
-  transition: clip-path 1.4s cubic-bezier(0.5, 0, 0.9, 0.6), background 0.9s ease;
+@keyframes mythicFlash {
+  0%, 70% { opacity: 0; }
+  100%    { opacity: 1; }
 }
-.mythic-video-overlay.video-visible .mythic-white { background: #000; }
+/* Le blanc se dissipe lentement en noir pendant que la vidéo apparaît */
+.mythic-video-overlay.video-visible .mythic-white {
+  background: #000;
+  transition: background 1.6s ease-out;
+}
+
+/* La vidéo arrive surexposée et floue, puis se stabilise */
 .mythic-video-overlay video {
   position: relative;
   width: 100%; height: 100%;
   object-fit: contain;
   opacity: 0;
-  transition: opacity 0.9s ease;
+  filter: brightness(4) blur(10px);
+  transition: opacity 1.2s ease, filter 1.8s ease-out;
 }
-.mythic-video-overlay.video-visible video { opacity: 1; }
+.mythic-video-overlay.video-visible video {
+  opacity: 1;
+  filter: brightness(1) blur(0);
+}
+
 .mythic-video-overlay.fade-out { opacity: 0; transition: opacity 0.5s ease; }
 .mythic-video-skip {
   position: absolute; bottom: 24px; right: 24px; z-index: 2;
@@ -1829,7 +1881,9 @@
   <div id="cardViewerContent"></div>
   <div class="card-viewer-hint">Clique n'importe où pour fermer</div>
 </div>
-  <div class="mythic-video-overlay" id="mythicVideoOverlay">
+ <div class="mythic-video-overlay" id="mythicVideoOverlay">
+  <div class="mythic-glow"></div>
+  <div class="mythic-rays"></div>
   <div class="mythic-white"></div>
   <video id="mythicVideo" playsinline preload="auto"></video>
   <button class="mythic-video-skip" id="mythicVideoSkip">Passer ▶▶</button>
@@ -2414,7 +2468,7 @@ async function afficherOuverturePack(cartes) {
         video.muted = true; // au cas où le navigateur refuse le son
         video.play().catch(terminer);
       });
-    }, 1400);
+    }, 1900);
   });
 }
 async function afficherReveal(cartes) {
