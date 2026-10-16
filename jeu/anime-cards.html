@@ -1544,81 +1544,68 @@
   50% { opacity: 0.6; }
 }
 
-/* ---------- VIDÉO MYTHIQUE FOOT : lumière éblouissante ---------- */
+/* ---------- VIDÉO MYTHIQUE FOOT : lumière éblouissante (version légère) ---------- */
 .mythic-video-overlay {
   position: fixed; inset: 0; z-index: 130;
   display: none; align-items: center; justify-content: center;
   overflow: hidden; background: transparent;
 }
 .mythic-video-overlay.active { display: flex; }
+.mythic-video-overlay.video-visible { background: #000; }
 
-/* Cœur lumineux qui grossit depuis le centre */
-.mythic-glow, .mythic-rays {
+/* Cœur lumineux : seulement transform + opacity (animations GPU) */
+.mythic-glow {
   position: absolute; left: 50%; top: 50%;
-  width: 220vmax; height: 220vmax;
-  margin: -110vmax 0 0 -110vmax;
+  width: 150vmax; height: 150vmax;
+  margin: -75vmax 0 0 -75vmax;
   border-radius: 50%;
   pointer-events: none;
   opacity: 0; transform: scale(0);
   will-change: transform, opacity;
-}
-.mythic-glow {
   background: radial-gradient(circle,
-    #fff 0%, #fff 12%,
-    rgba(255,248,220,0.95) 22%,
-    rgba(255,215,150,0.6) 36%,
-    rgba(255,150,230,0.25) 52%,
+    #fff 0%, #fff 14%,
+    rgba(255,240,200,0.9) 28%,
+    rgba(255,190,230,0.4) 48%,
     transparent 68%);
 }
-/* Rayons de lumière qui tournent */
-.mythic-rays {
-  background: repeating-conic-gradient(from 0deg, rgba(255,255,255,0.9) 0deg 4deg, transparent 4deg 15deg);
-  -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 55%);
-          mask-image: radial-gradient(circle, #000 0%, transparent 55%);
-}
-.mythic-video-overlay.white-grow .mythic-glow  { animation: mythicGlow 1.9s cubic-bezier(0.55, 0, 0.85, 0.4) forwards; }
-.mythic-video-overlay.white-grow .mythic-rays  { animation: mythicRays 1.9s ease-in forwards; }
-.mythic-video-overlay.white-grow .mythic-white { animation: mythicFlash 1.9s ease-in forwards; }
+.mythic-rays { display: none; } /* retirés : trop coûteux */
 
-@keyframes mythicGlow {
-  0%   { transform: scale(0);   opacity: 0; }
-  15%  { opacity: 1; }
-  100% { transform: scale(1);   opacity: 1; }
-}
-@keyframes mythicRays {
-  0%   { transform: scale(0) rotate(0deg);    opacity: 0; }
-  40%  { opacity: 0.9; }
-  100% { transform: scale(1.1) rotate(70deg); opacity: 0; }
-}
-
-/* Flash final qui sature tout l'écran */
 .mythic-white {
   position: absolute; inset: 0;
   background: #fff;
   opacity: 0;
+  will-change: opacity;
+}
+.mythic-video-overlay.white-grow .mythic-glow  { animation: mythicGlow 1.9s cubic-bezier(0.55, 0, 0.85, 0.4) forwards; }
+.mythic-video-overlay.white-grow .mythic-white { animation: mythicFlash 1.9s ease-in forwards; }
+.mythic-video-overlay.video-visible .mythic-white { animation: mythicWhiteOut 1.4s ease-out forwards; }
+
+@keyframes mythicGlow {
+  0%   { transform: scale(0); opacity: 0; }
+  15%  { opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 @keyframes mythicFlash {
-  0%, 70% { opacity: 0; }
+  0%, 65% { opacity: 0; }
   100%    { opacity: 1; }
 }
-/* Le blanc se dissipe lentement en noir pendant que la vidéo apparaît */
-.mythic-video-overlay.video-visible .mythic-white {
-  background: #000;
-  transition: background 1.6s ease-out;
+@keyframes mythicWhiteOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
 
-/* La vidéo arrive surexposée et floue, puis se stabilise */
+/* La vidéo : opacité uniquement, aucun filtre */
 .mythic-video-overlay video {
   position: relative;
   width: 100%; height: 100%;
   object-fit: contain;
   opacity: 0;
-  filter: brightness(4) blur(10px);
-  transition: opacity 1.2s ease, filter 1.8s ease-out;
+  background: #000;
+  will-change: opacity;
 }
 .mythic-video-overlay.video-visible video {
   opacity: 1;
-  filter: brightness(1) blur(0);
+  transition: opacity 1.2s ease;
 }
 
 .mythic-video-overlay.fade-out { opacity: 0; transition: opacity 0.5s ease; }
@@ -1632,6 +1619,11 @@
   opacity: 0; transition: opacity 0.4s ease 1.5s;
 }
 .mythic-video-overlay.video-visible .mythic-video-skip { opacity: 1; }
+
+/* Pendant la vidéo, tout le reste est masqué : plus aucune animation en arrière-plan */
+body.mythic-playing .reveal-overlay,
+body.mythic-playing .recap-overlay,
+body.mythic-playing .flip-flash { visibility: hidden; }
 </style>
 </head>
 <body>
@@ -2445,6 +2437,7 @@ async function afficherOuverturePack(cartes) {
         video.removeAttribute('src');
         video.load();
         overlay.classList.remove('active', 'white-grow', 'video-visible', 'fade-out');
+document.body.classList.remove('mythic-playing');   // ← ajoute cette ligne
         if (musiqueEtaitActive) musiqueFond.play().catch(() => {});
         resolve();
       }, 500);
@@ -2460,15 +2453,15 @@ async function afficherOuverturePack(cartes) {
     void overlay.offsetWidth;
     overlay.classList.add('white-grow');
 
-    // La lumière blanche envahit l'écran (~1,4 s), puis la vidéo arrive en fondu
-    setTimeout(() => {
-      if (fini) return;
-      overlay.classList.add('video-visible');
-      video.play().catch(() => {
-        video.muted = true; // au cas où le navigateur refuse le son
-        video.play().catch(terminer);
-      });
-    }, 1400);
+   setTimeout(() => {
+  if (fini) return;
+  document.body.classList.add('mythic-playing');   // ← ajoute cette ligne
+  overlay.classList.add('video-visible');
+  video.play().catch(() => {
+    video.muted = true;
+    video.play().catch(terminer);
+  });
+}, 1400);
   });
 }
 async function afficherReveal(cartes) {
@@ -2488,6 +2481,15 @@ async function afficherReveal(cartes) {
   btnClose.style.display = 'none';
   btnSkipAll.style.display = cartes.length > 1 ? 'inline-block' : 'none';
   overlay.classList.add('active');
+  // Précharge les vidéos des mythiques foot du tirage
+cartes.forEach(c => {
+  const full = carteComplete(c);
+  if (estCarteFoot(full) && full.rarete === 'mythique' && full.video_url) {
+    const v = document.createElement('video');
+    v.preload = 'auto';
+    v.src = full.video_url;
+  }
+});
 
   // ↓ Nouveau bloc à ajouter ici : applique l'image du pack au dos de la carte
   const revealCardBack = document.getElementById('revealCardBack');
