@@ -3084,7 +3084,7 @@ const animeFiltre = document.getElementById('marketFilterAnime').value;
       <div class="card-item ${(l.anime === 'Football' && carteParNom(l.nom)) ? 'fb-market' : ''}" style="--rarity-color:${RARITY_COLORS[l.rarete]};">
         <div class="rarity-tag">${l.rarete}</div>
         ${estMoi ? `<div class="card-qte" style="background:var(--c-legendaire);color:#1a1204;">TON ANNONCE</div>` : ''}
-        ${(l.anime === 'Football' && carteParNom(l.nom)) ? htmlCarteFoot(carteParNom(l.nom), { inline: true }) : `<img src="${c.image_url}" alt="${c.nom}" loading="lazy" decoding="async">`}
+       ${(l.anime === 'Football' && carteParNom(l.nom)) ? htmlCarteFoot(carteParNom(l.nom), { inline: true }) : `<img src="${l.image_url}" alt="${l.nom}" loading="lazy" decoding="async">`}
         <div class="card-info">
           <div class="card-nom">${l.nom}</div>
           <div class="card-anime">${l.prix} <span class="material-symbols-outlined" style="font-size:0.9em;">money_bag</span></div>
