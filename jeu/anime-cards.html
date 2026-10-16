@@ -2514,7 +2514,10 @@ async function afficherReveal(cartes) {
     }
 
     card3d.classList.add('flipped');
-    jouerSonReveal(carte.rarete);
+    // Pas de bruitage pour les mythiques football (la vidéo prend le relais)
+if (!(estFoot && carte.rarete === 'mythique')) {
+  jouerSonReveal(carte.rarete);
+}
 
     const thumb = document.createElement('div');
     thumb.className = 'strip-thumb';
