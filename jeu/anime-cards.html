@@ -1543,6 +1543,43 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
 }
+
+  /* ---------- VIDÉO MYTHIQUE FOOT ---------- */
+.mythic-video-overlay {
+  position: fixed; inset: 0; z-index: 130;
+  display: none; align-items: center; justify-content: center;
+}
+.mythic-video-overlay.active { display: flex; }
+.mythic-white {
+  position: absolute; inset: 0;
+  background: #fff;
+  clip-path: circle(0% at 50% 50%);
+  transition: background 0.9s ease;
+}
+.mythic-video-overlay.white-grow .mythic-white {
+  clip-path: circle(150% at 50% 50%);
+  transition: clip-path 1.4s cubic-bezier(0.5, 0, 0.9, 0.6), background 0.9s ease;
+}
+.mythic-video-overlay.video-visible .mythic-white { background: #000; }
+.mythic-video-overlay video {
+  position: relative;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.mythic-video-overlay.video-visible video { opacity: 1; }
+.mythic-video-overlay.fade-out { opacity: 0; transition: opacity 0.5s ease; }
+.mythic-video-skip {
+  position: absolute; bottom: 24px; right: 24px; z-index: 2;
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(0,0,0,0.6); color: var(--ink);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 16px; cursor: pointer;
+  opacity: 0; transition: opacity 0.4s ease 1.5s;
+}
+.mythic-video-overlay.video-visible .mythic-video-skip { opacity: 1; }
 </style>
 </head>
 <body>
@@ -1788,6 +1825,11 @@
 <div class="card-viewer-overlay" id="cardViewerOverlay">
   <div id="cardViewerContent"></div>
   <div class="card-viewer-hint">Clique n'importe où pour fermer</div>
+</div>
+  <div class="mythic-video-overlay" id="mythicVideoOverlay">
+  <div class="mythic-white"></div>
+  <video id="mythicVideo" playsinline preload="auto"></video>
+  <button class="mythic-video-skip" id="mythicVideoSkip">Passer ▶▶</button>
 </div>
 <div class="flip-flash" id="flipFlash"></div>
 
@@ -2328,6 +2370,50 @@ async function afficherOuverturePack(cartes) {
   overlay.classList.remove('active');
 }
 
+  function jouerVideoMythique(url) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('mythicVideoOverlay');
+    const video = document.getElementById('mythicVideo');
+    const skip = document.getElementById('mythicVideoSkip');
+    let fini = false;
+    const musiqueEtaitActive = !musiqueFond.paused;
+    if (musiqueEtaitActive) musiqueFond.pause();
+
+    const terminer = () => {
+      if (fini) return;
+      fini = true;
+      overlay.classList.add('fade-out');
+      setTimeout(() => {
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+        overlay.classList.remove('active', 'white-grow', 'video-visible', 'fade-out');
+        if (musiqueEtaitActive) musiqueFond.play().catch(() => {});
+        resolve();
+      }, 500);
+    };
+
+    video.src = url;
+    video.currentTime = 0;
+    video.onended = terminer;
+    video.onerror = terminer;
+    skip.onclick = terminer;
+
+    overlay.classList.add('active');
+    void overlay.offsetWidth;
+    overlay.classList.add('white-grow');
+
+    // La lumière blanche envahit l'écran (~1,4 s), puis la vidéo arrive en fondu
+    setTimeout(() => {
+      if (fini) return;
+      overlay.classList.add('video-visible');
+      video.play().catch(() => {
+        video.muted = true; // au cas où le navigateur refuse le son
+        video.play().catch(terminer);
+      });
+    }, 1400);
+  });
+}
 async function afficherReveal(cartes) {
   const overlay = document.getElementById('revealOverlay');
   const card3d = document.getElementById('revealCard3d');
@@ -2432,6 +2518,12 @@ async function afficherReveal(cartes) {
     thumb.style.setProperty('--rarity-color', rarityVar);
     thumb.innerHTML = `<img src="${carte.image_url}" alt="${carte.nom}">`;
     strip.appendChild(thumb);
+
+    // Mythique foot avec vidéo : lumière blanche puis présentation du joueur
+if (estFoot && carte.rarete === 'mythique' && carteFull.video_url && !skipAllDemande) {
+  await attendre(300); // laisse voir le début du retournement
+  await jouerVideoMythique(carteFull.video_url);
+}
 
     if (!skipAllDemande) {
       const tempsAffichage = isBigReveal ? 1400 : 900;
