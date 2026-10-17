@@ -1624,6 +1624,23 @@
 body.mythic-playing .reveal-overlay,
 body.mythic-playing .recap-overlay,
 body.mythic-playing .flip-flash { visibility: hidden; }
+
+  .btn-voir-anim {
+  display: block;
+  margin: 16px auto 0;
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--c-legendaire), #ff6fd8);
+  color: #1a1204;
+  border: none;
+  border-radius: 4px;
+  padding: 11px 24px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.btn-voir-anim:active { transform: scale(0.97); }
 </style>
 </head>
 <body>
@@ -2419,14 +2436,37 @@ async function afficherOuverturePack(cartes) {
   overlay.classList.remove('active');
 }
 
+  let pleinEcranParNous = false;
+
+function entrerPleinEcran() {
+  if (document.fullscreenElement) return;
+  document.documentElement.requestFullscreen({ navigationUI: 'hide' })
+    .then(() => { pleinEcranParNous = true; })
+    .catch(() => {}); // refusé par le navigateur : on continue sans
+}
+
+async function quitterPleinEcran() {
+  // On ne quitte que si c'est nous qui l'avons activé
+  if (pleinEcranParNous && document.fullscreenElement) {
+    try { await document.exitFullscreen(); } catch (e) {}
+  }
+  pleinEcranParNous = false;
+}
+  
   function jouerVideoMythique(url) {
   return new Promise(resolve => {
     const overlay = document.getElementById('mythicVideoOverlay');
     const video = document.getElementById('mythicVideo');
     const skip = document.getElementById('mythicVideoSkip');
+
+    // Évite de lancer deux animations en même temps
+    if (overlay.classList.contains('active')) { resolve(); return; }
+
     let fini = false;
     const musiqueEtaitActive = !musiqueFond.paused;
     if (musiqueEtaitActive) musiqueFond.pause();
+
+    entrerPleinEcran(); // appelé tout de suite pour profiter du clic de l'utilisateur
 
     const terminer = () => {
       if (fini) return;
@@ -2437,7 +2477,8 @@ async function afficherOuverturePack(cartes) {
         video.removeAttribute('src');
         video.load();
         overlay.classList.remove('active', 'white-grow', 'video-visible', 'fade-out');
-document.body.classList.remove('mythic-playing');   // ← ajoute cette ligne
+        document.body.classList.remove('mythic-playing');
+        quitterPleinEcran();
         if (musiqueEtaitActive) musiqueFond.play().catch(() => {});
         resolve();
       }, 500);
@@ -2453,15 +2494,15 @@ document.body.classList.remove('mythic-playing');   // ← ajoute cette ligne
     void overlay.offsetWidth;
     overlay.classList.add('white-grow');
 
-   setTimeout(() => {
-  if (fini) return;
-  document.body.classList.add('mythic-playing');   // ← ajoute cette ligne
-  overlay.classList.add('video-visible');
-  video.play().catch(() => {
-    video.muted = true;
-    video.play().catch(terminer);
-  });
-}, 1400);
+    setTimeout(() => {
+      if (fini) return;
+      document.body.classList.add('mythic-playing');
+      overlay.classList.add('video-visible');
+      video.play().catch(() => {
+        video.muted = true;
+        video.play().catch(terminer);
+      });
+    }, 1400);
   });
 }
 async function afficherReveal(cartes) {
@@ -2784,6 +2825,12 @@ async function marquerToutVu() {
 }
 document.getElementById('btnMarkAllSeen').addEventListener('click', marquerToutVu);
 
+  function voirAnimationMythique(cardId) {
+  const c = allCards.find(x => String(x.id) === String(cardId));
+  if (c && c.video_url) jouerVideoMythique(c.video_url);
+}
+window.voirAnimationMythique = voirAnimationMythique;
+  
 // ---- Aperçu en grand ----
 function ouvrirApercuCarte(cardId) {
   const c = allCards.find(x => String(x.id) === String(cardId));
@@ -2791,9 +2838,13 @@ function ouvrirApercuCarte(cardId) {
   const content = document.getElementById('cardViewerContent');
   const rarityVar = RARITY_COLORS[c.rarete];
 
-  if (estCarteFoot(c)) {
-    content.innerHTML = `<div class="card-viewer-card foot" style="--rarity-color:${rarityVar};" onclick="event.stopPropagation()">${htmlCarteFoot(c, { inline: true })}</div>`;
-  } else {
+ if (estCarteFoot(c)) {
+  const aVideo = c.rarete === 'mythique' && c.video_url;
+  content.innerHTML = `
+    <div class="card-viewer-card foot" style="--rarity-color:${rarityVar};" onclick="event.stopPropagation()">${htmlCarteFoot(c, { inline: true })}</div>
+    ${aVideo ? `<button class="btn-voir-anim" onclick="event.stopPropagation(); voirAnimationMythique('${c.id}')">▶ Voir l'animation</button>` : ''}
+  `;
+} else {
     content.innerHTML = `
       <div class="card-viewer-card classic" style="--rarity-color:${rarityVar};" onclick="event.stopPropagation()">
         <img src="${c.image_url}" alt="${c.nom}">
