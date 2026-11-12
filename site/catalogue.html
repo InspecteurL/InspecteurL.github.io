@@ -4724,22 +4724,22 @@ page = page.replace(
   const pageCodeBox = document.getElementById('ePageCode');
   const snippetBox = document.getElementById('eCatalogSnippet');
   const eDureeInput = document.getElementById('eDuree');
-const eDureeAutoBtn = document.getElementById('eDureeAuto');
+  const eDureeAutoBtn = document.getElementById('eDureeAuto');
 
   eDureeAutoBtn.addEventListener('click', async () => {
-  const h1 = document.getElementById('eTitreAffiche').value.trim();
-  if (!h1) { alert("Le titre est vide."); return; }
-  const { titre, annee } = extraireTitreEtAnnee(h1);
-  const isSeries = document.getElementById('eType').value === 'Série';
-  eDureeAutoBtn.textContent = '...';
-  const duree = await fetchDureeOMDb(titre, annee, isSeries);
-  eDureeAutoBtn.textContent = '🔎 Auto';
-  if (duree) {
-    eDureeInput.value = duree;
-  } else {
-    alert("Durée introuvable automatiquement, complète-la à la main.");
-  }
-});
+    const h1 = document.getElementById('eTitreAffiche').value.trim();
+    if (!h1) { alert("Le titre est vide."); return; }
+    const { titre, annee } = extraireTitreEtAnnee(h1);
+    const isSeries = document.getElementById('eType').value === 'Série';
+    eDureeAutoBtn.textContent = '...';
+    const duree = await fetchDureeOMDb(titre, annee, isSeries);
+    eDureeAutoBtn.textContent = '🔎 Auto';
+    if (duree) {
+      eDureeInput.value = duree;
+    } else {
+      alert("Durée introuvable automatiquement, complète-la à la main.");
+    }
+  });
 
   let currentHref = '';
 
@@ -4843,94 +4843,103 @@ const eDureeAutoBtn = document.getElementById('eDureeAuto');
   });
 
   generateBtn.addEventListener('click', () => {
-    const templateInput = document.getElementById('templateInput');
-    if (!templateInput) { alert("Le modèle de page (onglet 'Ajouter un film') est introuvable."); return; }
+    try {
+      const templateInput = document.getElementById('templateInput');
+      if (!templateInput) { alert("Le modèle de page (onglet 'Ajouter un film') est introuvable."); return; }
 
-    const h1 = document.getElementById('eTitreAffiche').value.trim();
-    const type = document.getElementById('eType').value;
-    const genre = document.getElementById('eGenre').value;
-    const subgenre = document.getElementById('eSubgenre').value;
-    const genreTexte = document.getElementById('eGenreTexte').value.trim();
-    const realisateur = document.getElementById('eRealisateur').value.trim();
-    const acteurs = document.getElementById('eActeurs').value.trim();
-    const synopsis = document.getElementById('eSynopsis').value.trim();
-    const duree = eDureeInput.value.trim();
-    const bgUrl = document.getElementById('eBackground').value.trim();
-    const posterUrl = document.getElementById('ePoster').value.trim();
-    const slug = document.getElementById('eSlug').value.trim();
-    const movieId = document.getElementById('eMovieId').value.trim();
-    const fallbackSourceUrl = document.getElementById('eFallbackSource').value.trim();
-    const provisoire = document.getElementById('eProvisoire').checked;
+      const h1 = document.getElementById('eTitreAffiche').value.trim();
+      const type = document.getElementById('eType').value;
+      const genre = document.getElementById('eGenre').value;
+      const subgenre = document.getElementById('eSubgenre').value;
+      const genreTexte = document.getElementById('eGenreTexte').value.trim();
+      const realisateur = document.getElementById('eRealisateur').value.trim();
+      const acteurs = document.getElementById('eActeurs').value.trim();
+      const synopsis = document.getElementById('eSynopsis').value.trim();
+      const duree = eDureeInput.value.trim();
+      const bgUrl = document.getElementById('eBackground').value.trim();
+      const posterUrl = document.getElementById('ePoster').value.trim();
+      const slug = document.getElementById('eSlug').value.trim();
+      const movieId = document.getElementById('eMovieId').value.trim();
+      const fallbackSourceUrl = document.getElementById('eFallbackSource').value.trim();
+      const provisoire = document.getElementById('eProvisoire').checked;
 
-    if (!h1 || !slug || !bgUrl || !posterUrl || !movieId || !fallbackSourceUrl) {
-      alert('Merci de remplir au minimum : titre, image de fond, affiche, nom de fichier, Movie ID et URL source fallback.');
-      return;
-    }
+      if (!h1 || !slug || !bgUrl || !posterUrl || !movieId || !fallbackSourceUrl) {
+        alert('Merci de remplir au minimum : titre, image de fond, affiche, nom de fichier, Movie ID et URL source fallback.');
+        return;
+      }
 
-    const pageTitle = h1.replace(/\s*\(\d{4}\)\s*$/, '') + ' - BNZ';
-    let page = templateInput.value;
+      const pageTitle = h1.replace(/\s*\(\d{4}\)\s*$/, '') + ' - BNZ';
+      let page = templateInput.value;
 
-    page = page.replace('<title>Madame Doubtfire - BNZ</title>', `<title>${escapeHtml(pageTitle)}</title>`);
-    page = page.replace(
-      "url('https://media.themoviedb.org/t/p/w1000_and_h563_face/kGTh0zOTBRqmKr3UfpLlsGFvSDT.jpg')",
-      `url('${bgUrl}')`
-    );
-    page = page.replace(
-      'src="https://media.themoviedb.org/t/p/w440_and_h660_face/60qcTr0iIZvcYfWrLDUbWxO7nPS.jpg" alt="Titanic Poster"',
-      `src="${posterUrl}" alt="${escapeAttr(h1)}"`
-    );
-    page = page.replace('<h1>Madame Doubtfire (1993)</h1>', `<h1>${escapeHtml(h1)}</h1>`);
-    page = page.replace(
-      '<p><strong>Genre:</strong> Comédie, Drame et Familial</p>',
-      `<p><strong>Genre:</strong> ${escapeHtml(genreTexte)}</p>`
-    );
-    page = page.replace(
-      '<p><strong>Réalisateur:</strong> Chris Columbus</p>',
-      `<p><strong>Réalisateur:</strong> ${escapeHtml(realisateur)}</p>`
-    );
-    page = page.replace(
-      '<p><strong>Acteurs:</strong> Robin Williams, Sally Field, Lisa Jakub</p>',
-      `<p><strong>Acteurs:</strong> ${escapeHtml(acteurs)}</p>`
-    );
-    page = page.replace(
-      "<p><strong>Synopsis:</strong> Privé, à la suite de son divorce, de ses trois enfants qu'il adore, Daniel Hillard, doubleur de dessins animés, met en œuvre tous ses talents d'acteur et d'imitateur et se transforme en respectable gouvernante irlandaise. Lorsque Mme Doubtfire se présente dans la famille Hillard, elle est acceptée à l'unanimité.</p>",
-      `<p><strong>Synopsis:</strong> ${escapeHtml(synopsis)}</p>`
-    );
+      page = page.replace('<title>Madame Doubtfire - BNZ</title>', `<title>${escapeHtml(pageTitle)}</title>`);
+      page = page.replace(
+        "url('https://media.themoviedb.org/t/p/w1000_and_h563_face/kGTh0zOTBRqmKr3UfpLlsGFvSDT.jpg')",
+        `url('${bgUrl}')`
+      );
+      page = page.replace(
+        'src="https://media.themoviedb.org/t/p/w440_and_h660_face/60qcTr0iIZvcYfWrLDUbWxO7nPS.jpg" alt="Titanic Poster"',
+        `src="${posterUrl}" alt="${escapeAttr(h1)}"`
+      );
+      page = page.replace('<h1>Madame Doubtfire (1993)</h1>', `<h1>${escapeHtml(h1)}</h1>`);
+      page = page.replace(
+        '<p><strong>Genre:</strong> Comédie, Drame et Familial</p>',
+        `<p><strong>Genre:</strong> ${escapeHtml(genreTexte)}</p>`
+      );
+      page = page.replace(
+        '<p><strong>Réalisateur:</strong> Chris Columbus</p>',
+        `<p><strong>Réalisateur:</strong> ${escapeHtml(realisateur)}</p>`
+      );
+      page = page.replace(
+        '<p><strong>Acteurs:</strong> Robin Williams, Sally Field, Lisa Jakub</p>',
+        `<p><strong>Acteurs:</strong> ${escapeHtml(acteurs)}</p>`
+      );
+      page = page.replace(
+        "<p><strong>Synopsis:</strong> Privé, à la suite de son divorce, de ses trois enfants qu'il adore, Daniel Hillard, doubleur de dessins animés, met en œuvre tous ses talents d'acteur et d'imitateur et se transforme en respectable gouvernante irlandaise. Lorsque Mme Doubtfire se présente dans la famille Hillard, elle est acceptée à l'unanimité.</p>",
+        `<p><strong>Synopsis:</strong> ${escapeHtml(synopsis)}</p>`
+      );
+      page = page.replace(
+        '<p><strong>Durée:</strong> 2h05</p>',
+        duree ? `<p><strong>Durée:</strong> ${escapeHtml(duree)}</p>` : ''
+      );
+      page = page.replace("const MOVIE_ID      = 'doubtfire';", `const MOVIE_ID      = '${escapeJsString(movieId)}';`);
+      page = page.replace(
+        "const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/788-0xgdv/master.m3u8';",
+        `const FALLBACK_SOURCE_URL = '${escapeJsString(fallbackSourceUrl)}';`
+      );
 
-    page = page.replace(
-  '<p><strong>Durée:</strong> 2h05</p>',
-  duree ? `<p><strong>Durée:</strong> ${escapeHtml(duree)}</p>` : ''
-);
-    page = page.replace("const MOVIE_ID      = 'doubtfire';", `const MOVIE_ID      = '${escapeJsString(movieId)}';`);
-    page = page.replace(
-      "const FALLBACK_SOURCE_URL = 'https://free.finepulfe.xyz/movies/788-0xgdv/master.m3u8';",
-      `const FALLBACK_SOURCE_URL = '${escapeJsString(fallbackSourceUrl)}';`
-    );
+      pageCodeBox.value = page;
 
-    pageCodeBox.value = page;
+      const folder = folderFor(type, genre);
+      const href = `https://inspecteurl.github.io/${folder}/${slug}.html`;
+      const dataTypeAttr = genre === 'Anime' ? '' : ` data-type="${escapeAttr(type)}"`;
+      const subgenreAttr = genre === 'Anime' ? ` data-subgenre="${escapeAttr(subgenre)}"` : '';
+      const spanText = genre === 'Anime' ? `Anime — ${escapeHtml(subgenre)}` : escapeHtml(genre);
+      const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
+      const dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
 
-    const folder = folderFor(type, genre);
-    const href = `https://inspecteurl.github.io/${folder}/${slug}.html`;
-    const dataTypeAttr = genre === 'Anime' ? '' : ` data-type="${escapeAttr(type)}"`;
-    const subgenreAttr = genre === 'Anime' ? ` data-subgenre="${escapeAttr(subgenre)}"` : '';
-    const spanText = genre === 'Anime' ? `Anime — ${escapeHtml(subgenre)}` : escapeHtml(genre);
-    const badge = provisoire ? `\n  <span class="badge-provisoire">Provisoire</span>` : '';
-
-    const dureeSpan = duree ? `\n  <span class="duree">${escapeHtml(duree)}</span>` : '';
-const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}${addedAttrs(href)}>
+      const snippet = `<div class="movieimg"${dataTypeAttr} data-title="${escapeAttr(h1)}" data-genre="${escapeAttr(genre)}"${subgenreAttr}${addedAttrs(href)}>
   <a href="${href}"><img src="${posterUrl}" alt="${escapeAttr(h1)}"></a>
   <h2>${escapeHtml(h1)}</h2>
   <span>${spanText}</span>${dureeSpan}${badge}
 </div>`;
 
-    const oldA = currentHref ? document.querySelector(`#movieGrid a[href="${currentHref}"]`) : null;
-    const oldCard = oldA ? oldA.closest('.movieimg') : null;
-    if (oldCard) {
-      const wrapper = document.createElement('div');
-      wrapper.innerHTML = snippet;
-      oldCard.replaceWith(wrapper.firstElementChild);
-      applyFilters();
-      if (typeof updateCatalogueCounter === 'function') updateCatalogueCounter();
+      // ✅ CORRECTIF : afficher le résultat dans la modale
+      snippetBox.value = snippet;
+      output.classList.add('show');
+
+      // Aperçu live : remplace l'ancienne carte dans la grille
+      const oldA = currentHref ? document.querySelector(`#movieGrid a[href="${currentHref}"]`) : null;
+      const oldCard = oldA ? oldA.closest('.movieimg') : null;
+      if (oldCard) {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = snippet;
+        oldCard.replaceWith(wrapper.firstElementChild);
+        applyFilters();
+        if (typeof updateCatalogueCounter === 'function') updateCatalogueCounter();
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erreur pendant la génération : " + err.message);
     }
   });
 
