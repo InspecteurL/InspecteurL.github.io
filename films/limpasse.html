@@ -272,6 +272,9 @@ video {
   display: none;
   flex-direction: column;
   gap: 5px;
+  max-height: 50vh;
+  overflow-y: auto;
+  min-width: 160px;
 }
 .menu button {
   background: transparent;
@@ -286,6 +289,11 @@ video {
   border-radius: 4px;
 }
 .menu button.active { color: #ff416c; }
+.menu-title {
+  color: #aaa;
+  font-size: 12px;
+  padding: 4px 10px;
+}
 
 /* --- Overlay de statut (chargement) --- */
 #statusOverlay {
@@ -601,7 +609,9 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
       </div>
     </div>
     <div class="controls-right">
-      <span id="subtitles" class="material-symbols-outlined">subtitles</span>
+      <!-- Pistes audio et sous-titres : affichés seulement si le flux en contient -->
+      <span id="audioTrackBtn" class="material-symbols-outlined" style="display:none;" title="Langue audio">audiotrack</span>
+      <span id="subtitles" class="material-symbols-outlined" style="display:none;" title="Sous-titres">subtitles</span>
       <span id="source" class="material-symbols-outlined">cloud</span>
       <span id="settings" class="material-symbols-outlined">settings</span>
       <span id="fullscreen" class="material-symbols-outlined">fullscreen</span>
@@ -609,7 +619,7 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
   </div>
 
   <div id="settingsMenu" class="menu">
-    <div style="color:#aaa;font-size:12px;padding:4px 10px;">Vitesse</div>
+    <div class="menu-title">Vitesse</div>
     <button data-speed="0.5">0.5x</button>
     <button data-speed="1" class="active">1x (normal)</button>
     <button data-speed="1.5">1.5x</button>
@@ -620,8 +630,9 @@ nav a.active::after { content: ""; position: absolute; bottom: -6px; left: 0; wi
     <button data-src="https://cinechicken.xyz/movies/Titanic.mp4">Titanic</button>
   </div>
 
-  <div id="subtitleMenu" class="menu">
-  </div>
+  <div id="audioMenu" class="menu"></div>
+
+  <div id="subtitleMenu" class="menu"></div>
 </div>
 
 <script>
@@ -644,6 +655,8 @@ const sourceBtn = document.getElementById('source');
 const sourceMenu = document.getElementById('sourceMenu');
 const subtitleBtn = document.getElementById('subtitles');
 const subtitleMenu = document.getElementById('subtitleMenu');
+const audioBtn = document.getElementById('audioTrackBtn');
+const audioMenu = document.getElementById('audioMenu');
 const btnWatch = document.getElementById('btnWatch');
 const backButton = document.getElementById('backButton');
 const statusOverlay = document.getElementById('statusOverlay');
@@ -651,6 +664,8 @@ const statusText = document.getElementById('statusText');
 const fallbackFrame = document.getElementById('fallbackFrame');
 const fallbackBanner = document.getElementById('fallbackBanner');
 const fallbackHoverZone = document.getElementById('fallbackHoverZone');
+
+const allMenus = [settingsMenu, sourceMenu, audioMenu, subtitleMenu];
 
 // ⚠️ À vérifier/ajuster : chemin du fichier m3u8 de Titanic sur Supabase Storage
 const M3U8_URL     = 'https://wuagahavmbugmnuzsouf.supabase.co/storage/v1/object/public/titanic/playlist-titanic.m3u8';
@@ -667,6 +682,7 @@ let hlsRetryCount = 0;
 let usingFallback = false;
 let loadTimeoutId = null;
 let hls = null;
+let nativeHls = false; // true quand la lecture HLS est gérée par le navigateur (Safari)
 
 function showStatus(msg) { statusText.textContent = msg; statusOverlay.style.display = 'block'; }
 function hideStatus()    { statusOverlay.style.display = 'none'; }
@@ -688,12 +704,109 @@ function showFallbackBackButton() {
 fallbackHoverZone.addEventListener('mousemove', showFallbackBackButton);
 fallbackHoverZone.addEventListener('mouseenter', showFallbackBackButton);
 
+// ---------------------
+// Pistes audio & sous-titres
+// ---------------------
+function trackLabel(t, i, prefix) {
+  const name = t.name || t.label || '';
+  const lang = t.lang || t.language || '';
+  if (name && lang && name.toLowerCase() !== lang.toLowerCase()) return `${name} (${lang})`;
+  return name || lang || `${prefix} ${i + 1}`;
+}
+
+function setActiveButton(menu, index) {
+  menu.querySelectorAll('button').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.index) === index);
+  });
+}
+
+function resetTrackMenus() {
+  audioMenu.innerHTML = '';
+  subtitleMenu.innerHTML = '';
+  audioBtn.style.display = 'none';
+  subtitleBtn.style.display = 'none';
+}
+
+// Liste des pistes audio selon le mode (hls.js ou natif Safari)
+function getAudioTracks() {
+  if (hls) return hls.audioTracks || [];
+  if (nativeHls && video.audioTracks) return Array.from(video.audioTracks);
+  return [];
+}
+function getSubtitleTracks() {
+  if (hls) return hls.subtitleTracks || [];
+  if (nativeHls) return Array.from(video.textTracks).filter(t => t.kind === 'subtitles' || t.kind === 'captions');
+  return [];
+}
+
+function buildAudioMenu() {
+  const tracks = getAudioTracks();
+  audioMenu.innerHTML = '<div class="menu-title">Audio</div>';
+  tracks.forEach((t, i) => {
+    const b = document.createElement('button');
+    b.dataset.index = i;
+    b.textContent = trackLabel(t, i, 'Piste');
+    audioMenu.appendChild(b);
+  });
+  // On n'affiche le bouton que s'il y a un vrai choix à faire
+  audioBtn.style.display = tracks.length > 1 ? '' : 'none';
+  if (hls) setActiveButton(audioMenu, hls.audioTrack);
+  else if (nativeHls) setActiveButton(audioMenu, tracks.findIndex(t => t.enabled));
+}
+
+function buildSubtitleMenu() {
+  const tracks = getSubtitleTracks();
+  subtitleMenu.innerHTML = '<div class="menu-title">Sous-titres</div>';
+  const off = document.createElement('button');
+  off.dataset.index = -1;
+  off.textContent = 'Désactivés';
+  subtitleMenu.appendChild(off);
+  tracks.forEach((t, i) => {
+    const b = document.createElement('button');
+    b.dataset.index = i;
+    b.textContent = trackLabel(t, i, 'Sous-titres');
+    subtitleMenu.appendChild(b);
+  });
+  subtitleBtn.style.display = tracks.length ? '' : 'none';
+  if (hls) setActiveButton(subtitleMenu, hls.subtitleTrack);
+  else if (nativeHls) setActiveButton(subtitleMenu, tracks.findIndex(t => t.mode === 'showing'));
+}
+
+audioMenu.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-index]');
+  if (!btn) return;
+  const index = Number(btn.dataset.index);
+  if (hls) {
+    hls.audioTrack = index;
+  } else if (nativeHls) {
+    Array.from(video.audioTracks).forEach((t, i) => { t.enabled = (i === index); });
+  }
+  setActiveButton(audioMenu, index);
+  audioMenu.style.display = 'none';
+});
+
+subtitleMenu.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-index]');
+  if (!btn) return;
+  const index = Number(btn.dataset.index);
+  if (hls) {
+    hls.subtitleDisplay = index >= 0;
+    hls.subtitleTrack = index; // -1 = désactivés
+  } else if (nativeHls) {
+    getSubtitleTracks().forEach((t, i) => { t.mode = (i === index) ? 'showing' : 'disabled'; });
+  }
+  setActiveButton(subtitleMenu, index);
+  subtitleMenu.style.display = 'none';
+});
+
 function switchToFallbackPlayer(reason) {
   if (usingFallback) return;
   usingFallback = true;
   disarmLoadTimeout();
   console.warn('Bascule sur le lecteur de secours :', reason);
   if (hls) { hls.destroy(); hls = null; }
+  nativeHls = false;
+  resetTrackMenus();
   video.pause();
   video.src = '';
   video.style.display = 'none';
@@ -712,6 +825,8 @@ function switchToFallbackPlayer(reason) {
 
 function initHLS() {
   if (hls) { hls.destroy(); hls = null; }
+  nativeHls = false;
+  resetTrackMenus();
   if (Hls.isSupported()) {
     hls = new Hls({ maxBufferLength: 60, maxMaxBufferLength: 120, enableWorker: true });
     hls.loadSource(M3U8_URL);
@@ -720,7 +835,21 @@ function initHLS() {
       disarmLoadTimeout();
       hideStatus(); showControls(); video.play().catch(console.error); showEpisodeInfo();
     });
+
+    // --- Pistes audio ---
+    hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, buildAudioMenu);
+    hls.on(Hls.Events.AUDIO_TRACK_SWITCHED, (e, data) => setActiveButton(audioMenu, data.id));
+
+    // --- Sous-titres ---
+    hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
+      hls.subtitleDisplay = false;
+      hls.subtitleTrack = -1; // désactivés par défaut (mets 0 pour activer la 1re piste)
+      buildSubtitleMenu();
+    });
+    hls.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (e, data) => setActiveButton(subtitleMenu, data.id));
+
     hls.on(Hls.Events.ERROR, (event, data) => {
+      console.error('HLS error:', data.type, data.details, 'fatal:', data.fatal, data.response?.code);
       if (!data.fatal) return;
       if (data.details === 'manifestLoadError' || data.details === 'manifestLoadTimeOut' || data.details === 'manifestParsingError') {
         switchToFallbackPlayer(data.details);
@@ -736,8 +865,13 @@ function initHLS() {
       else switchToFallbackPlayer(data.details);
     });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    nativeHls = true;
     video.src = M3U8_URL;
-    video.addEventListener('loadedmetadata', () => { disarmLoadTimeout(); hideStatus(); showControls(); video.play().catch(console.error); showEpisodeInfo(); }, { once: true });
+    video.addEventListener('loadedmetadata', () => {
+      disarmLoadTimeout(); hideStatus(); showControls(); video.play().catch(console.error); showEpisodeInfo();
+      buildAudioMenu();
+      buildSubtitleMenu();
+    }, { once: true });
     video.addEventListener('error', () => switchToFallbackPlayer('native-hls-error'), { once: true });
   } else {
     switchToFallbackPlayer('hls-not-supported');
@@ -805,6 +939,8 @@ backButton.addEventListener('click', () => {
     disarmLoadTimeout();
     video.pause();
     if (hls) { hls.destroy(); hls = null; }
+    nativeHls = false;
+    resetTrackMenus();
     video.src = '';
     video.style.display = '';
     fallbackFrame.src = '';
@@ -850,7 +986,7 @@ function hideControls() {
   progressWrapper.classList.add('hide');
   backButton.classList.add('hide');
   document.body.style.cursor = 'none';
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(menu => menu.style.display = 'none');
+  allMenus.forEach(menu => menu.style.display = 'none');
 }
 
 document.addEventListener('mousemove', showControls);
@@ -961,23 +1097,10 @@ sourceMenu.querySelectorAll('button').forEach(btn => {
 });
 
 // ---------------------
-// Subtitles menu
+// Boutons audio / sous-titres (les menus sont remplis par hls.js)
 // ---------------------
+audioBtn.addEventListener('click', () => toggleMenu(audioMenu));
 subtitleBtn.addEventListener('click', () => toggleMenu(subtitleMenu));
-subtitleMenu.addEventListener('click', e => {
-  if(e.target.tagName === 'BUTTON'){
-    const subUrl = e.target.dataset.sub;
-    video.querySelectorAll('track').forEach(t => t.remove());
-    if(subUrl){
-      const track = document.createElement('track');
-      track.src = subUrl;
-      track.kind = 'subtitles';
-      track.default = true;
-      video.appendChild(track);
-    }
-    subtitleMenu.style.display = 'none';
-  }
-});
 
 // ---------------------
 // Fullscreen
@@ -1010,7 +1133,7 @@ document.addEventListener('keydown', e => {
 // Toggle menu helper
 // ---------------------
 function toggleMenu(menu){
-  [settingsMenu, sourceMenu, subtitleMenu].forEach(m => { if(m !== menu) m.style.display = 'none'; });
+  allMenus.forEach(m => { if(m !== menu) m.style.display = 'none'; });
   menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
 }
 
