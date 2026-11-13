@@ -127,7 +127,7 @@
     <div class="carousel">
             <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
         <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
-        <div class="carousel-inner">
+        <div class="carousel-inner" id="popularCarousel">
             <a href="https://inspecteurl.github.io/films/titanic.html">
                 <div class="movie-card">
                 <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/vpsvHLkoeKUjceIMeNSqCp3xEyY.jpg" alt="Movie">
@@ -219,7 +219,7 @@
     <div class="carousel">
             <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
         <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
-        <div class="carousel-inner">
+        <div class="carousel-inner" id="classicsCarousel">
             <a href="https://inspecteurl.github.io/films/interstellar.html">
                 <div class="movie-card">
                 <img src="https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg" alt="Movie">
@@ -312,7 +312,7 @@
     <div class="carousel">
             <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
         <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
-        <div class="carousel-inner">
+        <div class="carousel-inner" id="seriesCarousel">
             <a href="https://inspecteurl.github.io/s%C3%A9ries/arcane.html">
                 <div class="movie-card">
                 <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/f1Vivcukr0DBlSxppMaEDuwGSjk.jpg" alt="Movie">
@@ -429,7 +429,7 @@
     <div class="carousel">
             <button class="carousel-arrow left"><i class="fas fa-chevron-left"></i></button>
         <button class="carousel-arrow right"><i class="fas fa-chevron-right"></i></button>
-        <div class="carousel-inner">
+        <div class="carousel-inner" id="animesCarousel">
             <a href="https://inspecteurl.github.io/animes/jojo.html">
                 <div class="movie-card">
                 <img src="https://media.themoviedb.org/t/p/w440_and_h660_face/ofb2LmCBiAv1HMIKlsjtKqyOCyI.jpg" alt="Movie">
@@ -1844,7 +1844,136 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 })();
 </script>
-    
+
+    <script>
+(async function () {
+  const NB = 20;
+  const BASE = 'https://inspecteurl.github.io/site/';
+
+  // Classiques : seuls ceux présents dans ton catalogue seront utilisés.
+  // Tu peux ajouter ou retirer des titres (sans accents, en minuscules).
+  const CLASSIQUES = [
+    'le parrain', 'pulp fiction', 'forrest gump', 'titanic', 'gladiator', 'scarface',
+    'terminator', 'jurassic park', 'retour vers le futur', 'les evades', 'la liste de schindler',
+    'fight club', 'matrix', 'le seigneur des anneaux', 'star wars', 'alien', 'blade runner',
+    'taxi driver', 'les affranchis', 'psychose', 'citizen kane', 'casablanca', 'e.t.',
+    'indiana jones', 'rocky', 'shining', 'apocalypse now', 'le bon, la brute', 'il etait une fois',
+    'interstellar', 'inception', 'the truman show', 'parasite', 'le roi lion', 'full metal jacket',
+    'se7en', 'seven', 'le silence des agneaux', 'american history x', 'leon', 'la ligne verte',
+    'django', 'reservoir dogs', 'the dark knight', 'les dents de la mer', '2001',
+    'orange mecanique', 'mad max', 'heat', 'le pianiste', 'la vie est belle', 'amelie poulain',
+    'intouchables', 'le diner de cons', 'les visiteurs', 'la grande vadrouille', 'vol au-dessus',
+    'american beauty', 'gran torino', 'shutter island', 'le prestige', 'memento',
+    'top gun', 'die hard', 'piege de cristal', 'the mask', 'iron man', 'avengers',
+    'skyfall', 'sherlock holmes', 'hunger games'
+  ];
+
+  const norm = s => String(s || '').toLowerCase().normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const shuffle = arr => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  // Lecture du catalogue
+  let items = [];
+  try {
+    const res = await fetch(BASE + 'catalogue.html');
+    const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+    items = [...doc.querySelectorAll('.movieimg')]
+      .filter(el => !el.querySelector('.badge-provisoire'))
+      .map(el => {
+        const a = el.querySelector('a');
+        const href = a ? new URL(a.getAttribute('href'), BASE).href : '#';
+        let url = href;
+        try { url = decodeURIComponent(href); } catch (e) {}
+        const typeRaw = norm((el.dataset.type || '') + ' ' + url);
+        let kind = 'film';
+        if (typeRaw.includes('anime')) kind = 'anime';
+        else if (typeRaw.includes('serie')) kind = 'serie';
+
+        const rawRating = el.dataset.rating || el.dataset.note ||
+          el.querySelector('.rating, .note')?.textContent || '';
+        const img = el.querySelector('img');
+        return {
+          kind,
+          title: (el.dataset.title || el.querySelector('h2')?.textContent || '')
+            .replace(/\s*\(\d{4}\)\s*$/, '').trim(),
+          genre: el.dataset.genre || el.querySelector('span')?.textContent.trim() || '',
+          duree: el.querySelector('.duree')?.textContent.trim() || '',
+          poster: img ? new URL(img.getAttribute('src') || '', BASE).href : '',
+          url: href,
+          rating: parseFloat(String(rawRating).replace(',', '.')) || 0
+        };
+      })
+      .filter(i => i.title && i.poster);
+  } catch (e) {
+    console.warn('Catalogue inaccessible, cartes par défaut conservées', e);
+    return;
+  }
+  if (!items.length) return;
+
+  const films = items.filter(i => i.kind === 'film');
+  const series = items.filter(i => i.kind === 'serie');
+  const animes = items.filter(i => i.kind === 'anime');
+
+  // Classiques
+  const estClassique = f => {
+    const t = norm(f.title);
+    return CLASSIQUES.some(c => t.startsWith(c));
+  };
+  let classiques = shuffle(films.filter(estClassique)).slice(0, NB);
+  if (classiques.length < NB) {
+    const reste = films.filter(f => !classiques.includes(f));
+    const base = reste.some(f => f.rating)
+      ? [...reste].sort((a, b) => b.rating - a.rating).slice(0, 40) : reste;
+    classiques = classiques.concat(shuffle(base).slice(0, NB - classiques.length));
+  }
+
+  // Populaires (hors classiques déjà tirés)
+  const pris = new Set(classiques);
+  const cand = films.filter(f => !pris.has(f));
+  const basePop = cand.some(f => f.rating)
+    ? [...cand].sort((a, b) => b.rating - a.rating).slice(0, Math.max(NB * 2, 40)) : cand;
+  let populaires = shuffle(basePop).slice(0, NB);
+  if (populaires.length < NB) {
+    populaires = populaires.concat(
+      shuffle(cand.filter(f => !populaires.includes(f))).slice(0, NB - populaires.length));
+  }
+
+  const carte = i => {
+    const badge = i.rating ? i.rating.toFixed(1) : i.duree;
+    return `<a href="${esc(i.url)}">
+      <div class="movie-card">
+        <img src="${esc(i.poster)}" alt="${esc(i.title)}" loading="lazy">
+        <div class="overlay">
+          <button><i class="fas fa-play"></i></button>
+          ${badge ? `<span class="rating">${esc(badge)}</span>` : ''}
+        </div>
+        <h3>${esc(i.title)}</h3>
+        <p>${esc(i.genre)}</p>
+      </div></a>`;
+  };
+
+  const remplir = (id, liste) => {
+    const el = document.getElementById(id);
+    if (!el || !liste.length) return;
+    el.innerHTML = liste.map(carte).join('');
+    el.scrollLeft = 0;
+  };
+
+  remplir('popularCarousel', populaires);
+  remplir('classicsCarousel', classiques);
+  remplir('seriesCarousel', shuffle(series).slice(0, NB));
+  remplir('animesCarousel', shuffle(animes).slice(0, NB));
+})();
+</script>
 
 </body>
 </html>
