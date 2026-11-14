@@ -7548,5 +7548,597 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 })();
 </script>
+  <!-- =====================================================================
+     HORIZONCINÉ — SWIPE + QUESTIONNAIRE
+     À coller dans catalogue.html, JUSTE AVANT la balise </body> (tout en bas).
+     Rien d'autre à modifier : le script crée lui-même les 2 boutons
+     (au-dessus des boutons admin) et lit les cartes de #movieGrid.
+     ===================================================================== -->
+
+<style>
+/* ---------- Boutons d'entrée ---------- */
+.dx-bar { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin:0 12px 1.5rem; }
+.dx-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#e50914,#ff4b2b); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+}
+.dx-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(229,9,20,.45); }
+.dx-btn.alt { background:var(--bg-input); border:1px solid var(--border-soft); }
+.dx-btn.small { padding:.5rem 1rem; font-size:.85rem; }
+
+/* ---------- Overlay générique ---------- */
+.dx-ov {
+  position:fixed; inset:0; background:rgba(0,0,0,.94); z-index:3000;
+  display:none; flex-direction:column; align-items:center; overflow-y:auto; padding:16px 12px 30px;
+  color:var(--text-main); font-family:inherit;
+}
+.dx-ov.open { display:flex; }
+.dx-close {
+  position:absolute; top:10px; right:14px; background:none; border:none; color:#fff;
+  font-size:2rem; cursor:pointer; z-index:5;
+}
+.dx-title { margin:6px 0 10px; font-size:1.3rem; }
+
+/* ---------- Swipe ---------- */
+.dx-filters { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:12px; }
+.dx-chip {
+  padding:.4rem .9rem; border-radius:18px; border:none; background:var(--bg-input);
+  color:var(--text-main); cursor:pointer; font-size:.85rem; font-family:inherit;
+}
+.dx-chip.active { background:var(--primary); }
+.dx-filters select {
+  padding:.4rem .8rem; border-radius:18px; border:1px solid var(--border-soft);
+  background:var(--bg-input); color:var(--text-main); font-size:.85rem; font-family:inherit;
+}
+.dx-stage { position:relative; width:min(340px,88vw); height:min(500px,60vh); margin-top:6px; }
+.dx-card {
+  position:absolute; inset:0; border-radius:18px; overflow:hidden; background:#1f1f28;
+  box-shadow:0 10px 30px rgba(0,0,0,.6); touch-action:none; user-select:none; -webkit-user-select:none;
+  cursor:grab; will-change:transform;
+}
+.dx-card.behind { transform:scale(.94) translateY(12px); opacity:.7; pointer-events:none; }
+.dx-card img { width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; -webkit-user-drag:none; }
+.dx-info {
+  position:absolute; left:0; right:0; bottom:0; padding:50px 16px 16px;
+  background:linear-gradient(to top, rgba(0,0,0,.92), transparent); pointer-events:none;
+}
+.dx-info h3 { margin:0 0 4px; font-size:1.25rem; }
+.dx-info p { margin:0; color:#ccc; font-size:.85rem; }
+.dx-stamp {
+  position:absolute; top:24px; padding:4px 12px; border:3px solid; border-radius:8px;
+  font-weight:800; font-size:1.4rem; opacity:0; pointer-events:none; letter-spacing:1px;
+}
+.dx-stamp.like { left:18px; color:#3ddc84; border-color:#3ddc84; transform:rotate(-14deg); }
+.dx-stamp.nope { right:18px; color:#ff4d4d; border-color:#ff4d4d; transform:rotate(14deg); }
+.dx-actions { display:flex; gap:28px; margin-top:18px; align-items:center; }
+.dx-round {
+  width:64px; height:64px; border-radius:50%; border:2px solid; background:#15151c;
+  font-size:1.7rem; cursor:pointer; transition:transform .15s; color:#fff;
+}
+.dx-round:hover { transform:scale(1.12); }
+.dx-round.no { border-color:#ff4d4d; }
+.dx-round.yes { border-color:#3ddc84; }
+.dx-hint { color:var(--text-muted); font-size:.8rem; margin-top:10px; text-align:center; }
+.dx-empty { text-align:center; margin-top:60px; color:var(--text-muted); }
+.dx-empty p { margin-bottom:16px; }
+
+/* ---------- Questionnaire ---------- */
+.dx-quiz { width:min(560px,100%); text-align:center; }
+.dx-progress { height:6px; background:rgba(255,255,255,.12); border-radius:6px; overflow:hidden; margin:10px 0 22px; }
+.dx-progress div { height:100%; background:linear-gradient(90deg,#ff4b2b,#e50914); width:0; transition:width .3s; }
+.dx-q { font-size:1.35rem; margin:0 0 6px; }
+.dx-sub { color:var(--text-muted); font-size:.85rem; margin-bottom:16px; min-height:1em; }
+.dx-opts { display:flex; flex-direction:column; gap:10px; }
+.dx-opt {
+  padding:.9rem 1rem; border-radius:14px; border:1px solid var(--border-soft);
+  background:var(--bg-input); color:var(--text-main); cursor:pointer; font-size:1rem;
+  font-family:inherit; transition:var(--transition); text-align:left;
+}
+.dx-opt:hover { border-color:var(--primary); }
+.dx-opt.sel { background:var(--primary); border-color:var(--primary); }
+.dx-nav { display:flex; justify-content:space-between; gap:10px; margin-top:18px; }
+.dx-results { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; width:min(760px,100%); margin-top:12px; }
+.dx-res {
+  background:var(--bg-card); border-radius:14px; overflow:hidden; text-align:center;
+  text-decoration:none; color:var(--text-main); box-shadow:var(--shadow-card); transition:transform .2s;
+  display:block; position:relative;
+}
+.dx-res:hover { transform:translateY(-4px); }
+.dx-res img { width:100%; aspect-ratio:2/3; object-fit:cover; display:block; }
+.dx-res h4 { margin:8px 6px 2px; font-size:.9rem; }
+.dx-res span { display:block; font-size:.75rem; color:var(--text-muted); margin-bottom:8px; }
+.dx-match {
+  position:absolute; top:8px; left:8px; background:rgba(0,0,0,.75); color:#3ddc84;
+  font-weight:700; font-size:.78rem; padding:3px 8px; border-radius:10px;
+}
+.dx-rank { position:absolute; top:8px; right:8px; background:var(--primary); font-weight:800; font-size:.75rem; padding:3px 8px; border-radius:10px; }
+</style>
+
+<script>
+(function () {
+  /* =====================================================
+     OUTILS : lecture des cartes du catalogue
+     ===================================================== */
+  function parseMinutes(str) {
+    if (!str) return null;
+    let m = /(\d+)\s*h\s*(\d*)/i.exec(str);
+    if (m) return parseInt(m[1], 10) * 60 + (parseInt(m[2], 10) || 0);
+    m = /(\d+)\s*min/i.exec(str);
+    return m ? parseInt(m[1], 10) : null;
+  }
+
+  function getTitles() {
+    return [...document.querySelectorAll('#movieGrid .movieimg')].map(el => {
+      const a = el.querySelector('a');
+      const img = el.querySelector('img');
+      if (!a || !img) return null;
+      const full = el.dataset.title || el.querySelector('h2')?.textContent.trim() || '';
+      const yearMatch = /\((\d{4})\)/.exec(full);
+      const isAnime = el.dataset.genre === 'Anime';
+      return {
+        title: (el.querySelector('h2')?.textContent || full).trim(),
+        key: full.toLowerCase(),
+        type: isAnime ? 'Anime' : (el.dataset.type || 'Film'),
+        genre: el.dataset.genre || '',
+        sub: el.dataset.subgenre || '',
+        href: a.href,
+        img: img.getAttribute('src'),
+        duree: el.querySelector('.duree')?.textContent.trim() || '',
+        minutes: parseMinutes(el.querySelector('.duree')?.textContent),
+        year: yearMatch ? parseInt(yearMatch[1], 10) : null,
+        // Optionnel : data-moods="action,mystere" sur la carte force les ambiances
+        moods: el.dataset.moods ? el.dataset.moods.split(',').map(x => x.trim()).filter(Boolean) : null
+      };
+    }).filter(Boolean);
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function metaLine(t) {
+    const kind = t.type === 'Anime' ? 'Anime' + (t.sub ? ' · ' + t.sub : '') : t.type + ' · ' + t.genre;
+    return kind + (t.duree ? ' · ' + t.duree : '');
+  }
+
+  /* =====================================================
+     BOUTONS D'ENTRÉE
+     ===================================================== */
+  const bar = document.createElement('div');
+  bar.className = 'dx-bar';
+  bar.innerHTML = `
+    <button class="dx-btn" id="dxOpenSwipe">🔥 Swipe</button>
+    <button class="dx-btn" id="dxOpenQuiz">🎯 Trouve-moi un titre</button>`;
+  const adminBar = document.querySelector('.admin-bar');
+  if (adminBar) adminBar.insertAdjacentElement('beforebegin', bar);
+  else document.getElementById('movieGrid').insertAdjacentElement('beforebegin', bar);
+
+  /* =====================================================
+     1) SWIPE
+     ===================================================== */
+  const swipeOv = document.createElement('div');
+  swipeOv.className = 'dx-ov';
+  swipeOv.innerHTML = `
+    <button class="dx-close" id="dxSwipeClose" aria-label="Fermer">&times;</button>
+    <h2 class="dx-title">Swipe ton prochain film 🍿</h2>
+    <div class="dx-filters">
+      <button class="dx-chip active" data-t="Tous">Tout</button>
+      <button class="dx-chip" data-t="Film">Films</button>
+      <button class="dx-chip" data-t="Série">Séries</button>
+      <button class="dx-chip" data-t="Anime">Animes</button>
+      <select id="dxGenre"><option value="Tous">Tous les genres</option></select>
+    </div>
+    <div class="dx-stage" id="dxStage"></div>
+    <div class="dx-actions">
+      <button class="dx-round no" id="dxNo" aria-label="Pas envie">✖</button>
+      <button class="dx-round yes" id="dxYes" aria-label="Envie">♥</button>
+    </div>
+    <div class="dx-hint">← Bof &nbsp;·&nbsp; J'ai envie → (ouvre la fiche)<br>Tu peux aussi utiliser les flèches du clavier.</div>`;
+  document.body.appendChild(swipeOv);
+
+  const stage = swipeOv.querySelector('#dxStage');
+  const genreSel = swipeOv.querySelector('#dxGenre');
+  let swType = 'Tous', swGenre = 'Tous', deck = [], busy = false;
+
+  function getSeen() {
+    try { return JSON.parse(localStorage.getItem('dxSeen') || '[]'); } catch (e) { return []; }
+  }
+  function addSeen(href) {
+    try {
+      const s = getSeen();
+      if (!s.includes(href)) { s.push(href); localStorage.setItem('dxSeen', JSON.stringify(s)); }
+    } catch (e) {}
+  }
+  function resetSeen() { try { localStorage.removeItem('dxSeen'); } catch (e) {} }
+
+  function fillGenres() {
+    const genres = [...new Set(getTitles().map(t => t.genre).filter(g => g && g !== 'Anime'))].sort();
+    genreSel.innerHTML = '<option value="Tous">Tous les genres</option>' +
+      genres.map(g => `<option>${esc(g)}</option>`).join('');
+  }
+
+  function buildDeck() {
+    const seen = getSeen();
+    deck = shuffle(getTitles().filter(t =>
+      (swType === 'Tous' || t.type === swType) &&
+      (swGenre === 'Tous' || t.genre === swGenre) &&
+      !seen.includes(t.href)
+    ));
+    renderDeck();
+  }
+
+  function cardHTML(t, top) {
+    return `
+      <img src="${esc(t.img)}" alt="${esc(t.title)}" draggable="false">
+      ${top ? '<div class="dx-stamp like">J\'AI ENVIE</div><div class="dx-stamp nope">BOF</div>' : ''}
+      <div class="dx-info"><h3>${esc(t.title)}</h3><p>${esc(metaLine(t))}</p></div>`;
+  }
+
+  function renderDeck() {
+    busy = false;
+    stage.innerHTML = '';
+    if (!deck.length) {
+      stage.innerHTML = `<div class="dx-empty"><p>Plus rien à swiper avec ces filtres 😅</p>
+        <button class="dx-btn small" id="dxReset">Recommencer (revoir les "Bof")</button></div>`;
+      stage.querySelector('#dxReset').onclick = () => { resetSeen(); buildDeck(); };
+      return;
+    }
+    if (deck[1]) {
+      const behind = document.createElement('div');
+      behind.className = 'dx-card behind';
+      behind.innerHTML = cardHTML(deck[1], false);
+      stage.appendChild(behind);
+    }
+    const top = document.createElement('div');
+    top.className = 'dx-card';
+    top.innerHTML = cardHTML(deck[0], true);
+    stage.appendChild(top);
+    attachDrag(top);
+  }
+
+  function attachDrag(el) {
+    let sx = 0, sy = 0, dx = 0, dragging = false;
+    const likeS = el.querySelector('.dx-stamp.like');
+    const nopeS = el.querySelector('.dx-stamp.nope');
+    el.addEventListener('pointerdown', e => {
+      if (busy) return;
+      dragging = true; sx = e.clientX; sy = e.clientY; dx = 0;
+      el.setPointerCapture(e.pointerId);
+      el.style.transition = 'none';
+      el.style.cursor = 'grabbing';
+    });
+    el.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      el.style.transform = `translate(${dx}px, ${dy * 0.3}px) rotate(${dx / 18}deg)`;
+      likeS.style.opacity = Math.min(Math.max(dx / 100, 0), 1);
+      nopeS.style.opacity = Math.min(Math.max(-dx / 100, 0), 1);
+    });
+    const end = () => {
+      if (!dragging) return;
+      dragging = false;
+      el.style.cursor = 'grab';
+      if (Math.abs(dx) > 100) { fly(dx > 0); }
+      else {
+        el.style.transition = 'transform .25s';
+        el.style.transform = '';
+        likeS.style.opacity = 0; nopeS.style.opacity = 0;
+      }
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+  }
+
+  function fly(like) {
+    if (busy || !deck.length) return;
+    busy = true;
+    const el = stage.querySelector('.dx-card:not(.behind)');
+    const current = deck[0];
+    if (el) {
+      el.style.transition = 'transform .3s ease-out, opacity .3s';
+      el.style.transform = `translate(${like ? 700 : -700}px, 40px) rotate(${like ? 25 : -25}deg)`;
+      el.style.opacity = 0;
+    }
+    setTimeout(() => {
+      if (like) {
+        window.location.href = current.href; // → la fiche
+      } else {
+        addSeen(current.href);
+        deck.shift();
+        renderDeck();
+      }
+    }, 280);
+  }
+
+  document.getElementById('dxOpenSwipe').onclick = () => {
+    fillGenres();
+    swipeOv.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    buildDeck();
+  };
+  function closeSwipe() { swipeOv.classList.remove('open'); document.body.style.overflow = ''; }
+  swipeOv.querySelector('#dxSwipeClose').onclick = closeSwipe;
+  swipeOv.querySelector('#dxNo').onclick = () => fly(false);
+  swipeOv.querySelector('#dxYes').onclick = () => fly(true);
+  swipeOv.querySelectorAll('.dx-chip').forEach(btn => {
+    btn.onclick = () => {
+      swipeOv.querySelectorAll('.dx-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      swType = btn.dataset.t;
+      buildDeck();
+    };
+  });
+  genreSel.onchange = () => { swGenre = genreSel.value; buildDeck(); };
+
+  /* =====================================================
+     2) QUESTIONNAIRE
+     ===================================================== */
+  const QUESTIONS = [
+    { id: 'type', q: "Tu veux regarder quoi ?", multi: false, opts: [
+      ['🎬 Un film', 'Film'], ['📺 Une série', 'Série'], ['🌸 Un anime', 'Anime'], ['🤷 Peu importe', 'any'] ] },
+    { id: 'mood', q: "Tu as envie de ressentir quoi ?", sub: "Choisis-en plusieurs si tu veux", multi: true, opts: [
+      ['😂 Rire', 'rire'], ['😱 Avoir peur', 'peur'], ['🕵️ Mystère & suspense', 'mystere'],
+      ['💥 De l\'adrénaline', 'action'], ['😢 De l\'émotion', 'emotion'],
+      ['❤️ De la romance', 'romance'], ['🌌 M\'évader / rêver', 'reve'] ] },
+    { id: 'who', q: "Tu regardes avec qui ?", multi: false, opts: [
+      ['🧍 Tout seul', 'seul'], ['💑 En couple', 'couple'], ['👨‍👩‍👧 En famille / avec des enfants', 'famille'],
+      ['🍕 Entre potes', 'potes'] ] },
+    { id: 'time', q: "Tu as combien de temps ?", sub: "Pour les séries, on regarde la durée d'un épisode", multi: false, opts: [
+      ['⚡ Court (moins d\'1h45)', 'short'], ['⏱️ Normal (environ 2h)', 'mid'],
+      ['🛋️ J\'ai tout mon temps (2h15 et +)', 'long'], ['🤷 Peu importe', 'any'] ] },
+    { id: 'era', q: "Plutôt quelle époque ?", multi: false, opts: [
+      ['🆕 Récent (2015 et après)', 'recent'], ['📼 Classique (avant 2000)', 'classic'], ['🤷 Peu importe', 'any'] ] },
+    { id: 'tone', q: "Tu veux quelque chose de...", multi: false, opts: [
+      ['☀️ Léger, pour se détendre', 'light'], ['🌑 Sombre et intense', 'dark'], ['🤷 Un peu des deux', 'any'] ] }
+  ];
+
+  const MOOD_GENRES = {
+    rire:    { 'Comédie': 3 },
+    peur:    { 'Horreur': 3, 'Thriller': 1 },
+    mystere: { 'Thriller': 3, 'Crime': 3 },
+    action:  { 'Action': 3, 'Aventure': 2 },
+    emotion: { 'Drame': 3, 'Romance': 1 },
+    romance: { 'Romance': 3, 'Drame': 1, 'Comédie': 0.5 },
+    reve:    { 'Science-Fiction': 3, 'Fantastique': 3, 'Animation': 2, 'Aventure': 2 }
+  };
+  // Les animes ont tous le genre "Anime" : on leur donne des ambiances à la main
+  const ANIME_MOODS = {
+    'wind breaker': ['action'], 'nana': ['romance', 'emotion'], 'pluto': ['mystere', 'reve'],
+    'fire force': ['action'], 'erased': ['mystere', 'emotion'], 'steins': ['mystere', 'reve'],
+    'call of the night': ['romance', 'mystere'], 'cyberpunk': ['action', 'reve'],
+    'platinum end': ['mystere', 'action'], "hell's paradise": ['action'],
+    'sakamoto': ['rire', 'action'], 'death note': ['mystere'], 'oshi no ko': ['mystere', 'emotion'],
+    'death parade': ['mystere', 'emotion'], 'blue period': ['emotion'], 'jujutsu': ['action', 'peur'],
+    'dragon ball': ['action', 'rire'], 'fate': ['action', 'reve'], 'jojo': ['action']
+  };
+  const WHO_GENRES = {
+    famille: { 'Animation': 2, 'Aventure': 2, 'Comédie': 2, 'Fantastique': 2, 'Crime': -2, 'Thriller': -2, 'Horreur': -100, 'Drame': -0.5 },
+    couple:  { 'Romance': 3, 'Comédie': 1, 'Drame': 1 },
+    potes:   { 'Comédie': 2, 'Action': 2, 'Horreur': 2, 'Aventure': 1 },
+    seul:    { 'Drame': 1, 'Thriller': 1, 'Crime': 1 }
+  };
+  const TONE_GENRES = {
+    light: { 'Comédie': 1.5, 'Animation': 1.5, 'Aventure': 1.5, 'Romance': 1.5, 'Horreur': -1.5, 'Crime': -1.5, 'Thriller': -1.5 },
+    dark:  { 'Thriller': 1.5, 'Crime': 1.5, 'Horreur': 1.5, 'Drame': 1.5, 'Comédie': -1, 'Animation': -1 }
+  };
+
+  // Ordre de priorité : data-moods sur la carte > liste manuelle > OMDb (cache) > sous-genre
+  const OMDB_TO_MOOD = {
+    'Action': ['action'], 'Adventure': ['action', 'reve'], 'Comedy': ['rire'],
+    'Crime': ['mystere'], 'Mystery': ['mystere'], 'Thriller': ['mystere'],
+    'Horror': ['peur'], 'Romance': ['romance'], 'Drama': ['emotion'],
+    'Fantasy': ['reve'], 'Sci-Fi': ['reve'], 'Science Fiction': ['reve']
+  };
+  function getMoodCache() {
+    try { return JSON.parse(localStorage.getItem('dxAnimeMoods') || '{}'); } catch (e) { return {}; }
+  }
+  function setMoodCache(c) {
+    try { localStorage.setItem('dxAnimeMoods', JSON.stringify(c)); } catch (e) {}
+  }
+  function manualMoods(t) {
+    if (t.moods && t.moods.length) return t.moods;
+    for (const name in ANIME_MOODS) if (t.key.includes(name)) return ANIME_MOODS[name];
+    return null;
+  }
+  function animeMoodList(t) {
+    const m = manualMoods(t);
+    if (m) return m;
+    const cached = getMoodCache()[t.key];
+    if (cached && cached.length) return cached;
+    return t.sub === 'Shonen' ? ['action', 'rire', 'reve'] : ['mystere', 'emotion'];
+  }
+
+  // Va chercher via OMDb les genres des animes qu'on ne connaît pas encore
+  async function enrichAnimes(titles) {
+    if (typeof OMDB_API_KEY === 'undefined' || !OMDB_API_KEY || OMDB_API_KEY === 'COLLE_TA_CLE_OMDB_ICI') return;
+    const cache = getMoodCache();
+    const todo = titles.filter(t => t.type === 'Anime' && !manualMoods(t) && !(t.key in cache));
+    await Promise.all(todo.map(async t => {
+      try {
+        const name = t.title.replace(/\s*\(\d{4}\)\s*$/, '').replace(/\s*;\s*/g, ' ');
+        const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&type=series&t=${encodeURIComponent(name)}`);
+        const data = await res.json();
+        const moods = new Set();
+        if (data.Response !== 'False') {
+          (data.Genre || '').split(',').map(g => g.trim()).forEach(g => (OMDB_TO_MOOD[g] || []).forEach(m => moods.add(m)));
+        }
+        cache[t.key] = [...moods]; // tableau vide = introuvable, on ne réessaie pas
+      } catch (e) { /* réseau : on réessaiera plus tard */ }
+    }));
+    setMoodCache(cache);
+  }
+
+  function scoreTitle(t, a) {
+    // Filtre dur sur le type
+    if (a.type && a.type !== 'any' && t.type !== a.type) return null;
+    if (a.who === 'famille' && (t.genre === 'Horreur' || t.sub === 'Seinen')) return null;
+
+    let s = 0, ideal = 0;
+
+    // Humeur
+    if (a.mood && a.mood.length) {
+      ideal += 3;
+      a.mood.forEach(m => {
+        if (t.type === 'Anime') { if (animeMoodList(t).includes(m)) s += 3; }
+        else s += (MOOD_GENRES[m] && MOOD_GENRES[m][t.genre]) || 0;
+      });
+    }
+    // Avec qui
+    if (a.who) {
+      ideal += 3;
+      s += (WHO_GENRES[a.who] && WHO_GENRES[a.who][t.genre]) || 0;
+    }
+    // Durée (films) / durée d'épisode (séries)
+    if (a.time && a.time !== 'any') {
+      ideal += 2;
+      const m = t.minutes;
+      if (m) {
+        if (t.type === 'Film') {
+          if (a.time === 'short') s += m <= 105 ? 2 : (m > 120 ? -3 : 0);
+          if (a.time === 'mid')   s += (m > 105 && m <= 135) ? 2 : -1;
+          if (a.time === 'long')  s += m >= 135 ? 2 : -2;
+        } else {
+          if (a.time === 'short') s += m <= 30 ? 2 : 0;
+          if (a.time === 'long')  s += m >= 45 ? 2 : 0;
+        }
+      }
+    }
+    // Époque
+    if (a.era && a.era !== 'any') {
+      ideal += 2;
+      if (t.year) {
+        if (a.era === 'recent') s += t.year >= 2015 ? 2 : (t.year < 2000 ? -2 : 0);
+        if (a.era === 'classic') s += t.year < 2000 ? 2 : (t.year >= 2015 ? -2 : 0);
+      }
+    }
+    // Ton
+    if (a.tone && a.tone !== 'any') {
+      ideal += 1.5;
+      s += (TONE_GENRES[a.tone] && TONE_GENRES[a.tone][t.genre]) || 0;
+    }
+    return { s: s + Math.random() * 0.8, ideal };
+  }
+
+  const quizOv = document.createElement('div');
+  quizOv.className = 'dx-ov';
+  quizOv.innerHTML = `<button class="dx-close" id="dxQuizClose" aria-label="Fermer">&times;</button>
+    <div class="dx-quiz" id="dxQuizBody"></div>`;
+  document.body.appendChild(quizOv);
+  const quizBody = quizOv.querySelector('#dxQuizBody');
+
+  let step = 0, answers = {};
+
+  function renderStep() {
+    const q = QUESTIONS[step];
+    const cur = answers[q.id];
+    quizBody.innerHTML = `
+      <h2 class="dx-title">🎯 Trouve-moi un titre</h2>
+      <div class="dx-progress"><div style="width:${(step / QUESTIONS.length) * 100}%"></div></div>
+      <h3 class="dx-q">${esc(q.q)}</h3>
+      <div class="dx-sub">${esc(q.sub || '')}</div>
+      <div class="dx-opts">
+        ${q.opts.map(o => {
+          const sel = q.multi ? (cur || []).includes(o[1]) : cur === o[1];
+          return `<button class="dx-opt${sel ? ' sel' : ''}" data-v="${esc(o[1])}">${esc(o[0])}</button>`;
+        }).join('')}
+      </div>
+      <div class="dx-nav">
+        <button class="dx-btn alt small" id="dxBack" ${step === 0 ? 'style="visibility:hidden"' : ''}>← Retour</button>
+        ${q.multi ? '<button class="dx-btn small" id="dxNext">Suivant →</button>' : '<span></span>'}
+      </div>`;
+
+    quizBody.querySelectorAll('.dx-opt').forEach(btn => {
+      btn.onclick = () => {
+        const v = btn.dataset.v;
+        if (q.multi) {
+          const arr = answers[q.id] || [];
+          answers[q.id] = arr.includes(v) ? arr.filter(x => x !== v) : arr.concat(v);
+          btn.classList.toggle('sel');
+        } else {
+          answers[q.id] = v;
+          next();
+        }
+      };
+    });
+    const nextBtn = quizBody.querySelector('#dxNext');
+    if (nextBtn) nextBtn.onclick = next;
+    quizBody.querySelector('#dxBack').onclick = () => { step--; renderStep(); };
+  }
+
+  function next() {
+    step++;
+    if (step >= QUESTIONS.length) showResults(); else renderStep();
+  }
+
+  async function showResults() {
+    const all = getTitles();
+    if (answers.type === 'Anime' || answers.type === 'any' || !answers.type) {
+      quizBody.innerHTML = '<h2 class="dx-title">Analyse du catalogue… 🔍</h2>';
+      await enrichAnimes(all);
+    }
+    const scored = all.map(t => {
+      const r = scoreTitle(t, answers);
+      return r ? { t, s: r.s, ideal: r.ideal } : null;
+    }).filter(Boolean).sort((a, b) => b.s - a.s);
+
+    const top = scored.slice(0, 6);
+    if (!top.length) {
+      quizBody.innerHTML = `<h2 class="dx-title">Hmm, rien ne colle 😅</h2>
+        <p style="color:var(--text-muted)">Aucun titre du catalogue ne correspond à ces critères.</p>
+        <button class="dx-btn" id="dxRestart">Recommencer</button>`;
+      quizBody.querySelector('#dxRestart').onclick = startQuiz;
+      return;
+    }
+    quizBody.innerHTML = `
+      <h2 class="dx-title">Voilà ce qu'on te conseille 🍿</h2>
+      <div class="dx-progress"><div style="width:100%"></div></div>
+      <div class="dx-results">
+        ${top.map((r, i) => {
+          const pct = Math.max(35, Math.min(98, Math.round(50 + 50 * (r.s / (r.ideal || 1)))));
+          return `<a class="dx-res" href="${esc(r.t.href)}">
+            <img src="${esc(r.t.img)}" alt="${esc(r.t.title)}">
+            <div class="dx-match">${pct}%</div><div class="dx-rank">#${i + 1}</div>
+            <h4>${esc(r.t.title)}</h4><span>${esc(metaLine(r.t))}</span></a>`;
+        }).join('')}
+      </div>
+      <div class="dx-nav" style="justify-content:center;margin-top:22px">
+        <button class="dx-btn alt small" id="dxRestart">🔄 Refaire le questionnaire</button>
+        <button class="dx-btn small" id="dxToSwipe">🔥 Swiper plutôt</button>
+      </div>`;
+    quizBody.querySelector('#dxRestart').onclick = startQuiz;
+    quizBody.querySelector('#dxToSwipe').onclick = () => { closeQuiz(); document.getElementById('dxOpenSwipe').click(); };
+  }
+
+  function startQuiz() { step = 0; answers = {}; renderStep(); }
+  function closeQuiz() { quizOv.classList.remove('open'); document.body.style.overflow = ''; }
+
+  document.getElementById('dxOpenQuiz').onclick = () => {
+    quizOv.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    startQuiz();
+  };
+  quizOv.querySelector('#dxQuizClose').onclick = closeQuiz;
+
+  /* =====================================================
+     CLAVIER
+     ===================================================== */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeSwipe(); closeQuiz(); }
+    if (swipeOv.classList.contains('open')) {
+      if (e.key === 'ArrowLeft') fly(false);
+      if (e.key === 'ArrowRight') fly(true);
+    }
+  });
+})();
+</script>
 </body>
 </html>
