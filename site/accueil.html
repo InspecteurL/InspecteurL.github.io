@@ -1975,7 +1975,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 })();
 </script>
     <script>
-        /* =========================================================
+/* =========================================================
    HorizonCiné : fond personnalisable (couleur ou image)
    - Sur la page d'accueil (là où il y a le .hero) : affiche les boutons.
    - Sur toute page qui charge ce fichier : applique le fond choisi.
@@ -2027,9 +2027,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     .hc-btn input[type="color"]::-webkit-color-swatch { border: 2px solid #fff; border-radius: 50%; }
     .hc-btn input[type="color"]::-moz-color-swatch { border: 2px solid #fff; border-radius: 50%; }
 
+    /* Fondu du bas du slider vers le fond choisi (couleur ou image) */
+    body.hc-custom .hero {
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 110px), transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 110px), transparent 100%);
+    }
+    body.hc-custom .hero-slide { padding-bottom: 110px; }
+
     @media (max-width: 768px) {
       .hc-bar { padding: 14px 14px 0; justify-content: flex-start; }
       .hc-btn { font-size: 13px; padding: 7px 12px; }
+      body.hc-custom .hero {
+        -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 70px), transparent 100%);
+        mask-image: linear-gradient(to bottom, #000 calc(100% - 70px), transparent 100%);
+      }
+      body.hc-custom .hero-slide { padding-bottom: 70px; }
     }
   `;
   document.head.appendChild(style);
@@ -2054,6 +2066,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const layer = document.getElementById('hcBgImage');
     if (layer) layer.style.backgroundImage = img ? `url("${img}")` : '';
     document.body.classList.toggle('hc-has-image', !!img);
+    document.body.classList.toggle('hc-custom', !!(img || store.get(KEY_COLOR)));
 
     const reset = document.getElementById('hcReset');
     if (reset) reset.hidden = !(img || store.get(KEY_COLOR));
