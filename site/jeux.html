@@ -252,6 +252,17 @@ main {
 
   .nav { bottom: auto; top: .75rem; left: auto; right: .75rem; transform: none; }
 }
+
+	  /* Transition douce pour l'apparition/disparition des vignettes */
+.item:nth-child(n+3) {
+  transition: transform 0.1s, left 0.75s, top 0.75s, width 0.75s, height 0.75s, opacity 0.5s ease;
+}
+
+/* Vignettes cachées (sur Project Rival, quand il n'y a pas d'activité) */
+main.thumbs-hidden .item:nth-child(n+3) {
+  opacity: 0;
+  pointer-events: none;
+}
   </style>
 </head>
 <body>
@@ -291,7 +302,7 @@ main {
         <a href="https://inspecteurl.github.io/jeu/trouve-la-regle.html"><button>Jouer Maintenant</button></a>
       </div>
     </li>
-	  <li class='item' style="background-image: url('pr.jpg')">
+	  <li class='item' data-hide-thumbs style="background-image: url('pr.jpg')">
       <div class='content'>
         <h2 class='title'>"Projetc Rival"</h2>
         <p class='description'>
@@ -336,6 +347,34 @@ hub.addEventListener('touchend', e => {
   if (dx < 0) slider.append(items[0]);          // glisser vers la gauche = suivant
   else slider.prepend(items[items.length - 1]); // vers la droite = précédent
 }, { passive: true });
+</script>
+	<script>
+const mainEl = document.querySelector('main');
+const HIDE_DELAY = 2000; // ms d'inactivité avant de cacher les vignettes
+let idleTimer;
+
+function isRivalActive() {
+  const active = document.querySelectorAll('.item')[1]; // la slide affichée en grand
+  return active && active.hasAttribute('data-hide-thumbs');
+}
+
+function wakeThumbs() {
+  mainEl.classList.remove('thumbs-hidden');
+  clearTimeout(idleTimer);
+  if (isRivalActive()) {
+    idleTimer = setTimeout(() => mainEl.classList.add('thumbs-hidden'), HIDE_DELAY);
+  }
+}
+
+// Souris, toucher écran : les vignettes réapparaissent
+['mousemove', 'touchstart', 'click'].forEach(evt =>
+  document.addEventListener(evt, wakeThumbs, { passive: true })
+);
+
+// À chaque changement de slide (flèches ou swipe), on réévalue
+new MutationObserver(wakeThumbs).observe(slider, { childList: true });
+
+wakeThumbs();
 </script>
 </body>
 </html>
