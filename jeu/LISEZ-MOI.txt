@@ -1,0 +1,25 @@
+﻿PROJECT RIVAL - jeu de combat 2D
+
+POUR JOUER
+1. Décompresse le fichier zip (clic droit > Extraire tout).
+2. Ouvre le dossier « PROJECT RIVAL » et double-clique sur index.html.
+   Le jeu s'ouvre dans le navigateur (Chrome ou Edge conseillés), sans installation ni Internet.
+3. Garde tous les fichiers ensemble dans le même dossier : les musiques sont à côté de index.html.
+4. F11 : plein écran. Il faut un clavier ou une manette (pas de commandes tactiles).
+
+TOUCHES (joueur 1, clavier AZERTY)
+Q / D : se déplacer      Z : sauter      S : s'accroupir
+J / K / L : coup léger / moyen / lourd
+U : coup spécial (S + U : 2e coup spécial)
+I : super (2 barres)      S + I : Instinct Céleste de Tenkai (3 barres)
+F : garde      H : projection      Espace : ruée      Échap : pause
+
+Liste complète des coups de chaque combattant : touche L (ou Tab) sur l'écran de sélection.
+Joueur 2 : flèches, et pavé numérique pour les coups (1 / 2 / 3, 4 spécial, 5 super, 0 garde, 6 projection).
+Manettes compatibles. Toutes les touches se changent dans Paramètres > Commandes.
+
+JOUER EN LIGNE CONTRE UN AMI (Internet nécessaire)
+Menu EN LIGNE > CONNEXION DIRECTE PAR CODES. Il faut avoir tous les deux la même version du jeu.
+1. L'un clique « J'INVITE MON AMI », copie le code et l'envoie à l'autre (WhatsApp, Discord, SMS...).
+2. L'autre clique « J'AI REÇU UN CODE », colle le code, puis renvoie son code-réponse.
+3. Le premier colle la réponse et clique « SE CONNECTER » : chacun choisit son combattant, et c'est parti.

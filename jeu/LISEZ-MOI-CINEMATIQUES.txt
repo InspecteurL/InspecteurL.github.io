@@ -1,0 +1,41 @@
+CINÉMATIQUES 3D DES SUPERS (nouveau)
+
+Fichiers à remplacer / ajouter dans le dossier « PROJECT RIVAL » (à côté des musiques) :
+  - index.html          (remplace l'ancien)
+  - cinematiques.js     (nouveau : toute la mise en scène, un plan par personnage)
+
+CE QUE C'EST
+Quand une super est lancée, le combat se fige et on passe dans une VRAIE scène 3D (WebGL) :
+  - le décor du combat est reconstruit en 3D (immeubles, conteneurs, piliers, glace... selon le stage) ;
+  - les deux combattants deviennent des mannequins 3D low-poly, habillés avec leurs couleurs
+    (coiffure, chapeau, accessoires principaux) ;
+  - une vraie caméra en perspective : gros plan visage, travelling circulaire autour du personnage,
+    contre-plongée sur l'exécution, plan d'impact sur l'adversaire ;
+  - effets 3D : aura, sphère d'énergie, rayon, onde de choc, particules, flou radial, lignes de vitesse.
+Puis retour fondu à la vue 2D, et le combat reprend exactement là où il s'était arrêté.
+Durée : environ 2 s de plans + 0,5 s de retour.
+
+LIMITES (à savoir)
+  - Le décor 3D est une reconstruction générée à partir des couleurs/du thème de chaque stage,
+    pas une copie exacte du décor 2D. Les mannequins sont simplifiés (pas de visages détaillés).
+  - Le moteur 3D est écrit maison (aucune bibliothèque), dans index.html. Si le navigateur ne
+    gère pas WebGL, le jeu retombe automatiquement sur l'ancienne cinématique 2D.
+
+Activer / désactiver : Paramètres > Vidéo > « Cinématiques des supers ».
+Désactivées, on retrouve le simple zoom d'origine.
+
+Modifier une cinématique : ouvre cinematiques.js dans le Bloc-notes ; tout est commenté en français
+(durée des plans, angle/distance/champ de la caméra 3D, couleur, flou, secousses...).
+Section « CAMÉRA 3D » : cam3d { dist, azimut, elev, fov, roulis }, pose, poseAdv, faisceau, flux.
+Si le fichier est absent ou cassé, le jeu utilise une copie intégrée de la cinématique par défaut.
+
+Gameplay inchangé : la simulation est simplement mise en pause pendant les plans, puis reprend
+exactement là où elle s'était arrêtée. Touches bloquées pendant la cinématique.
+Fonctionne en entraînement et en IA contre IA. Désactivée en ligne (pour éviter tout décalage).
+
+
+=== MISE A JOUR (v4) ===
+- Continuité : après les plans 3D, l'attaque réelle se déroule en 3D (la 2D n'est plus rejouée).
+- Décor : le panorama 3D est la capture du vrai décor de la map ; le sol 3D reprend la vraie matière du sol de la map.
+- Personnages : mannequins plus détaillés, couleurs/accessoires recalés sur les fiches de référence (ex. nez rouge de Kairo).
+- Rien ne change au gameplay (dégâts, hitboxes, frames, jauge, IA).
