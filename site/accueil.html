@@ -1974,6 +1974,185 @@ document.addEventListener("DOMContentLoaded", async () => {
   remplir('animesCarousel', shuffle(animes).slice(0, NB));
 })();
 </script>
+    <script>
+        /* =========================================================
+   HorizonCiné : fond personnalisable (couleur ou image)
+   - Sur la page d'accueil (là où il y a le .hero) : affiche les boutons.
+   - Sur toute page qui charge ce fichier : applique le fond choisi.
+   Le choix est gardé dans le navigateur (localStorage).
+   ========================================================= */
+(function () {
+  const KEY_COLOR = 'hc_bg_color';
+  const KEY_IMG = 'hc_bg_image';
+  const DEFAULT_COLOR = '#000000';
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+
+  // ---------- Styles ----------
+  const style = document.createElement('style');
+  style.textContent = `
+    body { background: var(--hc-bg, #000) !important; }
+    .catalog h2 { color: var(--hc-text, #fff); }
+
+    #hcBgImage {
+      position: fixed; inset: 0; z-index: -1;
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+      display: none;
+    }
+    #hcBgImage::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.45); }
+    body.hc-has-image #hcBgImage { display: block; }
+
+    .hc-bar {
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end;
+      padding: 18px 50px 0;
+    }
+    .hc-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(20,20,20,.85); color: #fff;
+      border: 1px solid rgba(255,255,255,.12); border-radius: 999px;
+      padding: 8px 16px; font: 500 14px 'Poppins', sans-serif;
+      cursor: pointer; transition: border-color .2s, background .2s;
+    }
+    .hc-btn:hover { border-color: #e50914; background: rgba(40,40,40,.9); }
+    .hc-btn[hidden] { display: none; }
+    .hc-btn input[type="color"] {
+      width: 26px; height: 26px; padding: 0; border: none; border-radius: 50%;
+      background: none; cursor: pointer;
+    }
+    .hc-btn input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    .hc-btn input[type="color"]::-webkit-color-swatch { border: 2px solid #fff; border-radius: 50%; }
+    .hc-btn input[type="color"]::-moz-color-swatch { border: 2px solid #fff; border-radius: 50%; }
+
+    @media (max-width: 768px) {
+      .hc-bar { padding: 14px 14px 0; justify-content: flex-start; }
+      .hc-btn { font-size: 13px; padding: 7px 12px; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // ---------- Application du fond ----------
+  function luminance(hex) {
+    const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+    if (!m) return 0;
+    const [r, g, b] = [m[1], m[2], m[3]].map(x => parseInt(x, 16));
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+
+  function apply() {
+    const color = store.get(KEY_COLOR) || DEFAULT_COLOR;
+    const img = store.get(KEY_IMG);
+    const root = document.documentElement;
+
+    root.style.setProperty('--hc-bg', color);
+    // texte des titres : sombre si le fond est très clair (et sans image)
+    root.style.setProperty('--hc-text', !img && luminance(color) > 0.6 ? '#111' : '#fff');
+
+    const layer = document.getElementById('hcBgImage');
+    if (layer) layer.style.backgroundImage = img ? `url("${img}")` : '';
+    document.body.classList.toggle('hc-has-image', !!img);
+
+    const reset = document.getElementById('hcReset');
+    if (reset) reset.hidden = !(img || store.get(KEY_COLOR));
+    const picker = document.getElementById('hcColor');
+    if (picker) picker.value = color;
+  }
+
+  // Redimensionne l'image pour qu'elle tienne dans le localStorage
+  function toDataUrl(file, maxSide, quality) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const s = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * s);
+        c.height = Math.round(img.height * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        resolve(c.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image illisible')); };
+      img.src = url;
+    });
+  }
+
+  async function setImage(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      alert('Choisis un fichier image (jpg, png, webp...).');
+      return;
+    }
+    try {
+      for (const [side, q] of [[1920, 0.82], [1280, 0.7], [960, 0.6]]) {
+        const data = await toDataUrl(file, side, q);
+        if (store.set(KEY_IMG, data)) { apply(); return; }
+      }
+      alert("Cette image est trop lourde pour être enregistrée dans le navigateur. Essaie-en une plus petite.");
+    } catch (e) {
+      alert("Impossible de lire cette image.");
+    }
+  }
+
+  // ---------- Boutons (page d'accueil uniquement) ----------
+  function buildBar() {
+    const hero = document.querySelector('.hero');
+    if (!hero || document.getElementById('hcBar')) return;
+
+    const bar = document.createElement('section');
+    bar.className = 'hc-bar';
+    bar.id = 'hcBar';
+    bar.innerHTML = `
+      <label class="hc-btn" title="Changer la couleur de fond">
+        <i class="fas fa-palette"></i> Couleur de fond
+        <input type="color" id="hcColor" value="${DEFAULT_COLOR}">
+      </label>
+      <button type="button" class="hc-btn" id="hcImgBtn">
+        <i class="fas fa-image"></i> Image de fond
+      </button>
+      <input type="file" id="hcFile" accept="image/*" hidden>
+      <button type="button" class="hc-btn" id="hcReset" hidden>
+        <i class="fas fa-rotate-left"></i> Réinitialiser
+      </button>`;
+    hero.insertAdjacentElement('afterend', bar);
+
+    const picker = bar.querySelector('#hcColor');
+    const file = bar.querySelector('#hcFile');
+
+    // Choisir une couleur remplace l'image de fond
+    picker.addEventListener('input', () => {
+      store.set(KEY_COLOR, picker.value);
+      store.del(KEY_IMG);
+      apply();
+    });
+    bar.querySelector('#hcImgBtn').addEventListener('click', () => file.click());
+    file.addEventListener('change', () => {
+      setImage(file.files[0]);
+      file.value = '';
+    });
+    bar.querySelector('#hcReset').addEventListener('click', () => {
+      store.del(KEY_COLOR);
+      store.del(KEY_IMG);
+      apply();
+    });
+  }
+
+  function init() {
+    if (!document.getElementById('hcBgImage')) {
+      const layer = document.createElement('div');
+      layer.id = 'hcBgImage';
+      document.body.prepend(layer);
+    }
+    buildBar();
+    apply();
+  }
+
+  if (document.body) init();
+  else document.addEventListener('DOMContentLoaded', init);
+})();
+    </script>
 
 </body>
 </html>
