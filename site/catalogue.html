@@ -8982,6 +8982,106 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 </style>
 
+<!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+
+.vc-snd {
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.18); cursor:pointer;
+  background:rgba(31,31,40,.9); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none;
+}
+.vc-snd .material-symbols-outlined { font-size:20px; }
+.vc-hold {
+  position:absolute; left:50%; transform:translateX(-50%); top:58px; display:none; text-align:center;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.18); padding:8px 14px; border-radius:12px;
+  font-size:.85rem; max-width:90vw; pointer-events:none; line-height:1.35;
+}
+.vc-hold span { color:#bbb; font-size:.78rem; }
+.vc-stand {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; display:none; align-items:center; gap:6px;
+  padding:.55rem 1.1rem; border-radius:20px; border:none; background:#7b2cff; color:#fff; font-weight:700;
+  cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+</style>
+
 <script>
 (function () {
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -9267,7 +9367,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const LEVELS = 4, LEVEL_Y0 = 0.22, LEVEL_DY = 0.48;
     const BODY_D = 0.5, BODY_H = 2.2, ROOM_H = 3.2;
     const ROW_GAP = 3.6, ZSTART = -3, EYE = 1.62, RADIUS = 0.28;
-    const HI_R2 = 6 * 6, HI_UN_R2 = 10 * 10, MAX_LOADS = 8;
+    const HI_R2 = 3.5 * 3.5, HI_UN_R2 = 6 * 6, MAX_LOADS = 8;
 
     let destroyed = false;
     const titles = readTitles();
@@ -9308,8 +9408,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.createElement('canvas');
     ov.insertBefore(canvas, ov.firstChild);
     const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    const maxAniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    const prMax = Math.min(window.devicePixelRatio || 1, 1.5);
+    let prCur = prMax;
+    renderer.setPixelRatio(prCur);
+    const maxAniso = Math.min(4, renderer.capabilities.getMaxAnisotropy());
 
     // ---- Matières : tes textures, répétées en miroir (aucune couture visible) ----
     const texImg = {};
@@ -9327,6 +9429,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resize() {
       const w = ov.clientWidth || window.innerWidth, h = ov.clientHeight || window.innerHeight;
+      renderer.setPixelRatio(prCur);
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
@@ -9655,7 +9758,8 @@ document.addEventListener('DOMContentLoaded', () => {
           side.add(mesh);
           const d = { t: t, mesh: mesh, front: front, placeholder: placeholder, tex: null,
                       state: 0, hiState: 0, kind: 'dvd', lo: 'w185', hi: 'w342', hiR2: HI_R2, hiUn: HI_UN_R2,
-                      baseZ: baseZ, offset: 0, target: 0, wx: 0, wz: 0, pullable: true, hold: false };
+                      baseZ: baseZ, offset: 0, target: 0, wx: 0, wz: 0, pullable: true, hold: false,
+                      strip: strip, sticker: sticker };
           mesh.userData.d = d;
           dvds.push(d); meshes.push(mesh); streamables.push(d);
         });
@@ -9829,6 +9933,10 @@ document.addEventListener('DOMContentLoaded', () => {
     scene.updateMatrixWorld(true);
     const tmpV = new THREE.Vector3();
     dvds.forEach(d => { d.mesh.getWorldPosition(tmpV); d.wx = tmpV.x; d.wz = tmpV.z; });
+    // Tout ce qui ne bouge pas n'est plus recalculé à chaque image (gros gain CPU)
+    scene.traverse(o => { o.matrixAutoUpdate = false; });
+    spinners.forEach(sp => { sp.mesh.matrixAutoUpdate = true; });
+    if (clockHands) { clockHands.h.matrixAutoUpdate = clockHands.m.matrixAutoUpdate = clockHands.s.matrixAutoUpdate = true; }
 
     // ---- Menu "Aller au rayon" ----
     jumpSel.innerHTML = '<option value="">Aller au rayon…</option>' +
@@ -9883,6 +9991,12 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let i = 0; i < streamables.length; i++) {
         const d = streamables[i];
         const dx = d.wx - p.x, dz = d.wz - p.z, q = dx * dx + dz * dz;
+        if (d.kind === 'dvd') {
+          // LOD : les DVD très loin ne sont pas dessinés, ceux assez loin perdent leurs détails
+          if (!d.hold) d.mesh.visible = q < 26 * 26;
+          const det = q < 9 * 9;
+          if (d.strip.visible !== det) { d.strip.visible = det; d.sticker.visible = det; }
+        }
         if (d.state === 0) lo.push([q, d]);
         else if (d.state === 2 && d.hi) {
           if (d.hiState === 0 && (d.hold || q < d.hiR2)) hi.push([q, d]);
@@ -10022,6 +10136,7 @@ document.addEventListener('DOMContentLoaded', () => {
       heldD = d; d.hold = true;
       d.offset = d.target = 0.14; active.delete(d);
       d.mesh.position.z = d.baseZ + 0.14;
+      d.mesh.updateMatrix();
       d.mesh.updateWorldMatrix(true, false);
       d.mesh.matrixWorld.decompose(shelfPos, shelfQ, _sd);
       d.mesh.visible = false;
@@ -10141,6 +10256,9 @@ document.addEventListener('DOMContentLoaded', () => {
           hideTip();
         }
       } else if (e.pointerType === 'mouse') {
+        const tnow = performance.now();
+        if (tnow - lastPick < 45) return;
+        lastPick = tnow;
         if (hstate !== 'idle') {
           hideTip();
           canvas.style.cursor = (hstate === 'held' && heldHit(e.clientX, e.clientY)) ? 'pointer' : 'grab';
@@ -10213,10 +10331,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ---------- Boucle ---------- */
     let raf = 0, last = performance.now(), streamAcc = 1, stepAcc = 0;
+    let emaDt = 0.016, adaptAcc = 0, age = 0, lastPick = 0;
     function frame(now) {
       raf = requestAnimationFrame(frame);
-      const dt = Math.min(0.05, (now - last) / 1000);
+      const rawDt = (now - last) / 1000;
+      const dt = Math.min(0.05, rawDt);
       last = now;
+
+      // Résolution adaptative : si l'ordi rame, on baisse la netteté (jusqu'à x0.5) ; s'il est à l'aise, on la remonte
+      emaDt += (Math.min(rawDt, 0.1) - emaDt) * 0.08;
+      age += dt; adaptAcc += dt;
+      if (adaptAcc > 0.8 && age > 3) {
+        adaptAcc = 0;
+        if (emaDt > 0.026 && prCur > 0.5) { prCur = Math.max(0.5, prCur * 0.85); resize(); }
+        else if (emaDt < 0.0185 && prCur < prMax) { prCur = Math.min(prMax, prCur * 1.08); resize(); }
+      }
 
       let f = 0, s = 0, turn = 0;
       if (keys.has('KeyW') || keys.has('ArrowUp') || pad.f) f += 1;
@@ -10259,6 +10388,7 @@ document.addEventListener('DOMContentLoaded', () => {
         d.offset += (d.target - d.offset) * Math.min(1, dt * 14);
         if (Math.abs(d.target - d.offset) < 0.002) { d.offset = d.target; active.delete(d); }
         d.mesh.position.z = d.baseZ + d.offset;
+        d.mesh.updateMatrix();
       });
 
       // Disques qui tournent + horloge à l'heure réelle
