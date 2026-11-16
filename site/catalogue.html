@@ -9400,6 +9400,134 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 </style>
 
+<!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+
+.vc-snd {
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.18); cursor:pointer;
+  background:rgba(31,31,40,.9); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none;
+}
+.vc-snd .material-symbols-outlined { font-size:20px; }
+.vc-hold {
+  position:absolute; left:50%; transform:translateX(-50%); top:58px; display:none; text-align:center;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.18); padding:8px 14px; border-radius:12px;
+  font-size:.85rem; max-width:90vw; pointer-events:none; line-height:1.35;
+}
+.vc-hold span { color:#bbb; font-size:.78rem; }
+.vc-joy {
+  position:absolute; right:16px; bottom:48px; width:116px; height:116px; border-radius:50%; display:none;
+  background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.22); touch-action:none;
+}
+@media (pointer:coarse) { .vc-joy { display:block; } }
+.vc-knob {
+  position:absolute; left:50%; top:50%; width:52px; height:52px; margin:-26px 0 0 -26px; border-radius:50%;
+  background:rgba(255,255,255,.35); border:2px solid rgba(255,255,255,.5); pointer-events:none;
+}
+.vc-sub { position:absolute; left:14px; top:54px; pointer-events:none; }
+.vc-online {
+  display:none; align-items:center; gap:5px; padding:3px 10px; border-radius:14px; font-size:.78rem;
+  background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.16);
+}
+.vc-online .material-symbols-outlined { font-size:16px; }
+.vc-map {
+  position:absolute; right:14px; top:56px; border-radius:6px; cursor:crosshair; touch-action:none;
+  box-shadow:0 2px 12px rgba(0,0,0,.55);
+}
+.vc-say {
+  position:absolute; display:none; transform:translate(-50%,-100%); background:#fff; color:#111; border-radius:12px;
+  padding:7px 11px; max-width:230px; font-size:.82rem; line-height:1.3; pointer-events:none; z-index:2;
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+}
+.vc-say::after {
+  content:''; position:absolute; left:50%; bottom:-7px; margin-left:-7px; border:7px solid transparent;
+  border-bottom:0; border-top-color:#fff;
+}
+.vc-stand {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; display:none; align-items:center; gap:6px;
+  padding:.55rem 1.1rem; border-radius:20px; border:none; background:#7b2cff; color:#fff; font-weight:700;
+  cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+</style>
+
 <script>
 (function () {
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -9569,6 +9697,16 @@ document.addEventListener('DOMContentLoaded', () => {
         noise(t, 0.35, 'lowpass', 320, 0.5, 0.55, sfxG);
         tone(t, 70, 0.25, 'sine', 0.3, sfxG, 0.005, 45);
       },
+      bell() {
+        const t = ctx.currentTime;
+        tone(t, 1320, 1.1, 'sine', 0.16, sfxG, 0.005);
+        tone(t, 1980, 0.8, 'sine', 0.07, sfxG, 0.005);
+        tone(t, 2640, 0.5, 'sine', 0.03, sfxG, 0.005);
+      },
+      blip() {
+        const t = ctx.currentTime;
+        [0, 0.09, 0.18, 0.3].forEach((o, i) => tone(t + o, 210 + (i % 2) * 60 + Math.random() * 40, 0.08, 'triangle', 0.12, sfxG, 0.005));
+      },
       stand() {
         const t = ctx.currentTime;
         noise(t, 0.25, 'lowpass', 400, 0.5, 0.3, sfxG);
@@ -9602,11 +9740,15 @@ document.addEventListener('DOMContentLoaded', () => {
       '<div class="vc-brand">' + ic('storefront') + ' VIDEO CLUB</div>' +
       '<select id="vcJump" aria-label="Aller au rayon"><option value="">Aller au rayon…</option></select>' +
       '<button class="vc-snd" id="vcSnd" aria-label="Son"></button>' +
+      '<button class="vc-snd" id="vcMapBtn" aria-label="Plan" title="Plan de la salle">' + ic('map') + '</button>' +
       '<button class="vc-x" id="vcClose" aria-label="Quitter">' + ic('close') + ' Quitter</button>' +
     '</div>' +
     '<div class="vc-loading" id="vcLoading">Ouverture du video club…</div>' +
     '<div class="vc-tip" id="vcTip"></div>' +
     '<div class="vc-hold" id="vcHold"></div>' +
+    '<div class="vc-sub"><span class="vc-online" id="vcOnline"></span></div>' +
+    '<canvas class="vc-map" id="vcMap"></canvas>' +
+    '<div class="vc-say" id="vcSay"></div>' +
     '<button class="vc-stand" id="vcStand">' + ic('chair') + ' Se lever</button>' +
     '<div class="vc-hint">' + (isTouch
       ? 'Glisse pour regarder · croix pour marcher · joystick à droite pour tourner · touche un DVD pour le prendre, touche-le encore pour l’ouvrir · touche un canapé pour t’asseoir'
@@ -10145,8 +10287,7 @@ document.addEventListener('DOMContentLoaded', () => {
       m.userData.d = d; meshes.push(m); streamables.push(d);
     }
     for (let z = zMax - 2.2; z > zMin + 1.2; z -= 1.9) { addFramedPoster('left', z); addFramedPoster('right', z); }
-    addFramedPoster('back', -4.6); addFramedPoster('back', 4.6);
-    for (let x = 4.4; x <= W / 2 - 0.7; x += 1.5) { addFramedPoster('front', x); addFramedPoster('front', -x); }
+    for (let x = 5.9; x <= W / 2 - 0.7; x += 1.5) { addFramedPoster('front', x); addFramedPoster('front', -x); }
 
     // Horloge murale (heure réelle)
     (function addClock() {
@@ -10217,8 +10358,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Canapé en cuir : on peut s'asseoir dessus (clic)
     const sofaRed = surf('leather036', 1.2, 1, 0xffffff);
     const sofaDark = surf('leather034', 1.2, 1, 0xffffff);
+    const sofaObjs = [];
     function addSofa(x, z, dir) { // dir = +1 : dossier côté mur gauche (-x) ; -1 : côté mur droit (+x)
       const sofa = { kind: 'sofa', x: x, z: z, dir: dir, wx: x, wz: z, pullable: false, hold: false, t: { title: 'Canapé' } };
+      sofaObjs.push(sofa);
       const parts = [
         [new THREE.BoxGeometry(0.85, 0.28, 1.9), sofaDark, 0, 0.14, 0],
         [new THREE.BoxGeometry(0.62, 0.16, 1.62), sofaRed, dir * 0.08, 0.36, 0],
@@ -10273,12 +10416,149 @@ document.addEventListener('DOMContentLoaded', () => {
       rects.push([x - 0.35, x + 0.35, z - 0.5, z + 0.5]);
     })();
 
+    /* ---------- Télés de démonstration (diaporama des affiches, en boucle) ---------- */
+    const tvCanvas = document.createElement('canvas'); tvCanvas.width = 512; tvCanvas.height = 288;
+    const tvCtx = tvCanvas.getContext('2d');
+    const tvTex = new THREE.CanvasTexture(tvCanvas); tvTex.colorSpace = THREE.SRGBColorSpace;
+    const tvScreenMat = new THREE.MeshBasicMaterial({ map: tvTex });
+    const tvBodyMat = surf('leather034', 1, 1, 0x888888);
+    const tvObj = { kind: 'tv', t: { title: 'Démo', genre: '', type: '', href: '#', img: '' }, hold: false, pullable: false, wx: 0, wz: 0 };
+    function addTV(wallName, along) {
+      const p = wallPos(wallName, along, 1.75, 0);
+      const ix = Math.sin(p.ry), iz = Math.cos(p.ry);
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.9, 0.08), tvBodyMat);
+      body.position.set(p.x + ix * 0.04, p.y, p.z + iz * 0.04); body.rotation.y = p.ry; scene.add(body);
+      const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.8), tvScreenMat);
+      scr.position.set(p.x + ix * 0.085, p.y, p.z + iz * 0.085); scr.rotation.y = p.ry; scene.add(scr);
+      scr.userData.d = tvObj; meshes.push(scr);
+    }
+    addTV('front', 4.4); addTV('front', -4.4);
+    addTV('back', 4.7); addTV('back', -4.7);
+
+    function wrapText(g, text, x, y, maxW, lh, maxLines) {
+      const words = String(text).split(/\s+/); let line = '', n = 0;
+      for (let i = 0; i < words.length; i++) {
+        const test = line ? line + ' ' + words[i] : words[i];
+        if (g.measureText(test).width > maxW && line) {
+          g.fillText(line, x, y); y += lh; line = words[i];
+          if (++n >= maxLines - 1) {
+            let r = words.slice(i).join(' '), full = r;
+            while (g.measureText(r + '…').width > maxW && r.length > 1) r = r.slice(0, -1);
+            g.fillText(r === full ? r : r + '…', x, y); return y + lh;
+          }
+        } else line = test;
+      }
+      g.fillText(line, x, y); return y + lh;
+    }
+    const TV_SLIDE = 6;
+    const tvEntries = shuffleArr(dvds);
+    let tvIdx = 0, tvT = 0, tvAcc = 1;
+    function updateTV(dt) {
+      if (!tvEntries.length) return;
+      tvAcc += dt; if (tvAcc < 0.1) return;
+      tvT += tvAcc; tvAcc = 0;
+      if (tvT >= TV_SLIDE) { tvT -= TV_SLIDE; tvIdx = (tvIdx + 1) % tvEntries.length; }
+      const d = tvEntries[tvIdx], g = tvCtx;
+      const img = (d.texHi && d.texHi.image) || (d.texLo && d.texLo.image) || d.placeholder.image;
+      const a = Math.min(1, tvT / 0.6, (TV_SLIDE - tvT) / 0.5);
+      g.fillStyle = '#05050a'; g.fillRect(0, 0, 512, 288);
+      g.save();
+      g.globalAlpha = Math.max(0, a);
+      const z = 1 + 0.05 * (tvT / TV_SLIDE);
+      g.translate(256, 144); g.scale(z, z); g.translate(-256, -144);
+      let pw = 190;
+      try {
+        const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+        const sc = 512 / iw * 1.4;
+        g.drawImage(img, -(iw * sc - 512) / 2, -(ih * sc - 288) * 0.3, iw * sc, ih * sc);
+        g.fillStyle = 'rgba(8,8,18,.74)'; g.fillRect(0, 0, 512, 288);
+        const ph = 250; pw = Math.min(190, ph * iw / ih);
+        g.drawImage(img, 28, 19, pw, ph);
+      } catch (e) { g.fillStyle = 'rgba(8,8,18,.9)'; g.fillRect(0, 0, 512, 288); }
+      const x0 = 28 + pw + 26;
+      g.fillStyle = '#e50914'; g.fillRect(x0, 34, 104, 20);
+      g.fillStyle = '#fff'; g.font = 'bold 12px Arial'; g.textBaseline = 'middle'; g.fillText("À L'AFFICHE", x0 + 8, 44);
+      g.textBaseline = 'alphabetic';
+      g.font = 'bold 30px Arial'; g.fillStyle = '#fff';
+      const yEnd = wrapText(g, d.t.title, x0, 92, 512 - x0 - 24, 34, 4);
+      g.font = '17px Arial'; g.fillStyle = '#ffb3c0';
+      g.fillText(metaLine(d.t), x0, yEnd + 6);
+      g.font = 'bold 15px Arial'; g.fillStyle = '#cfd0dc';
+      g.fillText('▶ Disponible sur HorizonCiné', x0, 262);
+      g.restore();
+      g.fillStyle = 'rgba(0,0,0,.13)';
+      for (let y = 0; y < 288; y += 3) g.fillRect(0, y, 512, 1);
+      g.fillStyle = '#ff3b3b'; g.font = 'bold 12px Arial';
+      if (Math.floor(tvT * 2) % 2 === 0) { g.beginPath(); g.arc(486, 20, 5, 0, 7); g.fill(); }
+      tvTex.needsUpdate = true;
+      tvObj.t = d.t;
+    }
+
+    /* ---------- Le vendeur (derrière le comptoir) ---------- */
+    const vendor = { kind: 'vendor', t: { title: 'Le vendeur', genre: 'Video club', type: '', href: '#', img: '' }, hold: false, pullable: false, wx: 0, wz: 0 };
+    const vx = counter.position.x + 0.3, vz = zMax - 0.36;
+    vendor.wx = vx; vendor.wz = vz;
+    const vGroup = new THREE.Group(); vGroup.position.set(vx, 0, vz); vGroup.rotation.y = Math.PI; scene.add(vGroup);
+    const vSkin = new THREE.MeshLambertMaterial({ color: 0xe3b08e });
+    const vShirt = new THREE.MeshLambertMaterial({ color: 0xf2f2f2 });
+    const vVest = surf('leather036', 1, 1, 0xe0e0e0);
+    const vPants = surf('fabric023', 1, 1, 0xffffff);
+    const vHairM = new THREE.MeshLambertMaterial({ color: 0x3a2a1c });
+    const vBlack = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    function vpart(geo, mat, x, y, z, parent) {
+      const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z);
+      (parent || vGroup).add(m); m.userData.d = vendor; meshes.push(m); return m;
+    }
+    vpart(new THREE.BoxGeometry(0.4, 0.8, 0.2), vPants, 0, 0.4, 0);
+    const vTorso = new THREE.Group(); vTorso.position.y = 0.8; vGroup.add(vTorso);
+    vpart(new THREE.BoxGeometry(0.44, 0.6, 0.24), vShirt, 0, 0.3, 0, vTorso);
+    vpart(new THREE.BoxGeometry(0.46, 0.4, 0.26), vVest, 0, 0.22, 0, vTorso);
+    [-1, 1].forEach(s => {
+      vpart(new THREE.BoxGeometry(0.1, 0.5, 0.12), vVest, s * 0.28, 0.32, 0, vTorso);
+      vpart(new THREE.BoxGeometry(0.09, 0.09, 0.1), vSkin, s * 0.28, 0.03, 0, vTorso);
+    });
+    const vHead = new THREE.Group(); vHead.position.y = 0.75; vTorso.add(vHead);
+    vpart(new THREE.SphereGeometry(0.13, 16, 12), vSkin, 0, 0, 0, vHead);
+    vpart(new THREE.SphereGeometry(0.14, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), vHairM, 0, 0.02, -0.01, vHead);
+    [-1, 1].forEach(s => vpart(new THREE.BoxGeometry(0.025, 0.03, 0.01), vBlack, s * 0.05, 0.02, 0.125, vHead));
+    const vendorAnim = [vTorso, vHead];
+
+    const sayEl = ov.querySelector('#vcSay');
+    const GREET = ['Bienvenue au Video club !', 'Salut ! Tout est rangé par rayon, cherche tranquille.',
+                   'Les nouveautés sont juste en face, au premier rayon !', 'Un petit film ce soir ? Clique sur moi pour un conseil !'];
+    let vLastGreet = -1e9, sayUntil = 0;
+    const vPos = new THREE.Vector3(vx, 1.95, vz);
+    function vSay(text, ms) { sayEl.textContent = text; sayEl.style.display = 'block'; sayUntil = performance.now() + (ms || 5500); }
+    function updateVendor(dt, now) {
+      const p = camera.position, dx = p.x - vx, dz = p.z - vz, dist = Math.hypot(dx, dz);
+      let hy = 0;
+      if (dist < 9) hy = clamp(angDiff(Math.PI, Math.atan2(dx, dz)), -1.1, 1.1);
+      vHead.rotation.y += (hy - vHead.rotation.y) * Math.min(1, dt * 5);
+      vTorso.scale.y = 1 + Math.sin(now / 900) * 0.012;
+      if (dist < 3.6 && now - vLastGreet > 30000) {
+        vLastGreet = now;
+        vSay(GREET[Math.floor(Math.random() * GREET.length)]);
+        snd('bell');
+      }
+      if (now < sayUntil) {
+        _bv.copy(vPos).project(camera);
+        if (_bv.z > 1) { sayEl.style.visibility = 'hidden'; }
+        else {
+          sayEl.style.visibility = 'visible';
+          sayEl.style.left = ((_bv.x * 0.5 + 0.5) * ov.clientWidth) + 'px';
+          sayEl.style.top = ((-_bv.y * 0.5 + 0.5) * ov.clientHeight) + 'px';
+        }
+      } else sayEl.style.display = 'none';
+    }
+    const _bv = new THREE.Vector3();
+
     scene.updateMatrixWorld(true);
     const tmpV = new THREE.Vector3();
     dvds.forEach(d => { d.mesh.getWorldPosition(tmpV); d.wx = tmpV.x; d.wz = tmpV.z; });
     // Tout ce qui ne bouge pas n'est plus recalculé à chaque image (gros gain CPU)
     scene.traverse(o => { o.matrixAutoUpdate = false; });
     spinners.forEach(sp => { sp.mesh.matrixAutoUpdate = true; });
+    vendorAnim.forEach(o => { o.matrixAutoUpdate = true; });
     if (clockHands) { clockHands.h.matrixAutoUpdate = clockHands.m.matrixAutoUpdate = clockHands.s.matrixAutoUpdate = true; }
 
     // ---- Menu "Aller au rayon" ----
@@ -10494,6 +10774,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function showTip(d, x, y) {
       if (d.kind === 'sofa') {
         tipEl.innerHTML = '<b>Canapé</b><br><span>' + (isTouch ? 'Touche' : 'Clique') + ' pour t’asseoir</span>';
+      } else if (d.kind === 'vendor') {
+        tipEl.innerHTML = '<b>Le vendeur</b><br><span>' + (isTouch ? 'Touche' : 'Clique') + ' pour un conseil</span>';
+      } else if (d.kind === 'tv') {
+        tipEl.innerHTML = '<b>' + esc(d.t.title) + '</b><br><span>À l’écran · ' + (isTouch ? 'touche' : 'clique') + ' pour la fiche</span>';
       } else {
         tipEl.innerHTML = '<b>' + esc(d.t.title) + '</b><br><span>' + esc(metaLine(d.t)) + '</span>';
       }
@@ -10523,6 +10807,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function takeDVD(d) {
       if (hstate !== 'idle') return;
       setHover(null); hideTip();
+      if (d === advD) clearAdvice();
       heldD = d; d.hold = true;
       d.offset = d.target = 0.14; active.delete(d);
       d.mesh.position.z = d.baseZ + 0.14;
@@ -10629,6 +10914,267 @@ document.addEventListener('DOMContentLoaded', () => {
       jumpSel.blur();
     };
 
+    /* ---------- Conseil du vendeur ---------- */
+    let advD = null, advUntil = 0;
+    function clearAdvice() {
+      if (!advD) return;
+      advD.front.emissive.setRGB(0, 0, 0);
+      if (!advD.hold && hovered !== advD) { advD.target = 0; active.add(advD); }
+      advD = null;
+    }
+    function talkVendor() {
+      const p = camera.position;
+      if (Math.hypot(p.x - vx, p.z - vz) > 7) { vSay('Approche-toi un peu, je ne t’entends pas !', 3500); return; }
+      const ready = dvds.filter(d => d.state === 2 && !d.hold);
+      const list = ready.length > 5 ? ready : dvds.filter(d => !d.hold);
+      if (!list.length) return;
+      clearAdvice();
+      advD = list[Math.floor(Math.random() * list.length)];
+      advUntil = performance.now() + 30000;
+      advD.target = 0.14; active.add(advD);
+      vSay('Je te conseille « ' + advD.t.title + ' » (' + advD.t.genre + ') ! Je l’ai sorti du rayon, il brille, regarde la carte !', 8000);
+      snd('blip');
+    }
+    function updateAdvice(now) {
+      if (!advD) return;
+      if (now > advUntil) { clearAdvice(); return; }
+      const k = 0.2 + 0.2 * Math.sin(now / 180);
+      advD.front.emissive.setRGB(k, k, k);
+    }
+
+    /* ---------- Plan de la salle (clic = se téléporter) ---------- */
+    const mapEl = ov.querySelector('#vcMap'), mapBtn = ov.querySelector('#vcMapBtn');
+    const mctx = mapEl.getContext('2d');
+    const mS = Math.min((isTouch ? 120 : 170) / W, (isTouch ? 190 : 270) / D);
+    const mW = Math.round(W * mS), mH = Math.round(D * mS), mDpr = Math.min(window.devicePixelRatio || 1, 2);
+    mapEl.style.width = mW + 'px'; mapEl.style.height = mH + 'px';
+    mapEl.width = Math.round(mW * mDpr); mapEl.height = Math.round(mH * mDpr);
+    let mapOn = true, mapAcc = 1;
+    mapEl.style.display = 'block';
+    mapBtn.onclick = () => { mapOn = !mapOn; mapEl.style.display = mapOn ? 'block' : 'none'; };
+
+    function teleportTo(x, z) {
+      const offs = [[0, 0], [0, 1.2], [0, -1.2], [1.2, 0], [-1.2, 0], [0, 2.2], [0, -2.2]];
+      for (let i = 0; i < offs.length; i++) {
+        const nx = x + offs[i][0], nz = z + offs[i][1];
+        if (!blocked(nx, nz)) {
+          if (sitting) { sitting = null; standBtn.style.display = 'none'; }
+          seatAnim = null; eyeY = EYE;
+          camera.position.x = nx; camera.position.z = nz;
+          return;
+        }
+      }
+    }
+    function mapWorld(e) {
+      const r = mapEl.getBoundingClientRect();
+      return { x: xMin + (e.clientX - r.left) / mS, z: zMin + (e.clientY - r.top) / mS };
+    }
+    mapEl.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); const w = mapWorld(e); teleportTo(w.x, w.z); };
+    mapEl.onpointermove = e => {
+      if (e.pointerType !== 'mouse') return;
+      const w = mapWorld(e);
+      let name = '';
+      for (let ri = 0; ri < rowsDef.length; ri++) {
+        const rz = ZSTART - ri * ROW_GAP;
+        if (Math.abs(w.x) <= rowLen[ri] / 2 + 0.2 && Math.abs(w.z - rz) < 1.0) {
+          const sec = rowsDef[ri][w.z >= rz ? 0 : 1];
+          if (sec) name = sec.name;
+        }
+      }
+      mapEl.title = name || 'Clique pour te téléporter';
+    };
+    function drawMap(dt) {
+      if (!mapOn) return;
+      mapAcc += dt; if (mapAcc < 0.1) return; mapAcc = 0;
+      const g = mctx;
+      g.setTransform(mDpr, 0, 0, mDpr, 0, 0);
+      g.clearRect(0, 0, mW, mH);
+      g.fillStyle = 'rgba(10,10,22,.84)'; g.fillRect(0, 0, mW, mH);
+      g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 1; g.strokeRect(0.5, 0.5, mW - 1, mH - 1);
+      const X = x => (x - xMin) * mS, Z = z => (z - zMin) * mS;
+      g.fillStyle = '#b9772f';
+      for (let ri = 0; ri < rowsDef.length; ri++) {
+        const L = rowLen[ri], rz = ZSTART - ri * ROW_GAP;
+        g.fillRect(X(-L / 2), Z(rz - 0.4), L * mS, Math.max(2, 0.8 * mS));
+      }
+      g.fillStyle = '#7a5636'; g.fillRect(X(counter.position.x - 1.4), Z(counter.position.z - 0.5), 2.8 * mS, Math.max(2, 1.0 * mS));
+      g.fillStyle = '#e8c04a'; g.beginPath(); g.arc(X(vx), Z(vz), 2.5, 0, 7); g.fill();
+      g.fillStyle = '#d42a3a';
+      sofaObjs.forEach(s => g.fillRect(X(s.x - 0.5), Z(s.z - 0.95), Math.max(2, 1.0 * mS), Math.max(3, 1.9 * mS)));
+      if (advD) {
+        g.fillStyle = '#ffe14a'; g.font = 'bold 15px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillText('★', X(advD.wx), Z(advD.wz));
+      }
+      const ids = Object.keys(others);
+      g.textAlign = 'center'; g.textBaseline = 'bottom'; g.font = '9px Arial';
+      ids.forEach(id => {
+        const o = others[id];
+        g.fillStyle = 'hsl(' + o.hue + ',75%,60%)';
+        g.beginPath(); g.arc(X(o.x), Z(o.z), 3.2, 0, 7); g.fill();
+        if (ids.length <= 8) { g.fillStyle = '#fff'; g.fillText(o.name, X(o.x), Z(o.z) - 4); }
+      });
+      const p = camera.position;
+      g.save(); g.translate(X(p.x), Z(p.z)); g.rotate(-yaw);
+      g.fillStyle = 'rgba(255,255,255,.14)';
+      g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, 36, -Math.PI / 2 - 0.6, -Math.PI / 2 + 0.6); g.closePath(); g.fill();
+      g.fillStyle = '#ff2d6f'; g.strokeStyle = '#fff'; g.lineWidth = 1.2;
+      g.beginPath(); g.moveTo(0, -6); g.lineTo(4.5, 5); g.lineTo(-4.5, 5); g.closePath(); g.fill(); g.stroke();
+      g.restore();
+    }
+
+    /* ---------- Autres clients : les vrais utilisateurs en même temps (Supabase Realtime) ---------- */
+    const SB_URL = 'https://wuagahavmbugmnuzsouf.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1YWdhaGF2bWJ1Z21udXpzb3VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MDM2NTksImV4cCI6MjA2ODE3OTY1OX0.mjf9cUleV_oq8TsWeKvPVOJSGPc98AyGyfJeA-Tpvho';
+    const MAX_OTHERS = 25;
+    const others = {};
+    const onlineEl = ov.querySelector('#vcOnline');
+    let myId = 'v:' + Math.random().toString(36).slice(2, 10);
+    let myName = 'Visiteur ' + (1000 + Math.floor(Math.random() * 9000)), myHue = 200;
+    let channel = null, sbClient = null, netOk = false, lastSend = 0, lsx = 1e9, lsz = 1e9, lsyaw = 1e9, onlineTxt = '';
+
+    const avGeo = {
+      torso: new THREE.BoxGeometry(0.4, 0.55, 0.22), leg: new THREE.BoxGeometry(0.15, 0.8, 0.17),
+      arm: new THREE.BoxGeometry(0.1, 0.5, 0.12), head: new THREE.SphereGeometry(0.13, 14, 10),
+      hair: new THREE.SphereGeometry(0.14, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), nose: new THREE.BoxGeometry(0.03, 0.03, 0.05)
+    };
+    const avMats = {};
+    function avMat(key, color) { return avMats[key] || (avMats[key] = new THREE.MeshLambertMaterial({ color: color })); }
+    const SKINS = [0xf1c9a5, 0xe0ac8a, 0xc68642, 0x8d5524, 0xffdbb0], HAIRS = [0x2a1d12, 0x4a3320, 0x111111, 0x8a6a3a, 0xb5651d];
+
+    function nameSprite(name) {
+      const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+      const g = c.getContext('2d');
+      g.fillStyle = 'rgba(0,0,0,.6)';
+      g.beginPath(); g.moveTo(14, 6); g.arcTo(250, 6, 250, 58, 20); g.arcTo(250, 58, 6, 58, 20); g.arcTo(6, 58, 6, 6, 20); g.arcTo(6, 6, 250, 6, 20); g.fill();
+      g.fillStyle = '#fff'; g.font = 'bold 28px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      let t = name; while (g.measureText(t).width > 230 && t.length > 3) t = t.slice(0, -1);
+      g.fillText(t, 128, 34);
+      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+      s.scale.set(1.0, 0.25, 1); s.position.y = 1.95;
+      return s;
+    }
+    function makeAvatar(name, hue, id) {
+      const hs = hashHue(id);
+      const g = new THREE.Group();
+      const shirt = avMat('s' + hue, new THREE.Color().setHSL(hue / 360, 0.6, 0.5));
+      const pants = avMat('pants', 0x2b3a5c), skin = avMat('k' + (hs % 5), SKINS[hs % 5]), hair = avMat('h' + (hs % 5), HAIRS[hs % 5]);
+      const add = (geo, mat, x, y, z, par) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); (par || g).add(m); return m; };
+      add(avGeo.torso, shirt, 0, 1.075, 0);
+      const legL = new THREE.Group(); legL.position.set(-0.09, 0.8, 0); g.add(legL); add(avGeo.leg, pants, 0, -0.4, 0, legL);
+      const legR = new THREE.Group(); legR.position.set(0.09, 0.8, 0); g.add(legR); add(avGeo.leg, pants, 0, -0.4, 0, legR);
+      const armL = new THREE.Group(); armL.position.set(-0.26, 1.33, 0); g.add(armL); add(avGeo.arm, shirt, 0, -0.25, 0, armL);
+      const armR = new THREE.Group(); armR.position.set(0.26, 1.33, 0); g.add(armR); add(avGeo.arm, shirt, 0, -0.25, 0, armR);
+      add(avGeo.head, skin, 0, 1.5, 0); add(avGeo.hair, hair, 0, 1.52, -0.01); add(avGeo.nose, skin, 0, 1.49, 0.13);
+      const label = nameSprite(name); g.add(label);
+      scene.add(g);
+      return { g: g, legL: legL, legR: legR, armL: armL, armR: armR, label: label, name: name, hue: hue,
+               x: 0, z: 0, yaw: 0, tx: 0, tz: 0, tyaw: 0, sit: false, phase: 0, last: performance.now() };
+    }
+    function removeOther(id) {
+      const o = others[id]; if (!o) return;
+      scene.remove(o.g);
+      o.label.material.map.dispose(); o.label.material.dispose();
+      delete others[id];
+    }
+    function onRemote(p) {
+      if (!p || !p.id || p.id === myId) return;
+      let o = others[p.id];
+      if (!o) {
+        if (Object.keys(others).length >= MAX_OTHERS) return;
+        o = others[p.id] = makeAvatar(String(p.n || 'Visiteur').slice(0, 24), +p.h || 0, p.id);
+        o.x = o.tx = +p.x || 0; o.z = o.tz = +p.z || 0; o.yaw = o.tyaw = +p.y || 0;
+      }
+      o.tx = +p.x || 0; o.tz = +p.z || 0; o.tyaw = +p.y || 0; o.sit = !!p.s; o.last = performance.now();
+    }
+    function sendPos() {
+      if (!channel) return;
+      const p = camera.position;
+      lastSend = performance.now(); lsx = p.x; lsz = p.z; lsyaw = yaw;
+      try {
+        channel.send({ type: 'broadcast', event: 'p', payload: { id: myId, n: myName, h: myHue, x: +p.x.toFixed(2), z: +p.z.toFixed(2), y: +yaw.toFixed(2), s: sitting ? 1 : 0 } });
+      } catch (e) {}
+    }
+    function netTick(now) {
+      if (!netOk) return;
+      const p = camera.position;
+      const moved = Math.hypot(p.x - lsx, p.z - lsz) > 0.2 || Math.abs(angDiff(lsyaw, yaw)) > 0.2;
+      if ((moved && now - lastSend > 330) || now - lastSend > 4000) sendPos();
+    }
+    function updateOthers(dt, now) {
+      const ids = Object.keys(others);
+      ids.forEach(id => {
+        const o = others[id];
+        if (now - o.last > 12000) { removeOther(id); return; }
+        const k = Math.min(1, dt * 8);
+        const dx = o.tx - o.x, dz = o.tz - o.z;
+        o.x += dx * k; o.z += dz * k; o.yaw += angDiff(o.yaw, o.tyaw) * k;
+        const speed = Math.hypot(dx, dz) * 8;
+        o.phase += Math.min(speed, 4) * dt * 5;
+        const sw = Math.min(1, speed) * Math.sin(o.phase) * 0.7;
+        o.g.position.set(o.x, o.sit ? -0.38 : 0, o.z);
+        o.g.rotation.y = o.yaw + Math.PI;
+        o.legL.rotation.x = o.sit ? -1.5 : sw; o.legR.rotation.x = o.sit ? -1.5 : -sw;
+        o.armL.rotation.x = -sw * 0.8; o.armR.rotation.x = sw * 0.8;
+      });
+      const n = Object.keys(others).length + 1;
+      const txt = !netOk ? '' : ic('group') + ' ' + n + (n > 1 ? ' personnes' : ' personne (toi)');
+      if (txt !== onlineTxt) { onlineTxt = txt; onlineEl.innerHTML = txt; onlineEl.style.display = txt ? 'inline-flex' : 'none'; }
+    }
+    async function initNet() {
+      try {
+        let uid = null;
+        try {
+          const raw = localStorage.getItem('sb-wuagahavmbugmnuzsouf-auth-token');
+          if (raw) {
+            const j = JSON.parse(raw), u = j.user || (j.currentSession && j.currentSession.user);
+            if (u) {
+              uid = u.id;
+              const m = u.user_metadata || {};
+              myName = m.username || m.user_name || m.name || m.full_name || (u.email ? u.email.split('@')[0] : myName);
+            }
+          }
+        } catch (e) {}
+        const mod = await import('https://esm.sh/@supabase/supabase-js@2');
+        if (destroyed) return;
+        sbClient = mod.createClient(SB_URL, SB_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+        if (uid) {
+          try {
+            const r = await sbClient.from('profiles').select('*').eq('id', uid).maybeSingle();
+            const pr = r && r.data;
+            if (pr) myName = pr.username || pr.pseudo || pr.name || pr.display_name || myName;
+          } catch (e) {}
+        }
+        if (destroyed) return;
+        myName = String(myName).slice(0, 20);
+        myHue = hashHue(myName);
+        myId = (uid || 'v') + ':' + Math.random().toString(36).slice(2, 8);
+        channel = sbClient.channel('horizoncine-videoclub', { config: { broadcast: { self: false } } });
+        channel.on('broadcast', { event: 'p' }, m => onRemote(m && m.payload));
+        channel.on('broadcast', { event: 'bye' }, m => { if (m && m.payload) removeOther(m.payload.id); });
+        channel.on('broadcast', { event: 'hi' }, () => { setTimeout(() => { if (!destroyed) sendPos(); }, Math.random() * 500); });
+        channel.subscribe(status => {
+          if (destroyed) return;
+          if (status === 'SUBSCRIBED') {
+            netOk = true;
+            try { channel.send({ type: 'broadcast', event: 'hi', payload: {} }); } catch (e) {}
+            sendPos();
+          }
+        });
+      } catch (e) { console.warn('[Video club] mode solo (temps réel indisponible)', e); }
+    }
+    function stopNet() {
+      netOk = false;
+      try {
+        if (channel) { channel.send({ type: 'broadcast', event: 'bye', payload: { id: myId } }); }
+        if (sbClient) setTimeout(() => { try { sbClient.removeAllChannels(); } catch (e) {} }, 150);
+      } catch (e) {}
+      Object.keys(others).forEach(removeOther);
+      Object.keys(avGeo).forEach(k => avGeo[k].dispose());
+      Object.keys(avMats).forEach(k => avMats[k].dispose());
+    }
+    initNet();
+
     /* ---------- Souris / doigt ---------- */
     let down = null;
     canvas.addEventListener('pointerdown', e => {
@@ -10673,6 +11219,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!d) { setHover(null); hideTip(); }
           else if (d.kind === 'dvd') takeDVD(d);
           else if (d.kind === 'sofa') sitOn(d);
+          else if (d.kind === 'vendor') talkVendor();
           else if (down.type === 'mouse' || hovered === d) go(d);
           else { setHover(d); showTip(d, x, y); }
         }
@@ -10800,6 +11347,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       updateHeld(dt, now);
+      updateVendor(dt, now);
+      updateTV(dt);
+      updateAdvice(now);
+      updateOthers(dt, now);
+      netTick(now);
+      drawMap(dt);
 
       streamAcc += dt;
       if (streamAcc > 0.15) { streamAcc = 0; stream(); }
@@ -10824,6 +11377,9 @@ document.addEventListener('DOMContentLoaded', () => {
       window.removeEventListener('blur', onBlur);
       pad.f = pad.b = pad.l = pad.r = false;
       joy.x = joy.y = 0;
+      stopNet();
+      mapBtn.onclick = null; mapEl.onpointerdown = null; mapEl.onpointermove = null;
+      sayEl.style.display = 'none'; onlineEl.style.display = 'none';
       if (audio) audio.stop();
       if (heldDiscTex) heldDiscTex.dispose();
       streamables.forEach(d => { if (d.texLo) d.texLo.dispose(); if (d.texHi) d.texHi.dispose(); d.placeholder.dispose(); });
