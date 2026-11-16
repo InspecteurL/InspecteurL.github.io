@@ -9182,6 +9182,115 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 </style>
 
+<!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+
+.vc-snd {
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.18); cursor:pointer;
+  background:rgba(31,31,40,.9); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none;
+}
+.vc-snd .material-symbols-outlined { font-size:20px; }
+.vc-hold {
+  position:absolute; left:50%; transform:translateX(-50%); top:58px; display:none; text-align:center;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.18); padding:8px 14px; border-radius:12px;
+  font-size:.85rem; max-width:90vw; pointer-events:none; line-height:1.35;
+}
+.vc-hold span { color:#bbb; font-size:.78rem; }
+.vc-joy {
+  position:absolute; right:16px; bottom:48px; width:116px; height:116px; border-radius:50%; display:none;
+  background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.22); touch-action:none;
+}
+@media (pointer:coarse) { .vc-joy { display:block; } }
+.vc-knob {
+  position:absolute; left:50%; top:50%; width:52px; height:52px; margin:-26px 0 0 -26px; border-radius:50%;
+  background:rgba(255,255,255,.35); border:2px solid rgba(255,255,255,.5); pointer-events:none;
+}
+.vc-stand {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; display:none; align-items:center; gap:6px;
+  padding:.55rem 1.1rem; border-radius:20px; border:none; background:#7b2cff; color:#fff; font-weight:700;
+  cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+</style>
+
 <script>
 (function () {
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -9391,9 +9500,10 @@ document.addEventListener('DOMContentLoaded', () => {
     '<div class="vc-hold" id="vcHold"></div>' +
     '<button class="vc-stand" id="vcStand">' + ic('chair') + ' Se lever</button>' +
     '<div class="vc-hint">' + (isTouch
-      ? 'Glisse pour regarder · croix pour marcher · touche un DVD pour le prendre, touche-le encore pour l’ouvrir · touche un canapé pour t’asseoir'
+      ? 'Glisse pour regarder · croix pour marcher · joystick à droite pour tourner · touche un DVD pour le prendre, touche-le encore pour l’ouvrir · touche un canapé pour t’asseoir'
       : 'Glisse pour regarder · ZQSD / flèches pour marcher (Maj = courir) · clic sur un DVD pour le prendre, reclic pour l’ouvrir · clic sur un canapé pour t’asseoir · Échap pour reposer / quitter') +
     '</div>' +
+    '<div class="vc-joy" id="vcJoy" aria-label="Regarder autour"><div class="vc-knob"></div></div>' +
     '<div class="vc-pad" id="vcPad">' +
       '<button data-k="f" aria-label="Avancer">' + ic('keyboard_arrow_up') + '</button>' +
       '<button data-k="l" aria-label="Gauche">' + ic('keyboard_arrow_left') + '</button>' +
@@ -9411,6 +9521,30 @@ document.addEventListener('DOMContentLoaded', () => {
     b.addEventListener('pointerdown', e => { e.preventDefault(); pad[k] = true; });
     ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => { pad[k] = false; }));
   });
+
+  // Joystick de caméra (tactile) : pousse pour tourner la tête
+  const joy = { x: 0, y: 0 };
+  (function () {
+    const base = ov.querySelector('#vcJoy'), knob = base.firstChild;
+    let id = null;
+    function upd(e) {
+      const r = base.getBoundingClientRect();
+      const R = r.width / 2;
+      let dx = e.clientX - (r.left + R), dy = e.clientY - (r.top + R);
+      const len = Math.hypot(dx, dy), max = R - 10;
+      if (len > max) { dx = dx / len * max; dy = dy / len * max; }
+      knob.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      joy.x = dx / max; joy.y = dy / max;
+    }
+    function end(e) {
+      if (e.pointerId !== id) return;
+      id = null; joy.x = joy.y = 0; knob.style.transform = '';
+    }
+    base.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); id = e.pointerId; base.setPointerCapture(id); upd(e); });
+    base.addEventListener('pointermove', e => { if (e.pointerId === id) upd(e); });
+    base.addEventListener('pointerup', end);
+    base.addEventListener('pointercancel', end);
+  })();
 
   let world = null;
 
@@ -10144,6 +10278,43 @@ document.addEventListener('DOMContentLoaded', () => {
     insertP.position.z = -0.0029;
     const hDisc = new THREE.Mesh(new THREE.CircleGeometry(0.06, 40), discMat);
     hDisc.position.set(0, 0, -0.0015);
+    hDisc.scale.setScalar(1.25);
+    // Le disque est imprimé avec l'affiche du titre
+    const heldDiscMat = new THREE.MeshBasicMaterial({ transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
+    hDisc.material = heldDiscMat;
+    let heldDiscTex = null;
+    function paintDisc(d) {
+      const src = (d.texHi && d.texHi.image) || (d.texLo && d.texLo.image) || d.placeholder.image;
+      const c = document.createElement('canvas'); c.width = c.height = 512;
+      const g = c.getContext('2d');
+      g.save();
+      g.beginPath(); g.arc(256, 256, 254, 0, Math.PI * 2); g.closePath(); g.clip();
+      g.fillStyle = '#1a1a22'; g.fillRect(0, 0, 512, 512);
+      try {
+        const iw = src.naturalWidth || src.width, ih = src.naturalHeight || src.height;
+        const sc = 512 / iw;
+        g.drawImage(src, 0, -(ih * sc - 512) * 0.3, 512, ih * sc);
+      } catch (e) {}
+      // reflets irisés du disque
+      const sh = g.createLinearGradient(0, 0, 512, 512);
+      sh.addColorStop(0, 'rgba(255,255,255,0)'); sh.addColorStop(0.35, 'rgba(255,255,255,.28)');
+      sh.addColorStop(0.5, 'rgba(255,170,230,.12)'); sh.addColorStop(0.65, 'rgba(160,220,255,.22)');
+      sh.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = sh; g.fillRect(0, 0, 512, 512);
+      g.restore();
+      g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 3;
+      g.beginPath(); g.arc(256, 256, 250, 0, 7); g.stroke();
+      g.fillStyle = '#cfd0dc'; g.beginPath(); g.arc(256, 256, 86, 0, 7); g.fill();
+      g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = 2; g.beginPath(); g.arc(256, 256, 98, 0, 7); g.stroke();
+      g.globalCompositeOperation = 'destination-out';
+      g.beginPath(); g.arc(256, 256, 30, 0, 7); g.fill();
+      g.globalCompositeOperation = 'source-over';
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = maxAniso;
+      if (heldDiscTex) heldDiscTex.dispose();
+      heldDiscTex = t;
+      heldDiscMat.map = t; heldDiscMat.needsUpdate = true;
+    }
     const hFront = new THREE.Group(); hFront.position.x = -DVD_W / 2;
     const fShell = new THREE.Mesh(new THREE.BoxGeometry(DVD_W, DVD_H, SH), shellMat);
     fShell.position.set(DVD_W / 2, 0, 0.009);
@@ -10251,6 +10422,8 @@ document.addEventListener('DOMContentLoaded', () => {
       d.mesh.matrixWorld.decompose(shelfPos, shelfQ, _sd);
       d.mesh.visible = false;
       hCover.material = d.front;
+      insertP.material = d.front; // l'intérieur du boîtier ouvert montre l'affiche du titre
+      paintDisc(d);
       hSticker.material = stickerMat(d.t.genre);
       hFront.rotation.y = 0;
       held.visible = true; handsRoot.visible = true;
@@ -10261,6 +10434,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openHeld() {
       if (hstate !== 'held') return;
       hstate = 'opening'; showHoldHint(false); snd('open');
+      paintDisc(heldD); // reprend l'affiche en meilleure qualité si elle est arrivée entre-temps
     }
     function putBack(next) {
       if (hstate !== 'held') return;
@@ -10271,6 +10445,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const d = heldD;
       d.hold = false; d.mesh.visible = true; d.target = 0; active.add(d);
       heldD = null; held.visible = false; handsRoot.visible = false;
+      insertP.material = insertMat;
       hFront.rotation.y = 0; hstate = 'idle';
       if (pending) { const n = pending; pending = null; takeDVD(n); }
     }
@@ -10465,6 +10640,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (keys.has('ArrowLeft')) turn += 1;
       if (keys.has('ArrowRight')) turn -= 1;
       yaw += turn * 1.8 * dt;
+      if (joy.x || joy.y) {
+        yaw -= joy.x * 2.2 * dt;
+        pitch = clamp(pitch - joy.y * 1.4 * dt, -1.0, 1.0);
+      }
 
       if (seatAnim) {
         seatAnim.t = Math.min(1, seatAnim.t + dt / 0.7);
@@ -10537,7 +10716,9 @@ document.addEventListener('DOMContentLoaded', () => {
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
       pad.f = pad.b = pad.l = pad.r = false;
+      joy.x = joy.y = 0;
       if (audio) audio.stop();
+      if (heldDiscTex) heldDiscTex.dispose();
       streamables.forEach(d => { if (d.texLo) d.texLo.dispose(); if (d.texHi) d.texHi.dispose(); d.placeholder.dispose(); });
       hscene.traverse(o => {
         if (o.geometry) o.geometry.dispose();
