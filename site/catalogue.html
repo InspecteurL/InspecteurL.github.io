@@ -8696,5 +8696,710 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 })();
 </script>
+  <!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+</style>
+
+<script>
+(function () {
+  const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+  /* =====================================================
+     OUTILS
+     ===================================================== */
+  function ic(n) { return '<span class="material-symbols-outlined">' + n + '</span>'; }
+  function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function hashHue(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return h % 360;
+  }
+  // Affiches TMDB en 342px de large : largement suffisant et beaucoup plus léger que l'original
+  function posterUrl(u) {
+    return (u || '').replace(/\/t\/p\/[^/]+\//, '/t/p/w342/');
+  }
+  function readTitles() {
+    return [...document.querySelectorAll('#movieGrid .movieimg')].map(el => {
+      const a = el.querySelector('a'), img = el.querySelector('img');
+      if (!a || !img) return null;
+      const genre = el.dataset.genre || 'Autres';
+      return {
+        title: (el.querySelector('h2')?.textContent || el.dataset.title || '').trim(),
+        genre: genre,
+        type: genre === 'Anime' ? 'Anime' : (el.dataset.type || 'Film'),
+        href: a.href,
+        img: img.getAttribute('src') || '',
+        added: el.dataset.added || '',
+        duree: el.querySelector('.duree')?.textContent.trim() || ''
+      };
+    }).filter(Boolean);
+  }
+  function metaLine(t) {
+    const kind = t.genre === 'Anime' ? 'Anime' : t.type + ' · ' + t.genre;
+    return kind + (t.duree ? ' · ' + t.duree : '');
+  }
+
+  /* =====================================================
+     INTERFACE (créée une seule fois)
+     ===================================================== */
+  const openBtn = document.createElement('button');
+  openBtn.className = 'vc-btn';
+  openBtn.id = 'vcOpen';
+  openBtn.innerHTML = ic('storefront') + ' Video club';
+  const dxBar = document.querySelector('.dx-bar');
+  if (dxBar) {
+    dxBar.appendChild(openBtn);
+  } else {
+    const solo = document.createElement('div');
+    solo.className = 'vc-solo-bar';
+    solo.appendChild(openBtn);
+    const anchor = document.querySelector('.admin-bar') || document.getElementById('movieGrid');
+    anchor.insertAdjacentElement('beforebegin', solo);
+  }
+
+  const isTouch = window.matchMedia('(pointer:coarse)').matches;
+  const ov = document.createElement('div');
+  ov.className = 'vc-ov';
+  ov.innerHTML =
+    '<div class="vc-top">' +
+      '<div class="vc-brand">' + ic('storefront') + ' VIDEO CLUB</div>' +
+      '<select id="vcJump" aria-label="Aller au rayon"><option value="">Aller au rayon…</option></select>' +
+      '<button class="vc-x" id="vcClose" aria-label="Quitter">' + ic('close') + ' Quitter</button>' +
+    '</div>' +
+    '<div class="vc-loading" id="vcLoading">Ouverture du video club…</div>' +
+    '<div class="vc-tip" id="vcTip"></div>' +
+    '<div class="vc-hint">' + (isTouch
+      ? 'Glisse pour regarder · croix pour marcher · touche un DVD pour le sortir, touche-le encore pour ouvrir sa fiche'
+      : 'Glisse pour regarder · ZQSD / flèches pour marcher (Maj = courir) · clic sur un DVD pour ouvrir sa fiche · Échap pour quitter') +
+    '</div>' +
+    '<div class="vc-pad" id="vcPad">' +
+      '<button data-k="f" aria-label="Avancer">' + ic('keyboard_arrow_up') + '</button>' +
+      '<button data-k="l" aria-label="Gauche">' + ic('keyboard_arrow_left') + '</button>' +
+      '<button data-k="b" aria-label="Reculer">' + ic('keyboard_arrow_down') + '</button>' +
+      '<button data-k="r" aria-label="Droite">' + ic('keyboard_arrow_right') + '</button>' +
+    '</div>';
+  document.body.appendChild(ov);
+
+  const loadingEl = ov.querySelector('#vcLoading');
+  const tipEl = ov.querySelector('#vcTip');
+  const jumpSel = ov.querySelector('#vcJump');
+  const pad = { f: false, b: false, l: false, r: false };
+  ov.querySelectorAll('.vc-pad button').forEach(b => {
+    const k = b.dataset.k;
+    b.addEventListener('pointerdown', e => { e.preventDefault(); pad[k] = true; });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => { pad[k] = false; }));
+  });
+
+  let world = null;
+
+  async function openClub() {
+    ov.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    loadingEl.style.display = 'flex';
+    loadingEl.textContent = 'Ouverture du video club…';
+    let THREE;
+    try {
+      THREE = await import(THREE_URL);
+    } catch (e) {
+      console.error(e);
+      loadingEl.textContent = 'Impossible de charger la 3D (vérifie ta connexion).';
+      return;
+    }
+    if (!ov.classList.contains('open')) return; // fermé pendant le chargement
+    if (world) { world.destroy(); world = null; }
+    try {
+      world = buildWorld(THREE);
+      loadingEl.style.display = 'none';
+    } catch (e) {
+      console.error(e);
+      loadingEl.style.display = 'flex';
+      loadingEl.textContent = 'Erreur pendant la création du video club (voir la console).';
+    }
+  }
+  function closeClub() {
+    if (world) { world.destroy(); world = null; }
+    ov.classList.remove('open');
+    document.body.style.overflow = '';
+    tipEl.style.display = 'none';
+  }
+  openBtn.addEventListener('click', openClub);
+  ov.querySelector('#vcClose').addEventListener('click', closeClub);
+
+  /* =====================================================
+     LE MONDE 3D
+     ===================================================== */
+  function buildWorld(THREE) {
+    // ---- Dimensions (en mètres) ----
+    const DVD_W = 0.28, DVD_H = 0.42, DVD_D = 0.03, PITCH = 0.31;
+    const LEVELS = 4, LEVEL_Y0 = 0.22, LEVEL_DY = 0.48;
+    const BODY_D = 0.5, BODY_H = 2.2, ROOM_H = 3.2;
+    const ROW_GAP = 3.6, ZSTART = -3, EYE = 1.62, RADIUS = 0.28;
+    const LOAD_R2 = 8 * 8, UNLOAD_R2 = 15 * 15, MAX_LOADS = 6;
+
+    let destroyed = false;
+    const titles = readTitles();
+
+    // ---- Groupes : Nouveautés + un rayon par genre ----
+    const byGenre = {};
+    titles.forEach(t => { (byGenre[t.genre] = byGenre[t.genre] || []).push(t); });
+    const sortFr = (a, b) => a.title.localeCompare(b.title, 'fr', { sensitivity: 'base' });
+    const genreSections = Object.keys(byGenre)
+      .map(g => ({ name: g, items: byGenre[g].slice().sort(sortFr) }))
+      .sort((a, b) => b.items.length - a.items.length);
+    const newest = titles.filter(t => t.added).sort((a, b) => b.added.localeCompare(a.added)).slice(0, 20);
+    const sectionsList = (newest.length ? [{ name: 'Nouveautés', items: newest }] : []).concat(genreSections);
+
+    const rowsDef = [];
+    for (let i = 0; i < sectionsList.length; i += 2) rowsDef.push([sectionsList[i], sectionsList[i + 1] || null]);
+
+    // Largeur de chaque rangée → dimensions de la salle
+    const rowLen = rowsDef.map(pair =>
+      Math.max(2.2, Math.max.apply(null, pair.filter(Boolean).map(s => Math.ceil(s.items.length / LEVELS))) * PITCH + 0.35));
+    const W = Math.max(11, Math.max.apply(null, rowLen) + 5);
+    const zMax = 2.4;
+    const lastRowZ = ZSTART - (rowsDef.length - 1) * ROW_GAP;
+    const zMin = lastRowZ - 3.0;
+    const D = zMax - zMin;
+    const xMin = -W / 2, xMax = W / 2;
+
+    // ---- Scène, caméra, rendu ----
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x07070d);
+    scene.fog = new THREE.Fog(0x07070d, 14, 45);
+
+    const camera = new THREE.PerspectiveCamera(68, 1, 0.05, 80);
+    camera.rotation.order = 'YXZ';
+    camera.position.set(0, EYE, 0.9);
+    let yaw = 0, pitch = 0;
+
+    const canvas = document.createElement('canvas');
+    ov.insertBefore(canvas, ov.firstChild);
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    const maxAniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+
+    function resize() {
+      const w = ov.clientWidth || window.innerWidth, h = ov.clientHeight || window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ---- Lumières (valeurs élevées : éclairage "physique" de Three r155+) ----
+    scene.add(new THREE.AmbientLight(0xffffff, 2.4));
+    const sunA = new THREE.DirectionalLight(0xfff0dd, 1.6); sunA.position.set(2, 6, 5); scene.add(sunA);
+    const sunB = new THREE.DirectionalLight(0xddeeff, 0.9); sunB.position.set(-2, 6, -5); scene.add(sunB);
+    const pink = new THREE.PointLight(0xff2d6f, 25, 16, 2);
+    pink.position.set(-W / 4, 2.8, ZSTART - ROW_GAP / 2);
+    scene.add(pink);
+    const cyan = new THREE.PointLight(0x3dd1ff, 25, 16, 2);
+    cyan.position.set(W / 4, 2.8, ZSTART - ROW_GAP * 1.5);
+    scene.add(cyan);
+
+    // ---- Texture moquette ----
+    function makeCarpet() {
+      const c = document.createElement('canvas'); c.width = c.height = 256;
+      const g = c.getContext('2d');
+      g.fillStyle = '#1b1640'; g.fillRect(0, 0, 256, 256);
+      const cols = ['#ff3d81', '#2ee6d6', '#ffd23f', '#7b5cff'];
+      let seed = 7;
+      const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+      for (let i = 0; i < 70; i++) {
+        const x = rnd() * 256, y = rnd() * 256, s = 6 + rnd() * 14, r = rnd() * Math.PI;
+        g.fillStyle = cols[i % 4];
+        [-256, 0, 256].forEach(ox => [-256, 0, 256].forEach(oy => {
+          g.save(); g.translate(x + ox, y + oy); g.rotate(r);
+          if (i % 3 === 0) g.fillRect(-s / 2, -s / 2, s, s * 0.35);
+          else if (i % 3 === 1) { g.beginPath(); g.moveTo(0, -s / 2); g.lineTo(s / 2, s / 2); g.lineTo(-s / 2, s / 2); g.closePath(); g.fill(); }
+          else { g.beginPath(); g.arc(0, 0, s / 3, 0, 7); g.fill(); }
+          g.restore();
+        }));
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = maxAniso;
+      return tex;
+    }
+
+    // ---- Salle : sol, plafond, murs, néons ----
+    const floorTex = makeCarpet();
+    floorTex.repeat.set(W / 2.5, D / 2.5);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshLambertMaterial({ map: floorTex }));
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.set(0, 0, (zMin + zMax) / 2);
+    scene.add(floor);
+
+    const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, D),
+      new THREE.MeshLambertMaterial({ color: 0x15151f, side: THREE.DoubleSide }));
+    ceil.rotation.x = Math.PI / 2;
+    ceil.position.set(0, ROOM_H, (zMin + zMax) / 2);
+    scene.add(ceil);
+
+    const wallMat = new THREE.MeshLambertMaterial({ color: 0x23233a, side: THREE.DoubleSide });
+    function wall(w, x, z, ry) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, ROOM_H), wallMat);
+      m.position.set(x, ROOM_H / 2, z); m.rotation.y = ry; scene.add(m);
+    }
+    wall(W, 0, zMax, Math.PI);
+    wall(W, 0, zMin, 0);
+    wall(D, xMin, (zMin + zMax) / 2, Math.PI / 2);
+    wall(D, xMax, (zMin + zMax) / 2, -Math.PI / 2);
+
+    const neonPink = new THREE.MeshBasicMaterial({ color: 0xff3b7a });
+    const neonCyan = new THREE.MeshBasicMaterial({ color: 0x3be3ff });
+    function strip(w, d, x, y, z, mat) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, d), mat);
+      m.position.set(x, y, z); scene.add(m);
+    }
+    [[2.85, neonPink], [2.65, neonCyan]].forEach(p => {
+      strip(W - 0.1, 0.05, 0, p[0], zMax - 0.03, p[1]);
+      strip(W - 0.1, 0.05, 0, p[0], zMin + 0.03, p[1]);
+      strip(0.05, D - 0.1, xMin + 0.03, p[0], (zMin + zMax) / 2, p[1]);
+      strip(0.05, D - 0.1, xMax - 0.03, p[0], (zMin + zMax) / 2, p[1]);
+    });
+    const tubeMat = new THREE.MeshBasicMaterial({ color: 0xe8f0ff });
+    for (let i = 0; i <= rowsDef.length; i++) {
+      strip(W - 1.5, 0.14, 0, ROOM_H - 0.04, ZSTART + ROW_GAP / 2 - i * ROW_GAP, tubeMat);
+    }
+
+    // ---- Enseignes en canvas ----
+    function makeSignTexture(text, big) {
+      const c = document.createElement('canvas'); c.width = 512; c.height = big ? 128 : 128;
+      const g = c.getContext('2d');
+      g.fillStyle = '#120014'; g.fillRect(0, 0, 512, 128);
+      g.strokeStyle = '#ff2d6f'; g.lineWidth = 6; g.strokeRect(6, 6, 500, 116);
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      let fs = 60; const txt = text.toUpperCase();
+      g.font = 'bold ' + fs + 'px Arial';
+      while (g.measureText(txt).width > 450 && fs > 20) { fs -= 2; g.font = 'bold ' + fs + 'px Arial'; }
+      g.shadowColor = '#ff2d6f'; g.shadowBlur = 18; g.fillStyle = '#ffffff';
+      g.fillText(txt, 256, 66);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = maxAniso;
+      return tex;
+    }
+    function addWallSign(text, w, z, ry) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, w / 4),
+        new THREE.MeshBasicMaterial({ map: makeSignTexture(text) }));
+      m.position.set(0, 2.2, z); m.rotation.y = ry; scene.add(m);
+    }
+    addWallSign('Video club', 4.4, zMax - 0.04, Math.PI);
+    addWallSign('HorizonCiné', 4.4, zMin + 0.04, 0);
+
+    // ---- Comptoir ----
+    const rects = []; // zones infranchissables [minX, maxX, minZ, maxZ]
+    const counter = new THREE.Group();
+    counter.position.set(xMax - 2.0, 0, zMax - 1.1);
+    const cBody = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.0, 0.8), new THREE.MeshLambertMaterial({ color: 0x5a3d2b }));
+    cBody.position.y = 0.5;
+    const cTop = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.06, 1.0), new THREE.MeshLambertMaterial({ color: 0x1f1f26 }));
+    cTop.position.y = 1.03;
+    const cReg = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.4), new THREE.MeshLambertMaterial({ color: 0x888899 }));
+    cReg.position.set(-0.7, 1.21, 0);
+    counter.add(cBody, cTop, cReg);
+    scene.add(counter);
+    rects.push([counter.position.x - 1.4, counter.position.x + 1.4, counter.position.z - 0.5, counter.position.z + 0.5]);
+
+    // ---- DVD ----
+    const caseMat = new THREE.MeshLambertMaterial({ color: 0x111116 });
+    const dvdGeo = new THREE.BoxGeometry(DVD_W, DVD_H, DVD_D);
+    const dvds = [], meshes = [];
+    const active = new Set();
+    const woodMat = new THREE.MeshLambertMaterial({ color: 0x3b2a20 });
+    const ledgeMat = new THREE.MeshLambertMaterial({ color: 0x6b4a32 });
+
+    function makePlaceholder(t) {
+      const c = document.createElement('canvas'); c.width = 128; c.height = 192;
+      const g = c.getContext('2d');
+      const hue = hashHue(t.genre);
+      const grd = g.createLinearGradient(0, 0, 0, 192);
+      grd.addColorStop(0, 'hsl(' + hue + ',55%,28%)');
+      grd.addColorStop(1, 'hsl(' + hue + ',60%,12%)');
+      g.fillStyle = grd; g.fillRect(0, 0, 128, 192);
+      g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 3; g.strokeRect(5, 5, 118, 182);
+      g.fillStyle = '#fff'; g.font = 'bold 15px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      const words = t.title.split(/\s+/); let line = '', lines = [];
+      words.forEach(w => {
+        const test = line ? line + ' ' + w : w;
+        if (g.measureText(test).width > 108 && line) { lines.push(line); line = w; } else line = test;
+      });
+      lines.push(line);
+      lines = lines.slice(0, 6);
+      const y0 = 96 - (lines.length - 1) * 10;
+      lines.forEach((l, i) => g.fillText(l, 64, y0 + i * 20));
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    const sections = []; // pour le menu "Aller au rayon"
+    const levelY = k => LEVEL_Y0 + k * LEVEL_DY;
+
+    rowsDef.forEach((pair, ri) => {
+      const rowZ = ZSTART - ri * ROW_GAP;
+      const L = rowLen[ri];
+      const g = new THREE.Group();
+      g.position.set(0, 0, rowZ);
+      scene.add(g);
+
+      const body = new THREE.Mesh(new THREE.BoxGeometry(L, BODY_H, BODY_D), woodMat);
+      body.position.y = BODY_H / 2;
+      g.add(body);
+      rects.push([-L / 2 - 0.05, L / 2 + 0.05, rowZ - 0.64, rowZ + 0.64]);
+
+      pair.forEach((sec, si) => {
+        if (!sec) return;
+        const side = new THREE.Group();
+        if (si === 1) side.rotation.y = Math.PI;
+        g.add(side);
+
+        // Étagères
+        for (let k = 0; k < LEVELS; k++) {
+          const ledge = new THREE.Mesh(new THREE.BoxGeometry(L - 0.1, 0.04, 0.36), ledgeMat);
+          ledge.position.set(0, levelY(k) - 0.02, BODY_D / 2 + 0.18);
+          side.add(ledge);
+        }
+        // Enseigne du rayon
+        const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 0.45),
+          new THREE.MeshBasicMaterial({ map: makeSignTexture(sec.name) }));
+        sign.position.set(0, 2.6, BODY_D / 2 + 0.05);
+        side.add(sign);
+
+        // DVD : on remplit du haut vers le bas, de gauche à droite
+        const cols = Math.ceil(sec.items.length / LEVELS);
+        sec.items.forEach((t, i) => {
+          const lv = Math.floor(i / cols);              // 0 = étagère du haut
+          const col = i % cols;
+          const x = (col - (cols - 1) / 2) * PITCH;
+          const yy = levelY(LEVELS - 1 - lv) + DVD_H / 2;
+          const placeholder = makePlaceholder(t);
+          const front = new THREE.MeshLambertMaterial({ map: placeholder });
+          const mesh = new THREE.Mesh(dvdGeo, [caseMat, caseMat, caseMat, caseMat, front, caseMat]);
+          const baseZ = BODY_D / 2 + DVD_D / 2 + 0.03;
+          mesh.position.set(x, yy, baseZ);
+          mesh.rotation.x = -0.1;
+          side.add(mesh);
+          const d = { t: t, mesh: mesh, front: front, placeholder: placeholder, tex: null,
+                      state: 0, baseZ: baseZ, offset: 0, target: 0, wx: 0, wz: 0 };
+          mesh.userData.d = d;
+          dvds.push(d); meshes.push(mesh);
+        });
+
+        sections.push({ name: sec.name, count: sec.items.length,
+                        x: 0, z: rowZ + (si === 0 ? 1.7 : -1.7), yaw: si === 0 ? 0 : Math.PI });
+      });
+    });
+
+    scene.updateMatrixWorld(true);
+    const tmpV = new THREE.Vector3();
+    dvds.forEach(d => { d.mesh.getWorldPosition(tmpV); d.wx = tmpV.x; d.wz = tmpV.z; });
+
+    // ---- Menu "Aller au rayon" ----
+    jumpSel.innerHTML = '<option value="">Aller au rayon…</option>' +
+      sections.map((s, i) => '<option value="' + i + '">' + esc(s.name) + ' (' + s.count + ')</option>').join('');
+    jumpSel.value = '';
+    jumpSel.onchange = () => {
+      const s = sections[parseInt(jumpSel.value, 10)];
+      if (s) { camera.position.x = s.x; camera.position.z = s.z; yaw = s.yaw; pitch = 0; }
+      jumpSel.value = '';
+      jumpSel.blur();
+    };
+
+    /* ---------- Chargement paresseux des affiches ---------- */
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+    let loadingCount = 0;
+
+    function startLoad(d) {
+      d.state = 1; loadingCount++;
+      loader.load(posterUrl(d.t.img), tex => {
+        loadingCount--;
+        if (destroyed) { tex.dispose(); return; }
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = maxAniso;
+        d.tex = tex;
+        d.front.map = tex;
+        d.front.needsUpdate = true;
+        d.state = 2;
+      }, undefined, () => {
+        loadingCount--;
+        d.state = 3; // échec (CORS, 404…) : on garde la jaquette "titre"
+      });
+    }
+    function unload(d) {
+      if (d.tex) { d.tex.dispose(); d.tex = null; }
+      d.front.map = d.placeholder;
+      d.front.needsUpdate = true;
+      d.state = 0;
+    }
+    function stream() {
+      const p = camera.position;
+      const cand = [];
+      for (let i = 0; i < dvds.length; i++) {
+        const d = dvds[i];
+        const dx = d.wx - p.x, dz = d.wz - p.z, q = dx * dx + dz * dz;
+        if (d.state === 0) { if (q < LOAD_R2) cand.push([q, d]); }
+        else if (d.state === 2 && q > UNLOAD_R2) unload(d);
+      }
+      const slots = MAX_LOADS - loadingCount;
+      if (slots > 0 && cand.length) {
+        cand.sort((a, b) => a[0] - b[0]);
+        for (let i = 0; i < Math.min(slots, cand.length); i++) startLoad(cand[i][1]);
+      }
+    }
+
+    /* ---------- Survol / clic ---------- */
+    const raycaster = new THREE.Raycaster();
+    raycaster.far = 12;
+    const ndc = new THREE.Vector2();
+    let hovered = null;
+
+    function pick(x, y) {
+      const r = canvas.getBoundingClientRect();
+      ndc.set(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
+      camera.updateMatrixWorld();
+      raycaster.setFromCamera(ndc, camera);
+      const hits = raycaster.intersectObjects(meshes, false);
+      return hits.length ? hits[0].object.userData.d : null;
+    }
+    function setHover(d) {
+      if (hovered === d) return;
+      if (hovered) { hovered.target = 0; active.add(hovered); }
+      hovered = d;
+      if (d) { d.target = 0.14; active.add(d); }
+    }
+    function showTip(d, x, y) {
+      tipEl.innerHTML = '<b>' + esc(d.t.title) + '</b><br><span>' + esc(metaLine(d.t)) + '</span>';
+      tipEl.style.display = 'block';
+      tipEl.style.left = clamp(x + 14, 8, window.innerWidth - 270) + 'px';
+      tipEl.style.top = clamp(y + 14, 50, window.innerHeight - 70) + 'px';
+    }
+    function hideTip() { tipEl.style.display = 'none'; }
+    function go(d) { window.location.href = d.t.href; }
+
+    let down = null;
+    canvas.addEventListener('pointerdown', e => {
+      canvas.setPointerCapture(e.pointerId);
+      down = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: false, type: e.pointerType };
+      canvas.style.cursor = 'grabbing';
+    });
+    canvas.addEventListener('pointermove', e => {
+      if (down) {
+        const dx = e.clientX - down.lx, dy = e.clientY - down.ly;
+        down.lx = e.clientX; down.ly = e.clientY;
+        if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) down.moved = true;
+        if (down.moved) {
+          yaw += dx * 0.0045;
+          pitch = clamp(pitch + dy * 0.0045, -1.0, 1.0);
+          hideTip();
+        }
+      } else if (e.pointerType === 'mouse') {
+        const d = pick(e.clientX, e.clientY);
+        setHover(d);
+        if (d) showTip(d, e.clientX, e.clientY); else hideTip();
+        canvas.style.cursor = d ? 'pointer' : 'grab';
+      }
+    });
+    canvas.addEventListener('pointerup', e => {
+      if (down && !down.moved) {
+        const d = pick(e.clientX, e.clientY);
+        if (!d) { setHover(null); hideTip(); }
+        else if (down.type === 'mouse' || hovered === d) go(d);
+        else { setHover(d); showTip(d, e.clientX, e.clientY); }
+      }
+      down = null;
+      canvas.style.cursor = 'grab';
+    });
+    canvas.addEventListener('pointercancel', () => { down = null; });
+    canvas.addEventListener('pointerleave', e => {
+      if (e.pointerType === 'mouse' && !down) { setHover(null); hideTip(); }
+    });
+
+    /* ---------- Clavier ---------- */
+    const keys = new Set();
+    const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight'];
+    function onKeyDown(e) {
+      if (e.code === 'Escape') { closeClub(); return; }
+      if (MOVE_KEYS.indexOf(e.code) !== -1) {
+        if (document.activeElement && document.activeElement.tagName === 'SELECT') return;
+        keys.add(e.code); e.preventDefault();
+      }
+      if (e.code === 'Space') e.preventDefault();
+    }
+    function onKeyUp(e) { keys.delete(e.code); }
+    function onBlur() { keys.clear(); }
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onBlur);
+
+    /* ---------- Déplacement + collisions ---------- */
+    function blocked(x, z) {
+      if (x < xMin + 0.4 || x > xMax - 0.4 || z < zMin + 0.4 || z > zMax - 0.4) return true;
+      for (let i = 0; i < rects.length; i++) {
+        const r = rects[i];
+        if (x > r[0] - RADIUS && x < r[1] + RADIUS && z > r[2] - RADIUS && z < r[3] + RADIUS) return true;
+      }
+      return false;
+    }
+    function tryMove(dx, dz) {
+      const p = camera.position;
+      if (!blocked(p.x + dx, p.z)) p.x += dx;
+      if (!blocked(p.x, p.z + dz)) p.z += dz;
+    }
+
+    /* ---------- Boucle ---------- */
+    let raf = 0, last = performance.now(), streamAcc = 1;
+    function frame(now) {
+      raf = requestAnimationFrame(frame);
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      let f = 0, s = 0, turn = 0;
+      if (keys.has('KeyW') || keys.has('ArrowUp') || pad.f) f += 1;
+      if (keys.has('KeyS') || keys.has('ArrowDown') || pad.b) f -= 1;
+      if (keys.has('KeyD') || pad.r) s += 1;
+      if (keys.has('KeyA') || pad.l) s -= 1;
+      if (keys.has('ArrowLeft')) turn += 1;
+      if (keys.has('ArrowRight')) turn -= 1;
+      yaw += turn * 1.8 * dt;
+
+      if (f || s) {
+        const sp = ((keys.has('ShiftLeft') || keys.has('ShiftRight')) ? 5 : 2.8) * dt;
+        let mx = -Math.sin(yaw) * f + Math.cos(yaw) * s;
+        let mz = -Math.cos(yaw) * f - Math.sin(yaw) * s;
+        const len = Math.hypot(mx, mz) || 1;
+        tryMove((mx / len) * sp, (mz / len) * sp);
+      }
+      camera.rotation.set(pitch, yaw, 0);
+
+      // Animation des DVD sortis / rentrés
+      active.forEach(d => {
+        d.offset += (d.target - d.offset) * Math.min(1, dt * 14);
+        if (Math.abs(d.target - d.offset) < 0.002) { d.offset = d.target; active.delete(d); }
+        d.mesh.position.z = d.baseZ + d.offset;
+      });
+
+      streamAcc += dt;
+      if (streamAcc > 0.3) { streamAcc = 0; stream(); }
+
+      renderer.render(scene, camera);
+    }
+    stream();
+    raf = requestAnimationFrame(frame);
+
+    /* ---------- Nettoyage ---------- */
+    function destroy() {
+      destroyed = true;
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
+      pad.f = pad.b = pad.l = pad.r = false;
+      dvds.forEach(d => { if (d.tex) d.tex.dispose(); d.placeholder.dispose(); });
+      scene.traverse(o => {
+        if (o.geometry) o.geometry.dispose();
+        if (o.material) {
+          (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => {
+            if (m.map && m.map.dispose) m.map.dispose();
+            m.dispose();
+          });
+        }
+      });
+      renderer.dispose();
+      if (renderer.forceContextLoss) renderer.forceContextLoss();
+      canvas.remove();
+      hideTip();
+    }
+
+    return { destroy: destroy };
+  }
+})();
+</script>
 </body>
 </html>
