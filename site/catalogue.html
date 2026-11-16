@@ -8779,6 +8779,89 @@ document.addEventListener('DOMContentLoaded', () => {
 .vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
 </style>
 
+<!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+</style>
+
 <script>
 (function () {
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -8797,8 +8880,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return h % 360;
   }
   // Affiches TMDB en 342px de large : largement suffisant et beaucoup plus léger que l'original
-  function posterUrl(u) {
-    return (u || '').replace(/\/t\/p\/[^/]+\//, '/t/p/w342/');
+  function posterUrl(u, size) {
+    return (u || '').replace(/\/t\/p\/[^/]+\//, '/t/p/' + (size || 'w342') + '/');
   }
   function readTitles() {
     return [...document.querySelectorAll('#movieGrid .movieimg')].map(el => {
@@ -9014,16 +9097,29 @@ document.addEventListener('DOMContentLoaded', () => {
     floor.position.set(0, 0, (zMin + zMax) / 2);
     scene.add(floor);
 
+    const ceilTex = makeCeilingTex();
+    ceilTex.repeat.set(W / 1.2, D / 1.2);
     const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, D),
-      new THREE.MeshLambertMaterial({ color: 0x15151f, side: THREE.DoubleSide }));
+      new THREE.MeshLambertMaterial({ map: ceilTex, side: THREE.DoubleSide }));
     ceil.rotation.x = Math.PI / 2;
     ceil.position.set(0, ROOM_H, (zMin + zMax) / 2);
     scene.add(ceil);
 
-    const wallMat = new THREE.MeshLambertMaterial({ color: 0x23233a, side: THREE.DoubleSide });
+    const wallpaper = makeWallpaper();
+    const paneling = new THREE.MeshLambertMaterial({ color: 0x3a2418, side: THREE.DoubleSide });
+    const railMat = new THREE.MeshLambertMaterial({ color: 0x8a5a3a });
     function wall(w, x, z, ry) {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, ROOM_H), wallMat);
+      const tex = wallpaper.clone(); tex.needsUpdate = true;
+      tex.repeat.set(w / 1.0, ROOM_H / 2.0);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, ROOM_H),
+        new THREE.MeshLambertMaterial({ map: tex, side: THREE.DoubleSide }));
       m.position.set(x, ROOM_H / 2, z); m.rotation.y = ry; scene.add(m);
+      // Lambris en bois + moulure (le "pied" du mur)
+      const ix = Math.sin(ry), iz = Math.cos(ry);
+      const pan = new THREE.Mesh(new THREE.PlaneGeometry(w, 0.9), paneling);
+      pan.position.set(x + ix * 0.012, 0.45, z + iz * 0.012); pan.rotation.y = ry; scene.add(pan);
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(w, 0.06, 0.06), railMat);
+      rail.position.set(x + ix * 0.03, 0.93, z + iz * 0.03); rail.rotation.y = ry; scene.add(rail);
     }
     wall(W, 0, zMax, Math.PI);
     wall(W, 0, zMin, 0);
@@ -9048,16 +9144,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---- Enseignes en canvas ----
-    function makeSignTexture(text, big) {
-      const c = document.createElement('canvas'); c.width = 512; c.height = big ? 128 : 128;
+    function makeSignTexture(text, color) {
+      const neon = color || '#ff2d6f';
+      const c = document.createElement('canvas'); c.width = 512; c.height = 128;
       const g = c.getContext('2d');
       g.fillStyle = '#120014'; g.fillRect(0, 0, 512, 128);
-      g.strokeStyle = '#ff2d6f'; g.lineWidth = 6; g.strokeRect(6, 6, 500, 116);
+      g.strokeStyle = neon; g.lineWidth = 6; g.strokeRect(6, 6, 500, 116);
       g.textAlign = 'center'; g.textBaseline = 'middle';
       let fs = 60; const txt = text.toUpperCase();
       g.font = 'bold ' + fs + 'px Arial';
       while (g.measureText(txt).width > 450 && fs > 20) { fs -= 2; g.font = 'bold ' + fs + 'px Arial'; }
-      g.shadowColor = '#ff2d6f'; g.shadowBlur = 18; g.fillStyle = '#ffffff';
+      g.shadowColor = neon; g.shadowBlur = 18; g.fillStyle = '#ffffff';
       g.fillText(txt, 256, 66);
       const tex = new THREE.CanvasTexture(c);
       tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = maxAniso;
@@ -9086,9 +9183,120 @@ document.addEventListener('DOMContentLoaded', () => {
     rects.push([counter.position.x - 1.4, counter.position.x + 1.4, counter.position.z - 0.5, counter.position.z + 0.5]);
 
     // ---- DVD ----
-    const caseMat = new THREE.MeshLambertMaterial({ color: 0x111116 });
-    const dvdGeo = new THREE.BoxGeometry(DVD_W, DVD_H, DVD_D);
-    const dvds = [], meshes = [];
+    const caseMat = new THREE.MeshLambertMaterial({ color: 0x15151b });
+    const dvds = [], meshes = [], streamables = [];
+    const spinners = [];
+    let clockHands = null;
+
+    // Boîtier DVD : coque noire + jaquette en retrait + bandeau "DVD VIDEO" + pastille de location
+    const geoCache = {};
+    function caseGeo(dp) {
+      return geoCache[dp] || (geoCache[dp] = new THREE.BoxGeometry(DVD_W, DVD_H, dp));
+    }
+    const coverGeo = new THREE.PlaneGeometry(DVD_W - 0.02, DVD_H - 0.02);
+    const stripGeo = new THREE.PlaneGeometry(DVD_W - 0.02, 0.032);
+    const stickerGeo = new THREE.PlaneGeometry(0.05, 0.03);
+    const stripMat = new THREE.MeshBasicMaterial({ map: makeStripTexture() });
+    const stickerCache = {};
+    function stickerMat(genre) {
+      return stickerCache[genre] || (stickerCache[genre] =
+        new THREE.MeshBasicMaterial({ color: new THREE.Color().setHSL(hashHue(genre) / 360, 0.75, 0.5) }));
+    }
+
+    function makeStripTexture() {
+      const c = document.createElement('canvas'); c.width = 256; c.height = 32;
+      const g = c.getContext('2d');
+      g.fillStyle = '#0a0a0a'; g.fillRect(0, 0, 256, 32);
+      g.fillStyle = '#ffffff'; g.textBaseline = 'middle';
+      g.font = 'italic bold 24px Arial'; g.fillText('DVD', 12, 17);
+      g.font = 'bold 11px Arial'; g.fillText('V I D E O', 70, 18);
+      g.strokeStyle = '#c9c9d6'; g.lineWidth = 2;
+      g.beginPath(); g.arc(228, 16, 10, 0, 7); g.stroke();
+      g.beginPath(); g.arc(228, 16, 3, 0, 7); g.stroke();
+      g.fillStyle = '#c9c9d6'; g.fillRect(0, 30, 256, 2);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = maxAniso;
+      return tex;
+    }
+    function makeWallpaper() {
+      const c = document.createElement('canvas'); c.width = 128; c.height = 256;
+      const g = c.getContext('2d');
+      g.fillStyle = '#1d1b36'; g.fillRect(0, 0, 128, 256);
+      g.fillStyle = 'rgba(255,255,255,.05)';
+      for (let x = 0; x < 128; x += 32) g.fillRect(x, 0, 16, 256);
+      g.fillStyle = 'rgba(255,45,111,.35)';
+      [[32, 64], [96, 192]].forEach(p => {
+        g.save(); g.translate(p[0], p[1]); g.rotate(Math.PI / 4); g.fillRect(-7, -7, 14, 14); g.restore();
+      });
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = maxAniso;
+      return tex;
+    }
+    function makeCeilingTex() {
+      const c = document.createElement('canvas'); c.width = c.height = 128;
+      const g = c.getContext('2d');
+      g.fillStyle = '#1b1b27'; g.fillRect(0, 0, 128, 128);
+      g.fillStyle = 'rgba(255,255,255,.04)';
+      for (let i = 0; i < 40; i++) g.fillRect(Math.random() * 128, Math.random() * 128, 2, 2);
+      g.strokeStyle = '#0c0c12'; g.lineWidth = 6; g.strokeRect(0, 0, 128, 128);
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+    function makeDiscTexture() {
+      const c = document.createElement('canvas'); c.width = c.height = 256;
+      const g = c.getContext('2d');
+      g.save();
+      g.beginPath(); g.arc(128, 128, 126, 0, Math.PI * 2); g.closePath(); g.clip();
+      let grd;
+      if (g.createConicGradient) {
+        grd = g.createConicGradient(0, 128, 128);
+        const stops = ['#e8e8ff', '#ff9ad5', '#9ad8ff', '#c8ffb8', '#fff1a0', '#d9a6ff', '#e8e8ff'];
+        stops.forEach((s, i) => grd.addColorStop(i / (stops.length - 1), s));
+      } else {
+        grd = g.createLinearGradient(0, 0, 256, 256);
+        grd.addColorStop(0, '#e8e8ff'); grd.addColorStop(0.5, '#9ad8ff'); grd.addColorStop(1, '#ff9ad5');
+      }
+      g.fillStyle = grd; g.fillRect(0, 0, 256, 256);
+      g.restore();
+      g.strokeStyle = 'rgba(0,0,0,.18)'; g.lineWidth = 2;
+      [60, 80, 100, 115].forEach(r => { g.beginPath(); g.arc(128, 128, r, 0, 7); g.stroke(); });
+      g.fillStyle = '#cfd0dc'; g.beginPath(); g.arc(128, 128, 38, 0, 7); g.fill();
+      g.globalCompositeOperation = 'destination-out';
+      g.beginPath(); g.arc(128, 128, 14, 0, 7); g.fill();
+      g.globalCompositeOperation = 'source-over';
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = maxAniso;
+      return tex;
+    }
+    function makeClockFace() {
+      const c = document.createElement('canvas'); c.width = c.height = 256;
+      const g = c.getContext('2d');
+      g.fillStyle = '#f4efe3'; g.beginPath(); g.arc(128, 128, 126, 0, 7); g.fill();
+      g.fillStyle = '#111'; g.font = 'bold 26px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      for (let i = 1; i <= 12; i++) {
+        const a = i / 12 * Math.PI * 2;
+        g.fillText(String(i), 128 + Math.sin(a) * 92, 128 - Math.cos(a) * 92);
+      }
+      g.fillStyle = '#111';
+      for (let i = 0; i < 60; i++) {
+        const a = i / 60 * Math.PI * 2, r1 = i % 5 ? 116 : 110;
+        g.fillRect(128 + Math.sin(a) * r1 - 1, 128 - Math.cos(a) * r1 - 1, 2, 2);
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = maxAniso;
+      return tex;
+    }
+    function shuffleArr(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
     const active = new Set();
     const woodMat = new THREE.MeshLambertMaterial({ color: 0x3b2a20 });
     const ledgeMat = new THREE.MeshLambertMaterial({ color: 0x6b4a32 });
@@ -9157,23 +9365,185 @@ document.addEventListener('DOMContentLoaded', () => {
           const col = i % cols;
           const x = (col - (cols - 1) / 2) * PITCH;
           const yy = levelY(LEVELS - 1 - lv) + DVD_H / 2;
+          const depth = t.type === 'Film' ? DVD_D : 0.055; // séries / animes = coffret plus épais
           const placeholder = makePlaceholder(t);
           const front = new THREE.MeshLambertMaterial({ map: placeholder });
-          const mesh = new THREE.Mesh(dvdGeo, [caseMat, caseMat, caseMat, caseMat, front, caseMat]);
-          const baseZ = BODY_D / 2 + DVD_D / 2 + 0.03;
+          const mesh = new THREE.Mesh(caseGeo(depth), caseMat);
+          const cover = new THREE.Mesh(coverGeo, front);
+          cover.position.z = depth / 2 + 0.0015;
+          const strip = new THREE.Mesh(stripGeo, stripMat);
+          strip.position.set(0, DVD_H / 2 - 0.026, depth / 2 + 0.003);
+          const sticker = new THREE.Mesh(stickerGeo, stickerMat(t.genre));
+          sticker.position.set(-DVD_W / 2 + 0.05, -DVD_H / 2 + 0.034, depth / 2 + 0.003);
+          mesh.add(cover, strip, sticker);
+          const baseZ = BODY_D / 2 + depth / 2 + 0.03;
           mesh.position.set(x, yy, baseZ);
           mesh.rotation.x = -0.1;
           side.add(mesh);
           const d = { t: t, mesh: mesh, front: front, placeholder: placeholder, tex: null,
-                      state: 0, baseZ: baseZ, offset: 0, target: 0, wx: 0, wz: 0 };
+                      state: 0, baseZ: baseZ, offset: 0, target: 0, wx: 0, wz: 0,
+                      pullable: true, loadR2: LOAD_R2, unloadR2: UNLOAD_R2 };
           mesh.userData.d = d;
-          dvds.push(d); meshes.push(mesh);
+          dvds.push(d); meshes.push(mesh); streamables.push(d);
         });
 
         sections.push({ name: sec.name, count: sec.items.length,
                         x: 0, z: rowZ + (si === 0 ? 1.7 : -1.7), yaw: si === 0 ? 0 : Math.PI });
       });
     });
+
+    /* ---------- Décors ---------- */
+    function wallPos(wallName, along, y, off) {
+      if (wallName === 'back')  return { x: along, y: y, z: zMax - off, ry: Math.PI };
+      if (wallName === 'front') return { x: along, y: y, z: zMin + off, ry: 0 };
+      if (wallName === 'left')  return { x: xMin + off, y: y, z: along, ry: Math.PI / 2 };
+      return { x: xMax - off, y: y, z: along, ry: -Math.PI / 2 };
+    }
+
+    // Affiches encadrées : vraies affiches du catalogue, cliquables
+    const frameMat = new THREE.MeshLambertMaterial({ color: 0x0e0e12 });
+    const frameGeo = new THREE.BoxGeometry(1.05, 1.5, 0.05);
+    const posterGeo = new THREE.PlaneGeometry(0.93, 1.4);
+    const wallTitles = shuffleArr(titles.filter(t => t.img));
+    let wallIdx = 0;
+    function addFramedPoster(wallName, along) {
+      if (!wallTitles.length) return;
+      const t = wallTitles[wallIdx++ % wallTitles.length];
+      const p = wallPos(wallName, along, 1.85, 0);
+      const ix = Math.sin(p.ry), iz = Math.cos(p.ry);
+      const frame = new THREE.Mesh(frameGeo, frameMat);
+      frame.position.set(p.x + ix * 0.025, p.y, p.z + iz * 0.025);
+      frame.rotation.y = p.ry; scene.add(frame);
+      const placeholder = makePlaceholder(t);
+      const mat = new THREE.MeshBasicMaterial({ map: placeholder, color: 0xe6e6e6 });
+      const m = new THREE.Mesh(posterGeo, mat);
+      m.position.set(p.x + ix * 0.052, p.y, p.z + iz * 0.052);
+      m.rotation.y = p.ry; scene.add(m);
+      const d = { t: t, mesh: m, front: mat, placeholder: placeholder, tex: null, state: 0, size: 'w500',
+                  pullable: false, baseZ: 0, offset: 0, target: 0, wx: m.position.x, wz: m.position.z,
+                  loadR2: 14 * 14, unloadR2: 22 * 22 };
+      m.userData.d = d; meshes.push(m); streamables.push(d);
+    }
+    for (let z = zMax - 2.2; z > zMin + 1.2; z -= 1.9) { addFramedPoster('left', z); addFramedPoster('right', z); }
+    addFramedPoster('back', -4.6); addFramedPoster('back', 4.6);
+    for (let x = 4.4; x <= W / 2 - 0.7; x += 1.5) { addFramedPoster('front', x); addFramedPoster('front', -x); }
+
+    // Horloge murale (heure réelle)
+    (function addClock() {
+      const p = wallPos('back', -3.2, 2.15, 0.03);
+      const grp = new THREE.Group();
+      grp.position.set(p.x, p.y, p.z); grp.rotation.y = p.ry; scene.add(grp);
+      grp.add(new THREE.Mesh(new THREE.CircleGeometry(0.42, 48), new THREE.MeshBasicMaterial({ map: makeClockFace() })));
+      const ring = new THREE.Mesh(new THREE.RingGeometry(0.42, 0.47, 48), new THREE.MeshBasicMaterial({ color: 0x8a1c2b }));
+      grp.add(ring);
+      let hz = 0.008;
+      function hand(len, wd, color) {
+        const h = new THREE.Group();
+        const m = new THREE.Mesh(new THREE.BoxGeometry(wd, len, 0.003), new THREE.MeshBasicMaterial({ color: color }));
+        m.position.y = len / 2 - 0.03; h.add(m);
+        h.position.z = hz; hz += 0.006;
+        grp.add(h); return h;
+      }
+      clockHands = { h: hand(0.2, 0.028, 0x111111), m: hand(0.3, 0.02, 0x111111), s: hand(0.33, 0.008, 0xd42a2a) };
+    })();
+
+    // Néon "OPEN"
+    (function addOpen() {
+      const p = wallPos('back', 3.2, 2.3, 0.04);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.4),
+        new THREE.MeshBasicMaterial({ map: makeSignTexture('Open 24h/24', '#3dff9a') }));
+      m.position.set(p.x, p.y, p.z); m.rotation.y = p.ry; scene.add(m);
+    })();
+
+    // Disques DVD : suspendus au plafond et fixés au mur
+    const discMat = new THREE.MeshBasicMaterial({ map: makeDiscTexture(), transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
+    const stringMat = new THREE.MeshBasicMaterial({ color: 0xaaaaaa });
+    function addHangingDisc(x, y, z, r, speed) {
+      const m = new THREE.Mesh(new THREE.CircleGeometry(r, 48), discMat);
+      m.rotation.order = 'YXZ'; m.rotation.x = 0.35; m.position.set(x, y, z); scene.add(m);
+      const len = ROOM_H - y - r * 0.9;
+      const s = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, len, 4), stringMat);
+      s.position.set(x, y + r * 0.9 + len / 2, z); scene.add(s);
+      spinners.push({ mesh: m, axis: 'y', speed: speed });
+    }
+    function addWallDisc(wallName, along, y, r, speed) {
+      const p = wallPos(wallName, along, y, 0.05);
+      const m = new THREE.Mesh(new THREE.CircleGeometry(r, 48), discMat);
+      m.rotation.order = 'YXZ'; m.rotation.y = p.ry; m.position.set(p.x, p.y, p.z); scene.add(m);
+      spinners.push({ mesh: m, axis: 'z', speed: speed });
+    }
+    addHangingDisc(-3, 2.55, -1.0, 0.35, 0.8);
+    addHangingDisc(0, 2.7, -1.4, 0.45, -0.6);
+    addHangingDisc(3, 2.55, -1.0, 0.35, 0.8);
+    addWallDisc('front', -3.0, 2.1, 0.55, 0.5);
+    addWallDisc('front', 3.0, 2.1, 0.55, -0.5);
+
+    // Mobilier : plantes, bancs, machine à pop-corn, bac de retour
+    const potMat = new THREE.MeshLambertMaterial({ color: 0x7a3b2a });
+    const leafMat = new THREE.MeshLambertMaterial({ color: 0x2f8f4a });
+    const leafMat2 = new THREE.MeshLambertMaterial({ color: 0x3aa557 });
+    const leafGeo = new THREE.IcosahedronGeometry(1, 1);
+    function addPlant(x, z, s) {
+      const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+      const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.22 * s, 0.17 * s, 0.45 * s, 16), potMat);
+      pot.position.y = 0.225 * s; g.add(pot);
+      [[0, 0.8, 0, 0.3], [0.16, 1.0, 0.06, 0.22], [-0.15, 0.95, -0.08, 0.24], [0.02, 1.15, -0.05, 0.18]].forEach((l, i) => {
+        const m = new THREE.Mesh(leafGeo, i % 2 ? leafMat2 : leafMat);
+        m.scale.set(l[3] * s, l[3] * s * 1.2, l[3] * s);
+        m.position.set(l[0] * s, l[1] * s, l[2] * s); g.add(m);
+      });
+      rects.push([x - 0.3 * s, x + 0.3 * s, z - 0.3 * s, z + 0.3 * s]);
+    }
+    const benchMat = new THREE.MeshLambertMaterial({ color: 0x8b1e2d });
+    const benchBase = new THREE.MeshLambertMaterial({ color: 0x1b1b22 });
+    function addBench(x, z, dir) { // dir = +1 : mur à gauche (-x), -1 : mur à droite
+      const base = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 1.5), benchBase);
+      base.position.set(x, 0.15, z); scene.add(base);
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.12, 1.6), benchMat);
+      seat.position.set(x, 0.36, z); scene.add(seat);
+      const back = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 1.6), benchMat);
+      back.position.set(x - dir * 0.24, 0.72, z); scene.add(back);
+      rects.push([x - 0.45, x + 0.45, z - 0.85, z + 0.85]);
+    }
+    let furn = 0;
+    for (let z = zMax - 5.4; z > zMin + 1.5; z -= 3.6, furn++) {
+      if (furn % 2 === 0) { addPlant(xMin + 0.65, z, 1.1); addBench(xMax - 0.45, z, -1); }
+      else { addBench(xMin + 0.45, z, 1); addPlant(xMax - 0.65, z, 1.1); }
+    }
+    addPlant(xMin + 0.65, zMax - 0.7, 1.3);
+    addPlant(xMin + 0.65, zMin + 0.7, 1.3);
+    addPlant(xMax - 0.65, zMin + 0.7, 1.3);
+
+    (function addPopcorn() {
+      const x = counter.position.x - 2.3, z = zMax - 0.9;
+      const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+      const red = new THREE.MeshLambertMaterial({ color: 0xd42a2a });
+      const base = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.7), red); base.position.y = 0.4; g.add(base);
+      const glass = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.62, 0.66),
+        new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.28, depthWrite: false }));
+      glass.position.y = 1.11; g.add(glass);
+      const pop = new THREE.SphereGeometry(0.06, 8, 6);
+      const pm1 = new THREE.MeshLambertMaterial({ color: 0xfff2b0 }), pm2 = new THREE.MeshLambertMaterial({ color: 0xffe27a });
+      for (let i = 0; i < 18; i++) {
+        const m = new THREE.Mesh(pop, i % 2 ? pm1 : pm2);
+        m.position.set((Math.random() - 0.5) * 0.6, 0.86 + Math.random() * 0.5, (Math.random() - 0.5) * 0.5);
+        g.add(m);
+      }
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.08, 0.8), red); roof.position.y = 1.46; g.add(roof);
+      rects.push([x - 0.5, x + 0.5, z - 0.45, z + 0.45]);
+    })();
+
+    (function addBin() {
+      const x = xMin + 0.45, z = zMax - 2.0;
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.0, 0.9), new THREE.MeshLambertMaterial({ color: 0x1f3b6e }));
+      body.position.set(x, 0.5, z); scene.add(body);
+      const slot = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.06, 0.5), new THREE.MeshBasicMaterial({ color: 0x050508 }));
+      slot.position.set(x + 0.305, 0.85, z); scene.add(slot);
+      const label = new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.14),
+        new THREE.MeshBasicMaterial({ map: makeSignTexture('Retour DVD', '#3be3ff') }));
+      label.position.set(x + 0.311, 0.62, z); label.rotation.y = Math.PI / 2; scene.add(label);
+      rects.push([x - 0.35, x + 0.35, z - 0.5, z + 0.5]);
+    })();
 
     scene.updateMatrixWorld(true);
     const tmpV = new THREE.Vector3();
@@ -9197,7 +9567,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startLoad(d) {
       d.state = 1; loadingCount++;
-      loader.load(posterUrl(d.t.img), tex => {
+      loader.load(posterUrl(d.t.img, d.size), tex => {
         loadingCount--;
         if (destroyed) { tex.dispose(); return; }
         tex.colorSpace = THREE.SRGBColorSpace;
@@ -9220,11 +9590,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function stream() {
       const p = camera.position;
       const cand = [];
-      for (let i = 0; i < dvds.length; i++) {
-        const d = dvds[i];
+      for (let i = 0; i < streamables.length; i++) {
+        const d = streamables[i];
         const dx = d.wx - p.x, dz = d.wz - p.z, q = dx * dx + dz * dz;
-        if (d.state === 0) { if (q < LOAD_R2) cand.push([q, d]); }
-        else if (d.state === 2 && q > UNLOAD_R2) unload(d);
+        if (d.state === 0) { if (q < d.loadR2) cand.push([q, d]); }
+        else if (d.state === 2 && q > d.unloadR2) unload(d);
       }
       const slots = MAX_LOADS - loadingCount;
       if (slots > 0 && cand.length) {
@@ -9249,9 +9619,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function setHover(d) {
       if (hovered === d) return;
-      if (hovered) { hovered.target = 0; active.add(hovered); }
+      if (hovered && hovered.pullable) { hovered.target = 0; active.add(hovered); }
       hovered = d;
-      if (d) { d.target = 0.14; active.add(d); }
+      if (d && d.pullable) { d.target = 0.14; active.add(d); }
     }
     function showTip(d, x, y) {
       tipEl.innerHTML = '<b>' + esc(d.t.title) + '</b><br><span>' + esc(metaLine(d.t)) + '</span>';
@@ -9364,6 +9734,18 @@ document.addEventListener('DOMContentLoaded', () => {
         d.mesh.position.z = d.baseZ + d.offset;
       });
 
+      // Disques qui tournent + horloge à l'heure réelle
+      spinners.forEach(sp => { sp.mesh.rotation[sp.axis] += sp.speed * dt; });
+      if (clockHands) {
+        const n = new Date();
+        const sec = n.getSeconds() + n.getMilliseconds() / 1000;
+        const min = n.getMinutes() + sec / 60;
+        const hr = (n.getHours() % 12) + min / 60;
+        clockHands.s.rotation.z = -(sec / 60) * Math.PI * 2;
+        clockHands.m.rotation.z = -(min / 60) * Math.PI * 2;
+        clockHands.h.rotation.z = -(hr / 12) * Math.PI * 2;
+      }
+
       streamAcc += dt;
       if (streamAcc > 0.3) { streamAcc = 0; stream(); }
 
@@ -9381,7 +9763,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
       pad.f = pad.b = pad.l = pad.r = false;
-      dvds.forEach(d => { if (d.tex) d.tex.dispose(); d.placeholder.dispose(); });
+      streamables.forEach(d => { if (d.tex) d.tex.dispose(); d.placeholder.dispose(); });
       scene.traverse(o => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) {
