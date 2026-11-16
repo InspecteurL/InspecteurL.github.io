@@ -9528,6 +9528,134 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 </style>
 
+<!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+
+.vc-snd {
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.18); cursor:pointer;
+  background:rgba(31,31,40,.9); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none;
+}
+.vc-snd .material-symbols-outlined { font-size:20px; }
+.vc-hold {
+  position:absolute; left:50%; transform:translateX(-50%); top:58px; display:none; text-align:center;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.18); padding:8px 14px; border-radius:12px;
+  font-size:.85rem; max-width:90vw; pointer-events:none; line-height:1.35;
+}
+.vc-hold span { color:#bbb; font-size:.78rem; }
+.vc-joy {
+  position:absolute; right:16px; bottom:48px; width:116px; height:116px; border-radius:50%; display:none;
+  background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.22); touch-action:none;
+}
+@media (pointer:coarse) { .vc-joy { display:block; } }
+.vc-knob {
+  position:absolute; left:50%; top:50%; width:52px; height:52px; margin:-26px 0 0 -26px; border-radius:50%;
+  background:rgba(255,255,255,.35); border:2px solid rgba(255,255,255,.5); pointer-events:none;
+}
+.vc-sub { position:absolute; left:14px; top:54px; pointer-events:none; }
+.vc-online {
+  display:none; align-items:center; gap:5px; padding:3px 10px; border-radius:14px; font-size:.78rem;
+  background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.16);
+}
+.vc-online .material-symbols-outlined { font-size:16px; }
+.vc-map {
+  position:absolute; right:14px; top:56px; border-radius:6px; cursor:crosshair; touch-action:none;
+  box-shadow:0 2px 12px rgba(0,0,0,.55);
+}
+.vc-say {
+  position:absolute; display:none; transform:translate(-50%,-100%); background:#fff; color:#111; border-radius:12px;
+  padding:7px 11px; max-width:230px; font-size:.82rem; line-height:1.3; pointer-events:none; z-index:2;
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+}
+.vc-say::after {
+  content:''; position:absolute; left:50%; bottom:-7px; margin-left:-7px; border:7px solid transparent;
+  border-bottom:0; border-top-color:#fff;
+}
+.vc-stand {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; display:none; align-items:center; gap:6px;
+  padding:.55rem 1.1rem; border-radius:20px; border:none; background:#7b2cff; color:#fff; font-weight:700;
+  cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+</style>
+
 <script>
 (function () {
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -10626,7 +10754,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dx = d.wx - p.x, dz = d.wz - p.z, q = dx * dx + dz * dz;
         if (d.kind === 'dvd') {
           // LOD : les DVD très loin ne sont pas dessinés, ceux assez loin perdent leurs détails
-          if (!d.hold) d.mesh.visible = q < 26 * 26;
+          if (!d.hold && !d.rHold) d.mesh.visible = q < 26 * 26;
           const det = q < 9 * 9;
           if (d.strip.visible !== det) { d.strip.visible = det; d.sticker.visible = det; }
         }
@@ -10752,7 +10880,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const hits = raycaster.intersectObjects(meshes, false);
       for (let i = 0; i < hits.length; i++) {
         const d = hits[i].object.userData.d;
-        if (d.hold) continue;
+        if (d.hold || d.rHold) continue;
         const oc = raycaster.intersectObjects(occluders, false);
         if (oc.length && oc[0].distance < hits[i].distance) return null;
         if (d.kind === 'sofa' && hits[i].distance > 3.2) return null;
@@ -10821,18 +10949,18 @@ document.addEventListener('DOMContentLoaded', () => {
       hFront.rotation.y = 0;
       held.visible = true; handsRoot.visible = true;
       hstate = 'taking'; hT = 0; openT = 0; openWait = 0;
-      snd('pickup');
+      snd('pickup'); netDirty = true;
       streamAcc = 1; // force le chargement HD de ce DVD
     }
     function openHeld() {
       if (hstate !== 'held') return;
-      hstate = 'opening'; showHoldHint(false); snd('open');
+      hstate = 'opening'; showHoldHint(false); snd('open'); netDirty = true;
       paintDisc(heldD); // reprend l'affiche en meilleure qualité si elle est arrivée entre-temps
     }
     function putBack(next) {
       if (hstate !== 'held') return;
       pending = next || null;
-      hstate = 'putting'; showHoldHint(false); snd('put');
+      hstate = 'putting'; showHoldHint(false); snd('put'); netDirty = true;
     }
     function finishPut() {
       const d = heldD;
@@ -10890,7 +11018,7 @@ document.addEventListener('DOMContentLoaded', () => {
       seatAnim = { t: 0, fx: camera.position.x, fz: camera.position.z, fyaw: yaw,
                    tx: s.x - s.dir * 0.05, tz: s.z, tyaw: yaw + angDiff(yaw, -s.dir * Math.PI / 2) };
       standBtn.style.display = 'flex';
-      snd('sit');
+      snd('sit'); netDirty = true;
     }
     function standUp() {
       if (!sitting) return;
@@ -10898,7 +11026,7 @@ document.addEventListener('DOMContentLoaded', () => {
       seatAnim = { t: 0, fx: camera.position.x, fz: camera.position.z, fyaw: yaw,
                    tx: s.x + s.dir * 0.95, tz: s.z, tyaw: null };
       standBtn.style.display = 'none';
-      snd('stand');
+      snd('stand'); netDirty = true;
     }
     standBtn.onclick = standUp;
 
@@ -11037,6 +11165,11 @@ document.addEventListener('DOMContentLoaded', () => {
       arm: new THREE.BoxGeometry(0.1, 0.5, 0.12), head: new THREE.SphereGeometry(0.13, 14, 10),
       hair: new THREE.SphereGeometry(0.14, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), nose: new THREE.BoxGeometry(0.03, 0.03, 0.05)
     };
+    avGeo.shell = new THREE.BoxGeometry(DVD_W, DVD_H, SH);
+    avGeo.disc = new THREE.CircleGeometry(0.06, 32);
+    const dvdByTitle = {};
+    dvds.forEach(d => { dvdByTitle[d.t.title] = d; });
+    let netDirty = false;
     const avMats = {};
     function avMat(key, color) { return avMats[key] || (avMats[key] = new THREE.MeshLambertMaterial({ color: color })); }
     const SKINS = [0xf1c9a5, 0xe0ac8a, 0xc68642, 0x8d5524, 0xffdbb0], HAIRS = [0x2a1d12, 0x4a3320, 0x111111, 0x8a6a3a, 0xb5651d];
@@ -11069,10 +11202,36 @@ document.addEventListener('DOMContentLoaded', () => {
       const label = nameSprite(name); g.add(label);
       scene.add(g);
       return { g: g, legL: legL, legR: legR, armL: armL, armR: armR, label: label, name: name, hue: hue,
-               x: 0, z: 0, yaw: 0, tx: 0, tz: 0, tyaw: 0, sit: false, phase: 0, last: performance.now() };
+               x: 0, z: 0, yaw: 0, tx: 0, tz: 0, tyaw: 0, sit: false, phase: 0, last: performance.now(),
+               heldD: null, wantHeld: '', open: false, openT: 0, hk: 0, model: null };
+    }
+    // DVD tenu par un autre client : le boîtier apparaît dans ses mains (et disparaît de l'étagère)
+    function ensureModel(o) {
+      if (o.model) return o.model;
+      const g = new THREE.Group(); g.position.set(0, 1.2, 0.42); g.rotation.x = -0.25;
+      const back = new THREE.Mesh(avGeo.shell, shellMat); back.position.z = -0.009;
+      const disc = new THREE.Mesh(avGeo.disc, discMat); disc.position.z = -0.0015;
+      const hinge = new THREE.Group(); hinge.position.x = -DVD_W / 2;
+      const fs = new THREE.Mesh(avGeo.shell, shellMat); fs.position.set(DVD_W / 2, 0, 0.009);
+      const cover = new THREE.Mesh(coverGeo, shellMat); cover.position.set(DVD_W / 2, 0, 0.009 + SH / 2 + 0.0015);
+      hinge.add(fs, cover); g.add(back, disc, hinge); o.g.add(g);
+      o.model = { g: g, hinge: hinge, cover: cover };
+      return o.model;
+    }
+    function setRemoteHeld(o, title) {
+      if (o.heldD) o.heldD.rHold = Math.max(0, (o.heldD.rHold || 0) - 1);
+      o.heldD = title ? (dvdByTitle[title] || null) : null;
+      if (o.heldD) {
+        o.heldD.rHold = (o.heldD.rHold || 0) + 1;
+        o.heldD.mesh.visible = false;
+        const m = ensureModel(o);
+        m.cover.material = o.heldD.front;
+        m.g.visible = true;
+      } else if (o.model) o.model.g.visible = false;
     }
     function removeOther(id) {
       const o = others[id]; if (!o) return;
+      setRemoteHeld(o, '');
       scene.remove(o.g);
       o.label.material.map.dispose(); o.label.material.dispose();
       delete others[id];
@@ -11086,20 +11245,22 @@ document.addEventListener('DOMContentLoaded', () => {
         o.x = o.tx = +p.x || 0; o.z = o.tz = +p.z || 0; o.yaw = o.tyaw = +p.y || 0;
       }
       o.tx = +p.x || 0; o.tz = +p.z || 0; o.tyaw = +p.y || 0; o.sit = !!p.s; o.last = performance.now();
+      o.wantHeld = p.d ? String(p.d) : ''; o.open = !!p.o;
     }
     function sendPos() {
       if (!channel) return;
       const p = camera.position;
       lastSend = performance.now(); lsx = p.x; lsz = p.z; lsyaw = yaw;
       try {
-        channel.send({ type: 'broadcast', event: 'p', payload: { id: myId, n: myName, h: myHue, x: +p.x.toFixed(2), z: +p.z.toFixed(2), y: +yaw.toFixed(2), s: sitting ? 1 : 0 } });
+        channel.send({ type: 'broadcast', event: 'p', payload: { id: myId, n: myName, h: myHue, x: +p.x.toFixed(2), z: +p.z.toFixed(2), y: +yaw.toFixed(2), s: sitting ? 1 : 0,
+          d: (heldD && hstate !== 'putting') ? heldD.t.title : '', o: hstate === 'opening' ? 1 : 0 } });
       } catch (e) {}
     }
     function netTick(now) {
       if (!netOk) return;
       const p = camera.position;
       const moved = Math.hypot(p.x - lsx, p.z - lsz) > 0.2 || Math.abs(angDiff(lsyaw, yaw)) > 0.2;
-      if ((moved && now - lastSend > 330) || now - lastSend > 4000) sendPos();
+      if ((moved && now - lastSend > 330) || (netDirty && now - lastSend > 120) || now - lastSend > 4000) { netDirty = false; sendPos(); }
     }
     function updateOthers(dt, now) {
       const ids = Object.keys(others);
@@ -11115,7 +11276,12 @@ document.addEventListener('DOMContentLoaded', () => {
         o.g.position.set(o.x, o.sit ? -0.38 : 0, o.z);
         o.g.rotation.y = o.yaw + Math.PI;
         o.legL.rotation.x = o.sit ? -1.5 : sw; o.legR.rotation.x = o.sit ? -1.5 : -sw;
-        o.armL.rotation.x = -sw * 0.8; o.armR.rotation.x = sw * 0.8;
+        if ((o.heldD ? o.heldD.t.title : '') !== o.wantHeld) setRemoteHeld(o, o.wantHeld);
+        o.hk += ((o.heldD ? 1 : 0) - o.hk) * Math.min(1, dt * 8);
+        o.openT += ((o.open ? 1 : 0) - o.openT) * Math.min(1, dt * 5);
+        o.armL.rotation.x = -sw * 0.8 * (1 - o.hk) - 1.2 * o.hk; o.armR.rotation.x = sw * 0.8 * (1 - o.hk) - 1.2 * o.hk;
+        o.armL.rotation.z = 0.3 * o.hk; o.armR.rotation.z = -0.3 * o.hk;
+        if (o.model) o.model.hinge.rotation.y = -2.4 * o.openT;
       });
       const n = Object.keys(others).length + 1;
       const txt = !netOk ? '' : ic('group') + ' ' + n + (n > 1 ? ' personnes' : ' personne (toi)');
