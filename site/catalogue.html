@@ -9854,6 +9854,170 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 </style>
 
+<!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+
+.vc-snd {
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.18); cursor:pointer;
+  background:rgba(31,31,40,.9); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none;
+}
+.vc-snd .material-symbols-outlined { font-size:20px; }
+.vc-hold {
+  position:absolute; left:50%; transform:translateX(-50%); top:58px; display:none; text-align:center;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.18); padding:8px 14px; border-radius:12px;
+  font-size:.85rem; max-width:90vw; pointer-events:none; line-height:1.35;
+}
+.vc-hold span { color:#bbb; font-size:.78rem; }
+.vc-joy {
+  position:absolute; right:16px; bottom:48px; width:116px; height:116px; border-radius:50%; display:none;
+  background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.22); touch-action:none;
+}
+@media (pointer:coarse) { .vc-joy { display:block; } }
+.vc-knob {
+  position:absolute; left:50%; top:50%; width:52px; height:52px; margin:-26px 0 0 -26px; border-radius:50%;
+  background:rgba(255,255,255,.35); border:2px solid rgba(255,255,255,.5); pointer-events:none;
+}
+.vc-sub { position:absolute; left:14px; top:54px; pointer-events:none; }
+.vc-online {
+  display:none; align-items:center; gap:5px; padding:3px 10px; border-radius:14px; font-size:.78rem;
+  background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.16);
+}
+.vc-online .material-symbols-outlined { font-size:16px; }
+.vc-map {
+  position:absolute; right:14px; top:56px; border-radius:6px; cursor:crosshair; touch-action:none;
+  box-shadow:0 2px 12px rgba(0,0,0,.55);
+}
+.vc-say {
+  position:absolute; display:none; transform:translate(-50%,-100%); background:#fff; color:#111; border-radius:12px;
+  padding:7px 11px; max-width:230px; font-size:.82rem; line-height:1.3; pointer-events:none; z-index:2;
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+}
+.vc-say::after {
+  content:''; position:absolute; left:50%; bottom:-7px; margin-left:-7px; border:7px solid transparent;
+  border-bottom:0; border-top-color:#fff;
+}
+.vc-ask {
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(92vw,380px); display:none; z-index:5;
+  background:rgba(14,14,24,.96); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:12px;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+.vc-ask-h { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.vc-ask-h button { background:none; border:none; color:#fff; cursor:pointer; display:flex; }
+.vc-ask input[type=text] {
+  width:100%; box-sizing:border-box; padding:.6rem .8rem; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+  background:#1c1c28; color:#fff; font-size:1rem; font-family:inherit;
+}
+.vc-ask-l { margin-top:8px; display:flex; flex-direction:column; gap:4px; max-height:38vh; overflow:auto; }
+.vc-ask-l button {
+  display:flex; justify-content:space-between; gap:10px; text-align:left; padding:.5rem .7rem; border-radius:8px;
+  border:none; background:rgba(255,255,255,.07); color:#fff; cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+.vc-ask-l button:hover { background:rgba(229,9,20,.5); }
+.vc-ask-l button span { color:#aaa; font-size:.75rem; white-space:nowrap; }
+.vc-ask-n { color:#aaa; font-size:.85rem; padding:6px; }
+.vc-ask-r {
+  margin-top:10px; width:100%; padding:.55rem; border:none; border-radius:10px; cursor:pointer; color:#fff;
+  background:linear-gradient(90deg,#7b2cff,#e50914); font-weight:700; font-family:inherit;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.vc-cine {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; width:min(94vw,640px); display:none; z-index:3;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.16); border-radius:12px; padding:8px 12px;
+}
+@media (pointer:coarse) { .vc-cine { bottom:176px; } }
+.vc-cine-t { font-size:.85rem; margin-bottom:6px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vc-cine-r { display:flex; align-items:center; gap:6px; }
+.vc-cine-r button { background:none; border:none; color:#fff; cursor:pointer; display:flex; padding:2px; }
+.vc-cine-r .material-symbols-outlined { font-size:24px; }
+.vc-cine-r input[type=range] { flex:1; min-width:40px; }
+.vc-cine-r input#vcCvl { flex:0 0 70px; }
+.vc-cine-r span { font-size:.75rem; color:#ccc; white-space:nowrap; }
+.vc-stand {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; display:none; align-items:center; gap:6px;
+  padding:.55rem 1.1rem; border-radius:20px; border:none; background:#7b2cff; color:#fff; font-weight:700;
+  cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+</style>
+
 <script>
 (function () {
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -10221,8 +10385,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const D = zMax - zMin;
     const xMin = -W / 2, xMax = W / 2;
     // ---- Porte + salle de cinéma (à gauche de la salle) ----
-    const CIN_L = 17, CIN_W = 12, CIN_H = 5.2;
+    const CIN_L = 27, CIN_W = 16, CIN_Y0 = -5.6, CIN_YT = 3.6;
+    const TIER_N = 20, TIER_D = 0.95, TIER_H = 0.28;
     const doorZ = Math.max(-4.5, zMin + 2), CIN_X0 = xMin - CIN_L;
+    const TIER_X0 = CIN_X0 + 5.5;
+    const tierY = r => -(TIER_N - 1 - r) * TIER_H;
+    function floorAt(x) {
+      if (x >= xMin - 0.45) return 0;
+      const r = Math.floor((x - (TIER_X0 - TIER_D / 2)) / TIER_D);
+      if (r < 0) return CIN_Y0;
+      return tierY(Math.min(r, TIER_N - 1));
+    }
 
     // ---- Scène, caméra, rendu ----
     const scene = new THREE.Scene();
@@ -11043,84 +11216,95 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     (function buildCinema() {
-      const cx = (CIN_X0 + xMin) / 2;
+      const cx = (CIN_X0 + xMin) / 2, cy = (CIN_Y0 + CIN_YT) / 2, TALL = CIN_YT - CIN_Y0;
       function plane(w, h, x, y, z, ry, mat) {
         const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
         m.position.set(x, y, z); m.rotation.y = ry; scene.add(m); occluders.push(m); return m;
       }
       const wm = (w, h, tint) => surf('leather034', w / 1.2, h / 1.2, tint || 0x9a9a9a, true);
+      const carpet = surf('leather036', 3, 2, 0x7a2229);
       const floor = new THREE.Mesh(new THREE.PlaneGeometry(CIN_L, CIN_W), surf('leather036', CIN_L / 1.2, CIN_W / 1.2, 0x8a2a30));
-      floor.rotation.x = -Math.PI / 2; floor.position.set(cx, 0.004, doorZ); scene.add(floor);
+      floor.rotation.x = -Math.PI / 2; floor.position.set(cx, CIN_Y0 + 0.004, doorZ); scene.add(floor);
       const ceil = new THREE.Mesh(new THREE.PlaneGeometry(CIN_L, CIN_W), surf('leather034', CIN_L / 1.2, CIN_W / 1.2, 0x555555, true));
-      ceil.rotation.x = Math.PI / 2; ceil.position.set(cx, CIN_H, doorZ); scene.add(ceil);
-      plane(CIN_L, CIN_H, cx, CIN_H / 2, doorZ - CIN_W / 2, 0, wm(CIN_L, CIN_H));
-      plane(CIN_L, CIN_H, cx, CIN_H / 2, doorZ + CIN_W / 2, Math.PI, wm(CIN_L, CIN_H));
-      plane(CIN_W, CIN_H, CIN_X0, CIN_H / 2, doorZ, Math.PI / 2, wm(CIN_W, CIN_H));
+      ceil.rotation.x = Math.PI / 2; ceil.position.set(cx, CIN_YT, doorZ); scene.add(ceil);
+      plane(CIN_L, TALL, cx, cy, doorZ - CIN_W / 2, 0, wm(CIN_L, TALL));
+      plane(CIN_L, TALL, cx, cy, doorZ + CIN_W / 2, Math.PI, wm(CIN_L, TALL));
+      plane(CIN_W, TALL, CIN_X0, cy, doorZ, Math.PI / 2, wm(CIN_W, TALL));
       // mur d'entrée (côté salle) avec l'ouverture de la porte
       const half = CIN_W / 2 - 0.6;
-      plane(half, CIN_H, xMin - 0.02, CIN_H / 2, doorZ + 0.6 + half / 2, -Math.PI / 2, wm(half, CIN_H));
-      plane(half, CIN_H, xMin - 0.02, CIN_H / 2, doorZ - 0.6 - half / 2, -Math.PI / 2, wm(half, CIN_H));
-      plane(1.2, CIN_H - 2.3, xMin - 0.02, 2.3 + (CIN_H - 2.3) / 2, doorZ, -Math.PI / 2, wm(1.2, CIN_H - 2.3));
+      plane(half, TALL, xMin - 0.02, cy, doorZ + 0.6 + half / 2, -Math.PI / 2, wm(half, TALL));
+      plane(half, TALL, xMin - 0.02, cy, doorZ - 0.6 - half / 2, -Math.PI / 2, wm(half, TALL));
+      plane(1.2, CIN_YT - 2.3, xMin - 0.02, 2.3 + (CIN_YT - 2.3) / 2, doorZ, -Math.PI / 2, wm(1.2, CIN_YT - 2.3));
       // panneaux de bois sur les murs
-      const panM = surf('wood069', 1, 3, 0x8a8a8a);
-      const panG = new THREE.BoxGeometry(0.5, 3.6, 0.12);
+      const panM = surf('wood069', 1, 4, 0x8a8a8a);
+      const panG = new THREE.BoxGeometry(0.5, TALL - 0.6, 0.12);
       for (let x = CIN_X0 + 2.2; x < xMin - 1.5; x += 2.2) {
         [-1, 1].forEach(s => {
-          const m = new THREE.Mesh(panG, panM); m.position.set(x, 2.1, doorZ + s * (CIN_W / 2 - 0.07)); scene.add(m);
+          const m = new THREE.Mesh(panG, panM); m.position.set(x, cy, doorZ + s * (CIN_W / 2 - 0.07)); scene.add(m);
         });
       }
-      // écran + rideaux + scène
-      const sFrame = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.9, 8.4), new THREE.MeshLambertMaterial({ color: 0x08080c }));
-      sFrame.position.set(CIN_X0 + 0.12, 2.75, doorZ); scene.add(sFrame);
-      const sPlane = new THREE.Mesh(new THREE.PlaneGeometry(8, 4.5), screenMat);
-      sPlane.rotation.y = Math.PI / 2; sPlane.position.set(CIN_X0 + 0.235, 2.75, doorZ); scene.add(sPlane);
+      // écran géant + rideaux + petite scène
+      const SY = -1.0;
+      const sFrame = new THREE.Mesh(new THREE.BoxGeometry(0.2, 7.4, 12.8), new THREE.MeshLambertMaterial({ color: 0x08080c }));
+      sFrame.position.set(CIN_X0 + 0.12, SY, doorZ); scene.add(sFrame);
+      const sPlane = new THREE.Mesh(new THREE.PlaneGeometry(12, 6.75), screenMat);
+      sPlane.rotation.y = Math.PI / 2; sPlane.position.set(CIN_X0 + 0.235, SY, doorZ); scene.add(sPlane);
       sPlane.userData.d = screenObj; meshes.push(sPlane);
-      const curtM = surf('leather036', 1, 2, 0x9a2a2a);
+      const curtM = surf('leather036', 1, 3, 0x9a2a2a);
       [-1, 1].forEach(s => {
-        const c = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.9, 1.3), curtM);
-        c.position.set(CIN_X0 + 0.3, 2.75, doorZ + s * 4.9); scene.add(c);
+        const c = new THREE.Mesh(new THREE.BoxGeometry(0.3, 7.4, 1.8), curtM);
+        c.position.set(CIN_X0 + 0.3, SY, doorZ + s * 7.1); scene.add(c);
       });
-      const stage = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.3, 9.4), surf('leather034', 2, 1, 0x888888));
-      stage.position.set(CIN_X0 + 0.6, 0.15, doorZ); scene.add(stage);
+      const stage = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.35, 14.4), surf('leather034', 2, 1, 0x888888));
+      stage.position.set(CIN_X0 + 0.7, CIN_Y0 + 0.175, doorZ); scene.add(stage);
       // projecteur
       const proj = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.35, 0.5), new THREE.MeshLambertMaterial({ color: 0x1a1a22 }));
-      proj.position.set(xMin - 3.0, CIN_H - 0.45, doorZ); scene.add(proj);
+      proj.position.set(xMin - 1.6, CIN_YT - 0.45, doorZ); scene.add(proj);
       const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 12), new THREE.MeshBasicMaterial({ color: 0x9ad8ff }));
-      lens.rotation.z = Math.PI / 2; lens.position.set(xMin - 3.35, CIN_H - 0.45, doorZ); scene.add(lens);
-      // lumières d'allée
-      const aisleM = new THREE.MeshBasicMaterial({ color: 0xffa040 });
-      [-1, 1].forEach(s => {
-        const a = new THREE.Mesh(new THREE.BoxGeometry(CIN_L - 5.5, 0.03, 0.04), aisleM);
-        a.position.set(CIN_X0 + 4.6 + (CIN_L - 5.5) / 2, 0.03, doorZ + s * 0.68); scene.add(a);
-      });
-      // sièges (instanciés : 2 appels de dessin pour tous les fauteuils)
-      const ROWS = 8, PER = 5;
+      lens.rotation.z = Math.PI / 2; lens.position.set(xMin - 1.95, CIN_YT - 0.45, doorZ); scene.add(lens);
+
+      // gradins : une marche par rangée (instanciées) + liserés lumineux sur chaque contremarche
+      const m4 = new THREE.Matrix4(), sc = new THREE.Vector3(), q = new THREE.Quaternion(), ps = new THREE.Vector3();
+      const iTier = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), carpet, TIER_N);
+      const iStrip = new THREE.InstancedMesh(new THREE.BoxGeometry(0.05, 0.05, CIN_W - 0.2), new THREE.MeshBasicMaterial({ color: 0xffa040 }), TIER_N);
+      for (let r = 0; r < TIER_N; r++) {
+        const yT = tierY(r), x0 = TIER_X0 + r * TIER_D - TIER_D / 2;
+        const x1 = r === TIER_N - 1 ? xMin : x0 + TIER_D;
+        ps.set((x0 + x1) / 2, (yT + CIN_Y0) / 2, doorZ); sc.set(x1 - x0, yT - CIN_Y0, CIN_W);
+        m4.compose(ps, q, sc); iTier.setMatrixAt(r, m4);
+        ps.set(x0 + 0.03, yT - 0.03, doorZ); sc.set(1, 1, 1);
+        m4.compose(ps, q, sc); iStrip.setMatrixAt(r, m4);
+      }
+      scene.add(iTier, iStrip);
+
+      // 400 sièges : 20 rangées x 2 blocs de 10 autour de l'escalier central
       const seatMat = surf('leather036', 1, 1, 0xb04040), baseM = surf('leather034', 1, 1, 0x777777);
-      const n = ROWS * PER * 2;
+      const PER = 10, PITCH = 0.55, GAP = 0.9, n = TIER_N * PER * 2;
       const iCush = new THREE.InstancedMesh(new THREE.BoxGeometry(0.5, 0.12, 0.52), seatMat, n);
       const iBack = new THREE.InstancedMesh(new THREE.BoxGeometry(0.1, 0.7, 0.52), seatMat, n);
-      const seatObjs = [], m4 = new THREE.Matrix4();
+      const iBase = new THREE.InstancedMesh(new THREE.BoxGeometry(0.36, 0.4, 0.46), baseM, n);
+      const seatObjs = [];
       let k = 0;
-      for (let r = 0; r < ROWS; r++) {
-        const sx = CIN_X0 + 5.0 + r * 1.05;
+      for (let r = 0; r < TIER_N; r++) {
+        const sx = TIER_X0 + r * TIER_D, yT = tierY(r);
         [1, -1].forEach(side => {
-          const zs = [];
           for (let i = 0; i < PER; i++) {
-            const sz = doorZ + side * (1.0 + i * 0.6);
-            m4.makeTranslation(sx, 0.47, sz); iCush.setMatrixAt(k, m4);
-            m4.makeTranslation(sx + 0.23, 0.85, sz); iBack.setMatrixAt(k, m4);
+            const sz = doorZ + side * (GAP + PITCH / 2 + i * PITCH);
+            m4.makeTranslation(sx, yT + 0.47, sz); iCush.setMatrixAt(k, m4);
+            m4.makeTranslation(sx + 0.23, yT + 0.85, sz); iBack.setMatrixAt(k, m4);
+            m4.makeTranslation(sx, yT + 0.22, sz); iBase.setMatrixAt(k, m4);
             seatObjs.push({ kind: 'sofa', label: 'Siège', x: sx, z: sz, dir: -1, wx: sx, wz: sz, pullable: false, hold: false,
-                            t: { title: 'Siège' }, stand: { x: sx, z: doorZ } });
-            zs.push(sz); k++;
+                            t: { title: 'Siège' }, stand: { x: sx, z: doorZ + side * 0.45 } });
+            k++;
           }
-          const z0 = Math.min(zs[0], zs[PER - 1]) - 0.3, z1 = Math.max(zs[0], zs[PER - 1]) + 0.3;
-          rects.push([sx - 0.3, sx + 0.35, z0, z1]);
-          const base = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, z1 - z0), baseM);
-          base.position.set(sx, 0.2, (z0 + z1) / 2); scene.add(base);
         });
       }
+      [1, -1].forEach(side => {
+        const za = doorZ + side * GAP, zb = doorZ + side * (GAP + PER * PITCH);
+        rects.push([TIER_X0 - 0.3, TIER_X0 + (TIER_N - 1) * TIER_D + 0.35, Math.min(za, zb), Math.max(za, zb)]);
+      });
       iCush.userData.seats = seatObjs; iBack.userData.seats = seatObjs;
-      scene.add(iCush, iBack); meshes.push(iCush, iBack);
+      scene.add(iCush, iBack, iBase); meshes.push(iCush, iBack);
     })();
 
     scene.updateMatrixWorld(true);
@@ -11490,7 +11674,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const s = sections[parseInt(jumpSel.value, 10)];
       if (s) {
         if (sitting) { sitting = null; standBtn.style.display = 'none'; }
-        seatAnim = null; eyeY = EYE;
+        seatAnim = null; eyeY = EYE + floorAt(s.x);
         camera.position.x = s.x; camera.position.z = s.z; yaw = s.yaw; pitch = 0;
       }
       jumpSel.value = '';
@@ -11530,7 +11714,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nx = x + offs[i][0], nz = z + offs[i][1];
         if (!blocked(nx, nz)) {
           if (sitting) { sitting = null; standBtn.style.display = 'none'; }
-          seatAnim = null; eyeY = EYE;
+          seatAnim = null; eyeY = EYE + floorAt(nx);
           camera.position.x = nx; camera.position.z = nz;
           return;
         }
@@ -11731,7 +11915,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const speed = Math.hypot(dx, dz) * 8;
         o.phase += Math.min(speed, 4) * dt * 5;
         const sw = Math.min(1, speed) * Math.sin(o.phase) * 0.7;
-        o.g.position.set(o.x, o.sit ? -0.38 : 0, o.z);
+        o.g.position.set(o.x, floorAt(o.x) + (o.sit ? -0.38 : 0), o.z);
         o.g.rotation.y = o.yaw + Math.PI;
         o.legL.rotation.x = o.sit ? -1.5 : sw; o.legR.rotation.x = o.sit ? -1.5 : -sw;
         if ((o.heldD ? o.heldD.t.title : '') !== o.wantHeld) setRemoteHeld(o, o.wantHeld);
@@ -11866,20 +12050,45 @@ document.addEventListener('DOMContentLoaded', () => {
         document.head.appendChild(s);
       });
     }
-    async function findStream(d) {
+    async function findStreams(d) {
       const key = d.t.href;
-      if (streamCache[key] !== undefined) return streamCache[key];
-      let url = null;
+      if (streamCache[key]) return streamCache[key];
+      const base = new URL(key, location.href);
+      const prim = [], fall = [], mp4 = [];
+      const scan = txt => {
+        txt = txt.replace(/\\\//g, '/');
+        const add = (u, idx) => {
+          let abs; try { abs = new URL(u, base).href; } catch (e) { return; }
+          const ctx = txt.slice(Math.max(0, idx - 70), idx).toLowerCase();
+          const list = /\.mp4/i.test(abs.split('?')[0]) ? mp4 : (/fallback|backup|secours|mirror/.test(ctx) ? fall : prim);
+          if (prim.indexOf(abs) < 0 && fall.indexOf(abs) < 0 && mp4.indexOf(abs) < 0) list.push(abs);
+        };
+        let m;
+        const r1 = /(?:https?:)?\/\/[^\s"'`<>\\)]+?\.(?:m3u8|mp4)(?:\?[^\s"'`<>\\)]*)?/gi;
+        while ((m = r1.exec(txt))) add(m[0], m.index);
+        const r2 = /["'`]([^"'`\s<>]+?\.m3u8[^"'`\s<>]*)["'`]/gi;
+        while ((m = r2.exec(txt))) add(m[1], m.index + 1);
+      };
       try {
         const r = await fetch(key);
-        const txt = await r.text();
-        const m = txt.match(/https?:\/\/[^'"\s<>)\\]+?\.m3u8[^'"\s<>)\\]*/i);
-        if (m) url = m[0];
+        const html = await r.text();
+        scan(html);
+        if (!prim.length && !fall.length) {
+          // le flux est peut-être dans un script de la page
+          const srcs = []; let m; const rs = /<script[^>]+src=["']([^"']+)["']/gi;
+          while ((m = rs.exec(html))) { try { const u = new URL(m[1], base); if (u.origin === location.origin) srcs.push(u.href); } catch (e) {} }
+          for (let i = 0; i < Math.min(4, srcs.length); i++) {
+            try { scan(await (await fetch(srcs[i])).text()); } catch (e) {}
+          }
+        }
       } catch (e) { console.warn('[Video club] fiche illisible', e); }
-      streamCache[key] = url;
-      return url;
+      const out = prim.concat(fall, mp4);
+      console.log('[Video club] flux trouvés pour', d.t.title, out);
+      if (out.length) streamCache[key] = out;
+      return out;
     }
     function stopFilm() {
+      playToken++;
       try { vid.pause(); } catch (e) {}
       if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
       vid.removeAttribute('src'); try { vid.load(); } catch (e) {}
@@ -11887,34 +12096,72 @@ document.addEventListener('DOMContentLoaded', () => {
       film = null; cineIdle = false;
       if (audio) audio.duck(false);
     }
+    let lastErr = '';
+    function resetVideo() {
+      try { vid.pause(); } catch (e) {}
+      if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
+      vid.removeAttribute('src'); try { vid.load(); } catch (e) {}
+    }
+    function tryUrl(url, token) {
+      return new Promise(async resolve => {
+        let done = false, tm = 0;
+        const fin = ok => {
+          if (done) return; done = true; clearTimeout(tm);
+          vid.removeEventListener('loadeddata', onOk); vid.removeEventListener('error', onErr);
+          resolve(ok);
+        };
+        const onOk = () => fin(true);
+        const onErr = () => { lastErr = 'vidéo code ' + (vid.error ? vid.error.code : '?'); fin(false); };
+        vid.addEventListener('loadeddata', onOk); vid.addEventListener('error', onErr);
+        tm = setTimeout(() => { lastErr = 'délai dépassé'; fin(false); }, 15000);
+        resetVideo();
+        try {
+          const isHls = /\.m3u8/i.test(url.split('?')[0]);
+          if (!isHls || vid.canPlayType('application/vnd.apple.mpegurl')) {
+            vid.src = url;
+          } else {
+            const Hls = await loadHls();
+            if (!Hls || !Hls.isSupported()) { lastErr = 'HLS non supporté'; fin(false); return; }
+            if (done || token !== playToken) { fin(false); return; }
+            hls = new Hls({ enableWorker: true });
+            hls.on(Hls.Events.ERROR, (ev, data) => {
+              console.warn('[Video club] hls', data);
+              if (data && data.fatal) { lastErr = (data.type || '') + ' ' + (data.details || ''); fin(false); }
+            });
+            hls.loadSource(url); hls.attachMedia(vid);
+          }
+        } catch (e) { lastErr = String(e && e.message || e); fin(false); }
+      });
+    }
+    let playToken = 0;
     async function playFilm(d) {
       stopFilm();
+      const token = ++playToken;
       film = d;
       cineMsg('Chargement de « ' + d.t.title + ' »…');
-      const url = await findStream(d);
-      if (destroyed || film !== d) return;
-      if (!url) { cineMsg('« ' + d.t.title + ' » n’est pas disponible en salle (flux introuvable). Ouvre sa fiche pour la regarder.'); return; }
-      try {
-        if (vid.canPlayType('application/vnd.apple.mpegurl')) {
-          vid.src = url;
-        } else {
-          const Hls = await loadHls();
-          if (destroyed || film !== d) return;
-          if (!Hls || !Hls.isSupported()) { cineMsg('Ton navigateur ne sait pas lire ce flux.'); return; }
-          hls = new Hls({ enableWorker: true });
-          hls.on(Hls.Events.ERROR, (ev, data) => { if (data && data.fatal) cineMsg('Erreur de lecture (le flux est peut-être bloqué). Ouvre la fiche du film.'); });
-          hls.loadSource(url); hls.attachMedia(vid);
+      const urls = await findStreams(d);
+      if (destroyed || token !== playToken) return;
+      if (!urls.length) { cineMsg('« ' + d.t.title + ' » : aucun flux trouvé dans sa fiche. Ouvre la fiche pour la regarder.'); return; }
+      for (let i = 0; i < urls.length; i++) {
+        if (urls.length > 1) cineMsg('Chargement de « ' + d.t.title + ' »… (source ' + (i + 1) + '/' + urls.length + ')');
+        const ok = await tryUrl(urls[i], token);
+        if (destroyed || token !== playToken) return;
+        if (ok) {
+          if (!vtex) {
+            vtex = new THREE.VideoTexture(vid);
+            vtex.colorSpace = THREE.SRGBColorSpace; vtex.minFilter = THREE.LinearFilter; vtex.generateMipmaps = false;
+          }
+          screenMat.map = vtex; screenMat.needsUpdate = true;
+          vid.muted = muted; vid.volume = cineVol;
+          cineMsg(d.t.title);
+          const pr = vid.play();
+          if (pr && pr.catch) pr.catch(() => cineMsg(d.t.title + ' — appuie sur lecture'));
+          return;
         }
-        if (!vtex) {
-          vtex = new THREE.VideoTexture(vid);
-          vtex.colorSpace = THREE.SRGBColorSpace; vtex.minFilter = THREE.LinearFilter; vtex.generateMipmaps = false;
-        }
-        screenMat.map = vtex; screenMat.needsUpdate = true;
-        vid.muted = muted; vid.volume = cineVol;
-        cineMsg(d.t.title);
-        const pr = vid.play();
-        if (pr && pr.catch) pr.catch(() => cineMsg(d.t.title + ' — appuie sur lecture'));
-      } catch (e) { console.warn(e); cineMsg('Impossible de lancer ce film en salle.'); }
+        console.warn('[Video club] source échouée', urls[i], lastErr);
+      }
+      resetVideo();
+      cineMsg('Impossible de lire « ' + d.t.title + ' » (' + lastErr + '). Ouvre la fiche du film.');
     }
     function toggleFilm() { if (!film) return; if (vid.paused) vid.play().catch(() => {}); else vid.pause(); }
     cPlay.onclick = toggleFilm;
@@ -11928,6 +12175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateCinema(dt) {
       cineAcc += dt; if (cineAcc < 0.3) return; cineAcc = 0;
       const inside = inCinema();
+      raycaster.far = inside ? 38 : 22;
       cineEl.style.display = inside ? 'block' : 'none';
       if (!film) { if (!cineIdle) { cineIdle = true; cineMsg('Salle de cinéma · clique sur l’écran pour choisir un film'); } return; }
       cPlay.innerHTML = ic(vid.paused ? 'play_arrow' : 'pause');
@@ -12079,7 +12327,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (seatAnim.tyaw !== null) yaw = seatAnim.fyaw + (seatAnim.tyaw - seatAnim.fyaw) * e;
         if (seatAnim.t >= 1) seatAnim = null;
       }
-      eyeY += ((sitting ? 1.1 : EYE) - eyeY) * Math.min(1, dt * 6);
+      eyeY += ((sitting ? 1.1 : EYE) + floorAt(camera.position.x) - eyeY) * Math.min(1, dt * 8);
       camera.position.y = eyeY;
 
       if (f || s) {
