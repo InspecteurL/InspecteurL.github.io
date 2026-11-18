@@ -11360,6 +11360,178 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 </style>
 
+<!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+
+.vc-snd {
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.18); cursor:pointer;
+  background:rgba(31,31,40,.9); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none;
+}
+.vc-snd .material-symbols-outlined { font-size:20px; }
+.vc-hold {
+  position:absolute; left:50%; transform:translateX(-50%); top:58px; display:none; text-align:center;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.18); padding:8px 14px; border-radius:12px;
+  font-size:.85rem; max-width:90vw; pointer-events:none; line-height:1.35;
+}
+.vc-hold span { color:#bbb; font-size:.78rem; }
+.vc-joy {
+  position:absolute; right:16px; bottom:48px; width:116px; height:116px; border-radius:50%; display:none;
+  background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.22); touch-action:none;
+}
+@media (pointer:coarse) { .vc-joy { display:block; } }
+.vc-knob {
+  position:absolute; left:50%; top:50%; width:52px; height:52px; margin:-26px 0 0 -26px; border-radius:50%;
+  background:rgba(255,255,255,.35); border:2px solid rgba(255,255,255,.5); pointer-events:none;
+}
+.vc-sub { position:absolute; left:14px; top:54px; pointer-events:none; }
+.vc-online {
+  display:none; align-items:center; gap:5px; padding:3px 10px; border-radius:14px; font-size:.78rem;
+  background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.16);
+}
+.vc-online .material-symbols-outlined { font-size:16px; }
+.vc-map {
+  position:absolute; right:14px; top:56px; border-radius:6px; cursor:crosshair; touch-action:none;
+  box-shadow:0 2px 12px rgba(0,0,0,.55);
+}
+.vc-say {
+  position:absolute; display:none; transform:translate(-50%,-100%); background:#fff; color:#111; border-radius:12px;
+  padding:7px 11px; max-width:230px; font-size:.82rem; line-height:1.3; pointer-events:none; z-index:2;
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+}
+.vc-say::after {
+  content:''; position:absolute; left:50%; bottom:-7px; margin-left:-7px; border:7px solid transparent;
+  border-bottom:0; border-top-color:#fff;
+}
+.vc-ask {
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(92vw,380px); display:none; z-index:5;
+  background:rgba(14,14,24,.96); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:12px;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+.vc-ask-h { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.vc-ask-h button { background:none; border:none; color:#fff; cursor:pointer; display:flex; }
+.vc-ask input[type=text] {
+  width:100%; box-sizing:border-box; padding:.6rem .8rem; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+  background:#1c1c28; color:#fff; font-size:1rem; font-family:inherit;
+}
+.vc-eps-s { display:flex; flex-wrap:wrap; gap:6px; }
+.vc-eps-s button { background:rgba(255,255,255,.1); border:none; color:#fff; padding:.35rem .8rem; border-radius:20px; cursor:pointer; font-family:inherit; font-size:.8rem; }
+.vc-eps-s button.on { background:linear-gradient(90deg,#7b2cff,#e50914); font-weight:700; }
+.vc-ask-l { margin-top:8px; display:flex; flex-direction:column; gap:4px; max-height:38vh; overflow:auto; }
+.vc-ask-l button {
+  display:flex; justify-content:space-between; gap:10px; text-align:left; padding:.5rem .7rem; border-radius:8px;
+  border:none; background:rgba(255,255,255,.07); color:#fff; cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+.vc-ask-l button:hover { background:rgba(229,9,20,.5); }
+.vc-ask-l button span { color:#aaa; font-size:.75rem; white-space:nowrap; }
+.vc-ask-n { color:#aaa; font-size:.85rem; padding:6px; }
+.vc-ask-r {
+  margin-top:10px; width:100%; padding:.55rem; border:none; border-radius:10px; cursor:pointer; color:#fff;
+  background:linear-gradient(90deg,#7b2cff,#e50914); font-weight:700; font-family:inherit;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.vc-cine {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; width:min(94vw,640px); display:none; z-index:3;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.16); border-radius:12px; padding:8px 12px;
+}
+@media (pointer:coarse) { .vc-cine { bottom:176px; } }
+.vc-ov .vc-top, .vc-ov .vc-sub, .vc-ov .vc-map, .vc-ov .vc-cine, .vc-ov .vc-hint, .vc-ov .vc-joy, .vc-ov .vc-pad, .vc-ov .vc-stand, .vc-ov .vc-say, .vc-ov .vc-hold, .vc-ov .vc-tip { transition:opacity .5s; }
+.vc-ov.vc-zen .vc-top, .vc-ov.vc-zen .vc-sub, .vc-ov.vc-zen .vc-map, .vc-ov.vc-zen .vc-cine, .vc-ov.vc-zen .vc-hint, .vc-ov.vc-zen .vc-joy, .vc-ov.vc-zen .vc-pad, .vc-ov.vc-zen .vc-stand, .vc-ov.vc-zen .vc-say, .vc-ov.vc-zen .vc-hold, .vc-ov.vc-zen .vc-tip { opacity:0 !important; pointer-events:none !important; }
+.vc-ov.vc-zen .vc-top > *, .vc-ov.vc-zen .vc-cine > *, .vc-ov.vc-zen .vc-pad > * { pointer-events:none !important; }
+.vc-ov.vc-zen { cursor:none; }
+.vc-cine.vc-frame #vcCpl, .vc-cine.vc-frame #vcCbk, .vc-cine.vc-frame #vcCfw, .vc-cine.vc-frame #vcCsk, .vc-cine.vc-frame #vcCtm, .vc-cine.vc-frame #vcCvl { display:none; }
+.vc-cine-t { font-size:.85rem; margin-bottom:6px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vc-cine-r { display:flex; align-items:center; gap:6px; }
+.vc-cine-r button { background:none; border:none; color:#fff; cursor:pointer; display:flex; padding:2px; }
+.vc-cine-r .material-symbols-outlined { font-size:24px; }
+.vc-cine-r input[type=range] { flex:1; min-width:40px; }
+.vc-cine-r input#vcCvl { flex:0 0 70px; }
+.vc-cine-r span { font-size:.75rem; color:#ccc; white-space:nowrap; }
+.vc-stand {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; display:none; align-items:center; gap:6px;
+  padding:.55rem 1.1rem; border-radius:20px; border:none; background:#7b2cff; color:#fff; font-weight:700;
+  cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+</style>
+
 <script>
 (function () {
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -11586,6 +11758,8 @@ document.addEventListener('DOMContentLoaded', () => {
       '<input id="vcAskIn" type="text" placeholder="Tape un titre…" autocomplete="off" spellcheck="false">' +
       '<div class="vc-ask-l" id="vcAskL"></div>' +
       '<button class="vc-ask-r" id="vcAskR">' + ic('casino') + ' Surprends-moi</button></div>' +
+    '<div class="vc-ask vc-eps" id="vcEps"><div class="vc-ask-h"><b id="vcEpsT"></b><button id="vcEpsX" aria-label="Fermer">' + ic('close') + '</button></div>' +
+      '<div class="vc-eps-s" id="vcEpsS"></div><div class="vc-ask-l" id="vcEpsL"></div></div>' +
     '<div class="vc-cine" id="vcCine"><div class="vc-cine-t" id="vcCineT"></div><div class="vc-cine-r">' +
       '<button id="vcCpl" aria-label="Lecture / pause">' + ic('play_arrow') + '</button>' +
       '<button id="vcCbk" aria-label="Reculer de 10 s">' + ic('replay_10') + '</button>' +
@@ -11593,6 +11767,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '<input type="range" id="vcCsk" min="0" max="1000" value="0" aria-label="Position">' +
       '<span id="vcCtm">0:00</span>' +
       '<input type="range" id="vcCvl" min="0" max="100" value="80" aria-label="Volume">' +
+      '<button id="vcCeps" aria-label="Épisodes" style="display:none">' + ic('format_list_numbered') + '</button>' +
       '<button id="vcCpick" aria-label="Choisir un film">' + ic('movie') + '</button>' +
       '<button id="vcCfi" aria-label="Ouvrir la fiche">' + ic('open_in_new') + '</button>' +
     '</div></div>' +
@@ -12749,6 +12924,32 @@ document.addEventListener('DOMContentLoaded', () => {
       iCush.userData.seats = seatObjs; iBack.userData.seats = seatObjs;
       scene.add(iCush, iBack, iBase); meshes.push(iCush, iBack);
 
+      // escaliers lisibles dans l'allée centrale et les deux couloirs latéraux (marches pleines, nez de marche lumineux)
+      const zones = [[-GAP + 0.04, GAP - 0.04], [GAP + PER * PITCH + 0.06, HW - 0.04], [-HW + 0.04, -(GAP + PER * PITCH + 0.06)]];
+      const nSt = TIER_N * zones.length;
+      const stBody = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), surf('leather034', 1, 1, 0x3a1015), nSt);
+      const stTop = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), surf('leather036', 1, 1, 0xb23a42), nSt);
+      const stLed = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xffa83c }), nSt);
+      let si = 0;
+      const putS = (inst, i, cx0, cy0, cz0, psi, lx, w, h, dd) => {
+        qq.setFromAxisAngle(new THREE.Vector3(0, 1, 0), psi);
+        pp.set(cx0 + lx * Math.cos(psi), cy0, cz0 - lx * Math.sin(psi));
+        m4.compose(pp, qq, new THREE.Vector3(dd, h, w)); inst.setMatrixAt(i, m4);
+      };
+      for (let r = 0; r < TIER_N; r++) {
+        const R = TIER_R0 + r * TIER_D, yT = tierY(r);
+        zones.forEach(zn => {
+          const w = zn[1] - zn[0], dz = (zn[0] + zn[1]) / 2;
+          const x = CX + Math.sqrt(R * R - dz * dz), z = doorZ + dz, psi = -Math.atan2(dz, x - CX);
+          const top = yT + 0.03, h = top - CIN_Y0;
+          putS(stBody, si, x, CIN_Y0 + h / 2, z, psi, 0, w, h, TIER_D - 0.03);
+          putS(stTop, si, x, top + 0.012, z, psi, 0.02, w, 0.024, TIER_D - 0.12);
+          putS(stLed, si, x, top + 0.02, z, psi, -(TIER_D / 2 - 0.05), w, 0.03, 0.07);
+          si++;
+        });
+      }
+      scene.add(stBody, stTop, stLed);
+
       // ambiance : lueur de l'écran, lumière chaude au fond, appliques le long des murs
       const glow = new THREE.PointLight(0x9bb8ff, 40, 34, 2); glow.position.set(CIN_X0 + 3, 0.5, doorZ); scene.add(glow);
       [3, 10, 17].forEach(r => {
@@ -13426,7 +13627,7 @@ document.addEventListener('DOMContentLoaded', () => {
         channel.on('broadcast', { event: 'p' }, m => onRemote(m && m.payload));
         channel.on('broadcast', { event: 'film' }, m => onFilm(m && m.payload));
         channel.on('broadcast', { event: 'bye' }, m => { if (m && m.payload) removeOther(m.payload.id); });
-        channel.on('broadcast', { event: 'hi' }, () => { setTimeout(() => { if (!destroyed) { sendPos(); if (film && filmSt) sendFilm(film, filmSt); } }, Math.random() * 500); });
+        channel.on('broadcast', { event: 'hi' }, () => { setTimeout(() => { if (!destroyed) { sendPos(); if (film && filmSt) sendFilm(film, filmSt, epKey(filmEp)); } }, Math.random() * 500); });
         channel.subscribe(status => {
           if (destroyed) return;
           if (status === 'SUBSCRIBED') {
@@ -13450,6 +13651,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initNet();
 
     /* ---------- Sélecteur de titre (vendeur + cinéma) ---------- */
+    const epsEl = ov.querySelector('#vcEps'), epsT = ov.querySelector('#vcEpsT'), epsS = ov.querySelector('#vcEpsS'), epsL = ov.querySelector('#vcEpsL');
+    ov.querySelector('#vcEpsX').onclick = () => closeAsk();
     const askEl = ov.querySelector('#vcAsk'), askIn = ov.querySelector('#vcAskIn'), askL = ov.querySelector('#vcAskL');
     const askT = ov.querySelector('#vcAskT'), askR = ov.querySelector('#vcAskR'), askX = ov.querySelector('#vcAskX');
     let askMode = null;
@@ -13470,7 +13673,7 @@ document.addEventListener('DOMContentLoaded', () => {
       keys.clear(); hideTip();
       setTimeout(() => { try { askIn.focus(); } catch (e) {} }, 50);
     }
-    function closeAsk() { askEl.style.display = 'none'; askMode = null; try { askIn.blur(); } catch (e) {} }
+    function closeAsk() { askEl.style.display = 'none'; epsEl.style.display = 'none'; askMode = null; try { askIn.blur(); } catch (e) {} }
     function choose(d) {
       const m = askMode; closeAsk();
       if (m === 'vendor') vendorFetch(d); else if (m === 'cinema') playFilm(d);
@@ -13519,7 +13722,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const key = d.t.href;
       if (streamCache[key]) return streamCache[key];
       const base = new URL(key, location.href);
-      const prim = [], fall = [], mp4 = [], embeds = [], hints = [];
+      const prim = [], fall = [], mp4 = [], embeds = [], hints = [], eps = [];
       const scan = txt => {
         txt = txt.replace(/\\\//g, '/');
         const add = (u, idx) => {
@@ -13544,6 +13747,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const r = await fetch(key);
         const html = await r.text();
         scan(html);
+        try {
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const abs = u => { try { return u ? new URL(u, base).href : ''; } catch (e) { return ''; } };
+          doc.querySelectorAll('.cards-container .card').forEach(c => {
+            const v = abs(c.dataset.video), f = abs(c.dataset.fallback);
+            if (!v && !f) return;
+            eps.push({ season: String(c.dataset.season || '1'), episode: String(c.dataset.episode || ''), title: (c.querySelector('h3') && c.querySelector('h3').textContent || '').trim(), video: v, fallback: f });
+          });
+        } catch (e) {}
         if (!prim.length && !fall.length) {
           // le flux est peut-être dans un script de la page
           const srcs = []; let m; const rs = /<script[^>]+src=["']([^"']+)["']/gi;
@@ -13560,9 +13772,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const out = good.length ? good : all;
       const okEmb = embeds.filter(e => !/\.supabase\.co|finepulfe/i.test(e));
       okEmb.sort((x, y) => (/m3u8player\.online/i.test(x) ? 1 : 0) - (/m3u8player\.online/i.test(y) ? 1 : 0));
-      const res = { urls: out, fall: out.filter(u => fall.indexOf(u) >= 0), embeds: okEmb };
+      const res = { urls: out, fall: out.filter(u => fall.indexOf(u) >= 0), embeds: okEmb, eps: eps };
       console.log('[Video club] flux trouvés pour', d.t.title, res, 'code du lecteur de secours :', hints);
-      if (out.length) streamCache[key] = res;
+      if (out.length || eps.length) streamCache[key] = res;
       return res;
     }
     // Lecteur de secours de la fiche (iframe) plaqué sur l'écran 3D
@@ -13603,15 +13815,35 @@ document.addEventListener('DOMContentLoaded', () => {
       const wTop = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
       cFrame.style.pointerEvents = wTop > rc.width * 0.35 ? 'auto' : 'none';
     }
-    function sendFilm(d, st) {
+    let filmEp = null, filmEps = [];
+    const epKey = e => e ? e.season + 'x' + e.episode : '';
+    function sendFilm(d, st, e) {
       if (!channel) return;
-      try { channel.send({ type: 'broadcast', event: 'film', payload: { h: d.t.href, id: myId, st: st } }); } catch (e) {}
+      try { channel.send({ type: 'broadcast', event: 'film', payload: { h: d.t.href, id: myId, st: st, e: e || '' } }); } catch (er) {}
     }
     function onFilm(p) {
       if (!p || !p.h || !(p.st > filmSt)) return;
-      if (film && film.t.href === p.h) { filmSt = p.st; return; }
+      if (film && film.t.href === p.h && epKey(filmEp) === (p.e || '')) { filmSt = p.st; return; }
       const d = dvds.find(x => x.t.href === p.h);
-      if (d) playFilm(d, p.st);
+      if (d) playFilm(d, p.st, p.e || undefined);
+    }
+    function openEps(d, eps, cur) {
+      askMode = 'eps'; askEl.style.display = 'none'; epsEl.style.display = 'block'; keys.clear(); hideTip();
+      epsT.textContent = d.t.title;
+      const seasons = [...new Set(eps.map(e => e.season))].sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+      let sea = cur ? cur.season : seasons[0];
+      const render = () => {
+        epsS.innerHTML = seasons.length > 1 ? seasons.map(x => '<button data-s="' + esc(x) + '" class="' + (x === sea ? 'on' : '') + '">Saison ' + esc(x) + '</button>').join('') : '';
+        epsL.innerHTML = eps.filter(e => e.season === sea).map(e =>
+          '<button data-k="' + esc(epKey(e)) + '">' + esc('Épisode ' + e.episode + (e.title && !/^[ÉE]pisode\s*\d+$/i.test(e.title) ? ' · ' + e.title : '')) + '</button>').join('');
+      };
+      render();
+      epsS.onclick = ev => { const b = ev.target.closest('button'); if (b) { sea = b.dataset.s; render(); } };
+      epsL.onclick = ev => {
+        const b = ev.target.closest('button'); if (!b) return;
+        const e = eps.find(x => epKey(x) === b.dataset.k);
+        closeAsk(); if (e) playFilm(d, undefined, e);
+      };
     }
     function stopFilm() {
       playToken++;
@@ -13662,22 +13894,29 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
     let playToken = 0;
-    async function playFilm(d, remoteSt) {
-      stopFilm();
-      const token = ++playToken;
-      film = d;
-      filmSt = remoteSt || Date.now();
+    async function playFilm(d, remoteSt, ep) {
+      const token0 = ++playToken;
       cineMsg('Chargement de « ' + d.t.title + ' »…');
       const info = await findStreams(d);
-      if (destroyed || token !== playToken) return;
-      if (!remoteSt) sendFilm(d, filmSt);
-      const urls = info.urls;
-      const src = info.fall[0] || urls[0];
+      if (destroyed || token0 !== playToken) return;
+      if (typeof ep === 'string') ep = info.eps.find(x => epKey(x) === ep) || null;
+      if (info.eps.length && !ep) {
+        if (remoteSt) ep = info.eps[0];
+        else { openEps(d, info.eps, film === d ? filmEp : null); cineMsg('Choisis un épisode de « ' + d.t.title + ' »'); return; }
+      }
+      stopFilm();
+      const token = ++playToken;
+      film = d; filmEp = ep || null; filmEps = info.eps;
+      filmSt = remoteSt || Date.now();
+      const ttl = d.t.title + (ep ? ' — Saison ' + ep.season + ' · Épisode ' + ep.episode : '');
+      if (!remoteSt) sendFilm(d, filmSt, epKey(ep));
+      const urls = ep ? [ep.video, ep.fallback].filter(Boolean) : info.urls;
+      const src = ep ? (ep.fallback || ep.video) : (info.fall[0] || urls[0]);
       if (info.embeds.length && src) {
         frameMode = true; frameLoaded = false;
         frameSrc = info.embeds[0] + encodeURIComponent(src);
         screenMat.map = tvTex; screenMat.needsUpdate = true;
-        cineMsg(d.t.title + ' — lecteur de la fiche');
+        cineMsg(ttl + ' — lecteur de la fiche');
         return;
       }
       if (!urls.length) { cineMsg('« ' + d.t.title + ' » : aucun flux trouvé dans sa fiche. Ouvre la fiche pour la regarder.'); return; }
@@ -13692,9 +13931,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           screenMat.map = vtex; screenMat.needsUpdate = true;
           vid.muted = muted; vid.volume = cineVol;
-          cineMsg(d.t.title);
+          cineMsg(ttl);
           const pr = vid.play();
-          if (pr && pr.catch) pr.catch(() => cineMsg(d.t.title + ' — appuie sur lecture'));
+          if (pr && pr.catch) pr.catch(() => cineMsg(ttl + ' — appuie sur lecture'));
           return;
         }
         console.warn('[Video club] source échouée', urls[i], lastErr);
@@ -13709,6 +13948,8 @@ document.addEventListener('DOMContentLoaded', () => {
     cSeek.oninput = () => { cineSeeking = true; if (film && vid.duration) vid.currentTime = (cSeek.value / 1000) * vid.duration; };
     cSeek.onchange = () => { cineSeeking = false; };
     cVol.oninput = () => { cineVol = cVol.value / 100; vid.volume = cineVol; };
+    const cEps = ov.querySelector('#vcCeps');
+    cEps.onclick = () => { if (film && filmEps.length) openEps(film, filmEps, filmEp); };
     cPick.onclick = () => openAsk('cinema');
     cFiche.onclick = () => { if (film) go(film); };
     let lastAct = performance.now(), zen = false;
@@ -13731,6 +13972,7 @@ document.addEventListener('DOMContentLoaded', () => {
       raycaster.far = inside ? 38 : 22;
       cineEl.style.display = inside ? 'block' : 'none';
       cineEl.classList.toggle('vc-frame', frameMode);
+      cEps.style.display = (film && filmEps.length) ? '' : 'none';
       if (!film) { if (!cineIdle) { cineIdle = true; cineMsg('Salle de cinéma · clique sur l’écran pour choisir un film'); } return; }
       cPlay.innerHTML = ic(vid.paused ? 'play_arrow' : 'pause');
       if (!cineSeeking && vid.duration) cSeek.value = Math.round(vid.currentTime / vid.duration * 1000);
