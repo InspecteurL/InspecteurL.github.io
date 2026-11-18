@@ -10515,6 +10515,175 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 </style>
 
+<!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+
+.vc-snd {
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.18); cursor:pointer;
+  background:rgba(31,31,40,.9); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none;
+}
+.vc-snd .material-symbols-outlined { font-size:20px; }
+.vc-hold {
+  position:absolute; left:50%; transform:translateX(-50%); top:58px; display:none; text-align:center;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.18); padding:8px 14px; border-radius:12px;
+  font-size:.85rem; max-width:90vw; pointer-events:none; line-height:1.35;
+}
+.vc-hold span { color:#bbb; font-size:.78rem; }
+.vc-joy {
+  position:absolute; right:16px; bottom:48px; width:116px; height:116px; border-radius:50%; display:none;
+  background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.22); touch-action:none;
+}
+@media (pointer:coarse) { .vc-joy { display:block; } }
+.vc-knob {
+  position:absolute; left:50%; top:50%; width:52px; height:52px; margin:-26px 0 0 -26px; border-radius:50%;
+  background:rgba(255,255,255,.35); border:2px solid rgba(255,255,255,.5); pointer-events:none;
+}
+.vc-sub { position:absolute; left:14px; top:54px; pointer-events:none; }
+.vc-online {
+  display:none; align-items:center; gap:5px; padding:3px 10px; border-radius:14px; font-size:.78rem;
+  background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.16);
+}
+.vc-online .material-symbols-outlined { font-size:16px; }
+.vc-map {
+  position:absolute; right:14px; top:56px; border-radius:6px; cursor:crosshair; touch-action:none;
+  box-shadow:0 2px 12px rgba(0,0,0,.55);
+}
+.vc-say {
+  position:absolute; display:none; transform:translate(-50%,-100%); background:#fff; color:#111; border-radius:12px;
+  padding:7px 11px; max-width:230px; font-size:.82rem; line-height:1.3; pointer-events:none; z-index:2;
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+}
+.vc-say::after {
+  content:''; position:absolute; left:50%; bottom:-7px; margin-left:-7px; border:7px solid transparent;
+  border-bottom:0; border-top-color:#fff;
+}
+.vc-ask {
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(92vw,380px); display:none; z-index:5;
+  background:rgba(14,14,24,.96); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:12px;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+.vc-ask-h { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.vc-ask-h button { background:none; border:none; color:#fff; cursor:pointer; display:flex; }
+.vc-ask input[type=text] {
+  width:100%; box-sizing:border-box; padding:.6rem .8rem; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+  background:#1c1c28; color:#fff; font-size:1rem; font-family:inherit;
+}
+.vc-ask-l { margin-top:8px; display:flex; flex-direction:column; gap:4px; max-height:38vh; overflow:auto; }
+.vc-ask-l button {
+  display:flex; justify-content:space-between; gap:10px; text-align:left; padding:.5rem .7rem; border-radius:8px;
+  border:none; background:rgba(255,255,255,.07); color:#fff; cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+.vc-ask-l button:hover { background:rgba(229,9,20,.5); }
+.vc-ask-l button span { color:#aaa; font-size:.75rem; white-space:nowrap; }
+.vc-ask-n { color:#aaa; font-size:.85rem; padding:6px; }
+.vc-ask-r {
+  margin-top:10px; width:100%; padding:.55rem; border:none; border-radius:10px; cursor:pointer; color:#fff;
+  background:linear-gradient(90deg,#7b2cff,#e50914); font-weight:700; font-family:inherit;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.vc-cine {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; width:min(94vw,640px); display:none; z-index:3;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.16); border-radius:12px; padding:8px 12px;
+}
+@media (pointer:coarse) { .vc-cine { bottom:176px; } }
+.vc-ov .vc-top, .vc-ov .vc-sub, .vc-ov .vc-map, .vc-ov .vc-cine, .vc-ov .vc-hint, .vc-ov .vc-joy, .vc-ov .vc-pad, .vc-ov .vc-stand, .vc-ov .vc-say, .vc-ov .vc-hold, .vc-ov .vc-tip { transition:opacity .5s; }
+.vc-ov.vc-zen .vc-top, .vc-ov.vc-zen .vc-sub, .vc-ov.vc-zen .vc-map, .vc-ov.vc-zen .vc-cine, .vc-ov.vc-zen .vc-hint, .vc-ov.vc-zen .vc-joy, .vc-ov.vc-zen .vc-pad, .vc-ov.vc-zen .vc-stand, .vc-ov.vc-zen .vc-say, .vc-ov.vc-zen .vc-hold, .vc-ov.vc-zen .vc-tip { opacity:0 !important; pointer-events:none !important; }
+.vc-ov.vc-zen .vc-top > *, .vc-ov.vc-zen .vc-cine > *, .vc-ov.vc-zen .vc-pad > * { pointer-events:none !important; }
+.vc-ov.vc-zen { cursor:none; }
+.vc-cine.vc-frame #vcCpl, .vc-cine.vc-frame #vcCbk, .vc-cine.vc-frame #vcCfw, .vc-cine.vc-frame #vcCsk, .vc-cine.vc-frame #vcCtm, .vc-cine.vc-frame #vcCvl { display:none; }
+.vc-cine-t { font-size:.85rem; margin-bottom:6px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vc-cine-r { display:flex; align-items:center; gap:6px; }
+.vc-cine-r button { background:none; border:none; color:#fff; cursor:pointer; display:flex; padding:2px; }
+.vc-cine-r .material-symbols-outlined { font-size:24px; }
+.vc-cine-r input[type=range] { flex:1; min-width:40px; }
+.vc-cine-r input#vcCvl { flex:0 0 70px; }
+.vc-cine-r span { font-size:.75rem; color:#ccc; white-space:nowrap; }
+.vc-stand {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; display:none; align-items:center; gap:6px;
+  padding:.55rem 1.1rem; border-radius:20px; border:none; background:#7b2cff; color:#fff; font-weight:700;
+  cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+</style>
+
 <script>
 (function () {
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -10887,20 +11056,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const doorZ = Math.max(-4.5, zMin + 2), CIN_X0 = xMin - CIN_L;
     const TIER_X0 = CIN_X0 + 5.5;
     const tierY = r => -(TIER_N - 1 - r) * TIER_H;
-    function floorAt(x) {
+    const SCR_Y = -1.0;
+    const CX = CIN_X0 - 14, TIER_R0 = TIER_X0 - CX;       // les rangées sont des arcs centrés derrière l'écran
+    function floorAt(x, z) {
       if (x >= xMin - 0.45) return 0;
-      const r = Math.floor((x - (TIER_X0 - TIER_D / 2)) / TIER_D);
+      const R = Math.hypot(x - CX, z - doorZ);
+      const r = Math.floor((R - (TIER_R0 - TIER_D / 2)) / TIER_D);
       if (r < 0) return CIN_Y0;
       return tierY(Math.min(r, TIER_N - 1));
     }
-
-    // ---- Scène, caméra, rendu ----
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x07070d);
-    scene.fog = new THREE.Fog(0x07070d, 14, 45);
-
-    const camera = new THREE.PerspectiveCamera(68, 1, 0.05, 80);
-    camera.rotation.order = 'YXZ';
     camera.position.set(0, EYE, 0.9);
     // Boîte à bords arrondis (UV conservés : les textures restent droites)
     const rbCache = {};
@@ -11773,7 +11937,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
       // écran géant + rideaux + petite scène
-      const SY = -1.0;
+      const SY = SCR_Y;
       const sFrame = new THREE.Mesh(RB(0.2, 7.4, 12.8), new THREE.MeshLambertMaterial({ color: 0x08080c }));
       sFrame.position.set(CIN_X0 + 0.12, SY, doorZ); scene.add(sFrame);
       const sPlane = new THREE.Mesh(new THREE.PlaneGeometry(12, 6.75), screenMat);
@@ -11792,48 +11956,107 @@ document.addEventListener('DOMContentLoaded', () => {
       const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 12), new THREE.MeshBasicMaterial({ color: 0x9ad8ff }));
       lens.rotation.z = Math.PI / 2; lens.position.set(xMin - 1.95, CIN_YT - 0.45, doorZ); scene.add(lens);
 
-      // gradins : une marche par rangée (instanciées) + liserés lumineux sur chaque contremarche
-      const m4 = new THREE.Matrix4(), sc = new THREE.Vector3(), q = new THREE.Quaternion(), ps = new THREE.Vector3();
-      const iTier = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), carpet, TIER_N);
-      const iStrip = new THREE.InstancedMesh(new THREE.BoxGeometry(0.05, 0.05, CIN_W - 0.2), new THREE.MeshBasicMaterial({ color: 0xffa040 }), TIER_N);
+      // gradins en arc de cercle : une marche par rangée (fusionnées en 2 objets) + liserés lumineux
+      const HW = CIN_W / 2, SEG = 22;
+      const arcPts = (R, rev) => {
+        const out = [];
+        for (let k = 0; k <= SEG; k++) {
+          const dz = -HW + (2 * HW) * (rev ? 1 - k / SEG : k / SEG);
+          out.push([CX + Math.sqrt(R * R - dz * dz), dz]);
+        }
+        return out;
+      };
+      const merge = list => {
+        const pos = [], nor = [], uvs = [];
+        list.forEach(g0 => {
+          const g = g0.index ? g0.toNonIndexed() : g0;
+          pos.push(...g.attributes.position.array); nor.push(...g.attributes.normal.array); uvs.push(...g.attributes.uv.array);
+          if (g !== g0) g.dispose(); g0.dispose();
+        });
+        const m = new THREE.BufferGeometry();
+        m.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        m.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+        m.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+        return m;
+      };
+      const tierGeos = [], stripGeos = [];
       for (let r = 0; r < TIER_N; r++) {
-        const yT = tierY(r), x0 = TIER_X0 + r * TIER_D - TIER_D / 2;
-        const x1 = r === TIER_N - 1 ? xMin : x0 + TIER_D;
-        ps.set((x0 + x1) / 2, (yT + CIN_Y0) / 2, doorZ); sc.set(x1 - x0, yT - CIN_Y0, CIN_W);
-        m4.compose(ps, q, sc); iTier.setMatrixAt(r, m4);
-        ps.set(x0 + 0.03, yT - 0.03, doorZ); sc.set(1, 1, 1);
-        m4.compose(ps, q, sc); iStrip.setMatrixAt(r, m4);
+        const yT = tierY(r), R = TIER_R0 + r * TIER_D, last = r === TIER_N - 1;
+        const inner = arcPts(R - TIER_D / 2, false);
+        const outer = last ? [[xMin, HW], [xMin, -HW]] : arcPts(R + TIER_D / 2, true);
+        const sh = new THREE.Shape();
+        inner.forEach((p, i) => i ? sh.lineTo(p[0], -p[1]) : sh.moveTo(p[0], -p[1]));
+        outer.forEach(p => sh.lineTo(p[0], -p[1]));
+        const eg = new THREE.ExtrudeGeometry(sh, { depth: yT - CIN_Y0, bevelEnabled: false, steps: 1 });
+        eg.rotateX(-Math.PI / 2); eg.translate(0, CIN_Y0, 0);
+        tierGeos.push(eg);
+        const sIn = arcPts(R - TIER_D / 2 + 0.01, false), sOut = arcPts(R - TIER_D / 2 + 0.07, true);
+        const ss = new THREE.Shape();
+        sIn.forEach((p, i) => i ? ss.lineTo(p[0], -p[1]) : ss.moveTo(p[0], -p[1]));
+        sOut.forEach(p => ss.lineTo(p[0], -p[1]));
+        const sg = new THREE.ShapeGeometry(ss); sg.rotateX(-Math.PI / 2); sg.translate(0, yT + 0.012, 0);
+        stripGeos.push(sg);
       }
-      scene.add(iTier, iStrip);
+      const carpetT = surf('leather036', 0.4, 0.4, 0x7a2229);
+      scene.add(new THREE.Mesh(merge(tierGeos), carpetT));
+      scene.add(new THREE.Mesh(merge(stripGeos), new THREE.MeshBasicMaterial({ color: 0xffa040, side: THREE.DoubleSide })));
 
-      // 400 sièges : 20 rangées x 2 blocs de 10 autour de l'escalier central
+      // 400 sièges : 20 rangées x 2 blocs de 10 autour de l'escalier central, tournés vers l'écran
       const seatMat = surf('leather036', 1, 1, 0xb04040), baseM = surf('leather034', 1, 1, 0x777777);
       const PER = 10, PITCH = 0.55, GAP = 0.9, n = TIER_N * PER * 2;
-      const iCush = new THREE.InstancedMesh(RB(0.5, 0.12, 0.52), seatMat, n);
-      const iBack = new THREE.InstancedMesh(RB(0.1, 0.7, 0.52), seatMat, n);
-      const iBase = new THREE.InstancedMesh(RB(0.36, 0.4, 0.46), baseM, n);
-      const seatObjs = [];
+      const iCush = new THREE.InstancedMesh(RB(0.5, 0.12, 0.52, 0.05), seatMat, n);
+      const iBack = new THREE.InstancedMesh(RB(0.1, 0.7, 0.52, 0.045), seatMat, n);
+      const iBase = new THREE.InstancedMesh(RB(0.36, 0.4, 0.46, 0.05), baseM, n);
+      const seatObjs = [], m4 = new THREE.Matrix4(), qq = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1), pp = new THREE.Vector3();
+      const put = (inst, k, sx, sy, sz, psi, lx, ly) => {
+        qq.setFromAxisAngle(new THREE.Vector3(0, 1, 0), psi);
+        pp.set(sx + lx * Math.cos(psi), sy + ly, sz - lx * Math.sin(psi));
+        m4.compose(pp, qq, one); inst.setMatrixAt(k, m4);
+      };
       let k = 0;
+      const bx = { '1': [1e9, -1e9], '-1': [1e9, -1e9] };
       for (let r = 0; r < TIER_N; r++) {
-        const sx = TIER_X0 + r * TIER_D, yT = tierY(r);
+        const R = TIER_R0 + r * TIER_D, yT = tierY(r);
         [1, -1].forEach(side => {
           for (let i = 0; i < PER; i++) {
-            const sz = doorZ + side * (GAP + PITCH / 2 + i * PITCH);
-            m4.makeTranslation(sx, yT + 0.47, sz); iCush.setMatrixAt(k, m4);
-            m4.makeTranslation(sx + 0.23, yT + 0.85, sz); iBack.setMatrixAt(k, m4);
-            m4.makeTranslation(sx, yT + 0.22, sz); iBase.setMatrixAt(k, m4);
-            seatObjs.push({ kind: 'sofa', label: 'Siège', x: sx, z: sz, dir: -1, wx: sx, wz: sz, pullable: false, hold: false,
-                            t: { title: 'Siège' }, stand: { x: sx, z: doorZ + side * 0.45 } });
+            const dz = side * (GAP + PITCH / 2 + i * PITCH);
+            const sx = CX + Math.sqrt(R * R - dz * dz), sz = doorZ + dz;
+            const phi = Math.atan2(dz, sx - CX), psi = -phi;
+            put(iCush, k, sx, yT + 0.47, sz, psi, 0, 0);
+            put(iBack, k, sx, yT + 0.85, sz, psi, 0.23, 0);
+            put(iBase, k, sx, yT + 0.22, sz, psi, 0, 0);
+            const aisleX = CX + Math.sqrt(R * R - 0.2);
+            seatObjs.push({ kind: 'sofa', label: 'Siège', x: sx, z: sz, dir: -1, yaw: Math.PI / 2 - phi, wx: sx, wz: sz, pullable: false, hold: false,
+                            t: { title: 'Siège' }, stand: { x: aisleX, z: doorZ + side * 0.45 } });
+            if (sx < bx[side][0]) bx[side][0] = sx;
+            if (sx > bx[side][1]) bx[side][1] = sx;
             k++;
           }
         });
       }
       [1, -1].forEach(side => {
         const za = doorZ + side * GAP, zb = doorZ + side * (GAP + PER * PITCH);
-        rects.push([TIER_X0 - 0.3, TIER_X0 + (TIER_N - 1) * TIER_D + 0.35, Math.min(za, zb), Math.max(za, zb)]);
+        rects.push([bx[side][0] - 0.3, bx[side][1] + 0.35, Math.min(za, zb), Math.max(za, zb)]);
       });
       iCush.userData.seats = seatObjs; iBack.userData.seats = seatObjs;
       scene.add(iCush, iBack, iBase); meshes.push(iCush, iBack);
+
+      // ambiance : lueur de l'écran, lumière chaude au fond, appliques le long des murs
+      const glow = new THREE.PointLight(0x9bb8ff, 40, 34, 2); glow.position.set(CIN_X0 + 3, 0.5, doorZ); scene.add(glow);
+      const warm = new THREE.PointLight(0xffb070, 22, 20, 2); warm.position.set(xMin - 3, 2.4, doorZ); scene.add(warm);
+      const sconceG = new THREE.SphereGeometry(0.13, 12, 8), sconceM = new THREE.MeshBasicMaterial({ color: 0xffc480 });
+      const nSc = 9, iSc = new THREE.InstancedMesh(sconceG, sconceM, nSc * 2);
+      let q2 = 0;
+      for (let i = 0; i < nSc; i++) {
+        const x = CIN_X0 + 3 + i * ((CIN_L - 5) / (nSc - 1));
+        [-1, 1].forEach(sd => {
+          const dz = sd * (CIN_W / 2 - 0.2);
+          const R = Math.hypot(x - CX, dz);
+          const yy = tierY(Math.max(0, Math.min(TIER_N - 1, Math.floor((R - (TIER_R0 - TIER_D / 2)) / TIER_D)))) + 2.1;
+          m4.compose(pp.set(x, yy, doorZ + dz), qq.identity(), new THREE.Vector3(1, 1.6, 0.6)); iSc.setMatrixAt(q2++, m4);
+        });
+      }
+      scene.add(iSc);
     })();
 
     scene.updateMatrixWorld(true);
@@ -12184,7 +12407,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (sitting) return;
       sitting = s; setHover(null); hideTip();
       seatAnim = { t: 0, fx: camera.position.x, fz: camera.position.z, fyaw: yaw,
-                   tx: s.x - s.dir * 0.05, tz: s.z, tyaw: yaw + angDiff(yaw, -s.dir * Math.PI / 2) };
+                   tx: s.x - s.dir * 0.05, tz: s.z, tyaw: yaw + angDiff(yaw, s.yaw !== undefined ? s.yaw : -s.dir * Math.PI / 2) };
       standBtn.style.display = 'flex';
       snd('sit'); netDirty = true;
     }
@@ -12203,7 +12426,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const s = sections[parseInt(jumpSel.value, 10)];
       if (s) {
         if (sitting) { sitting = null; standBtn.style.display = 'none'; }
-        seatAnim = null; eyeY = EYE + floorAt(s.x);
+        seatAnim = null; eyeY = EYE + floorAt(s.x, s.z);
         camera.position.x = s.x; camera.position.z = s.z; yaw = s.yaw; pitch = 0;
       }
       jumpSel.value = '';
@@ -12243,7 +12466,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nx = x + offs[i][0], nz = z + offs[i][1];
         if (!blocked(nx, nz)) {
           if (sitting) { sitting = null; standBtn.style.display = 'none'; }
-          seatAnim = null; eyeY = EYE + floorAt(nx);
+          seatAnim = null; eyeY = EYE + floorAt(nx, nz);
           camera.position.x = nx; camera.position.z = nz;
           return;
         }
@@ -12444,7 +12667,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const speed = Math.hypot(dx, dz) * 8;
         o.phase += Math.min(speed, 4) * dt * 5;
         const sw = Math.min(1, speed) * Math.sin(o.phase) * 0.7;
-        o.g.position.set(o.x, floorAt(o.x) + (o.sit ? -0.38 : 0), o.z);
+        o.g.position.set(o.x, floorAt(o.x, o.z) + (o.sit ? -0.38 : 0), o.z);
         o.g.rotation.y = o.yaw + Math.PI;
         o.legL.rotation.x = o.sit ? -1.5 : sw; o.legR.rotation.x = o.sit ? -1.5 : -sw;
         if ((o.heldD ? o.heldD.t.title : '') !== o.wantHeld) setRemoteHeld(o, o.wantHeld);
@@ -12490,8 +12713,9 @@ document.addEventListener('DOMContentLoaded', () => {
         myId = (uid || 'v') + ':' + Math.random().toString(36).slice(2, 8);
         channel = sbClient.channel('horizoncine-videoclub', { config: { broadcast: { self: false } } });
         channel.on('broadcast', { event: 'p' }, m => onRemote(m && m.payload));
+        channel.on('broadcast', { event: 'film' }, m => onFilm(m && m.payload));
         channel.on('broadcast', { event: 'bye' }, m => { if (m && m.payload) removeOther(m.payload.id); });
-        channel.on('broadcast', { event: 'hi' }, () => { setTimeout(() => { if (!destroyed) sendPos(); }, Math.random() * 500); });
+        channel.on('broadcast', { event: 'hi' }, () => { setTimeout(() => { if (!destroyed) { sendPos(); if (film && filmSt) sendFilm(film, filmSt); } }, Math.random() * 500); });
         channel.subscribe(status => {
           if (destroyed) return;
           if (status === 'SUBSCRIBED') {
@@ -12584,7 +12808,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const key = d.t.href;
       if (streamCache[key]) return streamCache[key];
       const base = new URL(key, location.href);
-      const prim = [], fall = [], mp4 = [];
+      const prim = [], fall = [], mp4 = [], embeds = [];
       const scan = txt => {
         txt = txt.replace(/\\\//g, '/');
         const add = (u, idx) => {
@@ -12598,6 +12822,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let m;
         const r1 = /(?:https?:)?\/\/[^\s"'`<>\\)]+?\.(?:m3u8|mp4)(?:\?[^\s"'`<>\\)]*)?/gi;
         while ((m = r1.exec(txt))) add(m[0], m.index);
+        const re = /["'`](https?:\/\/[^"'`\s]+?[?&](?:url|mediaUrl|src|source|file)=)["'`]\s*\+/gi;
+        while ((m = re.exec(txt))) if (embeds.indexOf(m[1]) < 0) embeds.push(m[1]);
         const r2 = /["'`]([^"'`\s<>]+?\.m3u8[^"'`\s<>]*)["'`]/gi;
         while ((m = r2.exec(txt))) add(m[1], m.index + 1);
       };
@@ -12619,12 +12845,63 @@ document.addEventListener('DOMContentLoaded', () => {
       const all = prim.concat(fall, mp4);
       const good = all.filter(u => !stale(u));
       const out = good.length ? good : all;
-      console.log('[Video club] flux trouvés pour', d.t.title, out);
-      if (out.length) streamCache[key] = out;
-      return out;
+      const okEmb = embeds.filter(e => !/m3u8player\.online/i.test(e));
+      const res = { urls: out, fall: out.filter(u => fall.indexOf(u) >= 0), embeds: okEmb.length ? okEmb : embeds.filter(() => false) };
+      console.log('[Video club] flux trouvés pour', d.t.title, res);
+      if (out.length) streamCache[key] = res;
+      return res;
+    }
+    // Lecteur de secours de la fiche (iframe) plaqué sur l'écran 3D
+    const cFrame = document.createElement('iframe');
+    cFrame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media'); cFrame.setAttribute('allowfullscreen', '');
+    cFrame.style.cssText = 'position:fixed;left:0;top:0;width:1280px;height:720px;border:0;background:#000;transform-origin:0 0;visibility:hidden;pointer-events:none;z-index:0';
+    ov.insertBefore(cFrame, canvas.nextSibling);
+    let frameMode = false, frameSrc = '', frameLoaded = false, filmSt = 0;
+    cFrame.addEventListener('pointerleave', () => wake());
+    const SCR = [[6, 3.375], [-6, 3.375], [-6, -3.375], [6, -3.375]];
+    const cvV = new THREE.Vector3();
+    function hideFrame() { cFrame.style.visibility = 'hidden'; cFrame.style.pointerEvents = 'none'; }
+    function updateFrame() {
+      if (!frameMode) return;
+      const inside = inCinema();
+      if (inside && !frameLoaded && frameSrc) { cFrame.src = frameSrc; frameLoaded = true; }
+      if (!inside || !frameLoaded) { hideFrame(); return; }
+      camera.updateMatrixWorld(); camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+      const rc = canvas.getBoundingClientRect(), pt = [];
+      for (let i = 0; i < 4; i++) {
+        cvV.set(CIN_X0 + 0.24, SCR_Y + SCR[i][1], doorZ + SCR[i][0]);
+        const vz = cvV.clone().applyMatrix4(camera.matrixWorldInverse).z;
+        if (vz > -0.15) { hideFrame(); return; }
+        cvV.project(camera);
+        pt.push([rc.left + (cvV.x + 1) / 2 * rc.width, rc.top + (1 - cvV.y) / 2 * rc.height]);
+      }
+      const [p0, p1, p2, p3] = pt;
+      const dx1 = p1[0] - p2[0], dx2 = p3[0] - p2[0], dx3 = p0[0] - p1[0] + p2[0] - p3[0];
+      const dy1 = p1[1] - p2[1], dy2 = p3[1] - p2[1], dy3 = p0[1] - p1[1] + p2[1] - p3[1];
+      const den = dx1 * dy2 - dx2 * dy1;
+      if (Math.abs(den) < 1e-6) { hideFrame(); return; }
+      const g = (dx3 * dy2 - dx2 * dy3) / den, h = (dx1 * dy3 - dx3 * dy1) / den;
+      const a = p1[0] - p0[0] + g * p1[0], b = p3[0] - p0[0] + h * p3[0], c = p0[0];
+      const d = p1[1] - p0[1] + g * p1[1], e = p3[1] - p0[1] + h * p3[1], f = p0[1];
+      const W = 1280, H = 720;
+      cFrame.style.transform = 'matrix3d(' + [a / W, d / W, 0, g / W, b / H, e / H, 0, h / H, 0, 0, 1, 0, c, f, 0, 1].map(v => v.toFixed(7)).join(',') + ')';
+      cFrame.style.visibility = 'visible';
+      const wTop = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+      cFrame.style.pointerEvents = wTop > rc.width * 0.35 ? 'auto' : 'none';
+    }
+    function sendFilm(d, st) {
+      if (!channel) return;
+      try { channel.send({ type: 'broadcast', event: 'film', payload: { h: d.t.href, id: myId, st: st } }); } catch (e) {}
+    }
+    function onFilm(p) {
+      if (!p || !p.h || !(p.st > filmSt)) return;
+      if (film && film.t.href === p.h) { filmSt = p.st; return; }
+      const d = dvds.find(x => x.t.href === p.h);
+      if (d) playFilm(d, p.st);
     }
     function stopFilm() {
       playToken++;
+      frameMode = false; frameSrc = ''; frameLoaded = false; try { cFrame.removeAttribute('src'); } catch (e) {} hideFrame();
       try { vid.pause(); } catch (e) {}
       if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
       vid.removeAttribute('src'); try { vid.load(); } catch (e) {}
@@ -12671,13 +12948,24 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
     let playToken = 0;
-    async function playFilm(d) {
+    async function playFilm(d, remoteSt) {
       stopFilm();
       const token = ++playToken;
       film = d;
+      filmSt = remoteSt || Date.now();
       cineMsg('Chargement de « ' + d.t.title + ' »…');
-      const urls = await findStreams(d);
+      const info = await findStreams(d);
       if (destroyed || token !== playToken) return;
+      if (!remoteSt) sendFilm(d, filmSt);
+      const urls = info.urls;
+      const src = info.fall[0] || urls[0];
+      if (info.embeds.length && src) {
+        frameMode = true; frameLoaded = false;
+        frameSrc = info.embeds[0] + encodeURIComponent(src);
+        screenMat.map = tvTex; screenMat.needsUpdate = true;
+        cineMsg(d.t.title + ' — lecteur de la fiche');
+        return;
+      }
       if (!urls.length) { cineMsg('« ' + d.t.title + ' » : aucun flux trouvé dans sa fiche. Ouvre la fiche pour la regarder.'); return; }
       for (let i = 0; i < urls.length; i++) {
         if (urls.length > 1) cineMsg('Chargement de « ' + d.t.title + ' »… (source ' + (i + 1) + '/' + urls.length + ')');
@@ -12714,11 +13002,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ['pointermove', 'pointerdown', 'touchstart', 'touchmove', 'wheel', 'keydown'].forEach(ev => window.addEventListener(ev, wake, { passive: true }));
     function updateCinema(dt) {
       cineAcc += dt; if (cineAcc < 0.3) return; cineAcc = 0;
-      const wantZen = !!film && !vid.paused && inCinema() && !askMode && hstate === 'idle' && performance.now() - lastAct > 2500;
+      const wantZen = !!film && (frameMode || !vid.paused) && inCinema() && !askMode && hstate === 'idle' && performance.now() - lastAct > 2500;
       if (wantZen !== zen) { zen = wantZen; ov.classList.toggle('vc-zen', zen); }
       const inside = inCinema();
       raycaster.far = inside ? 38 : 22;
       cineEl.style.display = inside ? 'block' : 'none';
+      cineEl.classList.toggle('vc-frame', frameMode);
       if (!film) { if (!cineIdle) { cineIdle = true; cineMsg('Salle de cinéma · clique sur l’écran pour choisir un film'); } return; }
       cPlay.innerHTML = ic(vid.paused ? 'play_arrow' : 'pause');
       if (!cineSeeking && vid.duration) cSeek.value = Math.round(vid.currentTime / vid.duration * 1000);
@@ -12726,7 +13015,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // le son s'étouffe quand on est hors de la salle ; la musique du video club se coupe dans la salle
       vid.volume = clamp(cineVol * (inside ? 1 : 0.12), 0, 1);
       vid.muted = muted;
-      if (audio) audio.duck(inside && !vid.paused);
+      if (audio) audio.duck(inside && (frameMode || !vid.paused));
     }
 
     /* ---------- Souris / doigt ---------- */
@@ -12869,7 +13158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (seatAnim.tyaw !== null) yaw = seatAnim.fyaw + (seatAnim.tyaw - seatAnim.fyaw) * e;
         if (seatAnim.t >= 1) seatAnim = null;
       }
-      eyeY += ((sitting ? 1.1 : EYE) + floorAt(camera.position.x) - eyeY) * Math.min(1, dt * 8);
+      eyeY += ((sitting ? 1.1 : EYE) + floorAt(camera.position.x, camera.position.z) - eyeY) * Math.min(1, dt * 8);
       camera.position.y = eyeY;
 
       if (f || s) {
@@ -12922,6 +13211,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (streamAcc > 0.15) { streamAcc = 0; stream(); }
 
       renderer.clear();
+      updateFrame();
       renderer.render(scene, camera);
       if (hstate !== 'idle') {
         renderer.clearDepth();
