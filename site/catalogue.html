@@ -12292,6 +12292,182 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 </style>
 
+<!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+
+.vc-snd {
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.18); cursor:pointer;
+  background:rgba(31,31,40,.9); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none;
+}
+.vc-snd .material-symbols-outlined { font-size:20px; }
+.vc-hold {
+  position:absolute; left:50%; transform:translateX(-50%); top:58px; display:none; text-align:center;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.18); padding:8px 14px; border-radius:12px;
+  font-size:.85rem; max-width:90vw; pointer-events:none; line-height:1.35;
+}
+.vc-hold span { color:#bbb; font-size:.78rem; }
+.vc-joy {
+  position:absolute; right:16px; bottom:48px; width:116px; height:116px; border-radius:50%; display:none;
+  background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.22); touch-action:none;
+}
+@media (pointer:coarse) { .vc-joy { display:block; } }
+.vc-knob {
+  position:absolute; left:50%; top:50%; width:52px; height:52px; margin:-26px 0 0 -26px; border-radius:50%;
+  background:rgba(255,255,255,.35); border:2px solid rgba(255,255,255,.5); pointer-events:none;
+}
+.vc-sub { position:absolute; left:14px; top:54px; pointer-events:none; }
+.vc-online {
+  display:none; align-items:center; gap:5px; padding:3px 10px; border-radius:14px; font-size:.78rem;
+  background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.16);
+}
+.vc-online .material-symbols-outlined { font-size:16px; }
+.vc-map {
+  position:absolute; right:14px; top:56px; border-radius:6px; cursor:crosshair; touch-action:none;
+  box-shadow:0 2px 12px rgba(0,0,0,.55);
+}
+.vc-say {
+  position:absolute; display:none; transform:translate(-50%,-100%); background:#fff; color:#111; border-radius:12px;
+  padding:7px 11px; max-width:230px; font-size:.82rem; line-height:1.3; pointer-events:none; z-index:2;
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+}
+.vc-say::after {
+  content:''; position:absolute; left:50%; bottom:-7px; margin-left:-7px; border:7px solid transparent;
+  border-bottom:0; border-top-color:#fff;
+}
+.vc-ask {
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(92vw,380px); display:none; z-index:5;
+  background:rgba(14,14,24,.96); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:12px;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+.vc-ask-h { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.vc-ask-h button { background:none; border:none; color:#fff; cursor:pointer; display:flex; }
+.vc-ask input[type=text] {
+  width:100%; box-sizing:border-box; padding:.6rem .8rem; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+  background:#1c1c28; color:#fff; font-size:1rem; font-family:inherit;
+}
+.vc-eps-s { display:flex; flex-wrap:wrap; gap:6px; }
+.vc-eps-s button { background:rgba(255,255,255,.1); border:none; color:#fff; padding:.35rem .8rem; border-radius:20px; cursor:pointer; font-family:inherit; font-size:.8rem; }
+.vc-av-c { display:flex; flex-wrap:wrap; gap:8px; margin:.6rem 0 .2rem; }
+.vc-av-c button { width:30px; height:30px; border-radius:50%; border:2px solid rgba(255,255,255,.25); cursor:pointer; padding:0; }
+.vc-av-c button.on { border-color:#fff; box-shadow:0 0 0 2px #e50914; }
+.vc-av-n { font-size:.72rem; opacity:.65; margin-top:.5rem; line-height:1.3; }
+.vc-eps-s button.on { background:linear-gradient(90deg,#7b2cff,#e50914); font-weight:700; }
+.vc-ask-l { margin-top:8px; display:flex; flex-direction:column; gap:4px; max-height:38vh; overflow:auto; }
+.vc-ask-l button {
+  display:flex; justify-content:space-between; gap:10px; text-align:left; padding:.5rem .7rem; border-radius:8px;
+  border:none; background:rgba(255,255,255,.07); color:#fff; cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+.vc-ask-l button:hover { background:rgba(229,9,20,.5); }
+.vc-ask-l button span { color:#aaa; font-size:.75rem; white-space:nowrap; }
+.vc-ask-n { color:#aaa; font-size:.85rem; padding:6px; }
+.vc-ask-r {
+  margin-top:10px; width:100%; padding:.55rem; border:none; border-radius:10px; cursor:pointer; color:#fff;
+  background:linear-gradient(90deg,#7b2cff,#e50914); font-weight:700; font-family:inherit;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.vc-cine {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; width:min(94vw,640px); display:none; z-index:3;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.16); border-radius:12px; padding:8px 12px;
+}
+@media (pointer:coarse) { .vc-cine { bottom:176px; } }
+.vc-ov .vc-top, .vc-ov .vc-sub, .vc-ov .vc-map, .vc-ov .vc-cine, .vc-ov .vc-hint, .vc-ov .vc-joy, .vc-ov .vc-pad, .vc-ov .vc-stand, .vc-ov .vc-say, .vc-ov .vc-hold, .vc-ov .vc-tip { transition:opacity .5s; }
+.vc-ov.vc-zen .vc-top, .vc-ov.vc-zen .vc-sub, .vc-ov.vc-zen .vc-map, .vc-ov.vc-zen .vc-cine, .vc-ov.vc-zen .vc-hint, .vc-ov.vc-zen .vc-joy, .vc-ov.vc-zen .vc-pad, .vc-ov.vc-zen .vc-stand, .vc-ov.vc-zen .vc-say, .vc-ov.vc-zen .vc-hold, .vc-ov.vc-zen .vc-tip { opacity:0 !important; pointer-events:none !important; }
+.vc-ov.vc-zen .vc-top > *, .vc-ov.vc-zen .vc-cine > *, .vc-ov.vc-zen .vc-pad > * { pointer-events:none !important; }
+.vc-ov.vc-zen { cursor:none; }
+.vc-cine.vc-frame #vcCpl, .vc-cine.vc-frame #vcCbk, .vc-cine.vc-frame #vcCfw, .vc-cine.vc-frame #vcCsk, .vc-cine.vc-frame #vcCtm, .vc-cine.vc-frame #vcCvl { display:none; }
+.vc-cine-t { font-size:.85rem; margin-bottom:6px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vc-cine-r { display:flex; align-items:center; gap:6px; }
+.vc-cine-r button { background:none; border:none; color:#fff; cursor:pointer; display:flex; padding:2px; }
+.vc-cine-r .material-symbols-outlined { font-size:24px; }
+.vc-cine-r input[type=range] { flex:1; min-width:40px; }
+.vc-cine-r input#vcCvl { flex:0 0 70px; }
+.vc-cine-r span { font-size:.75rem; color:#ccc; white-space:nowrap; }
+.vc-stand {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; display:none; align-items:center; gap:6px;
+  padding:.55rem 1.1rem; border-radius:20px; border:none; background:#7b2cff; color:#fff; font-weight:700;
+  cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+</style>
+
 <script>
 (function () {
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -12506,6 +12682,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '<select id="vcJump" aria-label="Aller au rayon"><option value="">Aller au rayon…</option></select>' +
       '<button class="vc-snd" id="vcSnd" aria-label="Son"></button>' +
       '<button class="vc-snd" id="vcMapBtn" aria-label="Plan" title="Plan de la salle">' + ic('map') + '</button>' +
+      '<button class="vc-snd" id="vcAvBtn" aria-label="Personnage" title="Mon personnage">' + ic('person') + '</button>' +
       '<button class="vc-x" id="vcClose" aria-label="Quitter">' + ic('close') + ' Quitter</button>' +
     '</div>' +
     '<div class="vc-loading" id="vcLoading">Ouverture du video club…</div>' +
@@ -12520,6 +12697,9 @@ document.addEventListener('DOMContentLoaded', () => {
       '<button class="vc-ask-r" id="vcAskR">' + ic('casino') + ' Surprends-moi</button></div>' +
     '<div class="vc-ask vc-eps" id="vcEps"><div class="vc-ask-h"><b id="vcEpsT"></b><button id="vcEpsX" aria-label="Fermer">' + ic('close') + '</button></div>' +
       '<div class="vc-eps-s" id="vcEpsS"></div><div class="vc-ask-l" id="vcEpsL"></div></div>' +
+    '<div class="vc-ask vc-eps" id="vcAv"><div class="vc-ask-h"><b>Mon personnage</b><button id="vcAvX" aria-label="Fermer">' + ic('close') + '</button></div>' +
+      '<div class="vc-eps-s" id="vcAvM"></div><div class="vc-av-c" id="vcAvC"></div>' +
+      '<div class="vc-av-n">Les autres visiteurs te voient ainsi (tu ne te vois pas toi-même en vue à la première personne).</div></div>' +
     '<div class="vc-cine" id="vcCine"><div class="vc-cine-t" id="vcCineT"></div><div class="vc-cine-r">' +
       '<button id="vcCpl" aria-label="Lecture / pause">' + ic('play_arrow') + '</button>' +
       '<button id="vcCbk" aria-label="Reculer de 10 s">' + ic('replay_10') + '</button>' +
@@ -14244,6 +14424,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const dvdByTitle = {};
     dvds.forEach(d => { dvdByTitle[d.t.title] = d; });
     let netDirty = false;
+    let myUid = null;
+    let myAv = { m: '', c: 0 };
+    try { const a = JSON.parse(localStorage.getItem('vcAvatar') || 'null'); if (a && a.m !== undefined) myAv = { m: String(a.m), c: +a.c || 0 }; } catch (e) {}
     const avMats = {};
     function avMat(key, color) { return avMats[key] || (avMats[key] = new THREE.MeshLambertMaterial({ color: color })); }
     const SKINS = [0xf1c9a5, 0xe0ac8a, 0xc68642, 0x8d5524, 0xffdbb0], HAIRS = [0x2a1d12, 0x4a3320, 0x111111, 0x8a6a3a, 0xb5651d];
@@ -14273,12 +14456,85 @@ document.addEventListener('DOMContentLoaded', () => {
       const armL = new THREE.Group(); armL.position.set(-0.26, 1.33, 0); g.add(armL); add(avGeo.arm, shirt, 0, -0.25, 0, armL);
       const armR = new THREE.Group(); armR.position.set(0.26, 1.33, 0); g.add(armR); add(avGeo.arm, shirt, 0, -0.25, 0, armR);
       add(avGeo.head, skin, 0, 1.5, 0); add(avGeo.hair, hair, 0, 1.52, -0.01); add(avGeo.nose, skin, 0, 1.49, 0.13);
+      const boxKids = g.children.slice();
       const label = nameSprite(name); g.add(label);
       scene.add(g);
-      return { g: g, legL: legL, legR: legR, armL: armL, armR: armR, label: label, name: name, hue: hue,
+      return { boxKids: boxKids, glb: null, mixer: null, avKey: '', avTok: 0, dead: false, g: g, legL: legL, legR: legR, armL: armL, armR: armR, label: label, name: name, hue: hue,
                x: 0, z: 0, yaw: 0, tx: 0, tz: 0, tyaw: 0, sit: false, phase: 0, last: performance.now(),
                heldD: null, wantHeld: '', open: false, openT: 0, hk: 0, model: null };
     }
+    /* ---------- Personnages 3D (.glb hébergés sur le site) ---------- */
+    const AV_BASE = 'https://inspecteurl.github.io/site/models/';
+    const AV_MODELS = [
+      { id: 'winter', name: 'Hiver', file: 'winter.glb', rotY: 0, walk: 'Walking', run: 'Running' }
+    ];
+    const AV_TINTS = [null, 0xff7070, 0xffb347, 0xf2e05a, 0x6bdc8a, 0x5cc8ff, 0x8a7bff, 0xff7bd5, 0x555555];
+    let avTools = null; const avCache = {};
+    function loadAvTools() {
+      return avTools || (avTools = (async () => {
+        const base = 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/';
+        const blob = t => URL.createObjectURL(new Blob([t], { type: 'text/javascript' }));
+        const src = async path => (await (await fetch(base + path)).text()).replace(/from\s+['"]three['"]/g, "from '" + THREE_URL + "'");
+        const bu = blob(await src('utils/BufferGeometryUtils.js'));
+        const gl = blob((await src('loaders/GLTFLoader.js')).replace(/from\s+['"]\.\.\/utils\/BufferGeometryUtils\.js['"]/g, "from '" + bu + "'"));
+        const su = blob(await src('utils/SkeletonUtils.js'));
+        const [G, S] = await Promise.all([import(gl), import(su)]);
+        return { loader: new G.GLTFLoader(), clone: S.clone };
+      })());
+    }
+    function loadGlb(def) {
+      return avCache[def.id] || (avCache[def.id] = loadAvTools().then(t => new Promise((res, rej) => {
+        t.loader.load(AV_BASE + def.file, g => res({ scene: g.scene, anims: g.animations, clone: t.clone }), undefined, rej);
+      })).catch(e => { console.warn('[Video club] modèle indisponible', def.id, e); delete avCache[def.id]; return null; }));
+    }
+    function applyAvatar(o, id, c) {
+      const key = id + '|' + c;
+      if (o.avKey === key) return;
+      o.avKey = key;
+      const def = AV_MODELS.find(m => m.id === id);
+      const tok = ++o.avTok;
+      if (o.glb) { o.g.remove(o.glb); o.glb = null; o.mixer = null; o.aW = o.aR = null; }
+      o.boxKids.forEach(k => { k.visible = !def; });
+      if (!def) return;
+      loadGlb(def).then(src => {
+        if (!src || destroyed || o.dead || o.avTok !== tok) { if (!src && !o.dead) o.boxKids.forEach(k => { k.visible = true; }); return; }
+        const obj = src.clone(src.scene);
+        const tint = AV_TINTS[c] || null;
+        obj.traverse(m => {
+          if (!m.isMesh) return;
+          m.frustumCulled = false;
+          m.material = Array.isArray(m.material) ? m.material.map(x => x.clone()) : m.material.clone();
+          if (tint !== null) (Array.isArray(m.material) ? m.material : [m.material]).forEach(x => { if (x.color) x.color.setHex(tint); });
+        });
+        obj.rotation.y = def.rotY || 0;
+        o.g.add(obj); o.glb = obj;
+        const mx = new THREE.AnimationMixer(obj);
+        const find = n => src.anims.find(a => a.name === n);
+        if (find(def.walk)) { o.aW = mx.clipAction(find(def.walk)); o.aW.play(); o.aW.timeScale = 0; }
+        if (find(def.run)) { o.aR = mx.clipAction(find(def.run)); o.aR.play(); o.aR.setEffectiveWeight(0); }
+        o.mixer = mx;
+      });
+    }
+    const avEl = ov.querySelector('#vcAv'), avM = ov.querySelector('#vcAvM'), avC = ov.querySelector('#vcAvC');
+    function paintAv() {
+      avM.innerHTML = [{ id: '', name: 'Classique' }].concat(AV_MODELS).map(m => '<button data-m="' + m.id + '" class="' + (m.id === myAv.m ? 'on' : '') + '">' + esc(m.name) + '</button>').join('');
+      avC.innerHTML = AV_TINTS.map((t, i) => '<button data-c="' + i + '" class="' + (i === myAv.c ? 'on' : '') + '" title="' + (t === null ? 'Couleur d\'origine' : '') + '" style="background:' + (t === null ? 'linear-gradient(135deg,#fff 50%,#999 50%)' : '#' + t.toString(16).padStart(6, '0')) + '"></button>').join('');
+    }
+    async function saveAvatar() {
+      try { localStorage.setItem('vcAvatar', JSON.stringify(myAv)); } catch (e) {}
+      netDirty = true;
+      if (!myUid || !sbClient) return;
+      try {
+        const raw = JSON.parse(localStorage.getItem('sb-wuagahavmbugmnuzsouf-auth-token') || 'null');
+        const s0 = raw && (raw.access_token ? raw : raw.currentSession);
+        if (s0 && s0.access_token && s0.refresh_token) await sbClient.auth.setSession({ access_token: s0.access_token, refresh_token: s0.refresh_token });
+        await sbClient.from('profiles').update({ avatar: myAv }).eq('id', myUid);
+      } catch (e) { console.warn('[Video club] avatar non sauvegardé dans profiles', e); }
+    }
+    ov.querySelector('#vcAvX').onclick = () => closeAsk();
+    ov.querySelector('#vcAvBtn').onclick = () => { askMode = 'av'; askEl.style.display = 'none'; epsEl.style.display = 'none'; avEl.style.display = 'block'; keys.clear(); hideTip(); paintAv(); };
+    avM.onclick = ev => { const b = ev.target.closest('button'); if (!b) return; myAv.m = b.dataset.m; paintAv(); saveAvatar(); };
+    avC.onclick = ev => { const b = ev.target.closest('button'); if (!b) return; myAv.c = +b.dataset.c; paintAv(); saveAvatar(); };
     // DVD tenu par un autre client : le boîtier apparaît dans ses mains (et disparaît de l'étagère)
     function ensureModel(o) {
       if (o.model) return o.model;
@@ -14312,6 +14568,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function removeOther(id) {
       const o = others[id]; if (!o) return;
+      o.dead = true;
       setRemoteHeld(o, '');
       if (o.model) { if (o.model.discTex) o.model.discTex.dispose(); o.model.discMat.dispose(); }
       scene.remove(o.g);
@@ -14328,13 +14585,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       o.tx = +p.x || 0; o.tz = +p.z || 0; o.tyaw = +p.y || 0; o.sit = !!p.s; o.last = performance.now();
       o.wantHeld = p.d ? String(p.d) : ''; o.open = !!p.o;
+      applyAvatar(o, p.a ? String(p.a) : '', +p.c || 0);
     }
     function sendPos() {
       if (!channel) return;
       const p = camera.position;
       lastSend = performance.now(); lsx = p.x; lsz = p.z; lsyaw = yaw;
       try {
-        channel.send({ type: 'broadcast', event: 'p', payload: { id: myId, n: myName, h: myHue, x: +p.x.toFixed(2), z: +p.z.toFixed(2), y: +yaw.toFixed(2), s: sitting ? 1 : 0,
+        channel.send({ type: 'broadcast', event: 'p', payload: { id: myId, n: myName, h: myHue, a: myAv.m, c: myAv.c, x: +p.x.toFixed(2), z: +p.z.toFixed(2), y: +yaw.toFixed(2), s: sitting ? 1 : 0,
           d: (heldD && hstate !== 'putting') ? heldD.t.title : '', o: hstate === 'opening' ? 1 : 0 } });
       } catch (e) {}
     }
@@ -14358,6 +14616,12 @@ document.addEventListener('DOMContentLoaded', () => {
         o.g.position.set(o.x, floorAt(o.x, o.z) + (o.sit ? -0.38 : 0), o.z);
         o.g.rotation.y = o.yaw + Math.PI;
         o.legL.rotation.x = o.sit ? -1.5 : sw; o.legR.rotation.x = o.sit ? -1.5 : -sw;
+        if (o.mixer) {
+          const mv = o.sit ? 0 : speed, run = Math.max(0, Math.min(1, (mv - 4) / 1.5));
+          if (o.aW) { o.aW.setEffectiveWeight(1 - run); o.aW.timeScale = mv < 0.25 ? 0 : Math.min(1.5, 0.7 + mv * 0.3); }
+          if (o.aR) { o.aR.setEffectiveWeight(run); o.aR.timeScale = 1; }
+          o.mixer.update(dt);
+        }
         if ((o.heldD ? o.heldD.t.title : '') !== o.wantHeld) setRemoteHeld(o, o.wantHeld);
         o.hk += ((o.heldD ? 1 : 0) - o.hk) * Math.min(1, dt * 8);
         o.openT += ((o.open ? 1 : 0) - o.openT) * Math.min(1, dt * 5);
@@ -14379,7 +14643,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (raw) {
             const j = JSON.parse(raw), u = j.user || (j.currentSession && j.currentSession.user);
             if (u) {
-              uid = u.id;
+              uid = u.id; myUid = uid;
               const m = u.user_metadata || {};
               myName = m.username || m.user_name || m.name || m.full_name || (u.email ? u.email.split('@')[0] : myName);
             }
@@ -14393,6 +14657,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const r = await sbClient.from('profiles').select('*').eq('id', uid).maybeSingle();
             const pr = r && r.data;
             if (pr) myName = pr.username || pr.pseudo || pr.name || pr.display_name || myName;
+            if (pr && pr.avatar) { const a = typeof pr.avatar === 'string' ? JSON.parse(pr.avatar) : pr.avatar; if (a && a.m !== undefined) { myAv = { m: String(a.m), c: +a.c || 0 }; try { localStorage.setItem('vcAvatar', JSON.stringify(myAv)); } catch (e) {} netDirty = true; paintAv(); } }
           } catch (e) {}
         }
         if (destroyed) return;
@@ -14449,7 +14714,7 @@ document.addEventListener('DOMContentLoaded', () => {
       keys.clear(); hideTip();
       setTimeout(() => { try { askIn.focus(); } catch (e) {} }, 50);
     }
-    function closeAsk() { askEl.style.display = 'none'; epsEl.style.display = 'none'; askMode = null; try { askIn.blur(); } catch (e) {} }
+    function closeAsk() { askEl.style.display = 'none'; epsEl.style.display = 'none'; avEl.style.display = 'none'; askMode = null; try { askIn.blur(); } catch (e) {} }
     function choose(d) {
       const m = askMode; closeAsk();
       if (m === 'vendor') vendorFetch(d); else if (m === 'cinema') playFilm(d);
