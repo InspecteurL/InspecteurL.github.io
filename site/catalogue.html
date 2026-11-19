@@ -13172,6 +13172,210 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 </style>
 
+<!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+
+.vc-snd {
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.18); cursor:pointer;
+  background:rgba(31,31,40,.9); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none;
+}
+.vc-snd .material-symbols-outlined { font-size:20px; }
+.vc-hold {
+  position:absolute; left:50%; transform:translateX(-50%); top:58px; display:none; text-align:center;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.18); padding:8px 14px; border-radius:12px;
+  font-size:.85rem; max-width:90vw; pointer-events:none; line-height:1.35;
+}
+.vc-hold span { color:#bbb; font-size:.78rem; }
+.vc-joy {
+  position:absolute; right:16px; bottom:48px; width:116px; height:116px; border-radius:50%; display:none;
+  background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.22); touch-action:none;
+}
+@media (pointer:coarse) { .vc-joy { display:block; } }
+.vc-knob {
+  position:absolute; left:50%; top:50%; width:52px; height:52px; margin:-26px 0 0 -26px; border-radius:50%;
+  background:rgba(255,255,255,.35); border:2px solid rgba(255,255,255,.5); pointer-events:none;
+}
+.vc-sub { position:absolute; left:14px; top:54px; pointer-events:none; }
+.vc-online {
+  display:none; align-items:center; gap:5px; padding:3px 10px; border-radius:14px; font-size:.78rem;
+  background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.16);
+}
+.vc-online .material-symbols-outlined { font-size:16px; }
+.vc-map {
+  position:absolute; right:14px; top:56px; border-radius:6px; cursor:crosshair; touch-action:none;
+  box-shadow:0 2px 12px rgba(0,0,0,.55);
+}
+.vc-say {
+  position:absolute; display:none; transform:translate(-50%,-100%); background:#fff; color:#111; border-radius:12px;
+  padding:7px 11px; max-width:230px; font-size:.82rem; line-height:1.3; pointer-events:none; z-index:2;
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+}
+.vc-say::after {
+  content:''; position:absolute; left:50%; bottom:-7px; margin-left:-7px; border:7px solid transparent;
+  border-bottom:0; border-top-color:#fff;
+}
+.vc-ask {
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(92vw,380px); display:none; z-index:5;
+  background:rgba(14,14,24,.96); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:12px;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+.vc-ask-h { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.vc-ask-h button { background:none; border:none; color:#fff; cursor:pointer; display:flex; }
+.vc-ask input[type=text] {
+  width:100%; box-sizing:border-box; padding:.6rem .8rem; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+  background:#1c1c28; color:#fff; font-size:1rem; font-family:inherit;
+}
+.vc-eps-s { display:flex; flex-wrap:wrap; gap:6px; }
+.vc-eps-s button { background:rgba(255,255,255,.1); border:none; color:#fff; padding:.35rem .8rem; border-radius:20px; cursor:pointer; font-family:inherit; font-size:.8rem; }
+.vc-game { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.6); z-index:8; padding:10px; }
+.vc-g-box { background:linear-gradient(#2a0d14,#14070b); border:2px solid #c8a24a; border-radius:16px; padding:14px 16px 16px; width:min(560px,96vw); max-height:94vh; overflow:auto; color:#fff; box-shadow:0 20px 60px rgba(0,0,0,.7); }
+.vc-g-h { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.vc-g-h b { font-size:1.05rem; letter-spacing:.04em; color:#f1d98a; flex:1; }
+.vc-g-h span { font-size:.85rem; background:rgba(255,255,255,.1); padding:.2rem .7rem; border-radius:20px; }
+.vc-g-h button { background:none; border:none; color:#fff; cursor:pointer; }
+.vc-g-box button { font-family:inherit; }
+.vc-g-reels { display:flex; justify-content:center; gap:10px; margin:6px 0 12px; }
+.vc-g-reels div { width:84px; height:96px; background:#f6f2e6; color:#111; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:48px; box-shadow:inset 0 0 14px rgba(0,0,0,.4); }
+.vc-g-lab { font-size:.78rem; opacity:.75; margin:8px 0 2px; }
+.vc-g-hand { display:flex; flex-wrap:wrap; min-height:80px; }
+.vc-card { width:52px; height:74px; border-radius:7px; background:#fff; color:#111; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; font-weight:700; font-size:1.05rem; margin:3px; box-shadow:0 2px 6px rgba(0,0,0,.5); position:relative; }
+.vc-card.red { color:#c4121f; }
+.vc-card.back { background:repeating-linear-gradient(45deg,#7a1424,#7a1424 6px,#5a0e1a 6px,#5a0e1a 12px); border:2px solid #f6f2e6; }
+.vc-card.held { transform:translateY(-8px); outline:3px solid #f1d98a; }
+.vc-card.held::after { content:'GARDÉ'; position:absolute; bottom:-16px; font-size:.55rem; color:#f1d98a; }
+.vc-g-bet { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:12px 0 8px; }
+.vc-g-bet input { width:90px; padding:.4rem .5rem; border-radius:8px; border:1px solid #6a4a22; background:#0d0507; color:#fff; font-size:1rem; }
+.vc-g-chips { display:flex; gap:6px; }
+.vc-g-chips button, .vc-g-row button, .vc-g-pick button { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); color:#fff; padding:.4rem .8rem; border-radius:20px; cursor:pointer; }
+.vc-g-pick { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+.vc-g-pick button.on { background:linear-gradient(90deg,#7b2cff,#e50914); border-color:transparent; font-weight:700; }
+.vc-g-row { display:flex; gap:8px; margin:12px 0 4px; }
+.vc-g-row button { flex:1; padding:.65rem; font-weight:700; }
+.vc-g-go { width:100%; background:linear-gradient(90deg,#c8a24a,#e8c85a); color:#2a0d14; border:none; padding:.75rem; border-radius:12px; font-weight:800; font-size:1rem; cursor:pointer; margin-top:6px; }
+.vc-g-note { font-size:.75rem; opacity:.65; margin-top:8px; line-height:1.4; }
+.vc-g-msg { min-height:1.4em; margin-top:10px; font-weight:700; text-align:center; }
+.vc-g-msg.ok { color:#59ff8a; } .vc-g-msg.ko { color:#ff7a7a; }
+.vc-av-c { display:flex; flex-wrap:wrap; gap:8px; margin:.6rem 0 .2rem; }
+.vc-av-c button { width:30px; height:30px; border-radius:50%; border:2px solid rgba(255,255,255,.25); cursor:pointer; padding:0; }
+.vc-av-c button.on { border-color:#fff; box-shadow:0 0 0 2px #e50914; }
+.vc-av-n { font-size:.72rem; opacity:.65; margin-top:.5rem; line-height:1.3; }
+.vc-eps-s button.on { background:linear-gradient(90deg,#7b2cff,#e50914); font-weight:700; }
+.vc-ask-l { margin-top:8px; display:flex; flex-direction:column; gap:4px; max-height:38vh; overflow:auto; }
+.vc-ask-l button {
+  display:flex; justify-content:space-between; gap:10px; text-align:left; padding:.5rem .7rem; border-radius:8px;
+  border:none; background:rgba(255,255,255,.07); color:#fff; cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+.vc-ask-l button:hover { background:rgba(229,9,20,.5); }
+.vc-ask-l button span { color:#aaa; font-size:.75rem; white-space:nowrap; }
+.vc-ask-n { color:#aaa; font-size:.85rem; padding:6px; }
+.vc-ask-r {
+  margin-top:10px; width:100%; padding:.55rem; border:none; border-radius:10px; cursor:pointer; color:#fff;
+  background:linear-gradient(90deg,#7b2cff,#e50914); font-weight:700; font-family:inherit;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.vc-cine {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; width:min(94vw,640px); display:none; z-index:3;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.16); border-radius:12px; padding:8px 12px;
+}
+@media (pointer:coarse) { .vc-cine { bottom:176px; } }
+.vc-ov .vc-top, .vc-ov .vc-sub, .vc-ov .vc-map, .vc-ov .vc-cine, .vc-ov .vc-hint, .vc-ov .vc-joy, .vc-ov .vc-pad, .vc-ov .vc-stand, .vc-ov .vc-say, .vc-ov .vc-hold, .vc-ov .vc-tip { transition:opacity .5s; }
+.vc-ov.vc-zen .vc-top, .vc-ov.vc-zen .vc-sub, .vc-ov.vc-zen .vc-map, .vc-ov.vc-zen .vc-cine, .vc-ov.vc-zen .vc-hint, .vc-ov.vc-zen .vc-joy, .vc-ov.vc-zen .vc-pad, .vc-ov.vc-zen .vc-stand, .vc-ov.vc-zen .vc-say, .vc-ov.vc-zen .vc-hold, .vc-ov.vc-zen .vc-tip { opacity:0 !important; pointer-events:none !important; }
+.vc-ov.vc-zen .vc-top > *, .vc-ov.vc-zen .vc-cine > *, .vc-ov.vc-zen .vc-pad > * { pointer-events:none !important; }
+.vc-ov.vc-zen { cursor:none; }
+.vc-cine.vc-frame #vcCpl, .vc-cine.vc-frame #vcCbk, .vc-cine.vc-frame #vcCfw, .vc-cine.vc-frame #vcCsk, .vc-cine.vc-frame #vcCtm, .vc-cine.vc-frame #vcCvl { display:none; }
+.vc-cine-t { font-size:.85rem; margin-bottom:6px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vc-cine-r { display:flex; align-items:center; gap:6px; }
+.vc-cine-r button { background:none; border:none; color:#fff; cursor:pointer; display:flex; padding:2px; }
+.vc-cine-r .material-symbols-outlined { font-size:24px; }
+.vc-cine-r input[type=range] { flex:1; min-width:40px; }
+.vc-cine-r input#vcCvl { flex:0 0 70px; }
+.vc-cine-r span { font-size:.75rem; color:#ccc; white-space:nowrap; }
+.vc-stand {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; display:none; align-items:center; gap:6px;
+  padding:.55rem 1.1rem; border-radius:20px; border:none; background:#7b2cff; color:#fff; font-weight:700;
+  cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+</style>
+
 <script>
 (function () {
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -13408,6 +13612,9 @@ document.addEventListener('DOMContentLoaded', () => {
     '<div class="vc-ask vc-eps" id="vcAv"><div class="vc-ask-h"><b>Mon personnage</b><button id="vcAvX" aria-label="Fermer">' + ic('close') + '</button></div>' +
       '<div class="vc-eps-s" id="vcAvM"></div><div class="vc-av-c" id="vcAvC"></div>' +
       '<div class="vc-av-n">Les autres visiteurs te voient ainsi (tu ne te vois pas toi-même en vue à la première personne).</div></div>' +
+    '<div class="vc-game" id="vcGame"><div class="vc-g-box"><div class="vc-g-h"><b id="vcGT"></b><span id="vcGB"></span><button id="vcGX" aria-label="Fermer">' + ic('close') + '</button></div><div id="vcGBody"></div><div class="vc-g-msg" id="vcGM"></div></div></div>' +
+    '<div class="vc-ask vc-eps" id="vcBar"><div class="vc-ask-h"><b>Le barman : que puis-je te servir ?</b><button id="vcBarX" aria-label="Fermer">' + ic('close') + '</button></div>' +
+      '<div class="vc-eps-s" id="vcBarL"></div></div>' +
     '<div class="vc-cine" id="vcCine"><div class="vc-cine-t" id="vcCineT"></div><div class="vc-cine-r">' +
       '<button id="vcCpl" aria-label="Lecture / pause">' + ic('play_arrow') + '</button>' +
       '<button id="vcCbk" aria-label="Reculer de 10 s">' + ic('replay_10') + '</button>' +
@@ -13552,8 +13759,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const D = zMax - zMin;
     const xMin = -W / 2, xMax = W / 2;
     // casino secret : très loin à l'est, 30 m sous le club ; cabine d'ascenseur contre le mur est
-    const CAS_X0 = xMax + 60, CAS_W = 20, CAS_D = 16, CAS_Y = -30, CAS_H = 4.4, CAB_X = xMax - 1.2, CAB_Z = -0.6;
-    let casAnimFn = null;
+    const CAS_X0 = xMax + 60, CAS_W = 20, CAS_D = 16, CAS_Y = -30, CAS_H = 4.4, CAB_X = xMax - 1.2, CAB_Z = zMax - 0.95;
+    let casAnimFn = null, barTick = null, barServe = null, barDrink = null;
     // ---- Porte + salle de cinéma (à gauche de la salle) ----
     const CIN_L = 27, CIN_W = 16, CIN_Y0 = -5.6, CIN_YT = 3.6;
     const TIER_N = 20, TIER_D = 0.95, TIER_H = 0.28;
@@ -13762,7 +13969,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---- Comptoir ----
     const rects = []; // zones infranchissables [minX, maxX, minZ, maxZ]
     const counter = new THREE.Group();
-    counter.position.set(xMax - 2.0, 0, zMax - 1.1);
+    counter.position.set(xMax - 4.6, 0, zMax - 1.1); // décalé pour libérer le coin (cabine d'ascenseur)
     const cBody = new THREE.Mesh(RB(2.6, 1.0, 0.8), surf('wood069', 2.2, 0.9, 0xbbbbbb));
     cBody.position.y = 0.5;
     const cTop = new THREE.Mesh(RB(2.8, 0.06, 1.0), surf('leather034', 2.5, 1, 0xffffff));
@@ -14262,7 +14469,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let vendorGive = false;
 
     // ---- Itinéraire : couloir de droite + allées entre les rayons ----
-    const V_XC = xMax - 1.55;
+    const V_XC = xMax - 1.55, VEX = counter.position.x + 1.9; // VEX : sortie du vendeur, entre le comptoir et la cabine
     const nRows = rowsDef.length;
     const rowZk = k => ZSTART - k * ROW_GAP;
     const aisleHi = k => k === 0 ? zMax - 2.0 : rowZk(k - 1) - 0.7;
@@ -14286,7 +14493,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return pts;
     }
     function planHome(fx, fz) {
-      return planPath(fx, fz, V_XC, zMax - 2.0).concat([[xMax - 0.35, zMax - 2.0], [xMax - 0.35, vz], [vx, vz]]);
+      return planPath(fx, fz, V_XC, zMax - 2.0).concat([[VEX, zMax - 2.0], [VEX, vz], [vx, vz]]);
     }
 
     const sayEl = ov.querySelector('#vcSay');
@@ -14300,7 +14507,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function vendorFetch(d) {
       if (vJob) { vSay('Un instant, je finis avec un autre client !', 3500); return; }
       const sz = d.rowZ + d.side * 1.15;
-      const path = [[xMax - 0.35, vz], [xMax - 0.35, zMax - 2.0], [V_XC, zMax - 2.0]].concat(planPath(V_XC, zMax - 2.0, d.wx, sz));
+      const path = [[VEX, vz], [VEX, zMax - 2.0], [V_XC, zMax - 2.0]].concat(planPath(V_XC, zMax - 2.0, d.wx, sz));
       vJob = { d: d, phase: 'going', path: path, pi: 0, t: 0, rp: 0 };
       vSay('OK, je vais chercher « ' + d.t.title + ' » ! Une seconde…', 6000);
       snd('blip');
@@ -14642,8 +14849,9 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---------- Cabine d'ascenseur + casino secret (sous le club) ---------- */
     const casDyn = [], cabins = [];
     const casObjs = {
-      poker: { kind: 'casino', label: 'Table de poker' }, black: { kind: 'casino', label: 'Table de blackjack' },
-      roul: { kind: 'casino', label: 'Roulette' }, slot: { kind: 'casino', label: 'Machine à sous' }, juke: { kind: 'casino', label: 'Salle de jeux' }
+      poker: { kind: 'casino', label: 'Poker vidéo', game: 'poker' }, black: { kind: 'casino', label: 'Table de blackjack', game: 'blackjack' },
+      bacc: { kind: 'casino', label: 'Table de baccara', game: 'baccara' },
+      roul: { kind: 'casino', label: 'Roulette', game: null }, slot: { kind: 'casino', label: 'Machine à sous', game: 'slot' }, juke: { kind: 'casino', label: 'Tous les jeux', game: null }
     };
     const cTex = (w, h, draw, rx, ry) => {
       const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
@@ -14804,7 +15012,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         rects.push([X0 + lx - 1.1, X0 + lx + 1.1, lz - 1.1, lz + 1.1]);
       };
-      table(6.5, -3.3, casObjs.poker); table(6.5, 3.3, casObjs.black); table(11.5, 0.4, casObjs.poker);
+      table(6.5, -3.3, casObjs.black); table(6.5, 3.3, casObjs.bacc); table(11.5, 0.4, casObjs.poker);
       // ---- roulette ----
       bx(3.2, 0.1, 1.4, felt, 15.6, 0.92, 1.6, 0.03, casObjs.roul);
       bx(3.4, 0.14, 0.14, rim, 15.6, 0.97, 0.9, 0.03, casObjs.roul); bx(3.4, 0.14, 0.14, rim, 15.6, 0.97, 2.3, 0.03, casObjs.roul);
@@ -14849,6 +15057,77 @@ document.addEventListener('DOMContentLoaded', () => {
       bx(0.7, 0.4, 0.9, mL(0x1a0e08), 2.2, 0.2, 5.2, 0.04, null); rects.push([X0 + 1.8, X0 + 2.6, 4.7, 5.7]);
       // plantes
       [[RW - 0.8, 6.9], [RW - 0.8, -6.9], [0.8, 7.0], [0.8, -7.0]].forEach(p => { cyl(0.25, 0.2, 0.5, 10, mL(0x2a1a12), p[0], 0.25, p[1]); const f = place(new THREE.Mesh(new THREE.IcosahedronGeometry(0.45, 1), mL(0x1f5a2a)), p[0], 0.95, p[1]); f.scale.set(1, 1.3, 1); });
+      // ---- barman ----
+      const DRINKS = [
+        { id: 'whisky', name: 'Whisky', c: 0xc8781e, shape: 'tumbler', toast: 'Un whisky, sec. Santé !' },
+        { id: 'cocktail', name: 'Cocktail Horizon', c: 0xff4d8d, shape: 'coupe', garnish: 0xd01020, toast: 'Mon cocktail maison. À la tienne !' },
+        { id: 'champagne', name: 'Champagne', c: 0xf2e29a, shape: 'flute', toast: 'Du champagne, ça se fête !' },
+        { id: 'mojito', name: 'Mojito', c: 0x9be37a, shape: 'tall', garnish: 0x2f9a3a, toast: 'Un mojito bien frais.' },
+        { id: 'cola', name: 'Cola', c: 0x3a1a10, shape: 'tall', toast: 'Un cola, avec de la glace.' },
+        { id: 'cafe', name: 'Café', c: 0x4a2a14, shape: 'mug', toast: 'Un café serré pour tenir la nuit.' }
+      ];
+      casObjs.drinks = DRINKS;
+      const barObj = { kind: 'barman' }, drinkObj = { kind: 'drink' };
+      const bG = new THREE.Group(); { const w = W3(13.5, 0, -6.85); bG.position.set(w[0], w[1], w[2]); } scene.add(bG); casDyn.push(bG);
+      const bVest = mL(0x1a1a22), bPants = mL(0x14141a), bTie = mL(0xb01020), bHair = mL(0x15100c);
+      const bp = (geo, mat, x, y, z, par) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); (par || bG).add(m); m.userData.d = barObj; meshes.push(m); return m; };
+      bp(RB(0.18, 0.8, 0.2), bPants, -0.1, 0.4, 0); bp(RB(0.18, 0.8, 0.2), bPants, 0.1, 0.4, 0);
+      const bT = new THREE.Group(); bT.position.y = 0.8; bG.add(bT); casDyn.push(bT);
+      bp(RB(0.44, 0.6, 0.24), vShirt, 0, 0.3, 0, bT); bp(RB(0.46, 0.42, 0.26), bVest, 0, 0.22, 0, bT); bp(RB(0.11, 0.06, 0.02), bTie, 0, 0.55, 0.135, bT);
+      const bAL = new THREE.Group(); bAL.position.set(-0.28, 0.57, 0); bT.add(bAL);
+      const bAR = new THREE.Group(); bAR.position.set(0.28, 0.57, 0); bT.add(bAR);
+      [bAL, bAR].forEach(a => { casDyn.push(a); bp(RB(0.1, 0.5, 0.12), bVest, 0, -0.25, 0, a); bp(RB(0.09, 0.09, 0.1), vSkin, 0, -0.53, 0, a); });
+      const bH = new THREE.Group(); bH.position.y = 0.75; bT.add(bH); casDyn.push(bH);
+      bp(new THREE.SphereGeometry(0.13, 16, 12), vSkin, 0, 0, 0, bH);
+      bp(new THREE.SphereGeometry(0.14, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.5), bHair, 0, 0.03, -0.01, bH);
+      bp(RB(0.1, 0.02, 0.02), bHair, 0, -0.045, 0.125, bH);
+      [-1, 1].forEach(sd => bp(RB(0.025, 0.03, 0.01), vBlack, sd * 0.05, 0.02, 0.125, bH));
+      const bs = { st: -1, def: null, glass: null, last: null };
+      const dropGlass = () => { if (!bs.glass) return; bs.glass.traverse(m => { const i = meshes.indexOf(m); if (i >= 0) meshes.splice(i, 1); }); scene.remove(bs.glass); bs.glass = null; };
+      const makeGlass = def => {
+        const g = new THREE.Group();
+        const gm = new THREE.MeshLambertMaterial({ color: 0xdfeeff, transparent: true, opacity: 0.35, depthWrite: false });
+        const lq = new THREE.MeshLambertMaterial({ color: def.c, emissive: def.c, emissiveIntensity: 0.18 });
+        const add = (geo, mat, y) => { const m = new THREE.Mesh(geo, mat); m.position.y = y; g.add(m); return m; };
+        let h = 0.12;
+        if (def.shape === 'tumbler') { add(new THREE.CylinderGeometry(0.045, 0.04, 0.11, 14), gm, 0.055); add(new THREE.CylinderGeometry(0.039, 0.036, 0.07, 14), lq, 0.045); h = 0.11; }
+        else if (def.shape === 'tall') { add(new THREE.CylinderGeometry(0.04, 0.035, 0.2, 14), gm, 0.1); add(new THREE.CylinderGeometry(0.034, 0.031, 0.15, 14), lq, 0.085); h = 0.2; }
+        else if (def.shape === 'flute') { add(new THREE.CylinderGeometry(0.003, 0.003, 0.1, 6), gm, 0.05); add(new THREE.CylinderGeometry(0.03, 0.012, 0.16, 14), gm, 0.18); add(new THREE.CylinderGeometry(0.026, 0.011, 0.11, 14), lq, 0.165); add(new THREE.CylinderGeometry(0.035, 0.035, 0.004, 12), gm, 0.002); h = 0.26; }
+        else if (def.shape === 'coupe') { add(new THREE.CylinderGeometry(0.003, 0.003, 0.09, 6), gm, 0.045); add(new THREE.CylinderGeometry(0.06, 0.012, 0.07, 16), gm, 0.125); add(new THREE.CylinderGeometry(0.052, 0.012, 0.045, 16), lq, 0.115); add(new THREE.CylinderGeometry(0.04, 0.04, 0.004, 12), gm, 0.002); h = 0.16; }
+        else { add(new THREE.CylinderGeometry(0.05, 0.045, 0.09, 14), mL(0xf4f4f0), 0.045); add(new THREE.CylinderGeometry(0.044, 0.044, 0.01, 14), lq, 0.088); const hd = add(new THREE.TorusGeometry(0.03, 0.008, 6, 10), mL(0xf4f4f0), 0.045); hd.position.x = 0.06; h = 0.09; }
+        if (def.garnish) { const gr = add(new THREE.SphereGeometry(0.018, 8, 6), mL(def.garnish), h + 0.005); gr.position.x = 0.02; }
+        if (def.shape === 'coupe' || def.id === 'mojito') { const st = add(new THREE.BoxGeometry(0.008, 0.16, 0.008), mB(0xffffff), h * 0.8); st.position.x = -0.015; st.rotation.z = 0.15; }
+        const hit = add(new THREE.BoxGeometry(0.16, 0.3, 0.16), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }), 0.14);
+        g.traverse(m => { if (m.isMesh) { m.userData.d = drinkObj; meshes.push(m); } });
+        return g;
+      };
+      rects.push([X0 + 9, X0 + 18, -7.9, -6.2]);
+      barServe = def => {
+        const dx = camera.position.x - bG.position.x, dz = camera.position.z - bG.position.z;
+        if (bs.st >= 0) { vSay('Un instant, je prépare ta commande !', 2500); return; }
+        if (Math.hypot(dx, dz) > 9) { vSay('Approche-toi un peu du bar !', 2500); return; }
+        bs.def = def; bs.st = 0; vSay(def.name + ' ? Ça arrive !', 2500);
+      };
+      barDrink = () => {
+        if (!bs.glass) return; const d = bs.def; dropGlass();
+        if (audio) audio.pickup(); vSay(d ? d.toast : 'Santé !', 3500);
+      };
+      barTick = (dt, t) => {
+        const dx = camera.position.x - bG.position.x, dz = camera.position.z - bG.position.z;
+        const a = Math.max(-0.9, Math.min(0.9, Math.atan2(dx, dz)));
+        bH.rotation.y += (a - bH.rotation.y) * Math.min(1, dt * 4);
+        if (bs.st >= 0) {
+          bs.st += dt;
+          bAL.rotation.x = bAR.rotation.x = -1.35 + Math.sin(bs.st * 20) * 0.3; bAL.rotation.z = 0.25; bAR.rotation.z = -0.25;
+          if (bs.st > 1.7) {
+            bs.st = -1; dropGlass(); bs.glass = makeGlass(bs.def);
+            bs.glass.position.set(Math.max(X0 + 9.8, Math.min(X0 + 17.2, camera.position.x)), Y0 + 1.13, -5.65); scene.add(bs.glass);
+            if (audio) audio.put(); vSay('Et voilà ! Clique sur ton verre pour le boire.', 3500);
+          }
+        } else {
+          bAR.rotation.x = -0.85 + Math.sin(t * 2.2) * 0.22; bAR.rotation.z = -0.3; bAL.rotation.x = -0.8; bAL.rotation.z = 0.3;
+        }
+      };
       // animation
       casAnimFn = t => {
         slotTop.forEach((m, i) => m.color.setHSL(((t * 0.5 + i * 0.17) % 1), 1, 0.55));
@@ -15086,7 +15365,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (d.kind === 'sofa') {
         tipEl.innerHTML = '<b>' + (d.label || 'Canapé') + '</b><br><span>' + (isTouch ? 'Touche' : 'Clique') + ' pour t’asseoir</span>';
       } else if (d.kind === 'casino') {
-        tipEl.innerHTML = '<b>' + d.label + '</b><br><span>' + (isTouch ? 'Touche' : 'Clique') + ' pour jouer (page Jeux)</span>';
+        tipEl.innerHTML = '<b>' + d.label + '</b><br><span>' + (isTouch ? 'Touche' : 'Clique') + ' pour jouer' + (d.game ? '' : ' (page Jeux)') + '</span>';
+      } else if (d.kind === 'barman') {
+        tipEl.innerHTML = '<b>Le barman</b><br><span>' + (isTouch ? 'Touche' : 'Clique') + ' pour commander</span>';
+      } else if (d.kind === 'drink') {
+        tipEl.innerHTML = '<b>Ton verre</b><br><span>' + (isTouch ? 'Touche' : 'Clique') + ' pour boire</span>';
       } else if (d.kind === 'vendor') {
         tipEl.innerHTML = '<b>Le vendeur</b><br><span>' + (isTouch ? 'Touche' : 'Clique') + ' pour un conseil</span>';
       } else if (d.kind === 'screen') {
@@ -15357,7 +15640,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dvdByTitle = {};
     dvds.forEach(d => { dvdByTitle[d.t.title] = d; });
     let netDirty = false;
-    let myUid = null;
+    let myUid = null, sbMod = null;
     let myAv = { m: '', c: 0 };
     try { const a = JSON.parse(localStorage.getItem('vcAvatar') || 'null'); if (a && a.m !== undefined) myAv = { m: String(a.m), c: +a.c || 0 }; } catch (e) {}
     const avMats = {};
@@ -15548,6 +15831,196 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {}
       });
     }
+    /* ---------- Jeux du casino jouables sur place (les fonctions Supabase restent seules juges des mises et gains) ---------- */
+    const gameEl = ov.querySelector('#vcGame'), gT = ov.querySelector('#vcGT'), gB = ov.querySelector('#vcGB'), gBody = ov.querySelector('#vcGBody'), gM = ov.querySelector('#vcGM');
+    ov.querySelector('#vcGX').onclick = () => closeAsk();
+    let sbCache = { tok: null, cl: null }, gBusy = false, gState = null, gLastBet = 10;
+    function sbAuth() {
+      let tok = null, uid = null;
+      try {
+        const raw = JSON.parse(localStorage.getItem('sb-wuagahavmbugmnuzsouf-auth-token') || 'null');
+        const s0 = raw && (raw.access_token ? raw : raw.currentSession);
+        if (s0 && s0.access_token) { tok = s0.access_token; uid = s0.user && s0.user.id; }
+      } catch (e) {}
+      if (!tok || !uid || !sbMod) return null;
+      if (sbCache.tok !== tok) {
+        sbCache.tok = tok;
+        sbCache.cl = sbMod.createClient(SB_URL, SB_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }, global: { headers: { Authorization: 'Bearer ' + tok } } });
+      }
+      return { cl: sbCache.cl, uid: uid };
+    }
+    const G_ERR = { non_authentifie: 'Connecte-toi sur le site pour jouer.', solde_insuffisant: 'Solde insuffisant.', mise_invalide: 'Mise invalide.', partie_introuvable: 'Partie introuvable.', partie_terminee: 'Cette partie est déjà terminée.', doublage_impossible: 'Tu ne peux pas doubler maintenant.', pari_invalide: 'Pari invalide.' };
+    function gErr(e) {
+      const m = String((e && (e.message || e.details)) || e || '');
+      for (const k in G_ERR) if (m.indexOf(k) !== -1) return G_ERR[k];
+      if (/jwt|expired/i.test(m)) return 'Session expirée : recharge la page du site, puis reviens.';
+      return 'Erreur : ' + m.slice(0, 140);
+    }
+    async function rpc(fn, args) {
+      const a = sbAuth(); if (!a) throw new Error('non_authentifie');
+      const r = await a.cl.rpc(fn, args || {}); if (r.error) throw r.error;
+      return Array.isArray(r.data) ? r.data[0] : r.data;
+    }
+    const gMsg = (t, ok) => { gM.textContent = t || ''; gM.className = 'vc-g-msg' + (ok === true ? ' ok' : ok === false ? ' ko' : ''); };
+    const setBal = v => { gB.textContent = v == null ? '' : 'Solde : ' + Number(v).toLocaleString('fr-FR'); };
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    const SUITS = { S: '♠', H: '♥', D: '♦', C: '♣', '♠': '♠', '♥': '♥', '♦': '♦', '♣': '♣' };
+    function parseCard(c) {
+      c = String(c).trim().toUpperCase(); let su, r;
+      if (/^[♠♥♦♣]/.test(c)) { su = c[0]; r = c.slice(1); } else { su = c.slice(-1); r = c.slice(0, -1); }
+      return { r: r === 'T' ? '10' : r, s: SUITS[su] || su };
+    }
+    function cardHtml(c, back, i, held) {
+      if (back) return '<div class="vc-card back"></div>';
+      const p = parseCard(c), red = p.s === '♥' || p.s === '♦';
+      return '<div class="vc-card' + (red ? ' red' : '') + (held ? ' held' : '') + '"' + (i !== undefined ? ' data-i="' + i + '"' : '') + '><span>' + esc(p.r) + '</span><span>' + esc(p.s) + '</span></div>';
+    }
+    function bjVal(cards) {
+      let t = 0, a = 0;
+      cards.forEach(c => { const r = parseCard(c).r; if (r === 'A') { t += 11; a++; } else if (r === '10' || 'JQK'.indexOf(r) !== -1) t += 10; else t += parseInt(r, 10) || 0; });
+      while (t > 21 && a > 0) { t -= 10; a--; }
+      return t;
+    }
+    const betRow = () => '<div class="vc-g-bet"><label for="vcGBet">Mise</label><input type="number" id="vcGBet" min="1" step="1" value="' + gLastBet + '"><div class="vc-g-chips">' +
+      [10, 50, 100, 500].map(v => '<button data-bet="' + v + '">' + v + '</button>').join('') + '</div></div>';
+    function getBet() {
+      const el = gBody.querySelector('#vcGBet'), v = el ? parseInt(el.value, 10) : 0;
+      if (!(v >= 1)) { gMsg('Entre une mise valide.', false); return 0; }
+      gLastBet = v; return v;
+    }
+    const chipClick = ev => { const b = ev.target.closest('[data-bet]'); if (!b) return false; const el = gBody.querySelector('#vcGBet'); if (el) el.value = b.dataset.bet; return true; };
+    const netMsg = (gain, bet) => gain > bet ? ['Gagné ! +' + (gain - bet), true] : gain === bet ? ['Mise remboursée.', null] : ['Perdu… -' + bet, false];
+    const SYM = { CERISE: '🍒', CITRON: '🍋', CLOCHE: '🔔', ETOILE: '⭐', DIAMANT: '💎', SEPT: '7️⃣' };
+
+    function gSlot() {
+      gT.textContent = 'Machine à sous';
+      gBody.innerHTML = '<div class="vc-g-reels"><div id="vcR0">🎰</div><div id="vcR1">🎰</div><div id="vcR2">🎰</div></div>' + betRow() +
+        '<button class="vc-g-go" data-a="spin">Lancer</button><div class="vc-g-note">3 symboles identiques : 🍒 ×3 · 🍋 ×4 · 🔔 ×8 · ⭐ ×15 · 💎 ×40 · 7️⃣ ×100. Deux cerises : mise remboursée.</div>';
+      gBody.onclick = async ev => {
+        if (chipClick(ev)) return;
+        const b = ev.target.closest('[data-a="spin"]'); if (!b || gBusy) return;
+        const bet = getBet(); if (!bet) return;
+        gBusy = true; gMsg('');
+        const rs = [0, 1, 2].map(i => gBody.querySelector('#vcR' + i)), ks = Object.keys(SYM);
+        const tm = rs.map(el => setInterval(() => { el.textContent = SYM[ks[(Math.random() * ks.length) | 0]]; }, 70));
+        let res = null, err = null; const t0 = Date.now();
+        try { res = await rpc('jouer_machine_a_sous', { p_mise: bet }); } catch (e) { err = e; }
+        await wait(Math.max(0, 900 - (Date.now() - t0)));
+        if (err || !res) { tm.forEach(clearInterval); gMsg(gErr(err), false); gBusy = false; return; }
+        for (let i = 0; i < 3; i++) { clearInterval(tm[i]); rs[i].textContent = SYM[res.symboles[i]] || res.symboles[i]; if (audio) audio.put(); await wait(350); }
+        setBal(res.nouveau_solde); const nm = netMsg(res.gain, bet); gMsg(nm[0], nm[1]); gBusy = false;
+      };
+    }
+
+    const BJ_RES = { gagne: 'Gagné !', perdu: 'Perdu…', egalite: 'Égalité : mise rendue.', blackjack: 'Blackjack !' };
+    function bjRender() {
+      const s = gState, done = !s || s.st !== 'en_cours';
+      gBody.innerHTML = (s
+        ? '<div class="vc-g-lab">Croupier' + (done ? ' · ' + bjVal(s.pc) : '') + '</div><div class="vc-g-hand">' + s.pc.map((c, i) => cardHtml(c, !done && i === 1)).join('') + '</div>' +
+          '<div class="vc-g-lab">Toi · ' + bjVal(s.pj) + '</div><div class="vc-g-hand">' + s.pj.map(c => cardHtml(c)).join('') + '</div>'
+        : '<div class="vc-g-note">Bats le croupier sans dépasser 21. Blackjack payé 3:2. Le croupier tire jusqu\'à 17.</div>') +
+        (done ? betRow() + '<button class="vc-g-go" data-a="deal">Distribuer</button>'
+              : '<div class="vc-g-row"><button data-a="hit">Tirer</button><button data-a="stand">Rester</button>' + (s.pj.length === 2 ? '<button data-a="dbl">Doubler</button>' : '') + '</div>');
+    }
+    function bjEnd(r) {
+      if (r.statut === 'en_cours') return;
+      const t = BJ_RES[r.resultat] || 'Partie terminée.';
+      gMsg(r.gain > 0 ? t + (r.resultat === 'egalite' ? '' : ' Tu reçois ' + r.gain + '.') : t, r.resultat === 'gagne' || r.resultat === 'blackjack' ? true : r.resultat === 'perdu' ? false : null);
+    }
+    function gBlack() {
+      gT.textContent = 'Blackjack'; gState = null; bjRender();
+      gBody.onclick = async ev => {
+        if (chipClick(ev)) return;
+        const b = ev.target.closest('[data-a]'); if (!b || gBusy) return;
+        const a = b.dataset.a; gBusy = true;
+        try {
+          if (a === 'deal') {
+            const bet = getBet(); if (!bet) { gBusy = false; return; } gMsg('');
+            const r = await rpc('blackjack_nouvelle_partie', { p_mise: bet });
+            gState = { id: r.partie_id, pj: r.cartes_joueur, pc: r.cartes_croupier, st: r.statut }; setBal(r.nouveau_solde); bjRender(); bjEnd(r);
+          } else {
+            const fn = { hit: 'blackjack_tirer', stand: 'blackjack_rester', dbl: 'blackjack_doubler' }[a];
+            const r = await rpc(fn, { p_partie_id: gState.id });
+            gState.pj = r.cartes_joueur; if (r.cartes_croupier) gState.pc = r.cartes_croupier; gState.st = r.statut; setBal(r.nouveau_solde); bjRender(); bjEnd(r);
+          }
+        } catch (e) { gMsg(gErr(e), false); }
+        gBusy = false;
+      };
+    }
+
+    function gBacc() {
+      gT.textContent = 'Baccara'; let pari = 'joueur';
+      const paint = () => {
+        gBody.querySelectorAll('[data-p]').forEach(b => b.classList.toggle('on', b.dataset.p === pari));
+      };
+      gBody.innerHTML = '<div id="vcBc"></div><div class="vc-g-lab">Ton pari</div><div class="vc-g-pick"><button data-p="joueur">Joueur ×2</button><button data-p="banquier">Banquier ×1,95</button><button data-p="egalite">Égalité ×9</button></div>' +
+        betRow() + '<button class="vc-g-go" data-a="play">Jouer</button><div class="vc-g-note">Le plus proche de 9 gagne. En cas d\'égalité, la mise est rendue si tu as parié sur Joueur ou Banquier.</div>';
+      paint();
+      gBody.onclick = async ev => {
+        if (chipClick(ev)) return;
+        const pb = ev.target.closest('[data-p]'); if (pb) { pari = pb.dataset.p; paint(); return; }
+        const b = ev.target.closest('[data-a="play"]'); if (!b || gBusy) return;
+        const bet = getBet(); if (!bet) return; gBusy = true; gMsg('');
+        try {
+          const r = await rpc('jouer_baccara', { p_mise: bet, p_pari: pari });
+          gBody.querySelector('#vcBc').innerHTML = '<div class="vc-g-lab">Joueur · ' + r.total_joueur + '</div><div class="vc-g-hand">' + r.cartes_joueur.map(c => cardHtml(c)).join('') +
+            '</div><div class="vc-g-lab">Banquier · ' + r.total_banquier + '</div><div class="vc-g-hand">' + r.cartes_banquier.map(c => cardHtml(c)).join('') + '</div>';
+          if (audio) audio.put(); setBal(r.nouveau_solde);
+          const who = { joueur: 'le Joueur', banquier: 'le Banquier', egalite: 'l\'égalité' }[r.gagnant] || r.gagnant;
+          const nm = netMsg(r.gain, bet); gMsg('Victoire de ' + who + ' · ' + nm[0], nm[1]);
+        } catch (e) { gMsg(gErr(e), false); }
+        gBusy = false;
+      };
+    }
+
+    const PK_LAB = { quinte_flush_royale: 'Quinte flush royale ×800', quinte_flush: 'Quinte flush ×50', carre: 'Carré ×25', full: 'Full ×9', couleur: 'Couleur ×6', quinte: 'Quinte ×4', brelan: 'Brelan ×3', double_paire: 'Double paire ×2', paire_valets_ou_plus: 'Paire de valets ou mieux ×1', rien: 'Rien' };
+    function gPoker() {
+      gT.textContent = 'Poker vidéo'; gState = null;
+      const paint = () => {
+        const s = gState;
+        gBody.innerHTML = (s && s.phase === 'draw'
+          ? '<div class="vc-g-lab">Touche les cartes à garder, puis échange le reste</div><div class="vc-g-hand" style="padding-bottom:14px">' + s.cartes.map((c, i) => cardHtml(c, false, i, s.hold[i])).join('') + '</div><button class="vc-g-go" data-a="draw">Échanger</button>'
+          : (s && s.cartes ? '<div class="vc-g-hand">' + s.cartes.map(c => cardHtml(c)).join('') + '</div>' : '') + betRow() + '<button class="vc-g-go" data-a="deal">Distribuer</button>' +
+            '<div class="vc-g-note">Paire de valets ou mieux ×1 · Double paire ×2 · Brelan ×3 · Quinte ×4 · Couleur ×6 · Full ×9 · Carré ×25 · Quinte flush ×50 · Royale ×800</div>');
+      };
+      paint();
+      gBody.onclick = async ev => {
+        if (chipClick(ev)) return;
+        const cd = ev.target.closest('.vc-card[data-i]');
+        if (cd && gState && gState.phase === 'draw') { const i = +cd.dataset.i; gState.hold[i] = !gState.hold[i]; paint(); return; }
+        const b = ev.target.closest('[data-a]'); if (!b || gBusy) return;
+        gBusy = true;
+        try {
+          if (b.dataset.a === 'deal') {
+            const bet = getBet(); if (!bet) { gBusy = false; return; } gMsg('');
+            const r = await rpc('poker_donner', { p_mise: bet });
+            gState = { phase: 'draw', id: r.partie_id, cartes: r.cartes, hold: [false, false, false, false, false], bet: bet }; setBal(r.nouveau_solde); if (audio) audio.put(); paint();
+          } else if (b.dataset.a === 'draw') {
+            const r = await rpc('poker_tirer', { p_partie_id: gState.id, p_garder: gState.hold });
+            const bet = gState.bet; gState = { phase: 'done', cartes: r.cartes }; setBal(r.nouveau_solde); paint();
+            const nm = netMsg(r.gain, bet); gMsg((PK_LAB[r.main] || r.main) + ' · ' + (r.gain > 0 ? 'tu reçois ' + r.gain : 'perdu'), r.gain > 0 ? true : false);
+          }
+        } catch (e) { gMsg(gErr(e), false); }
+        gBusy = false;
+      };
+    }
+
+    function openGameUI(kind) {
+      askMode = 'game'; askEl.style.display = 'none'; epsEl.style.display = 'none'; avEl.style.display = 'none'; barEl.style.display = 'none';
+      gameEl.style.display = 'flex'; keys.clear(); hideTip(); gBusy = false; gState = null; gMsg(''); setBal(null); gBody.onclick = null;
+      const a = sbAuth();
+      if (!a) { gT.textContent = 'Casino'; gBody.innerHTML = '<p>Connecte-toi sur le site (avec ton compte) pour jouer avec ton solde, puis rouvre le Video club.</p>'; return; }
+      a.cl.from('profiles').select('balance').eq('id', a.uid).maybeSingle().then(r => { if (r && r.data) setBal(r.data.balance); });
+      ({ slot: gSlot, blackjack: gBlack, baccara: gBacc, poker: gPoker })[kind]();
+    }
+
+    const barEl = ov.querySelector('#vcBar'), barL = ov.querySelector('#vcBarL');
+    function openBar() {
+      askMode = 'bar'; askEl.style.display = 'none'; epsEl.style.display = 'none'; avEl.style.display = 'none'; barEl.style.display = 'block'; keys.clear(); hideTip();
+      barL.innerHTML = casObjs.drinks.map(d => '<button data-i="' + d.id + '">' + esc(d.name) + '</button>').join('');
+    }
+    ov.querySelector('#vcBarX').onclick = () => closeAsk();
+    barL.onclick = ev => { const b = ev.target.closest('button'); if (!b) return; const d = casObjs.drinks.find(x => x.id === b.dataset.i); closeAsk(); if (d && barServe) barServe(d); };
     const avEl = ov.querySelector('#vcAv'), avM = ov.querySelector('#vcAvM'), avC = ov.querySelector('#vcAvC');
     function paintAv() {
       avM.innerHTML = [{ id: '', name: 'Classique' }].concat(AV_MODELS).map(m => '<button data-m="' + m.id + '" class="' + (m.id === myAv.m ? 'on' : '') + '">' + esc(m.name) + '</button>').join('');
@@ -15556,12 +16029,9 @@ document.addEventListener('DOMContentLoaded', () => {
     async function saveAvatar() {
       try { localStorage.setItem('vcAvatar', JSON.stringify(myAv)); } catch (e) {}
       netDirty = true;
-      if (!myUid || !sbClient) return;
       try {
-        const raw = JSON.parse(localStorage.getItem('sb-wuagahavmbugmnuzsouf-auth-token') || 'null');
-        const s0 = raw && (raw.access_token ? raw : raw.currentSession);
-        if (s0 && s0.access_token && s0.refresh_token) await sbClient.auth.setSession({ access_token: s0.access_token, refresh_token: s0.refresh_token });
-        await sbClient.from('profiles').update({ avatar: myAv }).eq('id', myUid);
+        const a = sbAuth(); if (!a) return;
+        await a.cl.from('profiles').update({ avatar: myAv }).eq('id', a.uid);
       } catch (e) { console.warn('[Video club] avatar non sauvegardé dans profiles', e); }
     }
     ov.querySelector('#vcAvX').onclick = () => closeAsk();
@@ -15682,6 +16152,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         } catch (e) {}
         const mod = await import('https://esm.sh/@supabase/supabase-js@2');
+        sbMod = mod;
         if (destroyed) return;
         sbClient = mod.createClient(SB_URL, SB_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
         if (uid) {
@@ -15746,7 +16217,7 @@ document.addEventListener('DOMContentLoaded', () => {
       keys.clear(); hideTip();
       setTimeout(() => { try { askIn.focus(); } catch (e) {} }, 50);
     }
-    function closeAsk() { askEl.style.display = 'none'; epsEl.style.display = 'none'; avEl.style.display = 'none'; askMode = null; try { askIn.blur(); } catch (e) {} }
+    function closeAsk() { askEl.style.display = 'none'; epsEl.style.display = 'none'; avEl.style.display = 'none'; barEl.style.display = 'none'; gameEl.style.display = 'none'; askMode = null; try { askIn.blur(); } catch (e) {} }
     function choose(d) {
       const m = askMode; closeAsk();
       if (m === 'vendor') vendorFetch(d); else if (m === 'cinema') playFilm(d);
@@ -16151,6 +16622,9 @@ document.addEventListener('DOMContentLoaded', () => {
           else if (d.kind === 'sofa') sitOn(d);
           else if (d.kind === 'vendor') talkVendor();
           else if (d.kind === 'screen') openAsk('cinema');
+          else if (d.kind === 'barman') { if (camera.position.x > CAS_X0 - 5) openBar(); }
+          else if (d.kind === 'drink') { if (barDrink) barDrink(); }
+          else if (d.kind === 'casino' && d.game) openGameUI(d.game);
           else if (d.kind === 'casino') { try { window.open('https://inspecteurl.github.io/site/jeux.html', '_blank', 'noopener'); } catch (e) {} }
           else if (down.type === 'mouse' || hovered === d) go(d);
           else { setHover(d); showTip(d, x, y); }
@@ -16175,6 +16649,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hstate === 'held') putBack(null); else if (hstate === 'idle') closeClub();
         return;
       }
+      if (askMode === 'game' || askMode === 'bar') return;
       if (MOVE_KEYS.indexOf(e.code) !== -1) {
         if (document.activeElement && document.activeElement.tagName === 'SELECT') return;
         keys.add(e.code); e.preventDefault();
@@ -16222,7 +16697,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function updateLift(dt) {
       const mh = inCasino(); if (mh !== mapHid) { mapHid = mh; mapEl.style.visibility = mh ? 'hidden' : ''; }
-      if (casAnimFn && mh) casAnimFn(performance.now() / 1000);
+      if (mh) { const tt = performance.now() / 1000; if (casAnimFn) casAnimFn(tt); if (barTick) barTick(dt, tt); }
       if (!lift) {
         const cab = mh ? cabCas : cabMain;
         if (Math.abs(camera.position.x - cab.cx) < 0.36 && Math.abs(camera.position.z - cab.cz) < 0.42) { if (liftArmed) startLift(); }
