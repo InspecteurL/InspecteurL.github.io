@@ -13807,6 +13807,233 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 </style>
 
+<!-- =====================================================================
+     HORIZONCINÉ — VIDEO CLUB 3D
+     À coller dans catalogue.html, JUSTE AVANT la balise </body>
+     (après le bloc Swipe + Questionnaire).
+     Rien d'autre à modifier : le script crée lui-même le bouton "Video club"
+     (à côté de Swipe / Trouve-moi un titre) et lit les cartes de #movieGrid.
+     Three.js est chargé depuis le CDN jsDelivr uniquement quand on ouvre le video club.
+     ===================================================================== -->
+
+<style>
+/* ---------- Bouton d'entrée ---------- */
+.vc-btn {
+  padding:.75rem 1.4rem; border:none; border-radius:24px; cursor:pointer;
+  background:linear-gradient(90deg,#7b2cff,#e50914); color:#fff; font-weight:700; font-size:1rem;
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.vc-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(123,44,255,.5); }
+.vc-btn .material-symbols-outlined { font-size:22px; line-height:1; }
+.vc-solo-bar { display:flex; justify-content:center; margin:0 12px 1.5rem; }
+
+/* ---------- Overlay ---------- */
+.vc-ov {
+  position:fixed; inset:0; z-index:3500; background:#05050a; display:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:inherit; color:#fff;
+}
+.vc-ov.open { display:block; }
+.vc-ov canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+
+.vc-top {
+  position:absolute; top:0; left:0; right:0; display:flex; gap:10px; align-items:center;
+  justify-content:space-between; padding:10px 14px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+}
+.vc-top > * { pointer-events:auto; }
+.vc-brand {
+  display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:2px; font-size:1.05rem;
+  color:#fff; text-shadow:0 0 10px #ff2d6f, 0 0 22px #ff2d6f;
+}
+.vc-brand .material-symbols-outlined { font-size:26px; }
+.vc-top select {
+  padding:.45rem .9rem; border-radius:18px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(31,31,40,.9); color:#fff; font-size:.85rem; font-family:inherit; max-width:46vw;
+}
+.vc-x {
+  display:inline-flex; align-items:center; gap:6px; padding:.45rem .9rem; border-radius:18px; border:none;
+  background:#e50914; color:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:.85rem;
+}
+.vc-x .material-symbols-outlined { font-size:20px; }
+
+.vc-loading {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#bbb; font-size:1.1rem; pointer-events:none;
+}
+.vc-tip {
+  position:absolute; display:none; pointer-events:none; background:rgba(0,0,0,.88);
+  border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:10px;
+  font-size:.85rem; max-width:260px; line-height:1.3;
+}
+.vc-tip span { color:#aaa; font-size:.75rem; }
+.vc-hint {
+  position:absolute; left:0; right:0; bottom:10px; text-align:center; color:rgba(255,255,255,.65);
+  font-size:.78rem; pointer-events:none; padding:0 70px; text-shadow:0 1px 4px #000;
+}
+
+/* Croix directionnelle (tactile uniquement) */
+.vc-pad {
+  position:absolute; left:14px; bottom:46px; display:none; grid-template-columns:repeat(3,54px);
+  grid-template-rows:repeat(2,54px); gap:6px;
+}
+@media (pointer:coarse) { .vc-pad { display:grid; } }
+.vc-pad button {
+  border:none; border-radius:14px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; touch-action:none;
+}
+.vc-pad button:active { background:rgba(229,9,20,.7); }
+.vc-pad .material-symbols-outlined { font-size:30px; }
+.vc-pad [data-k="f"] { grid-column:2; grid-row:1; }
+.vc-pad [data-k="l"] { grid-column:1; grid-row:2; }
+.vc-pad [data-k="b"] { grid-column:2; grid-row:2; }
+.vc-pad [data-k="r"] { grid-column:3; grid-row:2; }
+
+.vc-snd {
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.18); cursor:pointer;
+  background:rgba(31,31,40,.9); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none;
+}
+.vc-snd .material-symbols-outlined { font-size:20px; }
+.vc-hold {
+  position:absolute; left:50%; transform:translateX(-50%); top:58px; display:none; text-align:center;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.18); padding:8px 14px; border-radius:12px;
+  font-size:.85rem; max-width:90vw; pointer-events:none; line-height:1.35;
+}
+.vc-hold span { color:#bbb; font-size:.78rem; }
+.vc-joy {
+  position:absolute; right:16px; bottom:48px; width:116px; height:116px; border-radius:50%; display:none;
+  background:rgba(255,255,255,.10); border:2px solid rgba(255,255,255,.22); touch-action:none;
+}
+@media (pointer:coarse) { .vc-joy { display:block; } }
+.vc-knob {
+  position:absolute; left:50%; top:50%; width:52px; height:52px; margin:-26px 0 0 -26px; border-radius:50%;
+  background:rgba(255,255,255,.35); border:2px solid rgba(255,255,255,.5); pointer-events:none;
+}
+.vc-sub { position:absolute; left:14px; top:54px; pointer-events:none; }
+.vc-online {
+  display:none; align-items:center; gap:5px; padding:3px 10px; border-radius:14px; font-size:.78rem;
+  background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.16);
+}
+.vc-online .material-symbols-outlined { font-size:16px; }
+.vc-map {
+  position:absolute; right:14px; top:56px; border-radius:6px; cursor:crosshair; touch-action:none;
+  box-shadow:0 2px 12px rgba(0,0,0,.55);
+}
+.vc-say {
+  position:absolute; display:none; transform:translate(-50%,-100%); background:#fff; color:#111; border-radius:12px;
+  padding:7px 11px; max-width:230px; font-size:.82rem; line-height:1.3; pointer-events:none; z-index:2;
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+}
+.vc-say::after {
+  content:''; position:absolute; left:50%; bottom:-7px; margin-left:-7px; border:7px solid transparent;
+  border-bottom:0; border-top-color:#fff;
+}
+.vc-ask {
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(92vw,380px); display:none; z-index:5;
+  background:rgba(14,14,24,.96); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:12px;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+.vc-ask-h { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.vc-ask-h button { background:none; border:none; color:#fff; cursor:pointer; display:flex; }
+.vc-ask input[type=text] {
+  width:100%; box-sizing:border-box; padding:.6rem .8rem; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+  background:#1c1c28; color:#fff; font-size:1rem; font-family:inherit;
+}
+.vc-eps-s { display:flex; flex-wrap:wrap; gap:6px; }
+.vc-eps-s button { background:rgba(255,255,255,.1); border:none; color:#fff; padding:.35rem .8rem; border-radius:20px; cursor:pointer; font-family:inherit; font-size:.8rem; }
+.vc-gh { position:absolute; left:50%; transform:translateX(-50%); bottom:12px; width:min(680px,96vw); display:none; z-index:8; color:#fff; text-align:center; pointer-events:none; }
+.vc-gh > * { pointer-events:auto; }
+.vc-gh-t { display:flex; justify-content:center; gap:12px; align-items:center; margin-bottom:6px; }
+.vc-gh-t b { color:#f1d98a; letter-spacing:.04em; text-shadow:0 1px 4px #000; }
+.vc-gh-t span { background:rgba(0,0,0,.65); padding:.2rem .7rem; border-radius:20px; font-size:.85rem; }
+.vc-gh-t span:empty { display:none; }
+.vc-gh-m { font-weight:700; margin:0 auto 6px; padding:.25rem .8rem; background:rgba(0,0,0,.6); border-radius:14px; display:inline-block; max-width:96%; font-size:.9rem; }
+.vc-gh-m:empty { display:none; }
+.vc-gh-m.ok { color:#59ff8a; } .vc-gh-m.ko { color:#ff9a9a; }
+.vc-gh-c { display:none; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:6px; }
+.vc-gh-bet { background:rgba(0,0,0,.65); padding:.3rem .8rem; border-radius:20px; font-size:.85rem; }
+.vc-gh-c button, .vc-gh-a button { font-family:inherit; cursor:pointer; border:1px solid rgba(255,255,255,.25); color:#fff; background:rgba(20,10,14,.85); padding:.5rem .9rem; border-radius:20px; font-weight:700; }
+.vc-gh-c button { width:46px; height:46px; border-radius:50%; padding:0; font-size:.78rem; border:3px dashed rgba(255,255,255,.75); }
+.vc-gh-c button.c10 { background:#2b5cd8; } .vc-gh-c button.c50 { background:#c41f2a; } .vc-gh-c button.c100 { background:#1c1c1c; } .vc-gh-c button.c500 { background:#7a2cc8; } .vc-gh-c button.c1000 { background:#e0b020; color:#2a1a00; }
+.vc-gh-c button.sm { width:auto; height:auto; border-radius:20px; padding:.4rem .8rem; border:1px solid rgba(255,255,255,.25); background:rgba(20,10,14,.85); }
+.vc-gh-c button.on { outline:3px solid #f1d98a; transform:translateY(-4px); }
+.vc-gh-a { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; }
+.vc-gh-a button.go { background:linear-gradient(90deg,#c8a24a,#e8c85a); color:#2a0d14; border:none; }
+.vc-gh-a button.on { background:linear-gradient(90deg,#7b2cff,#e50914); border-color:transparent; }
+.vc-gh-a button:disabled { opacity:.45; cursor:default; }
+.vc-ov.vc-gaming .vc-stand { left:12px; transform:none; bottom:12px; }
+.vc-ov.vc-gaming .vc-joy, .vc-ov.vc-gaming .vc-pad, .vc-ov.vc-gaming .vc-hint { display:none !important; }
+@media (max-width:720px) { .vc-gh { bottom:62px; } }
+.vc-game { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.6); z-index:8; padding:10px; }
+.vc-g-box { background:linear-gradient(#2a0d14,#14070b); border:2px solid #c8a24a; border-radius:16px; padding:14px 16px 16px; width:min(560px,96vw); max-height:94vh; overflow:auto; color:#fff; box-shadow:0 20px 60px rgba(0,0,0,.7); }
+.vc-g-h { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.vc-g-h b { font-size:1.05rem; letter-spacing:.04em; color:#f1d98a; flex:1; }
+.vc-g-h span { font-size:.85rem; background:rgba(255,255,255,.1); padding:.2rem .7rem; border-radius:20px; }
+.vc-g-h button { background:none; border:none; color:#fff; cursor:pointer; }
+.vc-g-box button { font-family:inherit; }
+.vc-g-reels { display:flex; justify-content:center; gap:10px; margin:6px 0 12px; }
+.vc-g-reels div { width:84px; height:96px; background:#f6f2e6; color:#111; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:48px; box-shadow:inset 0 0 14px rgba(0,0,0,.4); }
+.vc-g-lab { font-size:.78rem; opacity:.75; margin:8px 0 2px; }
+.vc-g-hand { display:flex; flex-wrap:wrap; min-height:80px; }
+.vc-card { width:52px; height:74px; border-radius:7px; background:#fff; color:#111; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; font-weight:700; font-size:1.05rem; margin:3px; box-shadow:0 2px 6px rgba(0,0,0,.5); position:relative; }
+.vc-card.red { color:#c4121f; }
+.vc-card.back { background:repeating-linear-gradient(45deg,#7a1424,#7a1424 6px,#5a0e1a 6px,#5a0e1a 12px); border:2px solid #f6f2e6; }
+.vc-card.held { transform:translateY(-8px); outline:3px solid #f1d98a; }
+.vc-card.held::after { content:'GARDÉ'; position:absolute; bottom:-16px; font-size:.55rem; color:#f1d98a; }
+.vc-g-bet { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:12px 0 8px; }
+.vc-g-bet input { width:90px; padding:.4rem .5rem; border-radius:8px; border:1px solid #6a4a22; background:#0d0507; color:#fff; font-size:1rem; }
+.vc-g-chips { display:flex; gap:6px; }
+.vc-g-chips button, .vc-g-row button, .vc-g-pick button { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); color:#fff; padding:.4rem .8rem; border-radius:20px; cursor:pointer; }
+.vc-g-pick { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+.vc-g-pick button.on { background:linear-gradient(90deg,#7b2cff,#e50914); border-color:transparent; font-weight:700; }
+.vc-g-row { display:flex; gap:8px; margin:12px 0 4px; }
+.vc-g-row button { flex:1; padding:.65rem; font-weight:700; }
+.vc-g-go { width:100%; background:linear-gradient(90deg,#c8a24a,#e8c85a); color:#2a0d14; border:none; padding:.75rem; border-radius:12px; font-weight:800; font-size:1rem; cursor:pointer; margin-top:6px; }
+.vc-g-note { font-size:.75rem; opacity:.65; margin-top:8px; line-height:1.4; }
+.vc-g-msg { min-height:1.4em; margin-top:10px; font-weight:700; text-align:center; }
+.vc-g-msg.ok { color:#59ff8a; } .vc-g-msg.ko { color:#ff7a7a; }
+.vc-av-c { display:flex; flex-wrap:wrap; gap:8px; margin:.6rem 0 .2rem; }
+.vc-av-c button { width:30px; height:30px; border-radius:50%; border:2px solid rgba(255,255,255,.25); cursor:pointer; padding:0; }
+.vc-av-c button.on { border-color:#fff; box-shadow:0 0 0 2px #e50914; }
+.vc-av-n { font-size:.72rem; opacity:.65; margin-top:.5rem; line-height:1.3; }
+.vc-eps-s button.on { background:linear-gradient(90deg,#7b2cff,#e50914); font-weight:700; }
+.vc-ask-l { margin-top:8px; display:flex; flex-direction:column; gap:4px; max-height:38vh; overflow:auto; }
+.vc-ask-l button {
+  display:flex; justify-content:space-between; gap:10px; text-align:left; padding:.5rem .7rem; border-radius:8px;
+  border:none; background:rgba(255,255,255,.07); color:#fff; cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+.vc-ask-l button:hover { background:rgba(229,9,20,.5); }
+.vc-ask-l button span { color:#aaa; font-size:.75rem; white-space:nowrap; }
+.vc-ask-n { color:#aaa; font-size:.85rem; padding:6px; }
+.vc-ask-r {
+  margin-top:10px; width:100%; padding:.55rem; border:none; border-radius:10px; cursor:pointer; color:#fff;
+  background:linear-gradient(90deg,#7b2cff,#e50914); font-weight:700; font-family:inherit;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.vc-cine {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; width:min(94vw,640px); display:none; z-index:3;
+  background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.16); border-radius:12px; padding:8px 12px;
+}
+@media (pointer:coarse) { .vc-cine { bottom:176px; } }
+.vc-ov .vc-top, .vc-ov .vc-sub, .vc-ov .vc-map, .vc-ov .vc-cine, .vc-ov .vc-hint, .vc-ov .vc-joy, .vc-ov .vc-pad, .vc-ov .vc-stand, .vc-ov .vc-say, .vc-ov .vc-hold, .vc-ov .vc-tip { transition:opacity .5s; }
+.vc-ov.vc-zen .vc-top, .vc-ov.vc-zen .vc-sub, .vc-ov.vc-zen .vc-map, .vc-ov.vc-zen .vc-cine, .vc-ov.vc-zen .vc-hint, .vc-ov.vc-zen .vc-joy, .vc-ov.vc-zen .vc-pad, .vc-ov.vc-zen .vc-stand, .vc-ov.vc-zen .vc-say, .vc-ov.vc-zen .vc-hold, .vc-ov.vc-zen .vc-tip { opacity:0 !important; pointer-events:none !important; }
+.vc-ov.vc-zen .vc-top > *, .vc-ov.vc-zen .vc-cine > *, .vc-ov.vc-zen .vc-pad > * { pointer-events:none !important; }
+.vc-ov.vc-zen { cursor:none; }
+.vc-cine.vc-frame #vcCpl, .vc-cine.vc-frame #vcCbk, .vc-cine.vc-frame #vcCfw, .vc-cine.vc-frame #vcCsk, .vc-cine.vc-frame #vcCtm, .vc-cine.vc-frame #vcCvl { display:none; }
+.vc-cine-t { font-size:.85rem; margin-bottom:6px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vc-cine-r { display:flex; align-items:center; gap:6px; }
+.vc-cine-r button { background:none; border:none; color:#fff; cursor:pointer; display:flex; padding:2px; }
+.vc-cine-r .material-symbols-outlined { font-size:24px; }
+.vc-cine-r input[type=range] { flex:1; min-width:40px; }
+.vc-cine-r input#vcCvl { flex:0 0 70px; }
+.vc-cine-r span { font-size:.75rem; color:#ccc; white-space:nowrap; }
+.vc-stand {
+  position:absolute; left:50%; transform:translateX(-50%); bottom:48px; display:none; align-items:center; gap:6px;
+  padding:.55rem 1.1rem; border-radius:20px; border:none; background:#7b2cff; color:#fff; font-weight:700;
+  cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+</style>
+
 <script>
 (function () {
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -13859,6 +14086,8 @@ document.addEventListener('DOMContentLoaded', () => {
      ===================================================== */
   let actx = null, muted = false;
   try { muted = localStorage.getItem('vcMuted') === '1'; } catch (e) {}
+  let musicLvl = 1;
+  try { const ml = parseFloat(localStorage.getItem('vcMusic')); if (ml === 0 || ml === 0.4) musicLvl = ml; } catch (e) {}
   function getAudioCtx() {
     if (!actx) {
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -13870,7 +14099,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function createAudio(ctx) {
     const master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
-    const musicG = ctx.createGain(); musicG.gain.value = 0.55; musicG.connect(master);
+    const musicG = ctx.createGain(); musicG.gain.value = 0.55 * musicLvl; musicG.connect(master);
+    let duckOn = false;
     const sfxG = ctx.createGain(); sfxG.gain.value = 1; sfxG.connect(master);
     const nb = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const nd = nb.getChannelData(0);
@@ -13988,7 +14218,8 @@ document.addEventListener('DOMContentLoaded', () => {
       tick() { const t = ctx.currentTime; tone(t, 1500, 0.03, 'square', 0.04, sfxG, 0.001, 900); },
       win() { const t = ctx.currentTime; [0, 1, 2, 3].forEach(i => tone(t + i * 0.09, 880 * Math.pow(1.26, i), 0.3, 'triangle', 0.12, sfxG, 0.005)); },
       reel() { const t = ctx.currentTime; tone(t, 200, 0.08, 'square', 0.05, sfxG, 0.002, 120); noise(t, 0.06, 'lowpass', 600, 0.7, 0.2, sfxG); },
-      duck(on) { musicG.gain.setTargetAtTime(on ? 0.04 : 0.55, ctx.currentTime, 0.4); },
+      duck(on) { duckOn = !!on; musicG.gain.setTargetAtTime(on ? 0.04 * musicLvl : 0.55 * musicLvl, ctx.currentTime, 0.4); },
+      setMusic() { musicG.gain.setTargetAtTime((duckOn ? 0.04 : 0.55) * musicLvl, ctx.currentTime, 0.15); },
       bell() {
         const t = ctx.currentTime;
         tone(t, 1320, 1.1, 'sine', 0.16, sfxG, 0.005);
@@ -14032,6 +14263,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '<div class="vc-brand">' + ic('storefront') + ' VIDEO CLUB</div>' +
       '<select id="vcJump" aria-label="Aller au rayon"><option value="">Aller au rayon…</option></select>' +
       '<button class="vc-snd" id="vcSnd" aria-label="Son"></button>' +
+      '<button class="vc-snd" id="vcMus" aria-label="Musique"></button>' +
       '<button class="vc-snd" id="vcMapBtn" aria-label="Plan" title="Plan de la salle">' + ic('map') + '</button>' +
       '<button class="vc-snd" id="vcAvBtn" aria-label="Personnage" title="Mon personnage">' + ic('person') + '</button>' +
       '<button class="vc-x" id="vcClose" aria-label="Quitter">' + ic('close') + ' Quitter</button>' +
@@ -14121,6 +14353,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const sndBtn = ov.querySelector('#vcSnd');
   function paintSnd() { sndBtn.innerHTML = ic(muted ? 'volume_off' : 'volume_up'); sndBtn.title = muted ? 'Activer le son' : 'Couper le son'; }
   paintSnd();
+  const musBtn = ov.querySelector('#vcMus');
+  const MUS_L = [1, 0.4, 0], MUS_T = ['Musique : normale', 'Musique : basse', 'Musique : coupée'];
+  function paintMus() { musBtn.innerHTML = ic(musicLvl === 0 ? 'music_off' : 'music_note') + (musicLvl > 0 && musicLvl < 1 ? '<small style="font-size:10px;margin-left:1px">−</small>' : ''); musBtn.title = MUS_T[MUS_L.indexOf(musicLvl)] + ' (clic pour changer)'; }
+  paintMus();
+  musBtn.addEventListener('click', () => {
+    musicLvl = MUS_L[(MUS_L.indexOf(musicLvl) + 1) % MUS_L.length];
+    try { localStorage.setItem('vcMusic', String(musicLvl)); } catch (e) {}
+    paintMus();
+    if (world && world.setMusic) world.setMusic();
+  });
   sndBtn.addEventListener('click', () => {
     muted = !muted;
     try { localStorage.setItem('vcMuted', muted ? '1' : '0'); } catch (e) {}
@@ -16733,7 +16975,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ===== BLACKJACK (vraies règles : double, séparation, assurance, abandon — serveur bj2_*) ===== */
     const BJ_ACT = { hit: 'Tirer', stand: 'Rester', double: 'Doubler', split: 'Séparer', surrender: 'Abandon', insurance: 'Assurance', decline: 'Sans assurance' };
     function bjSetup() {
-      stageTable(GS.seat, 1.22, 0.66, 1.5);
+      stageTable(GS.seat, 0.82, 0.5, 1.05);
       const r = GS.root;
       mkDecal(1.4, 0.4, 0, -0.18, (g, w, h) => {
         g.strokeStyle = 'rgba(241,217,138,.7)'; g.lineWidth = 3; g.fillStyle = 'rgba(241,217,138,.8)'; g.textAlign = 'center'; g.textBaseline = 'middle';
@@ -16876,7 +17118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ===== BACCARA ===== */
     function baSetup() {
-      stageTable(GS.seat, 1.22, 0.66, 1.4);
+      stageTable(GS.seat, 0.82, 0.5, 1.0);
       const r = GS.root;
       mkDecal(1.5, 0.3, 0, 0.62, (g, w, h) => {
         g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold ' + Math.round(h * 0.2) + 'px Georgia';
@@ -16929,7 +17171,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ===== POKER VIDÉO (Jacks or Better) ===== */
     const PK_LAB = { quinte_flush_royale: 'Quinte flush royale ×800', quinte_flush: 'Quinte flush ×50', carre: 'Carré ×25', full: 'Full ×9', couleur: 'Couleur ×6', quinte: 'Quinte ×4', brelan: 'Brelan ×3', double_paire: 'Double paire ×2', paire_valets_ou_plus: 'Paire de valets ou mieux ×1', rien: 'Rien' };
     function pkSetup() {
-      stageTable(GS.seat, 1.18, 0.62, 1.2);
+      stageTable(GS.seat, 0.8, 0.48, 0.95);
       mkDecal(1.5, 0.5, 0, -0.52, (g, w, h) => {
         g.fillStyle = 'rgba(241,217,138,.85)'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold ' + Math.round(h * 0.11) + 'px Georgia';
         g.fillText('POKER VIDÉO · VALETS OU MIEUX', w / 2, h * 0.08); g.font = Math.round(h * 0.085) + 'px Georgia';
@@ -16998,8 +17240,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function slSetup() {
       const s = GS.seat, mx = s.x, mz = s.z + 1.0;
       GS.root = new THREE.Group(); scene.add(GS.root);
-      GS.cam = { x: mx, z: mz - 1.5, y: CAS_Y + 1.5, lx: mx, lz: mz - 0.3, ly: CAS_Y + 1.38 };
-      if (camera.aspect < 1) { GS.cam.z -= 0.6; GS.cam.y += 0.12; }
+      GS.cam = { x: mx, z: mz - 0.95, y: CAS_Y + 1.42, lx: mx, lz: mz - 0.3, ly: CAS_Y + 1.38 };
+      if (camera.aspect < 1) { GS.cam.z -= 0.35; GS.cam.y += 0.06; }
       GS.betG = null; GS.sl = { reels: casObjs.slotReels[s.mi], phi: [0, 0, 0] };
       GS.act = slAct; GS.clear = () => { GS.bet = 0; paintChips(); };
       slIdle('Pose ta mise puis lance les rouleaux.');
@@ -17037,7 +17279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function ruSetup() {
       const s = GS.seat, cx = CAS_X0 + 15.6;
       GS.root = new THREE.Group(); GS.root.position.set(cx, CAS_Y + 0.975, 1.6); GS.root.rotation.y = Math.PI; scene.add(GS.root);
-      const f = fitCam(1.3, 0.95, 2.2);
+      const f = fitCam(0.95, 0.7, 1.7);
       GS.cam = { x: cx + 0.45, z: 1.6 - f[0], y: CAS_Y + 0.975 + f[1], lx: cx + 0.45, lz: 1.5, ly: CAS_Y + 0.975 };
       GS.chipMode = 'select'; GS.chip = 10; GS.betG = null;
       GS.ru = { bets: [], hist: [], prev: [], mark: null };
@@ -18005,7 +18247,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hideTip();
     }
 
-    return { destroy: destroy, setMuted: m => { if (audio) audio.setMuted(m); vid.muted = m; } };
+    return { destroy: destroy, setMuted: m => { if (audio) audio.setMuted(m); vid.muted = m; }, setMusic: () => { if (audio) audio.setMusic(); } };
   }
 })();
 </script>
