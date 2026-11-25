@@ -1066,25 +1066,37 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 // ==================================================
-// 📱 MOBILE : rendre tout le lecteur de secours touchable
+// 📱 MOBILE : lecteur de secours touchable + bouton retour qui se masque
 // ==================================================
 (function () {
   const style = document.createElement("style");
   style.id = "fallback-tactile-css";
   style.textContent = `
     @media (pointer: coarse) {
-      /* zone invisible qui bloquait les touchers en haut du lecteur de secours */
-      #fallbackHoverZone { pointer-events: none !important; }
+      /* petite zone en haut à gauche : la toucher réaffiche le bouton retour */
+      #fallbackHoverZone {
+        width: 170px !important;
+        height: 56px !important;
+        touch-action: manipulation;
+      }
 
-      /* sans cette zone, le bouton retour doit rester visible en mode secours */
-      #videoContainer:has(#fallbackFrame[style*="display: block"]) #backButton {
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-        top: 8px;
-        left: 8px;
-        padding: 6px 10px;
-        font-size: 13px;
+      #backButton { top: 8px; left: 8px; padding: 8px 12px; font-size: 13px; }
+
+      /* boutons du bas : zones tactiles plus grandes et éloignées du bord */
+      #controls { bottom: 14px; }
+      #controls .controls-right { gap: 4px; margin-right: 16px; }
+      #controls .controls-right .material-symbols-outlined { padding: 8px; touch-action: manipulation; }
+      #progressWrapper { bottom: 96px; }
+      #settingsMenu, #sourceMenu, #subtitleMenu {
+        bottom: 90px;
+        max-height: calc(100% - 100px);
+        overflow-y: auto;
+        z-index: 1100;
+      }
+
+      @media (max-width: 600px) {
+        #controls .controls-right { margin-right: 0; }
+        #progressWrapper { bottom: 150px; }
       }
 
       /* le gros bouton lecture ne doit pas recouvrir le lecteur de secours */
@@ -1094,4 +1106,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   `;
   document.head.appendChild(style);
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const zone = document.getElementById("fallbackHoverZone");
+    const bouton = document.getElementById("backButton");
+    if (!zone || !bouton) return;
+
+    let minuteur;
+    zone.addEventListener("touchend", e => {
+      // évite que ce même toucher active aussitôt le bouton retour
+      e.preventDefault();
+      bouton.classList.remove("hide");
+      clearTimeout(minuteur);
+      clearTimeout(window.fallbackBtnHideTimeout);
+      minuteur = setTimeout(() => {
+        if (getComputedStyle(zone).display !== "none") bouton.classList.add("hide");
+      }, 3000);
+    }, { passive: false });
+  });
 })();
