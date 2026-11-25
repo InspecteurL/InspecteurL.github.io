@@ -1043,8 +1043,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Bouton "Retour à la fiche"
   document.addEventListener("click", e => {
     if (!estMobile() || !e.target.closest("#backButton")) return;
-    // petit délai : laisse d'abord s'exécuter le code du bouton de la fiche
-    setTimeout(imposerPortrait, 100);
+    // la fiche quitte le plein écran 900 ms après le clic : on passe après elle
+    setTimeout(imposerPortrait, 1100);
   }, true);
 
   // Sortie du plein écran (geste ou bouton retour du téléphone)
@@ -1063,4 +1063,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   document.addEventListener("fullscreenchange", surChangementPleinEcran);
   document.addEventListener("webkitfullscreenchange", surChangementPleinEcran);
+})();
+
+// ==================================================
+// 📱 MOBILE : rendre tout le lecteur de secours touchable
+// ==================================================
+(function () {
+  const style = document.createElement("style");
+  style.id = "fallback-tactile-css";
+  style.textContent = `
+    @media (pointer: coarse) {
+      /* zone invisible qui bloquait les touchers en haut du lecteur de secours */
+      #fallbackHoverZone { pointer-events: none !important; }
+
+      /* sans cette zone, le bouton retour doit rester visible en mode secours */
+      #videoContainer:has(#fallbackFrame[style*="display: block"]) #backButton {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        top: 8px;
+        left: 8px;
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+
+      /* le gros bouton lecture ne doit pas recouvrir le lecteur de secours */
+      #videoContainer:has(#fallbackFrame[style*="display: block"]) #centerPlay {
+        display: none !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
 })();
