@@ -143,7 +143,8 @@ document.addEventListener("DOMContentLoaded", () => {
       dislikeCount.textContent = data.filter(v => !v.liked).length;
 
       // Etat du vote de l'utilisateur actuel
-      currentVote = userId ? (data.find(v => v.user_id === userId)?.liked ? "like" : "dislike") : null;
+      const mine = userId ? data.find(v => v.user_id === userId) : null;
+      currentVote = mine ? (mine.liked ? "like" : "dislike") : null;
       likeBtn.classList.toggle("active-like", currentVote === "like");
       dislikeBtn.classList.toggle("active-dislike", currentVote === "dislike");
     }
@@ -252,8 +253,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // timing synchro
     setTimeout(() => {
-      // 🔥 SIMULATION DU CLIC FULLSCREEN DU LECTEUR
-      fullscreenBtn.click();
+      // 🔥 SIMULATION DU CLIC FULLSCREEN DU LECTEUR (PC uniquement, le mobile est géré en bas du fichier)
+      if (!window.matchMedia("(pointer: coarse)").matches) fullscreenBtn.click();
 
       // retirer l'overlay
       setTimeout(() => {
@@ -323,7 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       setTimeout(() => {
         video.play();
-        fullscreenBtn.click();
+        if (!window.matchMedia("(pointer: coarse)").matches) fullscreenBtn.click();
 
         setTimeout(() => {
           overlay.classList.remove("active");
@@ -773,6 +774,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener('keydown', (e) => {
+  // ne pas bloquer la saisie dans les champs de texte
+  if (e.target.closest?.("input, textarea, [contenteditable]")) return;
+
   if (e.code === 'Space') {
     e.preventDefault();
     togglePlay();
@@ -1026,6 +1030,190 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// ==================================================
+// 📱 MOBILE : paysage automatique au lancement d'un film / épisode
+//             + retour au mode normal avec "Retour à la fiche"
+// ==================================================
+(function () {
+  const estMobile = () =>
+    window.matchMedia("(pointer: coarse)").matches &&
+    Math.min(screen.width, screen.height) <= 1024;
 
+  let lecteurActif = null;
+  let demandeEnCours = false;
 
+  // ---------- CSS (secours iPhone) ----------
+  const style = document.createElement("style");
+  style.id = "paysage-css";
+  style.textContent = `
+    .faux-paysage {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+      max-width: none !important;
+      max-height: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      background: #000 !important;
+      z-index: 99998 !important;
+      transform: none !important;
+      animation: none !important;
+      filter: none !important;
+    }
 
+    /* Téléphone tenu en portrait : on pivote le lecteur */
+    @media (orientation: portrait) {
+      .faux-paysage {
+        top: 50% !important;
+        left: 50% !important;
+        width: 100vh !important;
+        width: 100dvh !important;
+        height: 100vw !important;
+        transform: translate(-50%, -50%) rotate(90deg) !important;
+      }
+    }
+
+    .faux-paysage video {
+      width: 100% !important;
+      height: 100% !important;
+      max-height: none !important;
+      object-fit: contain !important;
+    }
+
+    body.faux-paysage-actif { overflow: hidden !important; }
+    body.faux-paysage-actif nav { display: none !important; }
+
+    .fermer-paysage {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(0,0,0,.65);
+      color: #fff;
+      font-size: 18px;
+      z-index: 100000;
+      cursor: pointer;
+    }
+  `;
+  document.head.appendChild(style);
+
+  function trouverLecteur(video) {
+    const bloc = video.closest("#videoContainer, .video-container, .player-container");
+    if (bloc) return bloc;
+    return video.parentElement !== document.body ? video.parentElement : video;
+  }
+
+  async function verrouillerPaysage() {
+    try {
+      await screen.orientation.lock("landscape");
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function activerFauxPaysage(lecteur) {
+    lecteurActif = lecteur;
+    lecteur.classList.add("faux-paysage");
+    document.body.classList.add("faux-paysage-actif");
+
+    if (lecteur.tagName !== "VIDEO" && !lecteur.querySelector(".fermer-paysage")) {
+      const fermer = document.createElement("button");
+      fermer.type = "button";
+      fermer.className = "fermer-paysage";
+      fermer.textContent = "✕";
+      fermer.setAttribute("aria-label", "Quitter le plein écran");
+      fermer.addEventListener("click", e => {
+        e.stopPropagation();
+        lecteur.querySelector("video")?.pause();
+        quitterPaysage();
+      });
+      lecteur.appendChild(fermer);
+    }
+  }
+
+  function quitterPaysage() {
+    if (lecteurActif) {
+      lecteurActif.classList.remove("faux-paysage");
+      lecteurActif.querySelector(".fermer-paysage")?.remove();
+      lecteurActif = null;
+    }
+    document.body.classList.remove("faux-paysage-actif");
+    try { screen.orientation.unlock(); } catch {}
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
+  }
+
+  async function lancerPaysage(lecteur) {
+    if (!estMobile() || !lecteur || demandeEnCours || lecteurActif) return;
+    demandeEnCours = true;
+
+    try {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        await verrouillerPaysage();
+        return;
+      }
+
+      const demander = lecteur.requestFullscreen || lecteur.webkitRequestFullscreen;
+
+      // iPhone : pas de plein écran possible sur le conteneur
+      if (!demander) {
+        activerFauxPaysage(lecteur);
+        return;
+      }
+
+      try {
+        await demander.call(lecteur);
+      } catch {
+        return; // refusé (ex : lecture lancée sans action de l'utilisateur)
+      }
+
+      // Plein écran obtenu mais rotation impossible : on pivote en CSS
+      if (!(await verrouillerPaysage())) activerFauxPaysage(lecteur);
+    } finally {
+      demandeEnCours = false;
+    }
+  }
+
+  // Clic sur "Lire le film" ou sur la carte d'un épisode
+  document.addEventListener("click", e => {
+    if (!document.querySelector(".fiche-info")) return;
+    if (!e.target.closest("#btnWatch, .btn-watch, .card[data-video]")) return;
+    lancerPaysage(document.getElementById("videoContainer"));
+  }, true);
+
+  // Lancement de n'importe quelle vidéo d'une fiche
+  document.addEventListener("play", e => {
+    const video = e.target;
+    if (!(video instanceof HTMLVideoElement)) return;
+    if (!document.querySelector(".fiche-info")) return;
+    if (video.muted) return; // ignore les vidéos de fond
+    lancerPaysage(trouverLecteur(video));
+  }, true);
+
+  // Évite qu'iPhone ouvre son propre lecteur à la place du tien
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("video").forEach(v => v.setAttribute("playsinline", ""));
+  });
+
+  // Bouton "Retour à la fiche"
+  document.addEventListener("click", e => {
+    if (estMobile() && e.target.closest("#backButton")) quitterPaysage();
+  }, true);
+
+  // Sortie du plein écran (geste ou bouton retour du téléphone)
+  function surChangementPleinEcran() {
+    if (!estMobile()) return;
+    if (document.fullscreenElement || document.webkitFullscreenElement) verrouillerPaysage();
+    else quitterPaysage();
+  }
+  document.addEventListener("fullscreenchange", surChangementPleinEcran);
+  document.addEventListener("webkitfullscreenchange", surChangementPleinEcran);
+})();
