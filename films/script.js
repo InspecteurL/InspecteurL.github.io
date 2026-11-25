@@ -9,6 +9,7 @@ const HOST_MAP = {
   "donuts.xyz": "cinecake.xyz"
 };
 
+
 function autoReplaceDomain(raw) {
   if (!raw || typeof raw !== "string") return raw;
   try {
@@ -928,7 +929,8 @@ document.addEventListener("DOMContentLoaded", () => {
     lecteur.classList.add("faux-paysage");
     document.body.classList.add("faux-paysage-actif");
 
-    if (lecteur.tagName !== "VIDEO" && !lecteur.querySelector(".fermer-paysage")) {
+    // la croix ne sert que si le lecteur n'a pas déjà son bouton retour
+    if (lecteur.tagName !== "VIDEO" && !lecteur.querySelector("#backButton, .fermer-paysage")) {
       const fermer = document.createElement("button");
       fermer.type = "button";
       fermer.className = "fermer-paysage";
