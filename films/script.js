@@ -841,6 +841,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let lecteurActif = null;
   let demandeEnCours = false;
+  let modePortrait = false;     // true après "Retour à la fiche"
+  let retourEnCours = false;
+
+  const elementPleinEcran = () =>
+    document.fullscreenElement || document.webkitFullscreenElement || null;
 
   // ---------- CSS (secours iPhone) ----------
   const style = document.createElement("style");
@@ -954,9 +959,11 @@ document.addEventListener("DOMContentLoaded", () => {
   async function lancerPaysage(lecteur) {
     if (!estMobile() || !lecteur || demandeEnCours || lecteurActif) return;
     demandeEnCours = true;
+    modePortrait = false;
 
     try {
-      if (document.fullscreenElement || document.webkitFullscreenElement) {
+      const actuel = elementPleinEcran();
+      if (actuel && actuel !== document.documentElement) {
         await verrouillerPaysage();
         return;
       }
@@ -1003,16 +1010,56 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("video").forEach(v => v.setAttribute("playsinline", ""));
   });
 
+  async function sortirPleinEcran() {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else if (document.webkitFullscreenElement) await document.webkitExitFullscreen();
+    } catch {}
+  }
+
+  // Force le portrait : la fiche reste en plein écran, sinon le verrouillage est refusé
+  async function imposerPortrait() {
+    retourEnCours = true;
+    modePortrait = true;
+
+    try {
+      quitterPaysage();
+      await sortirPleinEcran();
+
+      const racine = document.documentElement;
+      const demander = racine.requestFullscreen || racine.webkitRequestFullscreen;
+      if (demander && !elementPleinEcran()) await demander.call(racine);
+
+      await screen.orientation.lock("portrait");
+    } catch {
+      // rotation impossible à imposer (ex : iPhone) : on revient à l'affichage normal
+      modePortrait = false;
+      await sortirPleinEcran();
+    } finally {
+      retourEnCours = false;
+    }
+  }
+
   // Bouton "Retour à la fiche"
   document.addEventListener("click", e => {
-    if (estMobile() && e.target.closest("#backButton")) quitterPaysage();
+    if (!estMobile() || !e.target.closest("#backButton")) return;
+    // petit délai : laisse d'abord s'exécuter le code du bouton de la fiche
+    setTimeout(imposerPortrait, 100);
   }, true);
 
   // Sortie du plein écran (geste ou bouton retour du téléphone)
   function surChangementPleinEcran() {
-    if (!estMobile()) return;
-    if (document.fullscreenElement || document.webkitFullscreenElement) verrouillerPaysage();
-    else quitterPaysage();
+    if (!estMobile() || retourEnCours) return;
+    const actuel = elementPleinEcran();
+
+    if (!actuel) {
+      modePortrait = false;
+      quitterPaysage();
+    } else if (actuel !== document.documentElement) {
+      verrouillerPaysage();
+    } else if (modePortrait) {
+      screen.orientation?.lock?.("portrait").catch(() => {});
+    }
   }
   document.addEventListener("fullscreenchange", surChangementPleinEcran);
   document.addEventListener("webkitfullscreenchange", surChangementPleinEcran);
