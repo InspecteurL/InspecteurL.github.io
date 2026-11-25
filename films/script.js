@@ -9,7 +9,6 @@ const HOST_MAP = {
   "donuts.xyz": "cinecake.xyz"
 };
 
-
 function autoReplaceDomain(raw) {
   if (!raw || typeof raw !== "string") return raw;
   try {
